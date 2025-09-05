@@ -2,6 +2,7 @@ use ecow::EcoString;
 use js_sys::{ArrayBuffer, Uint8Array};
 use rustc_hash::FxHashMap;
 use serde_wasm_bindgen::to_value;
+use typst_html::HtmlDocument;
 use wasm_bindgen::prelude::*;
 
 use typst::{
@@ -21,7 +22,7 @@ mod serde;
 mod vfs;
 mod world;
 
-use crate::serde::{diagnostic, font, package, processor, svg};
+use crate::serde::{diagnostic, font, html, package, processor, svg};
 use crate::world::WasmWorld;
 
 #[wasm_bindgen]
@@ -175,6 +176,52 @@ impl Typst {
                     .replace("<svg class", "<svg style=\"overflow: visible;\" class");
 
                 svg::svg(svg, warnings)
+            }
+            Err(errs) => {
+                let diags: Vec<diagnostic::SourceDiagnosticSer> =
+                    errs.iter().map(|d| d.into()).collect();
+                Err(to_value(&diags).unwrap())
+            }
+        }
+    }
+
+    pub fn html(&mut self, code: &str, kind: &str, id: &str) -> Result<JsValue, JsValue> {
+        if self.last_kind == kind && self.last_id == id {
+            self.world.replace(code);
+        } else {
+            self.last_kind = kind.to_string();
+            self.last_id = id.to_string();
+
+            let result = self.world.source(FileId::new(
+                None,
+                VirtualPath::new(&format!("{}--{}.typ", kind, id)),
+            ));
+
+            match result {
+                Ok(mut source) => {
+                    source.replace(code);
+                    self.world.set_main(source);
+                }
+                Err(_e) => {
+                    self.world.replace(code);
+                }
+            }
+        }
+
+        let Warned { output, warnings } = typst::compile::<HtmlDocument>(&mut self.world);
+
+        match output {
+            Ok(document) => {
+                let document = typst_html::html(&document);
+
+                match document {
+                    Ok(html) => html::html(html, warnings),
+                    Err(errs) => {
+                        let diags: Vec<diagnostic::SourceDiagnosticSer> =
+                            errs.iter().map(|d| d.into()).collect();
+                        return Err(to_value(&diags).unwrap());
+                    }
+                }
             }
             Err(errs) => {
                 let diags: Vec<diagnostic::SourceDiagnosticSer> =

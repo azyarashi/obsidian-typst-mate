@@ -41,6 +41,10 @@ export default class $ {
     return this.typst!.svg(code, kind, id);
   }
 
+  html(code: string, kind: string, id: string): SVGResult {
+    return this.typst!.html(code, kind, id);
+  }
+
   listFonts(): FontInfo[] {
     return this.typst!.list_fonts();
   }

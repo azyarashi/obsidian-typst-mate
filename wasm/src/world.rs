@@ -7,7 +7,7 @@ use send_wrapper::SendWrapper;
 use wasm_bindgen::{JsCast, JsValue};
 
 use typst::{
-    Library, LibraryExt, World,
+    Feature, Library, LibraryExt, World,
     diag::{FileError, FileResult, PackageError},
     ecow,
     foundations::{Bytes, Datetime, Value},
@@ -46,7 +46,9 @@ impl WasmWorld {
             }
         }
 
-        let mut library = Library::default();
+        let mut library = Library::builder()
+            .with_features([Feature::Html].into_iter().collect())
+            .build();
         let fontsize_val = Value::Length(Length::from(Abs::pt(fontsize * 3.0 / 4.0)));
         library.global.scope_mut().define("fontsize", fontsize_val);
 

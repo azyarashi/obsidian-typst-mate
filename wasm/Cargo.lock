@@ -2325,6 +2325,7 @@ dependencies = [
  "tsify",
  "typst",
  "typst-assets 0.13.1 (git+https://github.com/typst/typst-assets)",
+ "typst-html",
  "typst-svg",
  "wasm-bindgen",
  "wasm-bindgen-futures",

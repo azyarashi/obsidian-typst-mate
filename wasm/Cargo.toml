@@ -9,6 +9,7 @@ crate-type = ["cdylib"]
 [dependencies]
 typst = { git = "https://github.com/typst/typst" }
 typst-svg = { git = "https://github.com/typst/typst", package = "typst-svg" }
+typst-html = { git = "https://github.com/typst/typst", package = "typst-html" }
 typst-assets = { git = "https://github.com/typst/typst-assets" }
 comemo = "^0"
 
