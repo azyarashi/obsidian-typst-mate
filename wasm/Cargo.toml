@@ -7,9 +7,9 @@ edition = "2024"
 crate-type = ["cdylib"]
 
 [dependencies]
-typst = "0.13.1"
-typst-svg = "0.13.1"
-typst-assets = { version = "0.13.1", features = ["fonts"] }
+typst = { git = "https://github.com/typst/typst" }
+typst-svg = { git = "https://github.com/typst/typst", package = "typst-svg" }
+typst-assets = { git = "https://github.com/typst/typst-assets" }
 comemo = "^0"
 
 wasm-bindgen = "^0.2"

@@ -7,7 +7,7 @@ use send_wrapper::SendWrapper;
 use wasm_bindgen::{JsCast, JsValue};
 
 use typst::{
-    Library, World,
+    Library, LibraryExt, World,
     diag::{FileError, FileResult, PackageError},
     ecow,
     foundations::{Bytes, Datetime, Value},
