@@ -3,10 +3,10 @@ import type fsModule from 'node:fs';
 import { proxy, type Remote, wrap } from 'comlink';
 import {
   debounce,
-  Editor,
+  type Editor,
   type EventRef,
   loadMathJax,
-  MarkdownView,
+  type MarkdownView,
   Notice,
   Platform,
   Plugin,
@@ -15,6 +15,7 @@ import {
   type WorkspaceLeaf,
 } from 'obsidian';
 
+import { EditorHelper } from './core/editor';
 import { TypstToolsView } from './core/leaf';
 import { DEFAULT_SETTINGS, type Settings, SettingTab } from './core/settings';
 import { ParentResizeService } from './lib/observer';
@@ -50,11 +51,14 @@ export default class ObsidianTypstMate extends Plugin {
   baseColor = '#000000';
   listeners: EventRef[] = [];
 
-  private previewEl: HTMLElement | null = null;
+  private editorHelper!: EditorHelper;
 
   fs?: typeof fsModule;
 
   override async onload() {
+    // EditorHelperを初期化
+    this.editorHelper = new EditorHelper(this.app);
+
     // ユーザーの設定(data.json)を読み込む
     await this.loadSettings();
     const adapter = this.app.vault.adapter;
@@ -149,9 +153,15 @@ export default class ObsidianTypstMate extends Plugin {
       },
     });
 
-    // @ts-expect-error
-    const editorChangeRef = this.app.workspace.on('editor-change', this.onEditorChange);
-    const activeLeafChangeRef = this.app.workspace.on('active-leaf-change', this.removePreview.bind(this));
+    const editorChangeRef = this.app.workspace.on(
+      // @ts-expect-error
+      'editor-change',
+      this.onEditorChange,
+    );
+    const activeLeafChangeRef = this.app.workspace.on(
+      'active-leaf-change',
+      this.editorHelper.removePreview.bind(this),
+    );
     this.registerEvent(editorChangeRef);
     this.registerEvent(activeLeafChangeRef);
     this.listeners.push(editorChangeRef, activeLeafChangeRef);
@@ -331,81 +341,8 @@ export default class ObsidianTypstMate extends Plugin {
     if (openSettingsTab) this.app.setting.openTabById(this.pluginId);
   }
 
-  onEditorChange = (editor: Editor, markdownView: MarkdownView) => {
+  onEditorChange = (editor: Editor, _markdownView: MarkdownView) => {
     if (!this.settings.enableInlinePreview) return;
-    this.updatePreview(editor)
+    this.editorHelper.updatePreview(editor);
   };
-
-  updatePreview(editor: Editor) {
-    this.removePreview();
-    if (isCursorInCodeBlock(editor) || isCursorInInlineCode(editor)) return;
-
-    const cursor = editor.getCursor();
-    const lineText = editor.getLine(cursor.line);
-
-    const before = lineText.slice(0, cursor.ch);
-    const after = lineText.slice(cursor.ch);
-    const beforeDollar = before.lastIndexOf("$");
-    const afterDollar = after.indexOf("$");
-
-    let mathContent: string | null = null;
-    let startIndex = -1;
-
-    if (
-      beforeDollar !== -1 &&
-      afterDollar !== -1 &&
-      beforeDollar < before.length &&
-      !before.slice(beforeDollar + 1).includes("$")
-    ) {
-      mathContent = before.slice(beforeDollar + 1) + after.slice(0, afterDollar);
-      startIndex = beforeDollar + 1;
-    }
-
-    if (!mathContent) {
-      this.removePreview();
-      return;
-    }
-
-    const cm = editor.cm;
-    if (!cm) return;
-
-    const fromPos = cm.coordsAtPos(editor.posToOffset({ line: cursor.line, ch: startIndex }));
-    if (!fromPos) return;
-
-    let mathHtml = window.MathJax!.tex2chtml(`${mathContent}`, { display: false });
-
-    const preview = document.createElement("div");
-    preview.className = "typstmate-inlinemath-preview";
-    preview.style.setProperty('--preview-left', `${fromPos.left}px`);
-    preview.style.setProperty('--preview-top', `${fromPos.bottom + 6}px`);
-    preview.appendChild(mathHtml);
-
-    this.app.workspace.containerEl.appendChild(preview);
-    this.previewEl = preview;
-  }
-
-  removePreview() {
-    this.previewEl?.parentElement?.removeChild(this.previewEl);
-    this.previewEl = null;
-  }
-}
-
-function isCursorInCodeBlock(editor: Editor): boolean {
-  const cursor = editor.getCursor();
-  let inCodeBlock = false;
-  for (let i = 0; i <= cursor.line; i++) {
-    const line = editor.getLine(i).trim();
-    if (line.startsWith("```")) {
-      inCodeBlock = !inCodeBlock;
-    }
-  }
-  return inCodeBlock;
-}
-
-function isCursorInInlineCode(editor: Editor): boolean {
-  const cursor = editor.getCursor();
-  const line = editor.getLine(cursor.line);
-  const before = line.slice(0, cursor.ch);
-  const count = (before.match(/`/g) || []).length;
-  return count % 2 === 1;
 }

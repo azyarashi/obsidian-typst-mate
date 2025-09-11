@@ -252,7 +252,7 @@
   background-color: var(--background-modifier-hover);
 }
 
-.typstmate-button-danger {
+.typstmate-button.typstmate-button-danger {
   color: var(--text-error);
   border-color: var(--background-modifier-error);
 }
@@ -304,18 +304,23 @@
 .typstmate-mt-1 {
   margin-top: 0.5em;
 }
+
 .typstmate-mt-2 {
   margin-top: 1em;
 }
+
 .typstmate-mb-1 {
   margin-bottom: 0.5em;
 }
+
 .typstmate-mb-2 {
   margin-bottom: 1em;
 }
+
 .typstmate-text-muted {
   color: var(--text-muted);
 }
+
 .typstmate-text-center {
   text-align: center;
 }
