@@ -49,6 +49,19 @@ tasks:
     desc: "build symbols file"
 
   release:
+    cmds:
+      - |
+        if [ "$(git branch --show-current)" = "main" ]; then
+          task release_ TYPE={{.TYPE}}
+        else
+          echo "Error: Not on main branch. Current branch: $(git branch --show-current)"
+          exit 1
+        fi
+    preconditions:
+      - sh: "[ {{.TYPE}} != '' ]"
+    desc: "e.g. task release TYPE=major | TYPE=minor | TYPE=patch | TYPE=mock"
+
+  release_:
     vars:
       tag:
         sh: "bun scripts/version.ts --type {{.TYPE}}"
@@ -60,6 +73,3 @@ tasks:
       - git push origin "{{.tag}}"
       - task wasm
       - task putstatic
-    preconditions:
-      - sh: "[ {{.TYPE}} != '' ]"
-    desc: "e.g. task release TYPE=major | TYPE=minor | TYPE=patch | TYPE=mock"
