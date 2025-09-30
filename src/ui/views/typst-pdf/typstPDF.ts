@@ -1,4 +1,5 @@
 import { loadPdfJs, type Menu, Notice, TextFileView, type TFile, type WorkspaceLeaf } from 'obsidian';
+import type { PDFDocumentProxy } from 'pdfjs-dist';
 
 import type ObsidianTypstMate from '@/main';
 
@@ -16,7 +17,7 @@ export class TypstPDFView extends TextFileView {
 
   fileContent?: string;
   pdfBinary?: Uint8Array;
-  pdfDocument: any;
+  pdfDocument?: PDFDocumentProxy | null;
   viewerState: PDFViewerState = {
     currentPage: 1,
     scrollTop: 0,
@@ -177,7 +178,7 @@ export class TypstPDFView extends TextFileView {
     prevButton.addEventListener('click', () => this.goToPreviousPage());
 
     this.pageInfoEl = this.controlsEl.createEl('span');
-    this.pageInfoEl.textContent = `Page ${this.viewerState.currentPage} of ${this.pdfDocument.numPages}`;
+    this.pageInfoEl.textContent = `Page ${this.viewerState.currentPage} of ${this.pdfDocument?.numPages}`;
 
     const nextButton = this.controlsEl.createEl('button', { text: '→' });
     nextButton.addEventListener('click', () => this.goToNextPage());
@@ -212,40 +213,7 @@ export class TypstPDFView extends TextFileView {
     if (!this.pageContainerEl) return;
 
     try {
-      this.pageContainerEl.empty();
-
-      for (let pageNumber = 1; pageNumber <= this.pdfDocument.numPages; pageNumber++) {
-        const pageDiv = this.pageContainerEl.createDiv('typstmate-pdf-page');
-        pageDiv.id = `pdf-page-${pageNumber}`;
-
-        const page = await this.pdfDocument.getPage(pageNumber);
-        const viewport = page.getViewport({ scale: this.viewerState.scale });
-
-        // キャンバスを作成
-        const canvas = pageDiv.createEl('canvas');
-        const context = canvas.getContext('2d', { alpha: false });
-        if (!context) continue;
-
-        // 画質の設定
-        const dpr = window.devicePixelRatio || 1;
-        canvas.width = viewport.width * dpr;
-        canvas.height = viewport.height * dpr;
-        canvas.style.width = `${viewport.width}px`;
-        canvas.style.height = `${viewport.height}px`;
-
-        context.scale(dpr, dpr);
-
-        const renderContext = {
-          canvasContext: context,
-          viewport: viewport,
-        };
-
-        await page.render(renderContext).promise;
-
-        // テキストレイヤーを作成
-        await this.renderTextLayer(page, pageDiv, viewport);
-      }
-
+      await this.renderAllPagesToContainer(this.pageContainerEl);
       this.updateControls();
     } catch (error) {
       console.error('Failed to render all PDF pages:', error);
@@ -282,7 +250,7 @@ export class TypstPDFView extends TextFileView {
   }
 
   private async goToNextPage(): Promise<void> {
-    if (this.viewerState.currentPage >= this.pdfDocument.numPages) return;
+    if (this.viewerState.currentPage >= this.pdfDocument!.numPages) return;
 
     this.viewerState.currentPage++;
     await this.scrollToPage(this.viewerState.currentPage);
@@ -311,7 +279,7 @@ export class TypstPDFView extends TextFileView {
 
   private updateControls(): void {
     if (this.pageInfoEl)
-      this.pageInfoEl.textContent = `Page ${this.viewerState.currentPage} of ${this.pdfDocument.numPages}`;
+      this.pageInfoEl.textContent = `Page ${this.viewerState.currentPage} of ${this.pdfDocument!.numPages}`;
     if (this.zoomInfoEl) this.zoomInfoEl.textContent = `${Math.round(this.viewerState.scale * 100)}%`;
   }
 
@@ -397,11 +365,11 @@ export class TypstPDFView extends TextFileView {
     try {
       container.empty();
 
-      for (let pageNumber = 1; pageNumber <= this.pdfDocument.numPages; pageNumber++) {
+      for (let pageNumber = 1; pageNumber <= this.pdfDocument!.numPages; pageNumber++) {
         const pageDiv = container.createDiv('typstmate-pdf-page');
         pageDiv.id = `pdf-page-${pageNumber}`;
 
-        const page = await this.pdfDocument.getPage(pageNumber);
+        const page = await this.pdfDocument!.getPage(pageNumber);
         const viewport = page.getViewport({ scale: this.viewerState.scale });
 
         // キャンバスを作成
