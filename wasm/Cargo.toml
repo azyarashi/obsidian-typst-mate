@@ -13,7 +13,6 @@ typst-svg = "0.13.1"
 typst-pdf = "0.13.1"
 typst-assets = { version = "0.13.1", features = ["fonts"] }
 typst-timing = "0.13.1"
-comemo = "^0"
 unscanny = "^0.1"
 
 mitex = "^0.2"

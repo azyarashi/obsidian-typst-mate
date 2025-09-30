@@ -22,6 +22,7 @@ export default class TypstManager {
   beforeKind?: ProcessorKind;
   beforeId?: string;
   beforeContent = '';
+  beforeCodeIndex = 0;
 
   constructor(plugin: ObsidianTypstMate) {
     this.plugin = plugin;
@@ -59,6 +60,7 @@ export default class TypstManager {
           }),
         ) ?? [],
     );
+    console.log(processors);
 
     // キャッシュ
     const sources: Map<string, Uint8Array> = new Map();
@@ -146,22 +148,29 @@ export default class TypstManager {
   }
 
   render(code: string, containerEl: Element, kind: string): HTMLElement {
+    let offset = 0;
     // プロセッサーを決定
     let processor: Processor;
     switch (kind) {
       case 'inline':
         // ? プラグイン No more flickering inline math との互換性のため
-        if (code.startsWith('{}') && code.endsWith('{}'))
+        if (code.startsWith('{}') && code.endsWith('{}')) {
+          offset -= code.at(2) === ' ' ? 3 : 2;
           code = code.slice(code.at(2) === ' ' ? 3 : 2, code.at(-3) === ' ' ? -3 : -2);
+        }
 
         processor =
           this.plugin.settings.processor.inline?.processors.find((p) => code.startsWith(`${p.id}:`)) ??
           DEFAULT_SETTINGS.processor.inline?.processors.at(-1)!;
-        if (processor.id.length !== 0) code = code.slice(processor.id.length + 1);
+        if (processor.id.length !== 0) {
+          offset -= 1;
+          code = code.slice(processor.id.length + 1);
+        }
 
         break;
       case 'display':
         code = code.replaceAll(/\n[\s\t]*> /g, '\n');
+        // TODO: offset -=
 
         processor =
           this.plugin.settings.processor.display?.processors.find((p) => code.startsWith(`${p.id}`)) ??
@@ -200,6 +209,7 @@ export default class TypstManager {
     typstSVGEl.kind = kind as ProcessorKind;
     typstSVGEl.source = code;
     typstSVGEl.processor = processor;
+    typstSVGEl.offset = offset;
     containerEl.appendChild(typstSVGEl);
     typstSVGEl.render();
 

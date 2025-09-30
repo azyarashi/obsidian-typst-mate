@@ -50,22 +50,6 @@ impl FileSlot {
         }
     }
 
-    pub fn set_source_result(&self, source: FileResult<Source>) {
-        *self.source.borrow_mut() = source.clone();
-        *self.bytes.borrow_mut() = Ok(Bytes::new(source.unwrap().text().as_bytes().to_vec()));
-    }
-
-    pub fn _set_bytes_result(&self, bytes: FileResult<Bytes>) {
-        *self.bytes.borrow_mut() = bytes.clone();
-        *self.source.borrow_mut() = match bytes {
-            Ok(bytes) => match std::str::from_utf8(&bytes) {
-                Ok(s) => Ok(Source::new(self.source().unwrap().id(), s.to_string())),
-                Err(_) => Err(FileError::InvalidUtf8),
-            },
-            Err(e) => Err(e),
-        }
-    }
-
     pub fn replace(&self, new: &str) {
         let mut source_mut = self.source.borrow_mut();
         if let Ok(source) = &mut *source_mut {

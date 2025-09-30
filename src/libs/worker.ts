@@ -6,7 +6,7 @@ import type { EditorPosition } from 'obsidian';
 import pako from 'pako';
 import untar from 'untar-sync';
 
-import init, { type InitOutput, Typst } from '../../pkg/typst_wasm.js';
+import init, { type DefinitionSer, type InitOutput, Typst } from '../../pkg/typst_wasm.js';
 
 let main: Main;
 
@@ -71,6 +71,14 @@ export default class $ {
 
   mitex(code: string): string {
     return this.typst.mitex(code);
+  }
+
+  autocomplete(cursor: number) {
+    return this.typst.autocomplete(cursor);
+  }
+
+  definition(cursor: number): DefinitionSer {
+    return this.typst.definition(cursor);
   }
 
   fetch(path: string) {

@@ -10,7 +10,7 @@ use typst::{
     foundations::Bytes,
     layout::PagedDocument,
     syntax::{
-        FileId, VirtualPath,
+        FileId, Side, VirtualPath,
         package::{PackageSpec, PackageVersion},
     },
     text::FontInfo,
@@ -24,8 +24,8 @@ mod utils;
 mod vfs;
 mod world;
 
-use crate::serde::{diagnostic, font, package, pdf, processor, svg};
-use crate::world::WasmWorld;
+use serde::{definition, diagnostic, font, package, pdf, processor, svg};
+use world::WasmWorld;
 
 #[wasm_bindgen]
 pub struct Typst {
@@ -33,6 +33,7 @@ pub struct Typst {
 
     last_kind: String,
     last_id: String,
+    last_document: Option<PagedDocument>,
 }
 
 #[wasm_bindgen]
@@ -47,6 +48,7 @@ impl Typst {
 
             last_kind: String::new(),
             last_id: String::new(),
+            last_document: None,
         }
     }
 
@@ -105,7 +107,7 @@ impl Typst {
         // プロセッサー
         for p in procs_serde {
             self.world.add_file_text(
-                VirtualPath::new(format!("{}--{}.typ", p.kind, p.id)),
+                VirtualPath::new(format!("{}_{}.typ", p.kind, p.id)),
                 p.format,
             );
         }
@@ -139,6 +141,7 @@ impl Typst {
         to_value(&infos).unwrap()
     }
 
+    // ? ちらつき防止のためカーソルの親括弧の計算は TS 側でする
     pub fn find_bracket_pairs(&mut self, code: &str) -> JsValue {
         let tokens = lexer::bracket::bracket_lexer(code);
         let pairs = parser::bracket::paren_parse(&tokens);
@@ -148,8 +151,6 @@ impl Typst {
         to_value(&pairs_ser).unwrap()
     }
 
-    // ? ちらつき防止のためカーソルの親括弧の計算は TS 側でする
-
     pub fn mitex(&mut self, code: &str) -> Result<JsValue, JsValue> {
         match convert_math(code, None) {
             Ok(result) => Ok(JsValue::from_str(&result)),
@@ -158,17 +159,17 @@ impl Typst {
     }
 
     fn update_source(&mut self, vpath: VirtualPath, code: &str) {
-        let result = self.world.source(FileId::new(None, vpath.clone()));
+        let file_id = FileId::new(None, vpath.clone());
+        let result = self.world.source(file_id);
 
         match result {
-            Ok(mut source) => {
-                source.replace(code);
-                self.world.set_main(source);
+            Ok(_source) => {
+                self.world.set_main(file_id);
+                self.world.replace(code);
             }
             Err(_e) => {
                 self.world.add_file_text(vpath.clone(), code.into());
-                self.world
-                    .set_main(self.world.source(FileId::new(None, vpath)).unwrap());
+                self.world.set_main(file_id);
             }
         }
     }
@@ -180,7 +181,7 @@ impl Typst {
             self.last_kind = kind.to_string();
             self.last_id = id.to_string();
 
-            self.update_source(VirtualPath::new(format!("{}--{}.typ", kind, id)), code);
+            self.update_source(VirtualPath::new(format!("{}_{}.typ", kind, id)), code);
         }
 
         let Warned { output, warnings } = typst::compile::<PagedDocument>(&mut self.world);
@@ -190,6 +191,7 @@ impl Typst {
                 if document.pages.is_empty() {
                     return Err(JsValue::from_str("document has no pages"));
                 }
+                self.last_document = Some(document.clone());
 
                 // ? typst_svg::svg は背景が透過しない
                 let svg = typst_svg::svg_frame(&document.pages[0].frame)
@@ -213,6 +215,11 @@ impl Typst {
 
         match output {
             Ok(mut document) => {
+                if document.pages.is_empty() {
+                    return Err(JsValue::from_str("document has no pages"));
+                }
+                self.last_document = Some(document.clone());
+
                 document.info.title.get_or_insert_with(|| filename.into());
                 let options = PdfOptions::default();
 
@@ -235,5 +242,39 @@ impl Typst {
                 Err(to_value(&diags).unwrap())
             }
         }
+    }
+
+    pub fn autocomplete(&mut self, cursor: usize) -> JsValue {
+        let source = self.world.source(self.world.main()).unwrap();
+        let byte_idx = source.utf16_to_byte(cursor).unwrap();
+
+        let result = typst_ide::autocomplete(
+            &self.world,
+            self.last_document.as_ref(),
+            &source,
+            byte_idx,
+            false,
+        );
+
+        to_value(&result).unwrap()
+    }
+
+    pub fn definition(&mut self, cursor: usize) -> JsValue {
+        let source = self.world.source(self.world.main()).unwrap();
+        let byte_idx = source.utf16_to_byte(cursor).unwrap();
+
+        let tokens = typst_ide::definition(
+            &self.world,
+            self.last_document.as_ref(),
+            &source,
+            byte_idx,
+            Side::Before,
+        );
+
+        let tokens_ser: Option<definition::DefinitionSer> = tokens
+            .as_ref()
+            .map(|def| definition::DefinitionSer::from_def_with_world(def, &self.world));
+
+        to_value(&tokens_ser).unwrap()
     }
 }

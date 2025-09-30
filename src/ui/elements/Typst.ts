@@ -7,6 +7,8 @@ export default class TypstElement extends HTMLElement {
   kind!: ProcessorKind;
   source!: string;
   processor!: Processor;
+  offset!: number;
+  autoWidthOffset = 0;
 
   renderingFormat!: 'svg';
 
@@ -17,15 +19,15 @@ export default class TypstElement extends HTMLElement {
 
     try {
       const result = this.plugin.typst.svg(input, this.kind, this.processor.id);
-
+      this.autoWidthOffset = 0;
       if (result instanceof Promise) {
         if (this.kind !== 'inline' && this.processor.fitToParentWidth && !this.source.includes('<br>'))
           this.plugin.observer.register(
             this,
             (entry: ResizeObserverEntry) => {
-              const input =
-                `#let WIDTH = ${(entry.contentRect.width * 3) / 4}pt\n` +
-                this.format().replace('width: auto', 'width: WIDTH');
+              const widthText = `#let WIDTH = ${(entry.contentRect.width * 3) / 4}pt\n`;
+              this.autoWidthOffset = widthText.length + 1;
+              const input = widthText + this.format().replace('width: auto', 'width: WIDTH');
 
               const result = this.plugin.typst.svg(input, this.kind, this.processor.id) as Promise<SVGResult>;
 
@@ -52,6 +54,13 @@ export default class TypstElement extends HTMLElement {
   format() {
     let formatted = this.processor.format.replace('{CODE}', this.source);
     formatted = this.processor.noPreamble ? formatted : `${this.plugin.settings.preamble}\n${formatted}`;
+    this.plugin.typstManager.beforeCodeIndex =
+      (this.processor.noPreamble ? 0 : this.plugin.settings.preamble.length + 1) +
+      this.processor.format.indexOf('{CODE}') -
+      this.processor.id.length +
+      this.offset +
+      this.autoWidthOffset;
+    console.log(formatted.length, this.plugin.typstManager.beforeCodeIndex);
 
     if (this.kind === 'display') formatted = formatted.replaceAll('<br>', '\n');
 

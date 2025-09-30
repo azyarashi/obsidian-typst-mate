@@ -1,6 +1,6 @@
 import { type ChangeSet, Prec } from '@codemirror/state';
 import { EditorView } from '@codemirror/view';
-import { type Editor, type EditorPosition, MarkdownView, type WorkspaceLeaf } from 'obsidian';
+import { type Debouncer, debounce, type Editor, type EditorPosition, MarkdownView, type WorkspaceLeaf } from 'obsidian';
 
 import type { BracketPair } from '@/libs/worker';
 import type ObsidianTypstMate from '@/main';
@@ -27,6 +27,7 @@ export class EditorHelper {
   private inlinePreviewEl: InlinePreviewElement;
   private snippetSuggestEl: SnippetSuggestElement;
   private symbolSuggestEl: SymbolSuggestElement;
+  mouseMoveDebounce: Debouncer<[event?: MouseEvent], void>;
 
   constructor(plugin: ObsidianTypstMate) {
     this.plugin = plugin;
@@ -59,11 +60,40 @@ export class EditorHelper {
         }
       }),
     );
+
+    this.mouseMoveDebounce = debounce(
+      (event?: MouseEvent) => {
+        if (!event) return;
+        if (!this.editor) return;
+        if (!this.mathObject) return;
+
+        const cursorPos = this.editor.posAtMouse(event);
+        const cursorOffset = this.editor.posToOffset(cursorPos);
+        const relativeOffset = cursorOffset - this.mathObject.startOffset;
+        if (relativeOffset <= 0 || this.mathObject.content.length <= relativeOffset) return;
+
+        const offset = relativeOffset + this.plugin.typstManager.beforeCodeIndex + 1;
+        const result = this.plugin.typst.definition(offset);
+
+        if (result instanceof Promise) {
+          result.then((result) => {
+            console.log(result);
+          });
+        } else {
+          console.log(result);
+        }
+      },
+      1000,
+      true,
+    );
+    const mouseMoveDebounce = this.mouseMoveDebounce;
+
     this.plugin.registerEditorExtension(
       Prec.high(
         EditorView.domEventHandlers({
-          // TODO: Tooltip
-          /*mousemove: (e) => {},*/
+          mousemove(event, _view) {
+            mouseMoveDebounce(event);
+          },
           // インラインプレビューの非表示
           mousedown: (e) => {
             if (this.inlinePreviewEl.style.display !== 'none') this.inlinePreviewEl.onClick(e);
@@ -126,6 +156,7 @@ export class EditorHelper {
     } else this.updateMathObject(offset);
     if (!this.mathObject) return;
 
+    this.mouseMoveDebounce();
     await this.updateBracketPairsInMathObject();
     this.updateHighlightsOnBracketPairs();
 
@@ -176,6 +207,17 @@ export class EditorHelper {
       const match = textBeforeCursor.match(symbolRegex);
       if (match) {
         if (match.groups?.symbol === undefined) return true;
+
+        /*const result = this.plugin.typst.autocomplete(
+          offset - this.mathObject!.startOffset + this.plugin.typstManager.beforeCodeIndex + 1,
+        );
+        if (result instanceof Promise) {
+          result.then((result) => {
+            console.log(result[1].filter((s) => s.label.startsWith(match.groups!.symbol!)));
+          });
+        } else {
+          console.log(result[1].filter((s) => s.label.startsWith(match.groups!.symbol!)));
+        }*/
 
         this.symbolSuggestEl.suggest(match.groups.symbol, cursor);
         return true;
@@ -328,6 +370,12 @@ export class EditorHelper {
       this.updateMathObject(offset);
       if (!this.mathObject) return null;
 
+      // @ts-expect-error
+      window.MathJax?.tex2chtml(this.mathObject.content, {
+        // @ts-expect-error
+        display: this.mathObject.kind === 'display',
+      });
+      this.mouseMoveDebounce();
       await this.updateBracketPairsInMathObject();
       this.updateHighlightsOnBracketPairs();
       return;
@@ -340,6 +388,10 @@ export class EditorHelper {
       this.updateMathObject(offset);
       if (!this.mathObject) return null;
 
+      window.MathJax?.tex2chtml(this.mathObject.content, {
+        display: this.mathObject.kind === 'display',
+      });
+      this.mouseMoveDebounce();
       await this.updateBracketPairsInMathObject();
       this.updateHighlightsOnBracketPairs();
       return;

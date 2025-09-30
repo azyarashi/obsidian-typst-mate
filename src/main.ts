@@ -7,6 +7,7 @@ import {
   debounce,
   type EventRef,
   loadMathJax,
+  MenuItem,
   Notice,
   Platform,
   Plugin,
