@@ -81,6 +81,10 @@ export default class $ {
     return this.typst.definition(cursor);
   }
 
+  highlight(start: number, end: number) {
+    return this.typst.highlight(start, end);
+  }
+
   fetch(path: string) {
     if (map.has(path)) {
       const v = map.get(path);

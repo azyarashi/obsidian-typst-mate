@@ -156,6 +156,15 @@ export class EditorHelper {
     } else this.updateMathObject(offset);
     if (!this.mathObject) return;
 
+    const result = this.plugin.typst.highlight(this.mathObject.startOffset, offset);
+    if (result instanceof Promise) {
+      result.then((result) => {
+        console.log(result);
+      });
+    } else {
+      console.log(result);
+    }
+
     this.mouseMoveDebounce();
     await this.updateBracketPairsInMathObject();
     this.updateHighlightsOnBracketPairs();
