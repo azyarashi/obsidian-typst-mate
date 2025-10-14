@@ -1,7 +1,7 @@
 use serde::Serialize;
 use tsify::Tsify;
 
-use typst::foundations::Version;
+use crate::typst::foundations::Version;
 
 #[derive(Serialize, Tsify)]
 pub struct VersionSer {

@@ -5,17 +5,20 @@ use rustc_hash::{FxHashMap, FxHashSet};
 use send_wrapper::SendWrapper;
 use wasm_bindgen::{JsCast, JsValue};
 
-use typst::{
+#[cfg(feature = "rc")]
+use crate::typst::LibraryExt;
+use crate::typst::{
     Library, World,
     diag::{FileError, FileResult, PackageError},
-    foundations::{Bytes, Content, Datetime, Style, Value},
+    ecow::EcoString,
+    foundations::{Bytes, Content, Datetime, Property, Style, Value},
     layout::Abs,
     syntax::{FileId, Source, VirtualPath, package::PackageSpec},
     text::{Font, FontBook, TextElem},
     utils::LazyHash,
     visualize::{Color, Paint},
 };
-use typst_ide::IdeWorld;
+use crate::typst_ide::IdeWorld;
 
 use crate::vfs::FileSlot;
 
@@ -41,7 +44,7 @@ impl WasmWorld {
         // フォントを登録
         let mut book = LazyHash::new(FontBook::new());
         let mut fonts = Vec::new();
-        for data in typst_assets::fonts() {
+        for data in crate::typst_assets::fonts() {
             for font in Font::iter(Bytes::new(data)) {
                 book.push(font.info().clone());
                 fonts.push(font);
@@ -56,7 +59,12 @@ impl WasmWorld {
         // 値 `CURSOR` を定義
         let cursor_elem = TextElem::new("▮".into());
         let cursor_paint = Paint::Solid(Color::from_str("#44f").unwrap());
+
+        #[cfg(feature = "stable")]
         let cursor_style = Style::Property(TextElem::set_fill(cursor_paint));
+        #[cfg(feature = "rc")]
+        let cursor_style = Style::Property(Property::new(TextElem::fill, cursor_paint));
+
         let cursor_val = Value::Content(Content::new(cursor_elem).styled(cursor_style));
         // グローバル定義に追加
         library.global.scope_mut().define("fontsize", fontsize_val);
@@ -243,7 +251,7 @@ impl IdeWorld for WasmWorld {
         self
     }
 
-    fn packages(&self) -> &[(PackageSpec, Option<typst::ecow::EcoString>)] {
+    fn packages(&self) -> &[(PackageSpec, Option<EcoString>)] {
         &[]
     }
 

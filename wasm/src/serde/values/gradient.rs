@@ -1,7 +1,7 @@
 use serde::Serialize;
 use tsify::Tsify;
 
-use typst::{foundations::Repr, visualize::Gradient};
+use crate::typst::{foundations::Repr, visualize::Gradient};
 
 // TODO
 #[derive(Serialize, Tsify)]

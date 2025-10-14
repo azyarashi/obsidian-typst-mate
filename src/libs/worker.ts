@@ -49,6 +49,10 @@ export default class $ {
     return this.typst.svg(code, kind, id);
   }
 
+  html(code: string, kind: string, id: string): HTMLResult {
+    return this.typst.html(code, kind, id);
+  }
+
   pdf(filename: string, code: string): PDFResult {
     return this.typst.pdf(filename, code);
   }
@@ -81,8 +85,12 @@ export default class $ {
     return this.typst.definition(cursor);
   }
 
-  highlight(start: number, end: number) {
-    return this.typst.highlight(start, end);
+  resetHighlights() {
+    this.typst.reset_highlights();
+  }
+
+  highlight(raw_offset: number, start_offset: number, end_offset: number, cursor_offset: number) {
+    return this.typst.highlight(raw_offset, start_offset, end_offset, cursor_offset);
   }
 
   fetch(path: string) {
@@ -224,10 +232,8 @@ export interface PackageSpec {
 
 export interface Diagnostic {
   severity: number;
-  span: {
-    start: number;
-    end: number;
-  };
+  from: number;
+  to: number;
   message: string;
   trace: {
     span: {
@@ -239,14 +245,20 @@ export interface Diagnostic {
   hints: string[];
 }
 
-export interface SVGResult {
-  svg: string;
+export interface Result {
   diags: Diagnostic[];
 }
 
-export interface PDFResult {
+export interface SVGResult extends Result {
+  svg: string;
+}
+
+export interface HTMLResult extends Result {
+  html: string;
+}
+
+export interface PDFResult extends Result {
   pdf: Uint8Array;
-  diags: Diagnostic[];
 }
 
 export interface BracketPair {

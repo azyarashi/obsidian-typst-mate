@@ -4,8 +4,8 @@ use serde::Serialize;
 use tsify::Tsify;
 use wasm_bindgen::prelude::wasm_bindgen;
 
-use typst::WorldExt;
-use typst_ide::Definition;
+use crate::typst::{World, WorldExt};
+use crate::typst_ide::Definition;
 
 use crate::serde::values::ValueSer;
 
@@ -26,7 +26,7 @@ pub struct SpanSer {
 impl DefinitionSer {
     pub fn from_def_with_world<W>(def: &Definition, world: &W) -> Self
     where
-        W: typst::World,
+        W: World,
     {
         match def {
             Definition::Std(value) => DefinitionSer::Std(ValueSer::from(value)),
@@ -35,8 +35,21 @@ impl DefinitionSer {
                 let content = source.text().to_string();
 
                 let range = world.range(*span).unwrap_or(Range { start: 0, end: 0 });
-                let start = source.byte_to_utf16(range.start).unwrap_or(0);
-                let end = source.byte_to_utf16(range.end).unwrap_or(0);
+
+                #[cfg(feature = "stable")]
+                let (start, end) = {
+                    let start = source.byte_to_utf16(range.start).unwrap_or(0);
+                    let end = source.byte_to_utf16(range.end).unwrap_or(0);
+                    (start, end)
+                };
+
+                #[cfg(feature = "rc")]
+                let (start, end) = {
+                    let lines = source.lines();
+                    let start = lines.byte_to_utf16(range.start).unwrap_or(0);
+                    let end = lines.byte_to_utf16(range.end).unwrap_or(0);
+                    (start, end)
+                };
 
                 DefinitionSer::Span(SpanSer {
                     content,

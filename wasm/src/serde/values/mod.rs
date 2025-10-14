@@ -1,7 +1,7 @@
 use serde::Serialize;
 use tsify::Tsify;
 
-use typst::foundations::Value;
+use crate::typst::foundations::Value;
 
 pub mod angle;
 pub mod args;

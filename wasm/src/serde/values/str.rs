@@ -1,7 +1,7 @@
 use serde::Serialize;
 use tsify::Tsify;
 
-use typst::foundations::Str;
+use crate::typst::foundations::Str;
 
 #[derive(Serialize, Tsify)]
 pub struct StrSer {

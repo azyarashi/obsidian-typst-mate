@@ -1,7 +1,7 @@
 use serde::Serialize;
 use tsify::Tsify;
 
-use typst::layout::Length;
+use crate::typst::layout::Length;
 
 #[derive(Serialize, Tsify)]
 pub struct LengthSer {

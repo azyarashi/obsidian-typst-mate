@@ -1,5 +1,7 @@
 use serde::Serialize;
 
+use crate::typst::syntax::SyntaxKind::{LeftBrace, LeftBracket, LeftParen};
+
 use crate::lexer::bracket::CharPos;
 use crate::parser::bracket::BracketPair;
 
@@ -20,9 +22,9 @@ impl From<&BracketPair> for BracketPairSer {
     fn from(pair: &BracketPair) -> Self {
         BracketPairSer {
             kind: match pair.kind {
-                typst::syntax::SyntaxKind::LeftParen => "paren".into(),
-                typst::syntax::SyntaxKind::LeftBracket => "bracket".into(),
-                typst::syntax::SyntaxKind::LeftBrace => "brace".into(),
+                LeftParen => "paren".into(),
+                LeftBracket => "bracket".into(),
+                LeftBrace => "brace".into(),
                 _ => "unknown".into(),
             },
 

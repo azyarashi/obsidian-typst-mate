@@ -34,20 +34,19 @@ export default defineConfig(async ({ mode }) => {
         },
         external: [
           'obsidian',
+
           'electron',
+          'i18next',
+
           '@codemirror/autocomplete',
-          '@codemirror/collab',
           '@codemirror/commands',
-          '@codemirror/language',
           '@codemirror/lint',
+          '@codemirror/merge',
           '@codemirror/search',
           '@codemirror/state',
           '@codemirror/view',
-          '@lezer/common',
-          '@lezer/highlight',
-          '@lezer/lr',
+
           '@excalidraw/excalidraw',
-          'i18next',
           'obsidian-excalidraw-plugin',
           '@zsviczian/excalidraw',
           ...builtinModules,

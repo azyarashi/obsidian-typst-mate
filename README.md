@@ -1,7 +1,7 @@
 # Typst Mate
 
 <a href="https://obsidian.md/">
-  <img alt="Obsidian Plugin" src="https://img.shields.io/badge/available%20on%20mobile-a78bfa?logo=obsidian&logoColor=white" />
+  <img alt="Obsidian Plugin" src="https://img.shields.io/badge/Desktop%20%26%20Mobile-a78bfa?logo=obsidian&logoColor=white" />
 </a>
 <a href="https://typst.app/docs/changelog/">
   <img alt="Typst Version" src="https://img.shields.io/badge/0.13.1-239dad?logo=typst&logoColor=white" />

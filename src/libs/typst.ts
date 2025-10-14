@@ -1,10 +1,10 @@
 import { Notice } from 'obsidian';
 
 import { DEFAULT_FONT_SIZE } from '@/constants';
-import InlinePreviewElement from '@/core/editor/elements/InlinePreview';
-import SnippetSuggestElement from '@/core/editor/elements/SnippetSuggest';
-import SymbolSuggestElement from '@/core/editor/elements/SymbolSuggest';
-import { DEFAULT_SETTINGS } from '@/core/settings/settings';
+import InlinePreviewElement from '@/core/mdEditor/elements/InlinePreview';
+import SnippetSuggestElement from '@/core/mdEditor/elements/SnippetSuggest';
+import SymbolSuggestElement from '@/core/mdEditor/elements/SymbolSuggest';
+import { DEFAULT_SETTINGS } from '@/data/settings';
 import type ObsidianTypstMate from '@/main';
 import TypstSVGElement from '@/ui/elements/SVG';
 import { overwriteCustomElements } from '@/utils/custromElementRegistry';
@@ -60,7 +60,6 @@ export default class TypstManager {
           }),
         ) ?? [],
     );
-    console.log(processors);
 
     // キャッシュ
     const sources: Map<string, Uint8Array> = new Map();
@@ -92,8 +91,10 @@ export default class TypstManager {
 
           const waitingElements = document.querySelectorAll('.typstmate-waiting');
           for (const el of waitingElements) {
+            const content = el.textContent ?? '';
             el.empty();
-            this.render(el.textContent!, el, el.getAttribute('kind')!);
+
+            this.render(content, el, el.getAttribute('kind')!);
           }
         });
       } else this.ready = true;

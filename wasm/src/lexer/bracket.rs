@@ -1,6 +1,6 @@
 use serde::Serialize;
 
-use typst::syntax::SyntaxKind;
+use crate::typst::syntax::SyntaxKind;
 
 use crate::utils::char_position::precompute_char_positions;
 

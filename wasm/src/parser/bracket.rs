@@ -1,4 +1,4 @@
-use typst::syntax::SyntaxKind;
+use crate::typst::syntax::SyntaxKind;
 
 use crate::lexer::bracket::BracketToken;
 

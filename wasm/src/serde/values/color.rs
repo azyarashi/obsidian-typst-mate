@@ -1,7 +1,7 @@
 use serde::Serialize;
 use tsify::Tsify;
 
-use typst::visualize::Color;
+use crate::typst::visualize::Color;
 
 #[derive(Serialize, Tsify)]
 pub struct ColorSer {

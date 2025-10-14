@@ -2,7 +2,7 @@ import { type EditorPosition, Notice } from 'obsidian';
 
 import type { Snippet } from '@/libs/snippet';
 import type ObsidianTypstMate from '@/main';
-import type { PopupPosition } from '../editor';
+import type { Position } from '../editor';
 
 import './snippet-suggest.css';
 
@@ -62,7 +62,7 @@ export default class SnippetSuggestElement extends HTMLElement {
     this.render(position);
   }
 
-  private render(position: PopupPosition) {
+  private render(position: Position) {
     this.style.setProperty('--preview-left', `${position.x}px`);
     this.style.setProperty('--preview-top', `${position.y}px`);
 

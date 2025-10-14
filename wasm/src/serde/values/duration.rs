@@ -1,7 +1,7 @@
 use serde::Serialize;
 use tsify::Tsify;
 
-use typst::foundations::Duration;
+use crate::typst::foundations::Duration;
 
 #[derive(Serialize, Tsify)]
 pub struct DurationSer {

@@ -1,13 +1,11 @@
-import type { EditorPosition } from 'obsidian';
-
 import type ObsidianTypstMate from '@/main';
 import { type SymbolData, searchSymbols } from '@/utils/symbolSearcher';
-import type { PopupPosition } from '../editor';
 
 import './symbol-suggest.css';
+import type { Position } from 'md@/index';
+import type { EditorPosition } from 'obsidian';
 
-export const symbolRegex =
-  /(?:^| |\$|\(|\)|\[|\]|\{|\}|<|>|\+|-|\/|\*|=|!|\?|#|%|&|'|:|;|,|\d)(?<symbol>\\?([a-zA-Z.][a-zA-Z.]+|[-<>|=[\]~:-][-<>|=[\]~:-]+))$/;
+export const symbolRegex = /(?<symbol>\\?([a-zA-Z.][a-zA-Z.]+|[-<>|=[\]~:-][-<>|=[\]~:-]+))$/;
 
 export default class SymbolSuggestElement extends HTMLElement {
   plugin!: ObsidianTypstMate;
@@ -41,11 +39,12 @@ export default class SymbolSuggestElement extends HTMLElement {
     };
 
     const position = this.plugin.editorHelper.calculatePopupPosition(this.queryPos, cursorPos);
+    if (!position) return;
 
     this.render(position, query.at(0) === '\\');
   }
 
-  private render(position: PopupPosition, latex: boolean) {
+  private render(position: Position, latex: boolean) {
     this.prevEl = document.activeElement as HTMLElement;
     this.style.setProperty('--preview-left', `${position.x}px`);
     this.style.setProperty('--preview-top', `${position.y}px`);

@@ -1,7 +1,7 @@
 use serde::Serialize;
 use tsify::Tsify;
 
-use typst::foundations::Label;
+use crate::typst::foundations::Label;
 
 #[derive(Serialize, Tsify)]
 pub struct LabelSer {

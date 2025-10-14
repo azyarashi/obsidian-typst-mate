@@ -1,6 +1,6 @@
 use serde::Serialize;
 
-use typst::text::{FontInfo, FontStyle};
+use crate::typst::text::{FontInfo, FontStyle};
 
 #[derive(Serialize)]
 pub struct FontVariantSer {

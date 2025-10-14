@@ -1,7 +1,7 @@
 use serde::Serialize;
 use tsify::Tsify;
 
-use typst::foundations::Type;
+use crate::typst::foundations::Type;
 
 #[derive(Serialize, Tsify)]
 pub struct TypeSer {

@@ -1,7 +1,7 @@
 use serde::Serialize;
 use tsify::Tsify;
 
-use typst::layout::Ratio;
+use crate::typst::layout::Ratio;
 
 #[derive(Serialize, Tsify)]
 pub struct RatioSer {

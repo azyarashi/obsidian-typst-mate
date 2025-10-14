@@ -1,7 +1,7 @@
 use serde::Serialize;
 use tsify::Tsify;
 
-use typst::foundations::Datetime;
+use crate::typst::foundations::Datetime;
 
 #[derive(Serialize, Tsify)]
 pub struct DatetimeSer {

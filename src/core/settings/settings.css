@@ -313,3 +313,68 @@
 .typstmate-text-center {
   text-align: center;
 }
+
+/* タブスタイリング */
+.typstmate-settings-tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 1.5em;
+  border-bottom: 1px solid var(--background-modifier-border);
+  padding-bottom: 4px;
+}
+
+.typstmate-tab-button {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border: 1px solid transparent;
+  border-radius: 6px 6px 0 0;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-size: 0.9em;
+  font-weight: 500;
+}
+
+.typstmate-tab-button:hover {
+  background-color: var(--background-modifier-hover);
+  color: var(--text-normal);
+}
+
+.typstmate-tab-button.active {
+  background-color: var(--background-primary);
+  border-color: var(--background-modifier-border);
+  border-bottom-color: var(--background-primary);
+  color: var(--text-normal);
+  box-shadow: 0 1px 0 var(--background-primary);
+  position: relative;
+}
+
+.typstmate-tab-button.active::after {
+  content: "";
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: var(--background-primary);
+}
+
+.typstmate-tab-icon {
+  font-size: 0.9em;
+  opacity: 0.7;
+}
+
+.typstmate-tab-button.active .typstmate-tab-icon {
+  opacity: 1;
+}
+
+.typstmate-tab-text {
+  white-space: nowrap;
+}
+
+.typstmate-settings-content {
+  padding: 0.5em 0;
+}

@@ -16,13 +16,15 @@ import {
   type WorkspaceLeaf,
 } from 'obsidian';
 import { tex2typst, typst2tex } from 'tex2typst';
-import { EditorHelper } from './core/editor/editor';
-import { DEFAULT_SETTINGS, type Settings, SettingTab } from './core/settings/settings';
-import ExcalidrawPlugin from './extensions/excalidraw';
+
+import { EditorHelper } from './core/mdEditor';
+import { SettingTab } from './core/settings';
+import { DEFAULT_SETTINGS, type Settings } from './data/settings';
 import TypstManager from './libs/typst';
 import type $ from './libs/worker';
 import Typst from './libs/worker';
 import TypstWorker from './libs/worker?worker&inline';
+import ExcalidrawPlugin from './plugins/excalidraw';
 import { ExcalidrawModal } from './ui/modals/excalidraw';
 import { TypstPDFView } from './ui/views/typst-pdf/typstPDF';
 import { TypstTextView } from './ui/views/typst-text/typstText';
@@ -37,6 +39,7 @@ export default class ObsidianTypstMate extends Plugin {
   pluginId = 'typst-mate';
   settings!: Settings;
 
+  wasmPath!: string;
   baseDirPath!: string;
   fontsDirNPath!: string; // ? NPath ... Obsidian 用に Normalized された Path
   cachesDirNPath!: string;
@@ -64,6 +67,11 @@ export default class ObsidianTypstMate extends Plugin {
 
   override async onload() {
     await this.loadSettings(); // ユーザーの設定 (data.json) を読み込む
+    Object.keys(DEFAULT_SETTINGS).forEach((key) => {
+      if (this.settings[key as keyof Settings] === undefined)
+        // @ts-expect-error
+        this.settings[key as keyof Settings] = DEFAULT_SETTINGS[key as keyof Settings];
+    });
 
     const { app } = this;
     const vault = app.vault;
@@ -83,7 +91,7 @@ export default class ObsidianTypstMate extends Plugin {
     // マニフェストの読み込みと Wasm のパスを設定
     const manifestPath = `${this.pluginDirNPath}/manifest.json`;
     const version = JSON.parse(await adapter.read(manifestPath)).version;
-    const wasmPath = `${this.pluginDirNPath}/typst-${version}.wasm`;
+    this.wasmPath = `${this.pluginDirNPath}/typst-${version}.wasm`;
 
     // 必要なディレクトリの作成
     await this.tryCreateDirs();
@@ -91,11 +99,11 @@ export default class ObsidianTypstMate extends Plugin {
     this.connectOtherPlugins();
 
     // Wasm の準備
-    if (!(await adapter.exists(wasmPath))) await this.downloadWasm(wasmPath, version);
+    if (!(await adapter.exists(this.wasmPath))) await this.downloadWasm(version);
     // MathJax を読み込む
     await this.prepareMathJax();
     // TypstManager を設定する
-    await this.prepareTypst(wasmPath);
+    await this.prepareTypst();
 
     // ? Obsidian の起動時間を短縮するため setTimeout を使用
     this.app.workspace.onLayoutReady(() => {
@@ -171,10 +179,10 @@ export default class ObsidianTypstMate extends Plugin {
     this.originalTex2chtml = window.MathJax.tex2chtml; // ? Plugin を unload したときに戻すため。Fallback 処理のため。
   }
 
-  private async prepareTypst(wasmPath: string) {
+  private async prepareTypst() {
     this.observer = new Observer();
     this.typstManager = new TypstManager(this);
-    await this.init(wasmPath).catch((err) => {
+    await this.init(this.wasmPath).catch((err) => {
       console.error(err);
       new Notice(
         'Failed to initialize Typst. Please check that the processor ID does not contain any symbols, try clearing the package cache, and ensure that there are no invalid fonts installed.',
@@ -183,7 +191,7 @@ export default class ObsidianTypstMate extends Plugin {
     this.typstManager.registerOnce();
   }
 
-  private async downloadWasm(wasmPath: string, version: string) {
+  private async downloadWasm(version: string) {
     new Notice('Downloading latest wasm...');
 
     // 古い Wasm を削除する
@@ -197,7 +205,7 @@ export default class ObsidianTypstMate extends Plugin {
     const releaseResponse = await requestUrl(releaseUrl);
     const releaseData = (await releaseResponse.json) as { assets: GitHubAsset[] };
     const asset = releaseData.assets.find((asset) => asset.name === `typst-${version}.wasm`);
-    if (!asset) throw new Error(`Could not find ${wasmPath} in release assets`);
+    if (!asset) throw new Error(`Could not find ${this.wasmPath} in release assets`);
 
     // Wasm をダウンロードする
     const response = await requestUrl({
@@ -205,7 +213,7 @@ export default class ObsidianTypstMate extends Plugin {
       headers: { Accept: 'application/octet-stream' },
     });
     const data = response.arrayBuffer;
-    await this.app.vault.adapter.writeBinary(wasmPath, data);
+    await this.app.vault.adapter.writeBinary(this.wasmPath, data);
 
     new Notice('Wasm downloaded!');
   }
@@ -284,17 +292,38 @@ export default class ObsidianTypstMate extends Plugin {
       },
     });
 
+    /*
     this.addCommand({
       id: 'typst-box-current-equation',
       name: 'Box current equation',
-      editorCallback: this.editorHelper.boxCurrentEquation.bind(this.editorHelper),
+      editorCallback: (editor) => {
+        this.editorHelper.editor = editor;
+        const inlineMathObject = this.editorHelper.extractInlineMathObjectInsideDollarOutsideCursor(
+          editor.posToOffset(editor.getCursor()),
+        );
+        if (!inlineMathObject) return;
+        this.editorHelper.replaceWithLength(
+          `box(${inlineMathObject.content})`,
+          inlineMathObject.startPos,
+          inlineMathObject.content.length,
+        );
+      },
     });
 
     this.addCommand({
       id: 'typst-select-current-equation',
       name: 'Select current equation',
-      editorCallback: this.editorHelper.selectCurrentEquation.bind(this.editorHelper),
+      editorCallback: (editor) => {
+        const mathObject =
+          this.editorHelper.extractInlineMathObjectInsideDollarOutsideCursor(editor.posToOffset(editor.getCursor())) ??
+          this.editorHelper.extractDisplayMathObjectInsideTwoDollarsOutsideCursor(
+            editor.posToOffset(editor.getCursor()),
+          );
+        if (!mathObject) return;
+        editor.setSelection(mathObject.startPos, mathObject.endPos);
+      },
     });
+    */
 
     if (this.excalidrawPluginInstalled) {
       this.addCommand({
@@ -312,6 +341,60 @@ export default class ObsidianTypstMate extends Plugin {
       this.app.workspace.on('css-change', this.applyBaseColor.bind(this)),
       this.app.workspace.on('active-leaf-change', this.editorHelper.onActiveLeafChange.bind(this.editorHelper)),
       this.app.workspace.on('leaf-menu', (menu, leaf) => {
+        if (leaf.view.getViewType() === 'markdown') {
+          const pdfItems = menu.items
+            .filter((item) => item instanceof MenuItem)
+            .filter((item) => item.titleEl?.innerText.toLowerCase().includes('pdf'));
+
+          pdfItems.forEach((pdfItem) => {
+            const defaultAction = pdfItem.callback ?? (() => {});
+            const beforeBaseColor = this.baseColor;
+            const beforeEnableBackgroundRendering = this.settings.enableBackgroundRendering;
+
+            let disconnected = false;
+            const observer = new MutationObserver(async (mutations) => {
+              for (const m of mutations) {
+                if (!m.removedNodes.length) return;
+                if (document.querySelector('div.modal') || document.querySelector('div.progress-bar-container')) return;
+                observer.disconnect();
+                clearTimeout(id);
+                disconnected = true;
+
+                // postprocess
+                this.baseColor = beforeBaseColor;
+                if (beforeEnableBackgroundRendering) {
+                  this.settings.enableBackgroundRendering = true;
+                  await this.init(this.wasmPath);
+                }
+              }
+            });
+
+            let id: NodeJS.Timeout;
+            pdfItem.callback = async () => {
+              // preprocess
+              if (this.settings.patchPDFExport) this.baseColor = this.settings.baseColor;
+              if (this.settings.enableBackgroundRendering) {
+                this.settings.enableBackgroundRendering = false;
+                await this.init(this.wasmPath);
+              }
+
+              defaultAction();
+              observer.observe(document.body, { childList: true, subtree: true });
+              id = setTimeout(async () => {
+                if (disconnected) return;
+                observer.disconnect();
+
+                // postprocess
+                this.baseColor = beforeBaseColor;
+                if (beforeEnableBackgroundRendering) {
+                  this.settings.enableBackgroundRendering = true;
+                  await this.init(this.wasmPath);
+                }
+              }, 60000);
+            };
+          });
+        }
+
         if (leaf.view.getViewType() !== TypstTextView.viewtype) return;
         menu.addItem(async (item) => {
           item.setTitle('Open as PDF').onClick(async () => {

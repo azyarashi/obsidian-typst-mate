@@ -1,5 +1,5 @@
+import type { Position } from 'md@/index';
 import type ObsidianTypstMate from '@/main';
-import type { PopupPosition } from '../editor';
 
 import './inline-preview.css';
 
@@ -12,7 +12,7 @@ export default class InlinePreviewElement extends HTMLElement {
     this.hide();
   }
 
-  render(position: PopupPosition, content: string) {
+  render(position: Position, content: string) {
     this.style.setProperty('--preview-left', `${position.x}px`);
     this.style.setProperty('--preview-top', `${position.y}px`);
 

@@ -6,13 +6,48 @@ edition = "2024"
 [lib]
 crate-type = ["cdylib"]
 
+[features]
+default = ["rc"]
+stable = [
+    "typst_stable",
+    "typst-ide_stable",
+    "typst-html_stable",
+    "typst-svg_stable",
+    "typst-pdf_stable",
+    "typst-assets_stable",
+    "typst-timing_stable",
+]
+rc = [
+    "typst_rc",
+    "typst-ide_rc",
+    "typst-html_rc",
+    "typst-svg_rc",
+    "typst-pdf_rc",
+    "typst-assets_rc",
+    "typst-timing_rc",
+]
+
 [dependencies]
-typst = "0.13.1"
-typst-ide = "0.13.1"
-typst-svg = "0.13.1"
-typst-pdf = "0.13.1"
-typst-assets = { version = "0.13.1", features = ["fonts"] }
-typst-timing = "0.13.1"
+typst_stable = { package = "typst", git = "https://github.com/typst/typst.git", tag = "v0.13.1", optional = true }
+typst-ide_stable = { package = "typst-ide", git = "https://github.com/typst/typst.git", tag = "v0.13.1", optional = true }
+typst-svg_stable = { package = "typst-svg", git = "https://github.com/typst/typst.git", tag = "v0.13.1", optional = true }
+typst-pdf_stable = { package = "typst-pdf", git = "https://github.com/typst/typst.git", tag = "v0.13.1", optional = true }
+typst-html_stable = { package = "typst-html", git = "https://github.com/typst/typst.git", tag = "v0.13.1", optional = true }
+typst-assets_stable = { package = "typst-assets", git = "https://github.com/typst/typst-assets.git", tag = "v0.13.1", features = [
+    "fonts",
+], optional = true }
+typst-timing_stable = { package = "typst-timing", git = "https://github.com/typst/typst.git", tag = "v0.13.1", optional = true }
+
+typst_rc = { package = "typst", git = "https://github.com/typst/typst.git", tag = "v0.14.0-rc.1", optional = true }
+typst-ide_rc = { package = "typst-ide", git = "https://github.com/typst/typst.git", tag = "v0.14.0-rc.1", optional = true }
+typst-svg_rc = { package = "typst-svg", git = "https://github.com/typst/typst.git", tag = "v0.14.0-rc.1", optional = true }
+typst-pdf_rc = { package = "typst-pdf", git = "https://github.com/typst/typst.git", tag = "v0.14.0-rc.1", optional = true }
+typst-html_rc = { package = "typst-html", git = "https://github.com/typst/typst.git", tag = "v0.14.0-rc.1", optional = true }
+typst-assets_rc = { package = "typst-assets", git = "https://github.com/typst/typst-assets.git", tag = "v0.14.0-rc.1", features = [
+    "fonts",
+], optional = true }
+typst-timing_rc = { package = "typst-timing", git = "https://github.com/typst/typst.git", tag = "v0.14.0-rc.1", optional = true }
+
 unscanny = "^0.1"
 
 mitex = "^0.2"
@@ -30,10 +65,6 @@ rustc-hash = "^2.1"
 
 chrono = "^0.4"
 send_wrapper = "^0.6"
-
-
-[features]
-default = []
 
 [profile.release]
 lto = "thin"

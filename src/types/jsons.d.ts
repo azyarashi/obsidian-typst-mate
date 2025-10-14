@@ -1,5 +1,5 @@
 declare module '@/data/shortcuts.json' {
-  interface Shortcut {
+  export interface Shortcut {
     content: string;
     category: string;
     offset?: number;

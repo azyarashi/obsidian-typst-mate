@@ -1,6 +1,6 @@
 use std::cell::RefCell; // ? シングルスレッドのため
 
-use typst::{
+use crate::typst::{
     diag::{FileError, FileResult},
     foundations::Bytes,
     syntax::{FileId, Source},

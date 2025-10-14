@@ -1,7 +1,7 @@
 use serde::Serialize;
 use tsify::Tsify;
 
-use typst::foundations::Bytes;
+use crate::typst::foundations::Bytes;
 
 #[derive(Serialize, Tsify)]
 pub struct BytesSer {

@@ -3,7 +3,7 @@ use serde::Serialize;
 use serde_wasm_bindgen::to_value;
 use wasm_bindgen::JsValue;
 
-use typst::{diag::SourceDiagnostic, ecow};
+use crate::typst::{diag::SourceDiagnostic, ecow};
 
 use crate::serde::diagnostic::SourceDiagnosticSer;
 use crate::world::WasmWorld;

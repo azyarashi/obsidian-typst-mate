@@ -1,7 +1,7 @@
 use serde::Serialize;
 use tsify::Tsify;
 
-use typst::foundations::Symbol;
+use crate::typst::foundations::Symbol;
 
 #[derive(Serialize, Tsify)]
 pub struct SymbolSer {

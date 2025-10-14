@@ -1,7 +1,7 @@
 use serde::Serialize;
 use tsify::Tsify;
 
-use typst::foundations::{CastInfo, Func, Repr};
+use crate::typst::foundations::{CastInfo, Func, Repr};
 
 fn cast_info_to_types(cast_info: &CastInfo) -> Vec<CastInfoSer> {
     match cast_info {

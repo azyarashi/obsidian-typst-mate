@@ -1,7 +1,7 @@
 use serde::Serialize;
 use tsify::Tsify;
 
-use typst::foundations::Array;
+use crate::typst::foundations::Array;
 
 use crate::serde::values::ValueSer;
 

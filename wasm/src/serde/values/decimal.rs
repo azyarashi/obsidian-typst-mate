@@ -1,7 +1,7 @@
 use serde::Serialize;
 use tsify::Tsify;
 
-use typst::foundations::{Decimal, Repr};
+use crate::typst::foundations::{Decimal, Repr};
 
 // TODO
 #[derive(Serialize, Tsify)]

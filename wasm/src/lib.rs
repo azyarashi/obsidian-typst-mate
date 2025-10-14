@@ -1,3 +1,36 @@
+#[cfg(all(feature = "stable", feature = "rc"))]
+compile_error!(";;");
+
+#[cfg(feature = "stable")]
+pub use typst_assets_stable as typst_assets;
+#[cfg(feature = "stable")]
+pub use typst_html_stable as typst_html;
+#[cfg(feature = "stable")]
+pub use typst_ide_stable as typst_ide;
+#[cfg(feature = "stable")]
+pub use typst_pdf_stable as typst_pdf;
+#[cfg(feature = "stable")]
+pub use typst_stable as typst;
+#[cfg(feature = "stable")]
+pub use typst_svg_stable as typst_svg;
+#[cfg(feature = "stable")]
+pub use typst_timing_stable as typst_timing;
+
+#[cfg(feature = "rc")]
+pub use typst_assets_rc as typst_assets;
+#[cfg(feature = "rc")]
+pub use typst_html_rc as typst_html;
+#[cfg(feature = "rc")]
+pub use typst_ide_rc as typst_ide;
+#[cfg(feature = "rc")]
+pub use typst_pdf_rc as typst_pdf;
+#[cfg(feature = "rc")]
+pub use typst_rc as typst;
+#[cfg(feature = "rc")]
+pub use typst_svg_rc as typst_svg;
+#[cfg(feature = "rc")]
+pub use typst_timing_rc as typst_timing;
+
 use std::ops::Range;
 
 use ::serde::Serialize;
@@ -13,11 +46,12 @@ use typst::{
     foundations::Bytes,
     layout::PagedDocument,
     syntax::{
-        FileId, LinkedNode, Side, SyntaxKind, Tag, VirtualPath, highlight,
+        FileId, LinkedNode, Side, SyntaxKind, VirtualPath, highlight,
         package::{PackageSpec, PackageVersion},
     },
     text::FontInfo,
 };
+use typst_html::HtmlDocument;
 use typst_pdf::PdfOptions;
 
 mod lexer;
@@ -27,7 +61,7 @@ mod utils;
 mod vfs;
 mod world;
 
-use serde::{definition, diagnostic, font, package, pdf, processor, svg};
+use serde::{definition, diagnostic, font, html, package, pdf, processor, svg};
 use world::WasmWorld;
 
 #[wasm_bindgen]
@@ -38,8 +72,9 @@ pub struct Typst {
     last_id: String,
     last_document: Option<PagedDocument>,
 
-    last_highlights: Option<FxHashSet<(Range<usize>, Tag)>>,
-    last_bracket_pairs: Option<FxHashSet<(Range<usize>, String)>>,
+    next_highlight_id: usize,
+    last_highlights: FxHashMap<usize, (Range<usize>, String)>, // id, (range, css_class)
+    last_bracket_pairs: FxHashSet<(usize, usize)>,             // 開き括弧の右側, 閉じ括弧の左側
 }
 
 #[wasm_bindgen]
@@ -55,8 +90,10 @@ impl Typst {
             last_kind: String::new(),
             last_id: String::new(),
             last_document: None,
-            last_highlights: None,
-            last_bracket_pairs: None,
+
+            next_highlight_id: 0,
+            last_highlights: FxHashMap::default(),
+            last_bracket_pairs: FxHashSet::default(),
         }
     }
 
@@ -217,6 +254,43 @@ impl Typst {
         }
     }
 
+    pub fn html(&mut self, code: &str, kind: &str, id: &str) -> Result<JsValue, JsValue> {
+        if self.last_kind == kind && self.last_id == id {
+            self.world.replace(code);
+        } else {
+            self.last_kind = kind.to_string();
+            self.last_id = id.to_string();
+
+            self.update_source(VirtualPath::new(format!("{}_{}.typ", kind, id)), code);
+        }
+
+        let Warned { output, warnings } = typst::compile::<HtmlDocument>(&mut self.world);
+
+        match output {
+            Ok(document) => {
+                let document = typst_html::html(&document);
+
+                match document {
+                    Ok(html) => html::html(html, warnings, &self.world),
+                    Err(errs) => {
+                        let diags: Vec<diagnostic::SourceDiagnosticSer> = errs
+                            .iter()
+                            .map(|d| diagnostic::SourceDiagnosticSer::from_diag(d, &self.world))
+                            .collect();
+                        Err(to_value(&diags).unwrap())
+                    }
+                }
+            }
+            Err(errs) => {
+                let diags: Vec<diagnostic::SourceDiagnosticSer> = errs
+                    .iter()
+                    .map(|d| diagnostic::SourceDiagnosticSer::from_diag(d, &self.world))
+                    .collect();
+                Err(to_value(&diags).unwrap())
+            }
+        }
+    }
+
     pub fn pdf(&mut self, filename: &str, code: &str) -> Result<JsValue, JsValue> {
         self.update_source(VirtualPath::new(filename), code);
         let Warned { output, warnings } = typst::compile::<PagedDocument>(&mut self.world);
@@ -252,9 +326,13 @@ impl Typst {
         }
     }
 
-    pub fn autocomplete(&mut self, cursor: usize) -> JsValue {
+    pub fn autocomplete(&mut self, local_offset: usize) -> JsValue {
         let source = self.world.source(self.world.main()).unwrap();
-        let byte_idx = source.utf16_to_byte(cursor).unwrap();
+
+        #[cfg(feature = "stable")]
+        let byte_idx = source.utf16_to_byte(local_offset).unwrap();
+        #[cfg(feature = "rc")]
+        let byte_idx = source.lines().utf16_to_byte(local_offset).unwrap();
 
         let result = typst_ide::autocomplete(
             &self.world,
@@ -267,9 +345,13 @@ impl Typst {
         to_value(&result).unwrap()
     }
 
-    pub fn definition(&mut self, cursor: usize) -> JsValue {
+    pub fn definition(&mut self, local_offset: usize) -> JsValue {
         let source = self.world.source(self.world.main()).unwrap();
-        let byte_idx = source.utf16_to_byte(cursor).unwrap();
+
+        #[cfg(feature = "stable")]
+        let byte_idx = source.utf16_to_byte(local_offset).unwrap();
+        #[cfg(feature = "rc")]
+        let byte_idx = source.lines().utf16_to_byte(local_offset).unwrap();
 
         let tokens = typst_ide::definition(
             &self.world,
@@ -287,38 +369,33 @@ impl Typst {
     }
 
     pub fn reset_highlights(&mut self) {
-        self.last_highlights = None;
-        self.last_bracket_pairs = None;
+        self.last_highlights = FxHashMap::default();
+        self.last_bracket_pairs = FxHashSet::default();
     }
 
-    pub fn get_cursor_enclosing_bracket(&self, cursor_offset: usize) -> JsValue {
+    pub fn get_cursor_enclosing_bracket(&self, cm_offset: usize) -> JsValue {
         #[derive(Serialize)]
         struct EnclosingBracket {
             range: (usize, usize),
-            bracket_type: String,
         }
 
         let mut cursor_enclosing_bracket: Option<EnclosingBracket> = None;
 
-        if let Some(ref bracket_pairs) = self.last_bracket_pairs {
-            for (range, bracket_type) in bracket_pairs {
-                let start = range.start;
-                let end = range.end;
-
-                if start < cursor_offset && cursor_offset <= end {
-                    if let Some(ref existing) = cursor_enclosing_bracket {
-                        if start > existing.range.0 {
-                            cursor_enclosing_bracket = Some(EnclosingBracket {
-                                range: (start, end),
-                                bracket_type: bracket_type.clone(),
-                            });
-                        }
-                    } else {
+        for (start, end) in &self.last_bracket_pairs {
+            if &cm_offset < start {
+                break;
+            }
+            if start <= &cm_offset && &cm_offset <= end {
+                if let Some(ref existing) = cursor_enclosing_bracket {
+                    if start > &existing.range.0 {
                         cursor_enclosing_bracket = Some(EnclosingBracket {
-                            range: (start, end),
-                            bracket_type: bracket_type.clone(),
+                            range: (*start, *end),
                         });
                     }
+                } else {
+                    cursor_enclosing_bracket = Some(EnclosingBracket {
+                        range: (*start, *end),
+                    });
                 }
             }
         }
@@ -326,27 +403,53 @@ impl Typst {
         to_value(&cursor_enclosing_bracket).unwrap()
     }
 
-    pub fn highlight(&mut self, start_offset: usize, cursor_offset: usize) -> JsValue {
-        // offsetは start_offset と preamble? と formatの{CODE}までのindex} を足したものから id (+1) を引いたもの あと width
+    pub fn highlight(
+        &mut self,
+        local_offset: usize,
+        start_offset: usize,
+        end_offset: usize,
+        cursor_offset: usize,
+    ) -> JsValue {
         let source = self.world.source(self.world.main()).unwrap();
+        let needs_colon = !self.last_id.is_empty() && self.last_kind == "inline";
+        let id_length = self.last_id.len() + usize::from(needs_colon);
+        let code_length = end_offset - start_offset; // id を含む
+        let cursor_local_offset = cursor_offset - start_offset + local_offset;
 
-        let get_cm_offset = |byte_pos: usize| -> usize {
-            source.byte_to_utf16(byte_pos).unwrap_or(byte_pos) + start_offset
+        #[cfg(feature = "stable")]
+        let get_raw_offset = |byte_pos: usize| -> Option<usize> {
+            let raw = source.byte_to_utf16(byte_pos)?;
+            // ? idは特別にハイライト処理をするため判定から除外
+            if local_offset + id_length <= raw && raw <= local_offset + id_length + code_length {
+                Some(raw - local_offset)
+            } else {
+                None
+            }
         };
+        #[cfg(feature = "rc")]
+        let lines = source.lines();
+        #[cfg(feature = "rc")]
+        let get_raw_offset = |byte_pos: usize| -> Option<usize> {
+            let raw = lines.byte_to_utf16(byte_pos)?;
+            // ? idは特別にハイライト処理をするため判定から除外
+            if local_offset + id_length <= raw && raw <= local_offset + id_length + code_length {
+                Some(raw - local_offset)
+            } else {
+                None
+            }
+        };
+        let get_cm_offset = |local_pos: usize| -> usize { local_pos + start_offset };
 
-        fn range_key(range: &Range<usize>) -> (usize, usize) {
-            (range.start, range.end)
-        }
+        // ! 探索
+        let mut new_bracket_pairs: FxHashSet<(usize, usize)> = FxHashSet::default();
+        let mut enclosing_bracket_pair: Option<(usize, usize)> = None;
+        let mut enclosing_bracket_length = 0;
+        let mut current_highlights_without_id: FxHashSet<(Range<usize>, String)> =
+            FxHashSet::default();
 
-        // 探索
-        let mut current_tag_ranges: FxHashSet<Range<usize>> = FxHashSet::default();
-        let mut current_tag_info: FxHashMap<Range<usize>, Tag> = FxHashMap::default();
-        let mut current_bracket_ranges: FxHashSet<Range<usize>> = FxHashSet::default();
-        let mut current_bracket_info: FxHashMap<Range<usize>, String> = FxHashMap::default();
-        let mut pos_stack: Vec<(usize, String)> = Vec::new();
-        let mut cursor_enclosing_bracket: Option<(Range<usize>, String)> = None;
-        let mut stack = vec![LinkedNode::new(&source.root())];
-        while let Some(node) = stack.pop() {
+        let mut bracket_stack: Vec<(usize, String)> = Vec::new();
+        let mut node_stack = vec![LinkedNode::new(&source.root())];
+        while let Some(node) = node_stack.pop() {
             let kind = node.kind();
             let range = node.range();
 
@@ -360,10 +463,10 @@ impl Typst {
                             SyntaxKind::LeftParen => "typ-paren",
                             _ => unreachable!(),
                         };
-                        pos_stack.push((range.start, bracket_type.to_string()));
+                        bracket_stack.push((range.end, bracket_type.to_string()));
                     }
                     SyntaxKind::RightBracket | SyntaxKind::RightBrace | SyntaxKind::RightParen => {
-                        if let Some((left_range, bracket_type)) = pos_stack.pop() {
+                        if let Some((left_end, bracket_type)) = bracket_stack.pop() {
                             let expected_left_type = match kind {
                                 SyntaxKind::RightBracket => "typ-bracket",
                                 SyntaxKind::RightBrace => "typ-brace",
@@ -373,174 +476,131 @@ impl Typst {
 
                             if bracket_type == expected_left_type {
                                 let bracket_range = Range {
-                                    start: left_range,
-                                    end: range.start,
+                                    start: left_end,  // 開き括弧文字の右側
+                                    end: range.start, // 閉じ括弧文字の左側
                                 };
 
-                                // カーソルを含むかつ前のより長さが短いなら変更
-                                let start_cm = get_cm_offset(bracket_range.start);
-                                let end_cm = get_cm_offset(bracket_range.end);
-
-                                if start_cm < cursor_offset && cursor_offset <= end_cm {
-                                    if let Some((existing_range, _)) = &cursor_enclosing_bracket {
-                                        if existing_range.start < bracket_range.start {
-                                            cursor_enclosing_bracket =
-                                                Some((bracket_range.clone(), bracket_type.clone()));
-                                        }
-                                    } else {
-                                        cursor_enclosing_bracket =
-                                            Some((bracket_range.clone(), bracket_type.clone()));
+                                if left_end <= cursor_local_offset
+                                    && cursor_local_offset <= range.start
+                                {
+                                    let length = range.start - left_end;
+                                    if enclosing_bracket_length < length {
+                                        enclosing_bracket_length = length;
+                                        enclosing_bracket_pair = Some((left_end, range.start));
                                     }
                                 }
 
-                                current_bracket_ranges.insert(bracket_range.clone());
-                                current_bracket_info.insert(bracket_range, bracket_type);
+                                current_highlights_without_id.insert((
+                                    bracket_range.start - 1..bracket_range.start,
+                                    bracket_type.to_string(),
+                                ));
+                                current_highlights_without_id.insert((
+                                    bracket_range.end..bracket_range.end + 1,
+                                    bracket_type.to_string(),
+                                ));
+
+                                if let (Some(local_start), Some(local_end)) =
+                                    (get_raw_offset(left_end), get_raw_offset(range.start))
+                                {
+                                    new_bracket_pairs.insert((
+                                        get_cm_offset(local_start),
+                                        get_cm_offset(local_end),
+                                    ));
+                                }
                             }
                         }
                     }
                     _ => {}
                 }
             } else {
-                // ハイライト
                 if let Some(tag) = highlight(&node) {
-                    current_tag_ranges.insert(range.clone());
-                    current_tag_info.insert(range, tag);
+                    current_highlights_without_id.insert((
+                        Range {
+                            start: range.start,
+                            end: range.end,
+                        },
+                        tag.css_class().to_string(),
+                    ));
                 }
             }
 
             for child in node.children().rev() {
-                stack.push(child);
+                node_stack.push(child);
             }
         }
 
-        // 更新
-        let last_highlights = self.last_highlights.take();
-        let last_bracket_pairs = self.last_bracket_pairs.take();
-
-        #[derive(Serialize)]
-        struct HighlightChanges {
-            adds: Vec<(usize, usize, String)>,
-            removes: Vec<(usize, usize, String)>,
-        }
-
+        // ! 差分計算
         let mut changes = HighlightChanges {
             adds: Vec::new(),
             removes: Vec::new(),
         };
+        let mut new_highlights: FxHashMap<usize, (Range<usize>, String)> = FxHashMap::default();
 
-
-        if let Some(ref last_highlights) = last_highlights {
-            let last_highlight_keys: FxHashSet<(usize, usize)> = last_highlights
-                .iter()
-                .map(|(range, _)| range_key(range))
-                .collect();
-
-            changes
-                .adds
-                .extend(current_tag_ranges.iter().filter_map(|range| {
-                    if !last_highlight_keys.contains(&range_key(range)) {
-                        current_tag_info.get(range).map(|tag| {
-                            let start = get_cm_offset(range.start);
-                            let end = get_cm_offset(range.end);
-                            let css_class = tag.css_class().to_string();
-                            (start, end, css_class)
-                        })
-                    } else {
-                        None
-                    }
-                }));
-
-            changes
-                .removes
-                .extend(last_highlights.iter().filter_map(|(range, tag)| {
-                    if !current_tag_ranges.contains(range) {
-                        let start = get_cm_offset(range.start);
-                        let end = get_cm_offset(range.end);
-                        let css_class = tag.css_class().to_string();
-                        Some((start, end, css_class))
-                    } else {
-                        None
-                    }
-                }));
-        } else {
-            changes
-                .adds
-                .extend(current_tag_ranges.iter().filter_map(|range| {
-                    current_tag_info.get(range).map(|tag| {
-                        let start = get_cm_offset(range.start);
-                        let end = get_cm_offset(range.end);
-                        let css_class = tag.css_class().to_string();
-                        (start, end, css_class)
-                    })
-                }));
+        let mut old_map: FxHashMap<(Range<usize>, String), usize> = FxHashMap::default();
+        for (id, (range, class)) in self.last_highlights.iter() {
+            old_map.insert((range.clone(), class.clone()), *id);
         }
 
-        if let Some(ref last_bracket_pairs) = last_bracket_pairs {
-            let last_bracket_keys: FxHashSet<(usize, usize)> = last_bracket_pairs
-                .iter()
-                .map(|(range, _)| range_key(range))
-                .collect();
+        for (range, class) in current_highlights_without_id.iter() {
+            if let Some(&id) = old_map.get(&(range.clone(), class.clone())) {
+                // 既存idの利用
+                new_highlights.insert(id, (range.clone(), class.clone()));
+            } else {
+                // 新規idを割当
+                let id = self.next_highlight_id;
+                self.next_highlight_id += 1;
+                new_highlights.insert(id, (range.clone(), class.clone()));
 
-            changes
-                .adds
-                .extend(current_bracket_ranges.iter().filter_map(|range| {
-                    if !last_bracket_keys.contains(&range_key(range)) {
-                        current_bracket_info.get(range).map(|bracket_type| {
-                            let start = get_cm_offset(range.start);
-                            let end = get_cm_offset(range.end);
-                            (start, end, bracket_type.clone())
-                        })
-                    } else {
-                        None
-                    }
-                }));
-
-            changes.removes.extend(last_bracket_pairs.iter().filter_map(
-                |(range, bracket_type)| {
-                    if !current_bracket_ranges.contains(range) {
-                        let start = get_cm_offset(range.start);
-                        let end = get_cm_offset(range.end);
-                        Some((start, end, bracket_type.clone()))
-                    } else {
-                        None
-                    }
-                },
-            ));
-        } else {
-            changes
-                .adds
-                .extend(current_bracket_ranges.iter().filter_map(|range| {
-                    current_bracket_info.get(range).map(|bracket_type| {
-                        let start = get_cm_offset(range.start);
-                        let end = get_cm_offset(range.end);
-                        (start, end, bracket_type.clone())
-                    })
-                }));
+                if let (Some(local_start), Some(local_end)) =
+                    (get_raw_offset(range.start), get_raw_offset(range.end))
+                {
+                    changes.adds.push((
+                        id,
+                        get_cm_offset(local_start),
+                        get_cm_offset(local_end),
+                        class.clone(),
+                    ));
+                }
+            }
         }
 
-        if let Some((range, bracket_type)) = cursor_enclosing_bracket {
-            let start = get_cm_offset(range.start);
-            let end = get_cm_offset(range.end);
-            changes.adds.push((start, end, bracket_type));
+        if let Some((enclosing_start, enclosing_end)) = enclosing_bracket_pair {
+            if let (Some(local_start), Some(local_end)) = (
+                get_raw_offset(enclosing_start),
+                get_raw_offset(enclosing_end),
+            ) {
+                changes.adds.push((
+                    2147483646,
+                    get_cm_offset(local_start - 1),
+                    get_cm_offset(local_start),
+                    "typ-enclosing".to_string(),
+                ));
+                changes.adds.push((
+                    2147483646,
+                    get_cm_offset(local_end),
+                    get_cm_offset(local_end + 1),
+                    "typ-enclosing".to_string(),
+                ));
+            }
         }
 
-        self.last_highlights = Some(
-            current_tag_ranges
-                .into_iter()
-                .filter_map(|range| current_tag_info.remove(&range).map(|tag| (range, tag)))
-                .collect(),
-        );
-        self.last_bracket_pairs = Some(
-            current_bracket_ranges
-                .into_iter()
-                .filter_map(|range| {
-                    current_bracket_info
-                        .remove(&range)
-                        .map(|bracket_type| (range, bracket_type))
-                })
-                .collect(),
-        );
+        for (id, (range, class)) in self.last_highlights.iter() {
+            if class == "typ-enclosing" {
+                changes.removes.push(*id);
+            } else if !current_highlights_without_id.contains(&(range.clone(), class.clone())) {
+                changes.removes.push(*id);
+            }
+        }
 
+        // ! 更新
+        self.last_highlights = new_highlights;
+        self.last_bracket_pairs = new_bracket_pairs;
         to_value(&changes).unwrap()
     }
+}
+
+#[derive(Serialize)]
+struct HighlightChanges {
+    adds: Vec<(usize, usize, usize, String)>,
+    removes: Vec<usize>,
 }

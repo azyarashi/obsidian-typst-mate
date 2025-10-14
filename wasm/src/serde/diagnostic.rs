@@ -2,8 +2,8 @@ use std::ops::Range;
 
 use serde::Serialize;
 
-use typst::{
-    WorldExt,
+use crate::typst::{
+    World, WorldExt,
     diag::{Severity, SourceDiagnostic},
 };
 
@@ -15,10 +15,9 @@ pub struct TraceSer {
 
 #[derive(Serialize)]
 pub struct SourceDiagnosticSer {
-    pub severity: u8,
-    pub start: usize,
-    pub end: usize,
-    pub content: String,
+    pub severity: String,
+    pub from: usize,
+    pub to: usize,
     pub message: String,
     pub trace: Vec<TraceSer>,
     pub hints: Vec<String>,
@@ -27,25 +26,31 @@ pub struct SourceDiagnosticSer {
 impl SourceDiagnosticSer {
     pub fn from_diag<W>(diag: &SourceDiagnostic, world: &W) -> Self
     where
-        W: typst::World,
+        W: World,
     {
         let source = world.source(diag.span.id().unwrap()).unwrap();
         let range = world.range(diag.span).unwrap_or(Range { start: 0, end: 0 });
-        let start = source.byte_to_utf16(range.start).unwrap_or(0);
-        let end = source.byte_to_utf16(range.end).unwrap_or(0);
+        #[cfg(feature = "stable")]
+        let (from, to) = {
+            let from = source.byte_to_utf16(range.start).unwrap_or(0);
+            let to = source.byte_to_utf16(range.end).unwrap_or(0);
+            (from, to)
+        };
+        #[cfg(feature = "rc")]
+        let (from, to) = {
+            let lines = source.lines();
+            let from = lines.byte_to_utf16(range.start).unwrap_or(0);
+            let to = lines.byte_to_utf16(range.end).unwrap_or(0);
+            (from, to)
+        };
 
         SourceDiagnosticSer {
             severity: match diag.severity {
-                Severity::Error => 1,
-                Severity::Warning => 2,
+                Severity::Error => "error".to_string(),
+                Severity::Warning => "warning".to_string(),
             },
-            start,
-            end,
-            content: world
-                .source(diag.span.id().unwrap())
-                .unwrap()
-                .text()
-                .to_string(),
+            from,
+            to,
             message: diag.message.as_str().to_string(),
             trace: diag
                 .trace

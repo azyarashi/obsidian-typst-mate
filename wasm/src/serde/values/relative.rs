@@ -1,7 +1,7 @@
 use serde::Serialize;
 use tsify::Tsify;
 
-use typst::layout::Rel;
+use crate::typst::layout::{Length, Rel};
 
 use crate::serde::values::RatioSer;
 
@@ -11,8 +11,8 @@ pub struct RelativeSer {
     pub ratio: RatioSer,
 }
 
-impl From<&Rel<typst::layout::Length>> for RelativeSer {
-    fn from(relative: &Rel<typst::layout::Length>) -> Self {
+impl From<&Rel<Length>> for RelativeSer {
+    fn from(relative: &Rel<Length>) -> Self {
         RelativeSer {
             ratio: RatioSer::from(&relative.rel),
         }

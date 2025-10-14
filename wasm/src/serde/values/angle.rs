@@ -1,7 +1,7 @@
 use serde::Serialize;
 use tsify::Tsify;
 
-use typst::layout::Angle;
+use crate::typst::layout::Angle;
 
 #[derive(Serialize, Tsify)]
 pub struct AngleSer {

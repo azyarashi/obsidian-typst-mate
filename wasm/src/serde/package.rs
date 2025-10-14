@@ -1,6 +1,6 @@
 use serde::Serialize;
 
-use typst::syntax::package::PackageSpec;
+use crate::typst::syntax::package::PackageSpec;
 
 #[derive(Serialize)]
 pub struct PackageSpecSer {

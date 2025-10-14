@@ -4,59 +4,77 @@ export function overwriteCustomElements(tagName: string, newCtor: CustomElementC
 
   if (!existing) {
     registry.define(tagName, newCtor);
-    return;
+    return { ctor: newCtor, upgraded: [] as Element[] };
   }
 
-  const copyProps = (src: any, dst: any) => {
-    const keys = Object.getOwnPropertyNames(src).concat(Object.getOwnPropertySymbols(src) as any);
-    for (const k of keys) {
-      if (k === 'constructor') continue;
-      const desc = Object.getOwnPropertyDescriptor(src, k)!;
-      Object.defineProperty(dst, k, desc);
+  const copyDescriptorsInPlace = (src: any, dst: any) => {
+    for (const key of Reflect.ownKeys(src)) {
+      if (key === 'constructor') continue;
+      const desc = Object.getOwnPropertyDescriptor(src, key)!;
+      try {
+        Object.defineProperty(dst, key, desc);
+      } catch {}
     }
   };
 
-  copyProps(newCtor.prototype, existing.prototype);
+  copyDescriptorsInPlace(newCtor.prototype, existing.prototype);
 
-  const staticKeys = Object.getOwnPropertyNames(newCtor).filter((k) => !['length', 'name', 'prototype'].includes(k));
-  for (const k of staticKeys) {
-    const desc = Object.getOwnPropertyDescriptor(newCtor, k)!;
-    Object.defineProperty(existing, k, desc);
+  try {
+    const newProtoProto = Object.getPrototypeOf(newCtor.prototype);
+    const existingProtoProto = Object.getPrototypeOf(existing.prototype);
+    if (newProtoProto !== existingProtoProto) {
+      Object.setPrototypeOf(existing.prototype, newProtoProto);
+    }
+  } catch {}
+
+  for (const key of Reflect.ownKeys(newCtor)) {
+    if (key === 'prototype' || key === 'name' || key === 'length') continue;
+    const desc = Object.getOwnPropertyDescriptor(newCtor, key)!;
+    try {
+      Object.defineProperty(existing, key, desc);
+    } catch {}
   }
 
   try {
-    existing.prototype.constructor = newCtor;
+    Object.defineProperty(existing.prototype, 'constructor', {
+      value: existing,
+      writable: true,
+      configurable: true,
+      enumerable: false,
+    });
   } catch {}
 
-  const els = Array.from(document.querySelectorAll(tagName));
-  const observed = (newCtor as any).observedAttributes ?? [];
+  const els = Array.from(document.getElementsByTagName(tagName));
+  const observedAttrs: string[] = (existing as any).observedAttributes ?? [];
+  const connectedCb = (existing.prototype as any).connectedCallback;
+  const attrChangedCb = (existing.prototype as any).attributeChangedCallback;
 
+  const upgraded: Element[] = [];
   for (const el of els) {
-    Object.setPrototypeOf(el, existing.prototype);
-
-    if (el.isConnected && typeof (newCtor.prototype as any).connectedCallback === 'function') {
+    if (Object.getPrototypeOf(el) !== existing.prototype) {
       try {
-        (newCtor.prototype as any).connectedCallback.call(el);
-      } catch (err) {
-        console.error('connectedCallback error', err);
-      }
+        Object.setPrototypeOf(el, existing.prototype);
+      } catch {}
     }
 
-    if (observed.length > 0 && typeof (newCtor.prototype as any).attributeChangedCallback === 'function') {
-      for (const attr of observed) {
+    if ((el as Element).isConnected && typeof connectedCb === 'function') {
+      try {
+        connectedCb.call(el);
+      } catch {}
+    }
+
+    if (observedAttrs.length > 0 && typeof attrChangedCb === 'function') {
+      for (const attr of observedAttrs) {
         if ((el as Element).hasAttribute(attr)) {
           try {
-            (newCtor.prototype as any).attributeChangedCallback.call(
-              el,
-              attr,
-              null,
-              (el as Element).getAttribute(attr),
-            );
-          } catch (err) {
-            console.error('attributeChangedCallback error', err);
-          }
+            attrChangedCb.call(el, attr, null, (el as Element).getAttribute(attr));
+          } catch {}
         }
       }
     }
+
+    upgraded.push(el);
   }
+
+  return { ctor: existing, upgraded };
 }

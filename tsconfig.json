@@ -25,7 +25,9 @@
 
 		"types": ["vite/client", "obsidian-typings"],
 		"paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+			"md@/*": ["./src/core/mdEditor/*"],
+			"typ@/*": ["./src/core/typEditor/*"],
     },
 	},
 	"include": ["src", "node_modules/obsidian-excalidraw-plugin/docs/API/ExcalidrawAutomate.d.ts", "node_modules/@zsviczian/excalidraw/types/element/src/types.d.ts"]

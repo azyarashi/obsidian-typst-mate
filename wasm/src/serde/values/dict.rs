@@ -3,7 +3,7 @@ use std::collections::BTreeMap;
 use serde::Serialize;
 use tsify::Tsify;
 
-use typst::foundations::Dict;
+use crate::typst::foundations::Dict;
 
 use crate::serde::values::ValueSer;
 
