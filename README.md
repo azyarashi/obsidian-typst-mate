@@ -5,6 +5,7 @@
 </a>
 <a href="https://typst.app/docs/changelog/">
   <img alt="Typst Version" src="https://img.shields.io/badge/0.13.1-239dad?logo=typst&logoColor=white" />
+  <img alt="Typst Version" src="https://img.shields.io/badge/0.14.0--rc1-239dad?logo=typst&logoColor=white" />
 </a>
 
 

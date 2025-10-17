@@ -4,16 +4,16 @@ Snippets can only be used in *inline math* or *display math*.
 
 ## How to Use
 
-Enter @-mode by typing `@` after one or more alphabetic characters.
+Enter **@-mode** by typing <kbd>@</kbd  > after one or more alphabetic characters.
 In this mode, `@` turns rainbow-colored and the input method changes.
 In this state, keyboard input will enter characters before the `@` (or inside parentheses).
 For operations like completion and execution, refer to the following:
 
 |Role|Command|
 |---|---|
-|Select|`↑ Key`, `↓ Key` / `Mouse Over`, `Scroll`|
-|Complete|`→ Key`, `Tab Key`|
-|Execute|`Enter Key` / `Click`, `Touch`|
+|Select|<kbd>↑</kbd>, <kbd>↓</kbd> / `Mouse Over`, `Scroll`|
+|Complete|<kbd>→</kbd>, <kbd>Tab</kbd>|
+|Execute|<kbd>Enter</kbd> / `Click`, `Touch`|
 
 (\*script snippets will complete instead of execute)
 
