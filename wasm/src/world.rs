@@ -5,7 +5,7 @@ use rustc_hash::{FxHashMap, FxHashSet};
 use send_wrapper::SendWrapper;
 use wasm_bindgen::{JsCast, JsValue};
 
-#[cfg(feature = "rc")]
+#[cfg(feature = "latest")]
 use crate::typst::LibraryExt;
 use crate::typst::{
     Library, World,
@@ -60,9 +60,9 @@ impl WasmWorld {
         let cursor_elem = TextElem::new("▮".into());
         let cursor_paint = Paint::Solid(Color::from_str("#44f").unwrap());
 
-        #[cfg(feature = "stable")]
+        #[cfg(feature = "legacy")]
         let cursor_style = Style::Property(TextElem::set_fill(cursor_paint));
-        #[cfg(feature = "rc")]
+        #[cfg(feature = "latest")]
         let cursor_style = Style::Property(Property::new(TextElem::fill, cursor_paint));
 
         let cursor_val = Value::Content(Content::new(cursor_elem).styled(cursor_style));

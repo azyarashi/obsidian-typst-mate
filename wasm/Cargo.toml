@@ -7,46 +7,49 @@ edition = "2024"
 crate-type = ["cdylib"]
 
 [features]
-default = ["rc"]
-stable = [
-    "typst_stable",
-    "typst-ide_stable",
-    "typst-html_stable",
-    "typst-svg_stable",
-    "typst-pdf_stable",
-    "typst-assets_stable",
-    "typst-timing_stable",
+default = ["latest"]
+latest = [
+    "typst_latest",
+    "typst-ide_latest",
+    "typst-html_latest",
+    "typst-svg_latest",
+    "typst-pdf_latest",
+    "typst-assets_latest",
+    "typst-timing_latest",
 ]
-rc = [
-    "typst_rc",
-    "typst-ide_rc",
-    "typst-html_rc",
-    "typst-svg_rc",
-    "typst-pdf_rc",
-    "typst-assets_rc",
-    "typst-timing_rc",
+legacy = [
+    "typst_legacy",
+    "typst-ide_legacy",
+    "typst-html_legacy",
+    "typst-svg_legacy",
+    "typst-pdf_legacy",
+    "typst-assets_legacy",
+    "typst-timing_legacy",
 ]
 
 [dependencies]
-typst_stable = { package = "typst", git = "https://github.com/typst/typst.git", tag = "v0.13.1", optional = true }
-typst-ide_stable = { package = "typst-ide", git = "https://github.com/typst/typst.git", tag = "v0.13.1", optional = true }
-typst-svg_stable = { package = "typst-svg", git = "https://github.com/typst/typst.git", tag = "v0.13.1", optional = true }
-typst-pdf_stable = { package = "typst-pdf", git = "https://github.com/typst/typst.git", tag = "v0.13.1", optional = true }
-typst-html_stable = { package = "typst-html", git = "https://github.com/typst/typst.git", tag = "v0.13.1", optional = true }
-typst-assets_stable = { package = "typst-assets", git = "https://github.com/typst/typst-assets.git", tag = "v0.13.1", features = [
+# latest
+typst_latest = { package = "typst", git = "https://github.com/typst/typst.git", tag = "v0.14.0-rc.2", optional = true }
+typst-ide_latest = { package = "typst-ide", git = "https://github.com/typst/typst.git", tag = "v0.14.0-rc.2", optional = true }
+typst-svg_latest = { package = "typst-svg", git = "https://github.com/typst/typst.git", tag = "v0.14.0-rc.2", optional = true }
+typst-pdf_latest = { package = "typst-pdf", git = "https://github.com/typst/typst.git", tag = "v0.14.0-rc.2", optional = true }
+typst-html_latest = { package = "typst-html", git = "https://github.com/typst/typst.git", tag = "v0.14.0-rc.2", optional = true }
+typst-assets_latest = { package = "typst-assets", git = "https://github.com/typst/typst-assets.git", tag = "v0.14.0-rc.2", features = [
     "fonts",
 ], optional = true }
-typst-timing_stable = { package = "typst-timing", git = "https://github.com/typst/typst.git", tag = "v0.13.1", optional = true }
+typst-timing_latest = { package = "typst-timing", git = "https://github.com/typst/typst.git", tag = "v0.14.0-rc.2", optional = true }
 
-typst_rc = { package = "typst", git = "https://github.com/typst/typst.git", tag = "v0.14.0-rc.1", optional = true }
-typst-ide_rc = { package = "typst-ide", git = "https://github.com/typst/typst.git", tag = "v0.14.0-rc.1", optional = true }
-typst-svg_rc = { package = "typst-svg", git = "https://github.com/typst/typst.git", tag = "v0.14.0-rc.1", optional = true }
-typst-pdf_rc = { package = "typst-pdf", git = "https://github.com/typst/typst.git", tag = "v0.14.0-rc.1", optional = true }
-typst-html_rc = { package = "typst-html", git = "https://github.com/typst/typst.git", tag = "v0.14.0-rc.1", optional = true }
-typst-assets_rc = { package = "typst-assets", git = "https://github.com/typst/typst-assets.git", tag = "v0.14.0-rc.1", features = [
+# legacy
+typst_legacy = { package = "typst", git = "https://github.com/typst/typst.git", tag = "v0.13.1", optional = true }
+typst-ide_legacy = { package = "typst-ide", git = "https://github.com/typst/typst.git", tag = "v0.13.1", optional = true }
+typst-svg_legacy = { package = "typst-svg", git = "https://github.com/typst/typst.git", tag = "v0.13.1", optional = true }
+typst-pdf_legacy = { package = "typst-pdf", git = "https://github.com/typst/typst.git", tag = "v0.13.1", optional = true }
+typst-html_legacy = { package = "typst-html", git = "https://github.com/typst/typst.git", tag = "v0.13.1", optional = true }
+typst-assets_legacy = { package = "typst-assets", git = "https://github.com/typst/typst-assets.git", tag = "v0.13.1", features = [
     "fonts",
 ], optional = true }
-typst-timing_rc = { package = "typst-timing", git = "https://github.com/typst/typst.git", tag = "v0.14.0-rc.1", optional = true }
+typst-timing_legacy = { package = "typst-timing", git = "https://github.com/typst/typst.git", tag = "v0.13.1", optional = true }
+
 
 unscanny = "^0.1"
 

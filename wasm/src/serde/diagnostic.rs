@@ -30,13 +30,13 @@ impl SourceDiagnosticSer {
     {
         let source = world.source(diag.span.id().unwrap()).unwrap();
         let range = world.range(diag.span).unwrap_or(Range { start: 0, end: 0 });
-        #[cfg(feature = "stable")]
+        #[cfg(feature = "legacy")]
         let (from, to) = {
             let from = source.byte_to_utf16(range.start).unwrap_or(0);
             let to = source.byte_to_utf16(range.end).unwrap_or(0);
             (from, to)
         };
-        #[cfg(feature = "rc")]
+        #[cfg(feature = "latest")]
         let (from, to) = {
             let lines = source.lines();
             let from = lines.byte_to_utf16(range.start).unwrap_or(0);

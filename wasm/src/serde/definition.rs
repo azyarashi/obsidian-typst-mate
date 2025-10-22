@@ -36,14 +36,14 @@ impl DefinitionSer {
 
                 let range = world.range(*span).unwrap_or(Range { start: 0, end: 0 });
 
-                #[cfg(feature = "stable")]
+                #[cfg(feature = "legacy")]
                 let (start, end) = {
                     let start = source.byte_to_utf16(range.start).unwrap_or(0);
                     let end = source.byte_to_utf16(range.end).unwrap_or(0);
                     (start, end)
                 };
 
-                #[cfg(feature = "rc")]
+                #[cfg(feature = "latest")]
                 let (start, end) = {
                     let lines = source.lines();
                     let start = lines.byte_to_utf16(range.start).unwrap_or(0);

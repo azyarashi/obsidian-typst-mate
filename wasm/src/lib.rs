@@ -1,35 +1,35 @@
-#[cfg(all(feature = "stable", feature = "rc"))]
+#[cfg(all(feature = "legacy", feature = "latest"))]
 compile_error!(";;");
 
-#[cfg(feature = "stable")]
-pub use typst_assets_stable as typst_assets;
-#[cfg(feature = "stable")]
-pub use typst_html_stable as typst_html;
-#[cfg(feature = "stable")]
-pub use typst_ide_stable as typst_ide;
-#[cfg(feature = "stable")]
-pub use typst_pdf_stable as typst_pdf;
-#[cfg(feature = "stable")]
-pub use typst_stable as typst;
-#[cfg(feature = "stable")]
-pub use typst_svg_stable as typst_svg;
-#[cfg(feature = "stable")]
-pub use typst_timing_stable as typst_timing;
+#[cfg(feature = "legacy")]
+pub use typst_assets_legacy as typst_assets;
+#[cfg(feature = "legacy")]
+pub use typst_html_legacy as typst_html;
+#[cfg(feature = "legacy")]
+pub use typst_ide_legacy as typst_ide;
+#[cfg(feature = "legacy")]
+pub use typst_legacy as typst;
+#[cfg(feature = "legacy")]
+pub use typst_pdf_legacy as typst_pdf;
+#[cfg(feature = "legacy")]
+pub use typst_svg_legacy as typst_svg;
+#[cfg(feature = "legacy")]
+pub use typst_timing_legacy as typst_timing;
 
-#[cfg(feature = "rc")]
-pub use typst_assets_rc as typst_assets;
-#[cfg(feature = "rc")]
-pub use typst_html_rc as typst_html;
-#[cfg(feature = "rc")]
-pub use typst_ide_rc as typst_ide;
-#[cfg(feature = "rc")]
-pub use typst_pdf_rc as typst_pdf;
-#[cfg(feature = "rc")]
-pub use typst_rc as typst;
-#[cfg(feature = "rc")]
-pub use typst_svg_rc as typst_svg;
-#[cfg(feature = "rc")]
-pub use typst_timing_rc as typst_timing;
+#[cfg(feature = "latest")]
+pub use typst_assets_latest as typst_assets;
+#[cfg(feature = "latest")]
+pub use typst_html_latest as typst_html;
+#[cfg(feature = "latest")]
+pub use typst_ide_latest as typst_ide;
+#[cfg(feature = "latest")]
+pub use typst_latest as typst;
+#[cfg(feature = "latest")]
+pub use typst_pdf_latest as typst_pdf;
+#[cfg(feature = "latest")]
+pub use typst_svg_latest as typst_svg;
+#[cfg(feature = "latest")]
+pub use typst_timing_latest as typst_timing;
 
 use std::ops::Range;
 
@@ -329,9 +329,9 @@ impl Typst {
     pub fn autocomplete(&mut self, local_offset: usize) -> JsValue {
         let source = self.world.source(self.world.main()).unwrap();
 
-        #[cfg(feature = "stable")]
+        #[cfg(feature = "legacy")]
         let byte_idx = source.utf16_to_byte(local_offset).unwrap();
-        #[cfg(feature = "rc")]
+        #[cfg(feature = "latest")]
         let byte_idx = source.lines().utf16_to_byte(local_offset).unwrap();
 
         let result = typst_ide::autocomplete(
@@ -348,9 +348,9 @@ impl Typst {
     pub fn definition(&mut self, local_offset: usize) -> JsValue {
         let source = self.world.source(self.world.main()).unwrap();
 
-        #[cfg(feature = "stable")]
+        #[cfg(feature = "legacy")]
         let byte_idx = source.utf16_to_byte(local_offset).unwrap();
-        #[cfg(feature = "rc")]
+        #[cfg(feature = "latest")]
         let byte_idx = source.lines().utf16_to_byte(local_offset).unwrap();
 
         let tokens = typst_ide::definition(
@@ -416,7 +416,7 @@ impl Typst {
         let code_length = end_offset - start_offset; // id を含む
         let cursor_local_offset = cursor_offset - start_offset + local_offset;
 
-        #[cfg(feature = "stable")]
+        #[cfg(feature = "legacy")]
         let get_raw_offset = |byte_pos: usize| -> Option<usize> {
             let raw = source.byte_to_utf16(byte_pos)?;
             // ? idは特別にハイライト処理をするため判定から除外
@@ -426,9 +426,9 @@ impl Typst {
                 None
             }
         };
-        #[cfg(feature = "rc")]
+        #[cfg(feature = "latest")]
         let lines = source.lines();
-        #[cfg(feature = "rc")]
+        #[cfg(feature = "latest")]
         let get_raw_offset = |byte_pos: usize| -> Option<usize> {
             let raw = lines.byte_to_utf16(byte_pos)?;
             // ? idは特別にハイライト処理をするため判定から除外
@@ -570,7 +570,7 @@ impl Typst {
                 get_raw_offset(enclosing_end),
             ) {
                 changes.adds.push((
-                    2147483646,
+                    2147483645,
                     get_cm_offset(local_start - 1),
                     get_cm_offset(local_start),
                     "typ-enclosing".to_string(),
