@@ -8,7 +8,7 @@ use wasm_bindgen::{JsCast, JsValue};
 #[cfg(feature = "latest")]
 use crate::typst::LibraryExt;
 use crate::typst::{
-    Library, World,
+    Feature, Library, World,
     diag::{FileError, FileResult, PackageError},
     ecow::EcoString,
     foundations::{Bytes, Content, Datetime, Property, Style, Value},
@@ -52,7 +52,9 @@ impl WasmWorld {
         }
 
         // ライブラリを設定
-        let mut library = Library::default();
+        let mut library = Library::builder()
+            .with_features([Feature::Html].into_iter().collect())
+            .build();
         // 値 `fontsize` を定義
         let fontsize_abs = Abs::pt(fontsize / 1.25);
         let fontsize_val = Value::Length(fontsize_abs.into());

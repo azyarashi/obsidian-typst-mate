@@ -16,8 +16,8 @@ export const createDiagnosticExtension = (_helper: EditorHelper, getMathObject: 
     const diagnostics = view.state.field(diagnosticsState);
     return diagnostics.map((diag) => {
       return {
-        from: diag.from - mathObject.startOffset,
-        to: diag.to - mathObject.startOffset,
+        from: diag.from + mathObject.startOffset,
+        to: diag.to + mathObject.startOffset,
         message: diag.message,
         severity: diag.severity,
       };

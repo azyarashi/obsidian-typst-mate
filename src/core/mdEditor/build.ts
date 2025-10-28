@@ -15,6 +15,7 @@ import { createFocusExtension } from './extensions/others/focus';
 import { createMathStateExtension } from './extensions/others/math';
 import { createAutocompleteExtension } from './extensions/suggests/autocomplete';
 import { createSnippetSuggestExtension } from './extensions/suggests/snippet';
+import { createDefinitionExtension } from './extensions/tooltips/definition';
 import { createInlinePreviewExtension } from './extensions/tooltips/inlinePreview';
 
 export function buildExtension(editorHelper: EditorHelper) {
@@ -46,6 +47,7 @@ export function buildExtension(editorHelper: EditorHelper) {
 
     // Tooltips
     settings.enableInlinePreview ? createInlinePreviewExtension(editorHelper, getMathObject) : [],
+    settings.enableDefinitionTooltip ? createDefinitionExtension(editorHelper, getMathObject) : [],
 
     // Others
     createFocusExtension(editorHelper),

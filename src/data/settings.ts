@@ -24,7 +24,7 @@ export interface Settings {
   complementSymbolWithUnicode: boolean;
   // Tooltips
   enableInlinePreview: boolean;
-  enableDiagnosticTooltip: boolean;
+  enableDefinitionTooltip: boolean;
 
   // Others
   skipPreparationWaiting: boolean;
@@ -68,7 +68,7 @@ export const DEFAULT_SETTINGS: Settings = {
   enableDiagnostic: true,
   enableSnippets: true,
   enableAutocomplete: true,
-  enableDiagnosticTooltip: true,
+  enableDefinitionTooltip: true,
 
   preamble: [
     '#set page(margin: 0pt, width: auto, height: auto)',

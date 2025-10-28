@@ -21,9 +21,11 @@ Snippet                  | Script
 
 For details about the processor / snippet(script) / shortcut / tab jump, see [Processor](docs/processor/) / [Snippet](docs/snippet/) / [Shortcut](docs/Shortcut.md) / [TabJump](docs/TabJump.md).
 
-I welcome pull requests featuring your wonderful snippets!
+I welcome [Discussions](https://github.com/azyarashi/obsidian-typst-mate/discussions/categories/show-and-tell) featuring your wonderful snippets!
 
-Are you an Obsidian LateX Suite user? Check out [this guide](docs/obsidian-latex-suite-migration.md).
+PRs are welcome, but since I'm a beginner and often change the code logic, please open an issue and notify me before submitting a pull request.
+
+Are you an Obsidian LaTeX Suite user? Check out [this guide](docs/obsidian-latex-suite-migration.md).
 
 ---
 
@@ -92,7 +94,7 @@ Until then, please install using the official plugin [BRAT](https://tfthacker.co
 #set page(margin: 0pt, width: auto, height: auto)
 #show raw: set text(1.25em)
 #set text(size: fontsize)
-#let scr(it) = text(features: ("ss01",), box($cal(it)$))
+// #let scr(it) = text(features: ("ss01",), box($cal(it)$))  // 0.13.1 or before
 ```
 
 ### Custom Styling

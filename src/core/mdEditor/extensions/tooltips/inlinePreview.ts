@@ -14,14 +14,19 @@ export const createInlinePreviewExtension = (helper: EditorHelper, getMathObject
 
     update(value, _tr) {
       const mathObject = getMathObject();
-      if (!mathObject) return { position: null };
-      if (mathObject.kind !== 'inline') return { position: null };
+      if (!mathObject) return closeInlinePreview(helper);
+      if (mathObject.kind !== 'inline') return closeInlinePreview(helper);
 
       const position = helper.calculatePopupPosition(mathObject.startPos, mathObject.endPos) ?? value.position;
-      if (!position) return { position: null };
+      if (!position) return closeInlinePreview(helper);
 
       helper.inlinePreviewEl.render(position, mathObject.content);
       return { position };
     },
   });
 };
+
+function closeInlinePreview(helper: EditorHelper) {
+  helper.inlinePreviewEl.close();
+  return { position: null };
+}

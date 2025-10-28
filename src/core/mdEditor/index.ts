@@ -9,7 +9,6 @@ import type { MathObject } from './extensions/others/math';
 
 export class EditorHelper {
   editor?: Editor;
-  extension?: Extension;
   plugin: ObsidianTypstMate;
 
   inlinePreviewEl: InlinePreviewElement;
@@ -30,14 +29,15 @@ export class EditorHelper {
     this.plugin.app.workspace.containerEl.appendChild(this.snippetSuggestEl);
     this.plugin.app.workspace.containerEl.appendChild(this.symbolSuggestEl);
 
-    this.extension = buildExtension(this);
-    this.plugin.registerEditorExtension(this.extension);
+    const extension = buildExtension(this);
+    this.plugin.registerEditorExtension(extension);
+
     this.editor = this.plugin.app.workspace.getActiveViewOfType(MarkdownView)?.editor;
   }
 
   registerExtensions() {
-    this.extension = buildExtension(this);
-    this.plugin.registerEditorExtension(this.extension);
+    const extension = buildExtension(this);
+    this.plugin.registerEditorExtension(extension);
   }
 
   close() {
