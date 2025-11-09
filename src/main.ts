@@ -6,6 +6,7 @@ import { proxy, type Remote, wrap } from 'comlink';
 import {
   debounce,
   type EventRef,
+  type FileSystemAdapter,
   loadMathJax,
   MenuItem,
   Notice,
@@ -16,6 +17,7 @@ import {
   type WorkspaceLeaf,
 } from 'obsidian';
 import { tex2typst, typst2tex } from 'tex2typst';
+
 import { EditorHelper } from './core/editor/editor';
 import { DEFAULT_SETTINGS, type Settings, SettingTab } from './core/settings/settings';
 import ExcalidrawPlugin from './extensions/excalidraw';
@@ -89,7 +91,7 @@ export default class ObsidianTypstMate extends Plugin {
     // 必要なディレクトリの作成
     await this.tryCreateDirs();
     // 他のプラグインとの連携
-    this.connectOtherPlugins();
+    await this.connectOtherPlugins();
 
     // Wasm の準備
     if (!(await adapter.exists(this.wasmPath))) await this.downloadWasm(version);
@@ -98,7 +100,7 @@ export default class ObsidianTypstMate extends Plugin {
     // TypstManager を設定する
     await this.prepareTypst();
 
-    // ? Obsidian の起動時間を短縮するため setTimeout を使用
+    // ? Obsidian の起動時間を短縮するため onLayoutReady を使用
     this.app.workspace.onLayoutReady(() => {
       const leafs = [
         ...this.app.workspace.getLeavesOfType(TypstToolsView.viewtype),
@@ -129,7 +131,8 @@ export default class ObsidianTypstMate extends Plugin {
   }
 
   private setPaths() {
-    this.baseDirPath = this.app.vault.adapter.basePath;
+    this.baseDirPath =
+      this.app.vault.adapter.basePath ?? (this.app.vault.adapter as FileSystemAdapter)?.getBasePath() ?? '';
     this.pluginDirNPath = `${this.app.vault.configDir}/plugins/${this.pluginId}`; // .obsidian/plugins/typst-mate
     this.fontsDirNPath = `${this.pluginDirNPath}/fonts`;
     this.cachesDirNPath = `${this.pluginDirNPath}/caches`;
@@ -223,9 +226,9 @@ export default class ObsidianTypstMate extends Plugin {
     return leaf;
   }
 
-  private connectOtherPlugins() {
+  private async connectOtherPlugins() {
     // Excalidraw
-    if ('obsidian-excalidraw-plugin' in this.app.plugins.plugins) {
+    if (await this.app.vault.adapter.exists(`${this.app.vault.configDir}/plugins/obsidian-excalidraw-plugin`)) {
       const excalidrawPlugin = this.app.plugins.plugins['obsidian-excalidraw-plugin'];
       this.excalidraw = new ExcalidrawPlugin(this, excalidrawPlugin);
       this.excalidrawPluginInstalled = true;
@@ -234,7 +237,7 @@ export default class ObsidianTypstMate extends Plugin {
 
   private addCommands() {
     this.addCommand({
-      id: 'typst-tools-open',
+      id: 'open-tools',
       name: 'Open Typst Tools',
       callback: async () => {
         const leaf = await this.activateLeaf();
@@ -243,7 +246,7 @@ export default class ObsidianTypstMate extends Plugin {
     });
 
     this.addCommand({
-      id: 'typst-toggle-background-rendering',
+      id: 'toggle-background-rendering',
       name: 'Toggle Background Rendering',
       callback: async () => {
         this.settings.enableBackgroundRendering = !this.settings.enableBackgroundRendering;
@@ -253,7 +256,7 @@ export default class ObsidianTypstMate extends Plugin {
     });
 
     this.addCommand({
-      id: 'typst-tex2typ',
+      id: 'tex2typ',
       name: 'Replace tex in markdown content or selection to typst',
       editorCallback: async (editor) => {
         const selection = editor.getSelection();
@@ -286,20 +289,20 @@ export default class ObsidianTypstMate extends Plugin {
     });
 
     this.addCommand({
-      id: 'typst-box-current-equation',
+      id: 'box-current-equation',
       name: 'Box current equation',
       editorCallback: this.editorHelper.boxCurrentEquation.bind(this.editorHelper),
     });
 
     this.addCommand({
-      id: 'typst-select-current-equation',
+      id: 'select-current-equation',
       name: 'Select current equation',
       editorCallback: this.editorHelper.selectCurrentEquation.bind(this.editorHelper),
     });
 
     if (this.excalidrawPluginInstalled) {
       this.addCommand({
-        id: 'typst-render-to-excalidraw',
+        id: 'render-to-excalidraw',
         name: 'Render to Excalidraw',
         callback: () => {
           new ExcalidrawModal(this.app, this).open();
@@ -433,15 +436,14 @@ export default class ObsidianTypstMate extends Plugin {
           .catch(() => {});
       },
     };
-    const wasm = await adapter.readBinary(wasmPath);
 
     if (this.settings.enableBackgroundRendering) {
       this.worker = new TypstWorker();
       const api = wrap<typeof $>(this.worker);
-      this.typst = await new api(wasm, this.localPackagesDirPaths, this.baseDirPath, Platform.isDesktopApp);
+      this.typst = await new api(this.localPackagesDirPaths, this.baseDirPath, Platform.isDesktopApp);
       await this.typst.setMain(proxy(main));
     } else {
-      this.typst = new Typst(wasm, this.localPackagesDirPaths, this.baseDirPath, Platform.isDesktopApp);
+      this.typst = new Typst(this.localPackagesDirPaths, this.baseDirPath, Platform.isDesktopApp);
       this.typst.setMain(main);
     }
 
@@ -486,10 +488,8 @@ export default class ObsidianTypstMate extends Plugin {
     for (const leaf of leafs) leaf.detach();
   }
 
-  async reload(openSettingsTab: boolean) {
-    await this.app.plugins.disablePlugin(this.pluginId); // ? onunload も呼ばれる
-    await this.app.plugins.enablePlugin(this.pluginId); // ? onload も呼ばれる
-    if (openSettingsTab) this.app.setting.openTabById(this.pluginId);
+  async reload(_openSettingsTab: boolean) {
+    new Notice('Plugins can no longer reload themselves, you must do this manually. Sorry.');
   }
 
   async loadSettings() {
@@ -500,5 +500,5 @@ export default class ObsidianTypstMate extends Plugin {
     await this.saveData(this.settings);
   }
 
-  override onConfigFileChange = debounce(this.loadSettings.bind(this), 500, true);
+  override onExternalSettingsChange = debounce(this.loadSettings.bind(this), 500, true);
 }

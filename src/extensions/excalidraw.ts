@@ -16,9 +16,7 @@ export default class ExcalidrawPlugin {
   }
 
   async addTypst(code: string, processor: ExcalidrawProcessor) {
-    if (!this.ea)
-      // @ts-expect-error
-      this.ea = this.plugin.app.plugins.plugins['obsidian-excalidraw-plugin'].ea as ExcalidrawAutomate;
+    if (!this.ea) this.ea = this.plugin.app.plugins.plugins['obsidian-excalidraw-plugin'].ea as ExcalidrawAutomate;
 
     this.ea.setView();
     this.ea.clear();

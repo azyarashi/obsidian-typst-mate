@@ -36,7 +36,14 @@ send_wrapper = "^0.6"
 [features]
 default = []
 
+
 [profile.release]
-lto = "thin"
+opt-level = "s"
+lto = true
 codegen-units = 1
 panic = "abort"
+debug = false
+strip = "debuginfo"
+
+#[package.metadata.wasm-pack.profile.release]
+#wasm-opt = ["-Os", "--enable-mutable-globals", "--strip-debug"]

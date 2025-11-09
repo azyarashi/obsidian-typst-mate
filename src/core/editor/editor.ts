@@ -10,6 +10,7 @@ import type SymbolSuggestElement from './elements/SymbolSuggest';
 
 import './editor.css';
 
+import type { CodeMirrorEditor } from 'obsidian-typings';
 import SHORTCUTS_DATA from '@/data/shortcuts.json';
 import { snippetRegex } from './elements/SnippetSuggest';
 import { symbolRegex } from './elements/SymbolSuggest';
@@ -368,7 +369,7 @@ export class EditorHelper {
       this.updateHighlightsOnBracketPairEnclosingCursor();
       highlighted = true;
     });
-    observer.observe(this.editor!.containerEl, {
+    observer.observe(this.plugin.app.workspace.containerEl, {
       childList: true,
       subtree: true,
     });
@@ -482,11 +483,10 @@ export class EditorHelper {
   }
 
   private extractInlineMathObjectInsideDollarOutsideCursor(offset: number): MathObject | undefined {
-    const doc = this.editor?.cm.state.doc;
-    if (!doc) return;
+    if (!this.editor) return;
 
     const cursor = this.editor!.offsetToPos(offset);
-    const lineOnCursor = doc.line(cursor.line + 1).text;
+    const lineOnCursor = this.editor.getLine(cursor.line);
 
     const lineBeforeCursor = lineOnCursor.slice(0, cursor.ch);
     const lineAfterCursor = lineOnCursor.slice(cursor.ch);
@@ -565,14 +565,14 @@ export class EditorHelper {
   // ? カーソルが数式内にあるとは限らない
   // ? |$$ でも $!$ でも 単に範囲選択中でも存在する
   isActiveMathExists() {
-    return this.editor?.containerEl.querySelector('span.cm-formatting-math');
+    return this.plugin.app.workspace.containerEl.querySelector('span.cm-formatting-math');
   }
 
   // TODO: これは先頭の $$ にしかない. ビューポートから外れると認識されない
   isActiveDisplayMathExists() {
     return (
-      this.editor?.containerEl.querySelector('span.cm-formatting-math.cm-math-block') ||
-      this.editor?.containerEl.querySelector('span.cm-formatting-math-end')?.textContent === '$$'
+      this.plugin.app.workspace.containerEl.querySelector('span.cm-formatting-math.cm-math-block') ||
+      this.plugin.app.workspace.containerEl.querySelector('span.cm-formatting-math-end')?.textContent === '$$'
     );
   }
 
@@ -601,16 +601,15 @@ export class EditorHelper {
     return backtickCount % 2 === 1;
   }
 
-  calculatePopupPosition(startPos: EditorPosition, endPos: EditorPosition): PopupPosition {
-    if (!this.editor) throw new Error();
-    const startCoords = this.editor.coordsAtPos(startPos, false);
-    const endCoords = this.editor.coordsAtPos(endPos, false);
+  calculatePopupPosition(cm: CodeMirrorEditor, startPos: EditorPosition, endPos: EditorPosition): PopupPosition {
+    const startCoords = cm.charCoords(startPos, 'window');
+    const endCoords = cm.charCoords(endPos, 'window');
 
     if (!startCoords || !endCoords) throw new Error();
 
     const x =
       Math.abs(startCoords.top - endCoords.top) > 8
-        ? this.editor.coordsAtPos({ line: startPos.line, ch: 0 }, false).left
+        ? cm.charCoords({ line: startPos.line, ch: 0 }, 'window').left
         : startCoords.left;
 
     const y = endCoords.bottom;

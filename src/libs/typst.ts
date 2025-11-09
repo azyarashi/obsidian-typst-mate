@@ -29,7 +29,10 @@ export default class TypstManager {
 
   async init() {
     this.ready = false;
-    await this.plugin.typst.init(this.plugin.app.vault.config.baseFontSize ?? DEFAULT_FONT_SIZE);
+    await this.plugin.typst.init(
+      await this.plugin.app.vault.adapter.readBinary(this.plugin.wasmPath),
+      parseInt(getComputedStyle(document.body).getPropertyValue('--font-text-size').trim(), 10) ?? DEFAULT_FONT_SIZE,
+    );
 
     const fontPaths = (await this.plugin.app.vault.adapter.list(this.plugin.fontsDirNPath)).files.filter((file) =>
       file.endsWith('.font'),

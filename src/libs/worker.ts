@@ -15,7 +15,6 @@ const xhr = new XMLHttpRequest();
 xhr.overrideMimeType('text/plain; charset=x-user-defined');
 
 export default class $ {
-  wasm: ArrayBuffer;
   module!: InitOutput;
   typst!: Typst;
   localPackagesDirPaths: string[];
@@ -23,8 +22,7 @@ export default class $ {
   path?: typeof pathModule;
   baseDirPath: string;
 
-  constructor(wasm: ArrayBuffer, localPackagesDirPaths: string[], baseDirPath: string, isDesktopApp: boolean) {
-    this.wasm = wasm;
+  constructor(localPackagesDirPaths: string[], baseDirPath: string, isDesktopApp: boolean) {
     this.localPackagesDirPaths = localPackagesDirPaths;
     this.baseDirPath = baseDirPath;
     if (isDesktopApp) {
@@ -33,10 +31,10 @@ export default class $ {
     }
   }
 
-  async init(fontsize: number): Promise<void> {
+  async init(wasm: ArrayBuffer, fontsize: number): Promise<void> {
     if (this.typst) this.typst.free();
     this.module = await init({
-      module_or_path: await WebAssembly.compile(this.wasm),
+      module_or_path: WebAssembly.compile(wasm),
     });
     this.typst = new Typst(this.fetch.bind(this), fontsize);
   }

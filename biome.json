@@ -30,7 +30,8 @@
       "suspicious": {
         "noExplicitAny": "off",
         "noArrayIndexKey": "off",
-        "noTemplateCurlyInString": "off"
+        "noTemplateCurlyInString": "off",
+        "noNonNullAssertedOptionalChain": "off"
       },
       "correctness": {
         "useExhaustiveDependencies": "off",
