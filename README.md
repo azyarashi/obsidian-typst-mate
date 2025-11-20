@@ -97,7 +97,7 @@ If the export doesn't work correctly, try disabling background rendering before 
 ```typst
 #set page(margin: 0pt, width: auto, height: auto)
 #show raw: set text(1.25em)
-#set text(size: fontsize)  // This refers to the settings in Obsidian
+#set text(size: fontsize)  // `fontsize` refers to the settings in Obsidian
 // Typst 0.13.1 or before (plugin 2.1.7 or before)
 // #let scr(it) = text(features: ("ss01",), box($cal(it)$))
 ```
@@ -133,7 +133,7 @@ This plugin makes use of a large WebAssembly (Wasm) binary.
 Bundling it directly would significantly increase startup time, so it is automatically downloaded from the [Releases](https://github.com/azyarashi/obsidian-typst-mate/releases) page instead.
 
 > [!WARNING]
-> (Android devices only) Android imposes strict limits on heap size, which may cause crashes when loading WebAssembly. Resolving this requires support from the Obsidian team or a rooted device.
+> (Android devices only) Android imposes strict limits on heap size, which may cause crashes when loading WebAssembly. Resolving this requires a rooted device or [support from the Obsidian team](https://forum.obsidian.md/t/enable-largeheap-in-obsidian-android-app-to-avoid-ooms/108119) (please `+1`).
 
 Network access is also required for installing Typst packages and for displaying lists of packages and symbols within Typst Tools.
 
