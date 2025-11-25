@@ -175,6 +175,7 @@ export default class TypstManager {
 
         processor =
           this.plugin.settings.processor.inline?.processors.find((p) => code.startsWith(`${p.id}:`)) ??
+          this.plugin.settings.processor.inline?.processors.at(-1) ??
           DEFAULT_SETTINGS.processor.inline?.processors.at(-1)!;
         if (processor.id.length !== 0) code = code.slice(processor.id.length + 1);
 
