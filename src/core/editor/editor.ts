@@ -28,6 +28,9 @@ export class EditorHelper {
   private snippetSuggestEl: SnippetSuggestElement;
   private symbolSuggestEl: SymbolSuggestElement;
 
+  beforeChar: string | null = null;
+  lastKeyDownTime: number = 0;
+
   constructor(plugin: ObsidianTypstMate) {
     this.plugin = plugin;
 
@@ -203,6 +206,49 @@ export class EditorHelper {
    */
 
   private keyDown(e: KeyboardEvent) {
+    if (!this.mathObject) {
+      if (!this.editor) return;
+      if (this.beforeChar === 'm' && e.key === 'k') {
+        if (Date.now() - this.lastKeyDownTime > 500) return;
+        e.preventDefault();
+        const { line, ch } = this.editor.getCursor();
+        this.editor.replaceRange(
+          '$$\n\n$$',
+          {
+            line,
+            ch: ch - 1,
+          },
+          { line, ch: ch },
+        );
+
+        this.editor?.setCursor({
+          line: line,
+          ch: ch + 2,
+        });
+      } else if (this.beforeChar === 'd' && e.key === 'm') {
+        if (Date.now() - this.lastKeyDownTime > 500) return;
+        e.preventDefault();
+        const { line, ch } = this.editor.getCursor();
+        this.editor.replaceRange(
+          '${}  {}$',
+          {
+            line,
+            ch: ch - 1,
+          },
+          { line, ch: ch },
+        );
+
+        this.editor?.setCursor({
+          line: line,
+          ch: ch + 2,
+        });
+      } else {
+        this.beforeChar = e.key;
+        this.lastKeyDownTime = Date.now();
+      }
+      return;
+    }
+
     switch (e.key) {
       case 'Tab': {
         // TabJump
