@@ -84,12 +84,12 @@ Until then, please install using the official plugin [BRAT](https://obsidian.md/
 ### Other Plugins
 
 - [Excalidraw](https://www.obsidianstats.com/plugins/obsidian-excalidraw-plugin) (use the `typst-render-to-excalidraw` command)
-- [Equation Citator](https://github.com/FRIEDparrot/obsidian-equation-citator)
-- [Markmind](https://www.obsidianstats.com/plugins/obsidian-markmind) (requires background rendering to be disabled)
+- [Equation Citator](https://github.com/FRIEDparrot/obsidian-equation-citator) (`Advanced Settings` > `Enable Typst Mode` > reload the plugin)
+- [Markmind](https://www.obsidianstats.com/plugins/obsidian-markmind)
 - [No more flickering inline math](https://www.obsidianstats.com/plugins/inline-math)
 - [Better Export PDF](https://www.obsidianstats.com/plugins/better-export-pdf)
 - [Export Image plugin](https://www.obsidianstats.com/plugins/obsidian-export-image)
-- [Webpage HTML Export](https://www.obsidianstats.com/plugins/webpage-html-export) (don't forget to include CSS from Style Options)
+- [Webpage HTML Export](https://www.obsidianstats.com/plugins/webpage-html-export) (don't forget to include CSS from Style Options and disable background rendering)
 
 If the export doesn't work correctly, try disabling background rendering before exporting.
 
