@@ -25,7 +25,7 @@ export default defineConfig(async ({ mode }) => {
         formats: ['cjs'],
       },
       emptyOutDir: prod,
-      minify: 'esbuild',
+      minify: 'oxc',
       rollupOptions: {
         output: {
           entryFileNames: 'main.js',
