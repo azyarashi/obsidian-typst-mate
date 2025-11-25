@@ -56,6 +56,7 @@ Are you an Obsidian LaTeX Suite user? Check out [this guide](docs/obsidian-latex
 - PDF Export, [Better Export PDF](https://www.obsidianstats.com/plugins/better-export-pdf), [Export Image plugin](https://www.obsidianstats.com/plugins/obsidian-export-image), and [Webpage HTML Export](https://www.obsidianstats.com/plugins/webpage-html-export) compatibility
 - Typst Tools
   - Symbols viewer
+  - Typst handwritten symbol recognition (Detypify)
   - Packages viewer
   - Snippets editor
   - Processors editor
@@ -116,8 +117,9 @@ Depending on the three modes (`inline`, `display`, and `codeblock`), the styling
 Typst Mate leverages the following open-source projects:
 
 - [Typst](https://typst.app/) – a modern and powerful typesetting system
-- [MiTex](https://github.com/mitex-rs/mitex) – a fast, lightweight LaTeX to Typst converter with **high compatibility**
-- [tex2typst](https://github.com/qwinsi/tex2typst) – a fast, lightweight bidirectional converter between TeX/LaTeX and Typst with **sophisticated output**
+- [MiTex](https://github.com/mitex-rs/mitex) – a fast and lightweight LaTeX to Typst converter with **high compatibility**
+- [tex2typst](https://github.com/qwinsi/tex2typst) – a fast and lightweight bidirectional converter between TeX/LaTeX and Typst with **sophisticated output**
+- [Detypify](https://github.com/QuarticCat/detypify) - a tool for recognizing handwritten math symbols
 
 I'm grateful to the developers for making this plugin possible!
 

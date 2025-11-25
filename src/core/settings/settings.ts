@@ -236,7 +236,9 @@ export class SettingTab extends PluginSettingTab {
         new CustomFragment()
           .appendText('The UI will no longer freeze, but ')
           .appendText('it may conflict with plugins related to export or rendering')
-          .appendText('.'),
+          .appendText(
+            '. When exporting to PDF from the Markdown menu, this setting will be automatically disabled temporarily.',
+          ),
       )
       .addToggle((toggle) => {
         toggle.setValue(this.plugin.settings.enableBackgroundRendering);
