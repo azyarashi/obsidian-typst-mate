@@ -222,9 +222,10 @@ export class EditorHelper {
         );
 
         this.editor?.setCursor({
-          line: line,
-          ch: ch + 2,
+          line: line + 1,
+          ch: 0,
         });
+        this.beforeChar = null;
       } else if (this.beforeChar === 'd' && e.key === 'm') {
         if (Date.now() - this.lastKeyDownTime > 500) return;
         e.preventDefault();
@@ -242,6 +243,7 @@ export class EditorHelper {
           line: line,
           ch: ch + 2,
         });
+        this.beforeChar = null;
       } else {
         this.beforeChar = e.key;
         this.lastKeyDownTime = Date.now();
