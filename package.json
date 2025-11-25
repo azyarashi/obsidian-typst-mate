@@ -24,7 +24,7 @@
 		"i18next": "^25.6.3",
 		"obsidian": "^1.10.3",
 		"obsidian-excalidraw-plugin": "github:zsviczian/obsidian-excalidraw-plugin#master",
-		"obsidian-typings": "^4.63.0",
+		"obsidian-typings": "^4.68.0",
 		"postcss": "^8.5.6",
 		"vite": "npm:rolldown-vite@^7.2.7",
 		"vite-plugin-static-copy": "^3.1.4",
