@@ -12,7 +12,7 @@ jobs:
     permissions:
       contents: write
     env:
-      SCCACHE_DIR: ${{ github.workspace }}/.sccache
+      SCCACHE_GHA_ENABLED: "true"
       RUSTC_WRAPPER: sccache
 
     steps:
@@ -24,15 +24,6 @@ jobs:
 
       - name: Setup sccache
         uses: mozilla-actions/sccache-action@v0.0.9
-
-      - name: Cache sccache
-        uses: actions/cache@v4
-        with:
-          path: ${{ env.SCCACHE_DIR }}
-          key: sccache-${{ runner.os }}-${{ hashFiles('wasm/Cargo.lock') }}
-          restore-keys: |
-            sccache-${{ runner.os }}-${{ hashFiles('wasm/Cargo.lock') }}
-            sccache-${{ runner.os }}-
 
       - name: Use Bun
         uses: oven-sh/setup-bun@v2
