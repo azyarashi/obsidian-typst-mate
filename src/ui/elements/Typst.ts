@@ -1,52 +1,21 @@
 import type { Processor, ProcessorKind } from '@/libs/processor';
-import type { Diagnostic, SVGResult } from '@/libs/worker';
+import type { Diagnostic, HTMLResult, SVGResult } from '@/libs/worker';
 import type ObsidianTypstMate from '@/main';
 import { DiagnosticModal } from '@/ui/modals/diagnostic';
 
-export default class TypstElement extends HTMLElement {
+export default abstract class TypstElement extends HTMLElement {
   kind!: ProcessorKind;
   source!: string;
   processor!: Processor;
 
-  renderingFormat!: 'svg';
-
   plugin!: ObsidianTypstMate;
 
-  async render() {
-    const input = this.format();
+  abstract render(): Promise<this>;
+  postProcess(result: SVGResult | HTMLResult) {
+    if (this.plugin.settings.failOnWarning && result.diags.length !== 0) throw result.diags;
 
-    try {
-      const result = this.plugin.typst.svg(input, this.kind, this.processor.id);
-
-      if (result instanceof Promise) {
-        if (this.kind !== 'inline' && this.processor.fitToParentWidth && !this.source.includes('<br>'))
-          this.plugin.observer.register(
-            this,
-            (entry: ResizeObserverEntry) => {
-              const input =
-                `#let WIDTH = ${(entry.contentRect.width * 3) / 4}pt\n` +
-                this.format().replace('width: auto', 'width: WIDTH');
-
-              const result = this.plugin.typst.svg(input, this.kind, this.processor.id) as Promise<SVGResult>;
-
-              result
-                .then((result: SVGResult) => this.postProcess(result))
-                .catch((err: Diagnostic[]) => {
-                  this.handleError(err);
-                });
-            },
-            300,
-          );
-
-        result
-          .then((result: SVGResult) => this.postProcess(result))
-          .catch((err: Diagnostic[]) => this.handleError(err));
-      } else this.postProcess(result);
-    } catch (err) {
-      this.handleError(err as Diagnostic[]);
-    }
-
-    return this;
+    this.plugin.typstManager.beforeKind = this.kind;
+    this.plugin.typstManager.beforeId = this.processor.id;
   }
 
   format() {
@@ -56,14 +25,6 @@ export default class TypstElement extends HTMLElement {
     if (this.kind === 'display') formatted = formatted.replaceAll('<br>', '\n');
 
     return formatted;
-  }
-
-  postProcess(result: SVGResult) {
-    if (this.plugin.settings.failOnWarning && result.diags.length !== 0) throw result.diags;
-
-    this.plugin.typstManager.beforeKind = this.kind;
-    this.plugin.typstManager.beforeId = this.processor.id;
-    this.innerHTML = result.svg;
   }
 
   handleError(err: Diagnostic[]) {
@@ -79,7 +40,6 @@ export default class TypstElement extends HTMLElement {
 
       diagEl.textContent = `${err[0]?.message}${err[0]?.hints.length !== 0 ? ` [${err[0]?.hints.length} hints]` : ''}`;
 
-      // TODO: エラー箇所を表示する
       if (err[0]?.hints.length !== 0)
         diagEl.addEventListener('click', () => new DiagnosticModal(this.plugin.app, err).open());
 

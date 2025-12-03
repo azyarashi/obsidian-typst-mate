@@ -74,3 +74,8 @@
 .typstmate-excalidraw {
   overflow: visible;
 }
+
+mjx-container[jax="CHTML"] {
+  /* biome-ignore lint/complexity/noImportantStyles: override */
+  line-height: normal !important;
+}

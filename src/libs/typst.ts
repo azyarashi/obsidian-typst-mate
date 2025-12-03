@@ -14,6 +14,8 @@ import type { Processor, ProcessorKind } from './processor';
 import type { PackageSpec } from './worker';
 
 import './typst.css';
+import TypstHTMLElement from '@/ui/elements/HTML';
+import type TypstElement from '@/ui/elements/Typst';
 
 export default class TypstManager {
   plugin: ObsidianTypstMate;
@@ -115,6 +117,7 @@ export default class TypstManager {
 
   registerOnce() {
     overwriteCustomElements('typstmate-svg', TypstSVGElement);
+    overwriteCustomElements('typstmate-html', TypstHTMLElement);
     overwriteCustomElements('typstmate-symbols', SymbolSuggestElement);
     overwriteCustomElements('typstmate-snippets', SnippetSuggestElement);
     overwriteCustomElements('typstmate-inline-preview', InlinePreviewElement);
@@ -215,19 +218,33 @@ export default class TypstManager {
     containerEl.addClass(`typstmate-${kind}`, `typstmate-style-${processor.styling}`, `typstmate-id-${processor.id}`);
 
     // レンダリング
-    const typstSVGEl = document.createElement('typstmate-svg') as TypstSVGElement;
-    typstSVGEl.plugin = this.plugin;
-    typstSVGEl.kind = kind as ProcessorKind;
-    typstSVGEl.source = code;
-    typstSVGEl.processor = processor;
-    containerEl.appendChild(typstSVGEl);
+    let typstEl: TypstElement;
+
+    switch (processor.renderingEngine) {
+      case 'typst-svg': {
+        typstEl = document.createElement('typstmate-svg') as TypstSVGElement;
+
+        break;
+      }
+      case 'typst-html': {
+        typstEl = document.createElement('typstmate-html') as TypstHTMLElement;
+        break;
+      }
+    }
+
+    typstEl.plugin = this.plugin;
+    typstEl.kind = kind as ProcessorKind;
+    typstEl.source = code;
+    typstEl.processor = processor;
+    containerEl.appendChild(typstEl);
+
     // ちらつき防止
     if (this.beforeKind === kind && this.beforeId === processor.id)
-      typstSVGEl.replaceChildren(this.beforeElement.cloneNode(true));
+      typstEl.replaceChildren(this.beforeElement.cloneNode(true));
 
-    typstSVGEl.render();
+    typstEl.render();
 
-    this.beforeElement = typstSVGEl;
+    this.beforeElement = typstEl;
     return containerEl as HTMLElement;
   }
 

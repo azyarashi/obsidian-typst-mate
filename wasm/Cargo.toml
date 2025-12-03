@@ -11,6 +11,7 @@ typst = "0.14.0"
 typst-ide = "0.14.0"
 typst-svg = "0.14.0"
 typst-pdf = "0.14.0"
+typst-html = "0.14.0"
 typst-assets = { version = "0.14.0", features = ["fonts"] }
 typst-timing = "0.14.0"
 comemo = "^0"

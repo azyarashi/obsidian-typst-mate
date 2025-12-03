@@ -1,4 +1,4 @@
-export const RenderingEngineTokens = ['typst-svg', 'mathjax'] as const;
+export const RenderingEngineTokens = ['typst-svg', 'typst-html', 'mathjax'] as const;
 export type RenderingEngine = (typeof RenderingEngineTokens)[number];
 export const InlineStylingTokens = ['inline', 'inline-middle'] as const;
 export type InlineStyling = (typeof InlineStylingTokens)[number];
