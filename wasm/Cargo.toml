@@ -7,12 +7,12 @@ edition = "2024"
 crate-type = ["cdylib"]
 
 [dependencies]
-typst = "0.14.0"
-typst-ide = "0.14.0"
-typst-svg = "0.14.0"
-typst-pdf = "0.14.0"
-typst-assets = { version = "0.14.0", features = ["fonts"] }
-typst-timing = "0.14.0"
+typst = "0.14.1"
+typst-ide = "0.14.1"
+typst-svg = "0.14.1"
+typst-pdf = "0.14.1"
+typst-assets = { version = "0.14.1", features = ["fonts"] }
+typst-timing = "0.14.1"
 comemo = "^0"
 unscanny = "^0.1"
 
@@ -31,10 +31,6 @@ rustc-hash = "^2.1"
 
 chrono = "^0.4"
 send_wrapper = "^0.6"
-
-
-[features]
-default = []
 
 [profile.release]
 lto = true
