@@ -27,6 +27,9 @@ I welcome [Discussions](https://github.com/azyarashi/obsidian-typst-mate/discuss
 
 Are you an Obsidian LaTeX Suite user? Check out [this guide](docs/obsidian-latex-suite-migration.md).
 
+For a smoother experience, some values are different from (or added to) standard Typst defaults. (e.g. `datetime`, `smallcaps`, `fontsize`, and `CURSOR`)
+See the [notes here](docs/processor#notes) for details.
+
 ---
 
 ## Features
@@ -49,7 +52,7 @@ Are you an Obsidian LaTeX Suite user? Check out [this guide](docs/obsidian-latex
   - e.g., an option `inline-middle` to vertically center *inline math* so it lines up naturally with the surrounding text
 - Use **custom fonts** and import system fonts (desktop app only for import)
 - Almost all **Typst packages** are supported (desktop app only for import local packages)
-- **Table and blockquotes support** with proper display math handling (`<br>` and `\n[\s\t]*> ` will be automatically replaced with line breaks)
+- **Table and blockquotes support** with proper display math handling (`<br>` and `\n[\s\t]*>` will be automatically replaced with line breaks)
 - [Excalidraw](https://www.obsidianstats.com/plugins/obsidian-excalidraw-plugin) integration
 - [Equation Citator](https://github.com/FRIEDparrot/obsidian-equation-citator) integration
 - [No more flickering inline math](https://www.obsidianstats.com/plugins/inline-math) compatibility

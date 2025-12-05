@@ -52,7 +52,9 @@ Please note the following:
 
 - The `fontsize` [Layout/Length](https://typst.app/docs/reference/layout/length/) value references Obsidian's default settings and is fixed to the value when the plugin is loaded.
 - The `datetime` [Foundations/Datetime](https://typst.app/docs/reference/foundations/datetime/) value is fixed to the value when the plugin is loaded based on the local timezone.
+- The `smallcaps` [Foundations/Function(text)](https://typst.app/docs/reference/text/smallcaps/) value refers to the default `text` font used in **markup mode**, not the `text` font setting used inside **math mode** to use this in math mode easily.
+- The `CURSOR` [Foundations/text] value is implemented with an element equivalent to `text(fill: rgb("#44f"))[▮]` for the snippet feature.
 - Only the first page is rendered.
-- In tables or blockquotes, use *display math* instead of *code blocks*. `<br>` and `\n[\s\t]*> ` will be automatically replaced with line breaks.
+- In tables or blockquotes, use *display math* instead of *code blocks*. `<br>` and `\n[\s\t]*>` will be automatically replaced with line breaks.
 - While there are examples of using Typst for Syntax Highlighting in CodeBlock Processor, we recommend using the [Obsidian Shiki Plugin](https://github.com/mProjectsCode/obsidian-shiki-plugin).
 - Do not include special characters, especially slashes `/`, in Processors. This may cause issues.
