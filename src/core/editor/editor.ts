@@ -275,7 +275,7 @@ export class EditorHelper {
 
     let startOffset: number;
     let targetContent: string;
-    if (direction === 'backward') {
+    if (direction === 'backward' && !this.plugin.settings.revertTabToDefault) {
       if (offset === 0) {
         const cursorPos = this.editor!.offsetToPos(this.mathObject.startOffset - 2);
         preventDefault();
@@ -310,7 +310,7 @@ export class EditorHelper {
       });
       this.editor?.replaceSelection('');
       return;
-    } else {
+    } else if (!this.plugin.settings.revertTabToDefault) {
       // Bracket Jump
       let parenIndex: number, bracketIndex: number, braceIndex: number;
 

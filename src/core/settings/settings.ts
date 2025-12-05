@@ -39,6 +39,7 @@ export interface Settings {
   };
   snippets?: Snippet[];
   complementSymbolWithUnicode?: boolean;
+  revertTabToDefault?: boolean;
   patchPDFExport?: boolean;
   crashCount?: number;
 }
@@ -194,6 +195,7 @@ export const DEFAULT_SETTINGS: Settings = {
     },
   ],
   complementSymbolWithUnicode: true,
+  revertTabToDefault: false,
   patchPDFExport: false,
   crashCount: 0,
 };
@@ -602,6 +604,17 @@ export class SettingTab extends PluginSettingTab {
         toggle.setValue(this.plugin.settings.patchPDFExport ?? DEFAULT_SETTINGS.patchPDFExport!);
         toggle.onChange((value) => {
           this.plugin.settings.patchPDFExport = value;
+          this.plugin.saveSettings();
+        });
+      });
+
+    new Setting(containerEl)
+      .setName('Revert Tab to Default')
+      .setDesc('Reverts the Tab key behavior to the default indentation instead of jumping to the next placeholder.')
+      .addToggle((toggle) => {
+        toggle.setValue(this.plugin.settings.revertTabToDefault ?? DEFAULT_SETTINGS.revertTabToDefault!);
+        toggle.onChange((value) => {
+          this.plugin.settings.revertTabToDefault = value;
           this.plugin.saveSettings();
         });
       });
