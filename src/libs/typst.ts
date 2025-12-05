@@ -160,11 +160,15 @@ export default class TypstManager {
   render(code: string, containerEl: Element, kind: string): HTMLElement {
     // プロセッサーを決定
     let processor: Processor;
+    let offset = 0;
+    let noDiag = false;
     switch (kind) {
       case 'inline':
         // ? プラグイン No more flickering inline math との互換性のため
-        if (code.startsWith('{}') && code.endsWith('{}'))
-          code = code.slice(code.at(2) === ' ' ? 3 : 2, code.at(-3) === ' ' ? -3 : -2);
+        if (code.startsWith('{}') && code.endsWith('{}')) {
+          offset += code.at(2) === ' ' ? 3 : 2;
+          code = code.slice(offset, code.at(-3) === ' ' ? -3 : -2);
+        }
         // ? プラグイン obsidian-equation-citator との互換性のため
         if (code.startsWith('\\ref'))
           return 10 <= code.length
@@ -177,11 +181,16 @@ export default class TypstManager {
           this.plugin.settings.processor.inline?.processors.find((p) => code.startsWith(`${p.id}:`)) ??
           this.plugin.settings.processor.inline?.processors.at(-1) ??
           DEFAULT_SETTINGS.processor.inline?.processors.at(-1)!;
-        if (processor.id.length !== 0) code = code.slice(processor.id.length + 1);
+        if (processor.id.length !== 0) {
+          code = code.slice(processor.id.length + 1);
+          offset += 1;
+        }
 
         break;
-      case 'display':
-        code = code.replaceAll(/\n[\s\t]*> /g, '\n');
+      case 'display': {
+        const newCode = code.replaceAll(/\n[\s\t]*> /g, '\n');
+        if (newCode !== code) noDiag = true;
+        code = newCode;
 
         processor =
           this.plugin.settings.processor.display?.processors.find((p) => code.startsWith(`${p.id}`)) ??
@@ -189,6 +198,7 @@ export default class TypstManager {
         if (processor.id.length !== 0) code = code.slice(processor.id.length);
 
         break;
+      }
       case 'excalidraw':
         processor =
           this.plugin.settings.processor.excalidraw?.processors.find((p) => code.startsWith(`${p.id}`)) ??
@@ -213,6 +223,7 @@ export default class TypstManager {
         display: kind !== 'inline',
       });
     containerEl.addClass(`typstmate-${kind}`, `typstmate-style-${processor.styling}`, `typstmate-id-${processor.id}`);
+    offset += processor.id.length;
 
     // レンダリング
     const typstSVGEl = document.createElement('typstmate-svg') as TypstSVGElement;
@@ -220,6 +231,8 @@ export default class TypstManager {
     typstSVGEl.kind = kind as ProcessorKind;
     typstSVGEl.source = code;
     typstSVGEl.processor = processor;
+    typstSVGEl.offset = offset;
+    typstSVGEl.noDiag = noDiag;
     containerEl.appendChild(typstSVGEl);
     // ちらつき防止
     if (this.beforeKind === kind && this.beforeId === processor.id)

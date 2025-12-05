@@ -209,11 +209,9 @@ export interface PackageSpec {
 }
 
 export interface Diagnostic {
-  severity: number;
-  span: {
-    start: number;
-    end: number;
-  };
+  severity: string;
+  from: number;
+  to: number;
   message: string;
   trace: {
     span: {

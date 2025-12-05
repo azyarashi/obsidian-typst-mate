@@ -7,6 +7,7 @@ import type ObsidianTypstMate from '@/main';
 import type InlinePreviewElement from './elements/InlinePreview';
 import type SnippetSuggestElement from './elements/SnippetSuggest';
 import type SymbolSuggestElement from './elements/SymbolSuggest';
+import { buildExtension } from './extensions/build';
 
 import './editor.css';
 
@@ -62,11 +63,10 @@ export class EditorHelper {
         }
       }),
     );
-    this.plugin.registerEditorExtension(
-      Prec.high(
+    this.plugin.registerEditorExtension([
+      Prec.high([
+        buildExtension(this),
         EditorView.domEventHandlers({
-          // TODO: Tooltip
-          /*mousemove: (e) => {},*/
           // インラインプレビューの非表示
           mousedown: (e) => {
             if (this.inlinePreviewEl.style.display !== 'none') this.inlinePreviewEl.onClick(e);
@@ -79,8 +79,8 @@ export class EditorHelper {
             else this.keyDown(e);
           },
         }),
-      ),
-    );
+      ]),
+    ]);
   }
 
   close() {
@@ -638,7 +638,7 @@ export class EditorHelper {
         ? this.editor.coordsAtPos({ line: startPos.line, ch: 0 }, false).left
         : startCoords.left;
 
-    const y = endCoords.bottom;
+    const y = endCoords.bottom + 2;
 
     return { x, y };
   }

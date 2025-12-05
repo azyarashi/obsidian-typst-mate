@@ -14,7 +14,6 @@ import './settings.css';
 export interface Settings {
   enableBackgroundRendering: boolean;
   autoBaseColor: boolean;
-  failOnWarning: boolean;
   baseColor: string;
   enableMathjaxFallback: boolean;
   skipPreparationWaiting: boolean;
@@ -46,7 +45,6 @@ export interface Settings {
 export const DEFAULT_SETTINGS: Settings = {
   enableBackgroundRendering: true,
   autoBaseColor: true,
-  failOnWarning: false,
   baseColor: '#000000',
   enableMathjaxFallback: false,
   skipPreparationWaiting: false,
@@ -77,7 +75,7 @@ export const DEFAULT_SETTINGS: Settings = {
         {
           id: 'mid',
           renderingEngine: 'typst-svg',
-          format: '$\n{CODE}\n$',
+          format: '$ {CODE} $',
           styling: 'inline-middle',
           noPreamble: true,
           fitToParentWidth: false,
@@ -105,7 +103,7 @@ export const DEFAULT_SETTINGS: Settings = {
         {
           id: 'block',
           renderingEngine: 'typst-svg',
-          format: '$\n{CODE}\n$',
+          format: '$ {CODE} $',
           styling: 'block',
           noPreamble: false,
           fitToParentWidth: false,
@@ -113,7 +111,7 @@ export const DEFAULT_SETTINGS: Settings = {
         {
           id: '',
           renderingEngine: 'typst-svg',
-          format: '$\n{CODE}\n$',
+          format: '$ {CODE} $',
           styling: 'block-center',
           noPreamble: false,
           fitToParentWidth: false,
@@ -499,14 +497,6 @@ export class SettingTab extends PluginSettingTab {
 
   addAdvancedSettings(containerEl: HTMLElement) {
     new Setting(containerEl).setName('Advanced').setHeading();
-
-    new Setting(containerEl).setName('Fail on Warning').addToggle((toggle) => {
-      toggle.setValue(this.plugin.settings.failOnWarning);
-      toggle.onChange((value) => {
-        this.plugin.settings.failOnWarning = value;
-        this.plugin.saveSettings();
-      });
-    });
 
     new Setting(containerEl)
       .setName('Base Color')
