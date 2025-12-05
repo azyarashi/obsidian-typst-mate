@@ -67,8 +67,8 @@ impl WasmWorld {
 
         // ライブラリのスタイル定義
         // #show smallcaps: set text(font: "")
-        // TODO: 原因調査
-        let font_list = FontList(vec![].into());
+        // ? math モードで smallcap を使えた方が便利
+        let font_list = FontList(Vec::new());
         let text_style = Style::Property(Property::new(TextElem::font, font_list));
         let selector = Selector::Elem(Element::of::<SmallcapsElem>(), None);
         let transformation = Transformation::Style(text_style.into());
