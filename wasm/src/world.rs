@@ -8,10 +8,12 @@ use wasm_bindgen::{JsCast, JsValue};
 use typst::{
     Library, LibraryExt, World,
     diag::{FileError, FileResult, PackageError},
-    foundations::{Bytes, Content, Datetime, Property, Style, Value},
+    foundations::{
+        Bytes, Content, Datetime, Element, Property, Recipe, Selector, Style, Transformation, Value,
+    },
     layout::Abs,
-    syntax::{FileId, Source, VirtualPath, package::PackageSpec},
-    text::{Font, FontBook, TextElem},
+    syntax::{FileId, Source, Span, VirtualPath, package::PackageSpec},
+    text::{Font, FontBook, FontList, SmallcapsElem, TextElem},
     utils::LazyHash,
     visualize::{Color, Paint},
 };
@@ -50,17 +52,32 @@ impl WasmWorld {
 
         // ライブラリを設定
         let mut library = Library::default();
-        // 値 `fontsize` を定義
+
+        // ライブラリのグローバル定義
+        // #let fontsize = (16 / 1.25) * 1pt
         let fontsize_abs = Abs::pt(fontsize / 1.25);
         let fontsize_val = Value::Length(fontsize_abs.into());
-        // 値 `CURSOR` を定義
+        library.global.scope_mut().define("fontsize", fontsize_val);
+        // #let CURSOR = text(fill: rgb("#44f"))[▮]
         let cursor_elem = TextElem::new("▮".into());
         let cursor_paint = Paint::Solid(Color::from_str("#44f").unwrap());
         let cursor_style = Style::Property(Property::new(TextElem::fill, cursor_paint));
         let cursor_val = Value::Content(Content::new(cursor_elem).styled(cursor_style));
-        // グローバル定義に追加
-        library.global.scope_mut().define("fontsize", fontsize_val);
         library.global.scope_mut().define("CURSOR", cursor_val);
+
+        // ライブラリのスタイル定義
+        // #show smallcaps: set text(font: "")
+        // TODO: 原因調査
+        let font_list = FontList(vec![].into());
+        let text_style = Style::Property(Property::new(TextElem::font, font_list));
+        let selector = Selector::Elem(Element::of::<SmallcapsElem>(), None);
+        let transformation = Transformation::Style(text_style.into());
+        let recipe = Style::Recipe(Recipe::new(
+            Some(selector),
+            transformation,
+            Span::detached(),
+        ));
+        library.styles.push(recipe);
 
         Self {
             main,
