@@ -1,72 +1,75 @@
+import { Menu, Notice } from 'obsidian';
+import { DEFAULT_FONT_SIZE } from '@/constants';
+import { updateDiagnosticEffect } from '@/core/editor/extensions/decorations/diagnostic';
 import type { Processor, ProcessorKind } from '@/libs/processor';
 import type { Diagnostic, SVGResult } from '@/libs/worker';
 import type ObsidianTypstMate from '@/main';
 import { DiagnosticModal } from '@/ui/modals/diagnostic';
 
-export default class TypstElement extends HTMLElement {
+export default abstract class TypstElement extends HTMLElement {
   kind!: ProcessorKind;
   source!: string;
   processor!: Processor;
 
-  renderingFormat!: 'svg';
+  offset!: number;
+  noDiag!: boolean;
 
   plugin!: ObsidianTypstMate;
 
-  async render() {
-    const input = this.format();
+  isErr = true;
 
-    try {
-      const result = this.plugin.typst.svg(input, this.kind, this.processor.id);
+  menu = new Menu().addItem((item) => {
+    item.setTitle('Copy as script').onClick(() => {
+      const code = this.format().replaceAll(
+        'fontsize',
+        `${(this.plugin.app.vault.config.baseFontSize ?? DEFAULT_FONT_SIZE) / 1.25}pt`,
+      );
+      navigator.clipboard.writeText(code);
+      new Notice('Copied to clipboard!');
+    });
+  });
 
-      if (result instanceof Promise) {
-        if (this.kind !== 'inline' && this.processor.fitToParentWidth && !this.source.includes('<br>'))
-          this.plugin.observer.register(
-            this,
-            (entry: ResizeObserverEntry) => {
-              const input =
-                `#let WIDTH = ${(entry.contentRect.width * 3) / 4}pt\n` +
-                this.format().replace('width: auto', 'width: WIDTH');
+  abstract render(): Promise<this>;
+  postProcess(result: SVGResult) {
+    this.isErr = false;
 
-              const result = this.plugin.typst.svg(input, this.kind, this.processor.id) as Promise<SVGResult>;
+    // @ts-expect-error
+    updateDiagnosticEffect(this.plugin.editorHelper.editor!.cm!, {
+      diags: result.diags,
+      kind: this.kind,
+      processor: this.processor,
+      offset: this.offset,
+      noDiag: this.noDiag,
+    });
 
-              result
-                .then((result: SVGResult) => this.postProcess(result))
-                .catch((err: Diagnostic[]) => {
-                  this.handleError(err);
-                });
-            },
-            300,
-          );
-
-        result
-          .then((result: SVGResult) => this.postProcess(result))
-          .catch((err: Diagnostic[]) => this.handleError(err));
-      } else this.postProcess(result);
-    } catch (err) {
-      this.handleError(err as Diagnostic[]);
-    }
-
-    return this;
+    this.plugin.typstManager.beforeKind = this.kind;
+    this.plugin.typstManager.beforeId = this.processor.id;
   }
 
   format() {
     let formatted = this.processor.format.replace('{CODE}', this.source);
     formatted = this.processor.noPreamble ? formatted : `${this.plugin.settings.preamble}\n${formatted}`;
 
-    if (this.kind === 'display') formatted = formatted.replaceAll('<br>', '\n');
+    if (this.kind === 'display' && formatted.includes('<br>')) {
+      formatted = formatted.replaceAll('<br>', '\n');
+      this.noDiag = true;
+    }
 
     return formatted;
   }
 
-  postProcess(result: SVGResult) {
-    if (this.plugin.settings.failOnWarning && result.diags.length !== 0) throw result.diags;
-
-    this.plugin.typstManager.beforeKind = this.kind;
-    this.plugin.typstManager.beforeId = this.processor.id;
-    this.innerHTML = result.svg;
-  }
-
   handleError(err: Diagnostic[]) {
+    this.isErr = true;
+
+    // @ts-expect-error
+    updateDiagnosticEffect(this.plugin.editorHelper.editor!.cm!, {
+      diags: err,
+      kind: this.kind,
+      processor: this.processor,
+      offset: this.offset,
+      noDiag: this.noDiag,
+    });
+
     if (this.plugin.settings.enableMathjaxFallback) {
       this.replaceChildren(
         this.plugin.originalTex2chtml(this.source, {
@@ -79,7 +82,6 @@ export default class TypstElement extends HTMLElement {
 
       diagEl.textContent = `${err[0]?.message}${err[0]?.hints.length !== 0 ? ` [${err[0]?.hints.length} hints]` : ''}`;
 
-      // TODO: エラー箇所を表示する
       if (err[0]?.hints.length !== 0)
         diagEl.addEventListener('click', () => new DiagnosticModal(this.plugin.app, err).open());
 
@@ -87,5 +89,12 @@ export default class TypstElement extends HTMLElement {
       this.plugin.typstManager.beforeId = this.processor.id;
       this.replaceChildren(diagEl);
     }
+  }
+
+  connectedCallback() {
+    this.addEventListener('contextmenu', (event) => {
+      event.preventDefault();
+      this.menu.showAtPosition({ x: event.pageX, y: event.pageY });
+    });
   }
 }
