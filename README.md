@@ -37,6 +37,7 @@ Are you an Obsidian LaTeX Suite user? Check out [this guide](docs/obsidian-latex
 
 - Support *inline math*, *display math*, and *code blocks*
 - Support **preamble** and **templates** (called processors)
+- **Linter**
 - **`.typ` View**
 - **Bracket Jump**
 - **Typst Shortcut**
@@ -58,13 +59,19 @@ Are you an Obsidian LaTeX Suite user? Check out [this guide](docs/obsidian-latex
 - [Equation Citator](https://github.com/FRIEDparrot/obsidian-equation-citator) integration
 - [No more flickering inline math](https://www.obsidianstats.com/plugins/inline-math) compatibility
 - PDF Export, [Better Export PDF](https://www.obsidianstats.com/plugins/better-export-pdf), [Export Image plugin](https://www.obsidianstats.com/plugins/obsidian-export-image), and [Webpage HTML Export](https://www.obsidianstats.com/plugins/webpage-html-export) compatibility
-- Typst Tools
-  - Symbols viewer
-  - Typst handwritten symbol recognition (Detypify)
-  - Packages viewer
-  - Snippets editor
-  - Processors editor
-  - Bidirectional converter between TeX/LaTeX and Typst ([MiTex](https://github.com/mitex-rs/mitex) / [tex2typst](https://github.com/qwinsi/tex2typst)) (Typst to TeX/LaTeX conversion is `tex2typst` mode only)
+- <details><summary>Typst Tools</summary>
+  - Symbols viewer <br />
+  - Typst handwritten symbol recognition (Detypify) <br />
+  - Packages viewer <br />
+  - Snippets editor <br />
+  - Processors editor <br />
+  - Bidirectional converter between TeX/LaTeX and Typst ([MiTex](https://github.com/mitex-rs/mitex) / [tex2typst](https://github.com/qwinsi/tex2typst)) (Typst to TeX/LaTeX conversion is `tex2typst` mode only) </details>
+- <details><summary>Context Menu</summary>
+  - Copy as SVG (Obsidian Theme) <br />
+  - Copy as SVG (Typst Default) <br />
+  - Copy as PNG (Transparent) <br />
+  - Copy as PNG (Opaque) <br />
+  - Copy as img tag (for embedding into Obsidian notes) </details>
 
 For a better typing experience, I **strongly** recommend installing the [No more flickering inline math](https://www.obsidianstats.com/plugins/inline-math) plugin by [RyotaUshio](https://github.com/RyotaUshio):
 
