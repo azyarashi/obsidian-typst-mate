@@ -20,7 +20,7 @@ export default class TypstManager {
   ready = false;
 
   beforeKind?: ProcessorKind;
-  beforeId?: string;
+  beforeProcessor?: Processor;
   beforeElement: HTMLElement = document.createElement('span');
 
   constructor(plugin: ObsidianTypstMate) {
@@ -218,6 +218,7 @@ export default class TypstManager {
 
         kind = 'codeblock';
     }
+    this.beforeProcessor = processor;
     if (processor.renderingEngine === 'mathjax')
       return this.plugin.originalTex2chtml(code, {
         display: kind !== 'inline',
@@ -235,7 +236,8 @@ export default class TypstManager {
     typstSVGEl.noDiag = noDiag;
     containerEl.appendChild(typstSVGEl);
     // ちらつき防止
-    if (this.beforeKind === kind && this.beforeId === processor.id)
+    const { id: beforeId } = this.beforeProcessor;
+    if (this.beforeKind === kind && beforeId === processor.id)
       typstSVGEl.replaceChildren(this.beforeElement.cloneNode(true));
 
     typstSVGEl.render();

@@ -179,7 +179,7 @@ export class EditorHelper {
       }
 
       this.snippetSuggestEl.close();
-    } else if (!textBeforeCursor.endsWith(' ')) {
+    } else if (!this.plugin.typstManager.beforeProcessor?.disableSuggest && !textBeforeCursor.endsWith(' ')) {
       this.snippetSuggestEl.close();
 
       const match = textBeforeCursor.match(symbolRegex);

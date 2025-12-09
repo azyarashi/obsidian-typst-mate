@@ -148,7 +148,8 @@ export default class SymbolSuggestElement extends HTMLElement {
 
   private execute(symbol: SymbolData) {
     let content: string;
-    if (this.plugin.settings.complementSymbolWithUnicode) content = symbol.sym;
+    if (this.plugin.typstManager.beforeProcessor?.renderingEngine === 'mathjax') content = symbol.latexName;
+    else if (this.plugin.settings.complementSymbolWithUnicode) content = symbol.sym;
     else content = symbol.name;
 
     if (!['op', 'Large'].includes(symbol.mathClass)) content = `${content} `;

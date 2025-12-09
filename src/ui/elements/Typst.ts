@@ -43,7 +43,6 @@ export default abstract class TypstElement extends HTMLElement {
     });
 
     this.plugin.typstManager.beforeKind = this.kind;
-    this.plugin.typstManager.beforeId = this.processor.id;
   }
 
   format() {
@@ -86,7 +85,6 @@ export default abstract class TypstElement extends HTMLElement {
         diagEl.addEventListener('click', () => new DiagnosticModal(this.plugin.app, err).open());
 
       this.plugin.typstManager.beforeKind = this.kind;
-      this.plugin.typstManager.beforeId = this.processor.id;
       this.replaceChildren(diagEl);
     }
   }
