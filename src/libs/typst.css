@@ -44,6 +44,10 @@
 }
 
 /* codeblock */
+.markdown-source-view.mod-cm6 .cm-content > [contenteditable="false"]:has(> .typstmate-codeblock) {
+  contain: none !important;
+}
+
 .typstmate-codeblock.typstmate-style-codeblock svg {
   margin-top: 1em;
   margin-bottom: 1em;
