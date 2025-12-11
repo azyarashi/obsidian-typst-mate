@@ -40,6 +40,7 @@ export interface Settings {
   complementSymbolWithUnicode?: boolean;
   revertTabToDefault?: boolean;
   patchPDFExport?: boolean;
+  disableMacro?: boolean;
   crashCount?: number;
 }
 export const DEFAULT_SETTINGS: Settings = {
@@ -195,6 +196,7 @@ export const DEFAULT_SETTINGS: Settings = {
   complementSymbolWithUnicode: true,
   revertTabToDefault: false,
   patchPDFExport: false,
+  disableMacro: false,
   crashCount: 0,
 };
 
@@ -605,6 +607,17 @@ export class SettingTab extends PluginSettingTab {
         toggle.setValue(this.plugin.settings.revertTabToDefault ?? DEFAULT_SETTINGS.revertTabToDefault!);
         toggle.onChange((value) => {
           this.plugin.settings.revertTabToDefault = value;
+          this.plugin.saveSettings();
+        });
+      });
+
+    new Setting(containerEl)
+      .setName('Disable Macro')
+      .setDesc('Currently, there are only mk and dm, but you can create your own macros in the future.')
+      .addToggle((toggle) => {
+        toggle.setValue(this.plugin.settings.disableMacro ?? DEFAULT_SETTINGS.disableMacro!);
+        toggle.onChange((value) => {
+          this.plugin.settings.disableMacro = value;
           this.plugin.saveSettings();
         });
       });

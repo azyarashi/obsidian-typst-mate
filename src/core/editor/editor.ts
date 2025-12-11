@@ -206,7 +206,7 @@ export class EditorHelper {
    */
 
   private keyDown(e: KeyboardEvent) {
-    if (!this.mathObject) {
+    if (!this.plugin.settings.disableMacro && !this.mathObject) {
       if (!this.editor) return;
       if (this.beforeChar === 'm' && e.key === 'k') {
         if (Date.now() - this.lastKeyDownTime > 500) return;
