@@ -36,7 +36,7 @@ export default abstract class TypstElement extends HTMLElement {
     // ? キャンバスなどで呼ばれたとき用
     if (this.plugin.editorHelper.editor)
       // @ts-expect-error
-      updateDiagnosticEffect(this.plugin.editorHelper.editor!.cm!, {
+      updateDiagnosticEffect(this.plugin.editorHelper.editor.cm, {
         diags: result.diags,
         kind: this.kind,
         processor: this.processor,
@@ -64,7 +64,7 @@ export default abstract class TypstElement extends HTMLElement {
 
     if (this.plugin.editorHelper.editor)
       // @ts-expect-error
-      updateDiagnosticEffect(this.plugin.editorHelper.editor!.cm!, {
+      updateDiagnosticEffect(this.plugin.editorHelper.editor.cm, {
         diags: err,
         kind: this.kind,
         processor: this.processor,
