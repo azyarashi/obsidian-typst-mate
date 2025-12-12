@@ -33,14 +33,16 @@ export default abstract class TypstElement extends HTMLElement {
   postProcess(result: SVGResult) {
     this.isErr = false;
 
-    // @ts-expect-error
-    updateDiagnosticEffect(this.plugin.editorHelper.editor!.cm!, {
-      diags: result.diags,
-      kind: this.kind,
-      processor: this.processor,
-      offset: this.offset,
-      noDiag: this.noDiag,
-    });
+    // ? キャンバスなどで呼ばれたとき用
+    if (this.plugin.editorHelper.editor)
+      // @ts-expect-error
+      updateDiagnosticEffect(this.plugin.editorHelper.editor!.cm!, {
+        diags: result.diags,
+        kind: this.kind,
+        processor: this.processor,
+        offset: this.offset,
+        noDiag: this.noDiag,
+      });
 
     this.plugin.typstManager.beforeKind = this.kind;
   }
@@ -60,14 +62,15 @@ export default abstract class TypstElement extends HTMLElement {
   handleError(err: Diagnostic[]) {
     this.isErr = true;
 
-    // @ts-expect-error
-    updateDiagnosticEffect(this.plugin.editorHelper.editor!.cm!, {
-      diags: err,
-      kind: this.kind,
-      processor: this.processor,
-      offset: this.offset,
-      noDiag: this.noDiag,
-    });
+    if (this.plugin.editorHelper.editor)
+      // @ts-expect-error
+      updateDiagnosticEffect(this.plugin.editorHelper.editor!.cm!, {
+        diags: err,
+        kind: this.kind,
+        processor: this.processor,
+        offset: this.offset,
+        noDiag: this.noDiag,
+      });
 
     if (this.plugin.settings.enableMathjaxFallback) {
       this.replaceChildren(
