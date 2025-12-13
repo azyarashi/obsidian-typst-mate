@@ -453,12 +453,13 @@ export default class ObsidianTypstMate extends Plugin {
   }
 
   applyBaseColor(forceBaseColor: boolean = false) {
+    // ? Canvas にも適用するためbodyへの適用が必要
     if (!this.settings.autoBaseColor || forceBaseColor)
-      return document.documentElement.style.setProperty(BASE_COLOR_VAR, this.settings.baseColor);
+      return document.body.style.setProperty(BASE_COLOR_VAR, this.settings.baseColor);
 
     const bodyStyles = getComputedStyle(document.body);
     const baseColor = bodyStyles.getPropertyValue('--text-normal').trim();
-    document.documentElement.style.setProperty(BASE_COLOR_VAR, baseColor);
+    document.body.style.setProperty(BASE_COLOR_VAR, baseColor);
   }
 
   override async onunload() {
