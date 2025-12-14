@@ -4,6 +4,8 @@ import type { EditorView } from '@codemirror/view';
 import type { Processor, ProcessorKind } from '@/libs/processor';
 import type { EditorHelper } from '../../editor';
 
+import './diagnostic.css';
+
 interface TypstDiagnostic extends Diagnostic {
   hints: string[];
 }
@@ -39,23 +41,25 @@ export const createDiagnosticExtension = (helper: EditorHelper) => {
           severity: diag.severity,
           renderMessage: () => {
             if (result.kind === 'inline') helper.hideAllPopup();
-            const fragment = document.createDocumentFragment();
+            const container = document.createElement('div');
+            container.classList.add('typst-mate-diag');
+
             const messageEl =
               diag.severity === 'error' ? document.createElement('strong') : document.createElement('em');
             messageEl.textContent = diag.message;
-            fragment.appendChild(messageEl);
+            container.appendChild(messageEl);
 
             if (0 < diag.hints.length) {
               const hintsEl = document.createElement('div');
-              hintsEl.style.marginTop = '4px';
+              hintsEl.classList.add('typst-mate-diag-hints');
               diag.hints.forEach((hint, i) => {
                 const hintLine = document.createElement('div');
                 hintLine.textContent = `${i + 1}. ${hint}`;
                 hintsEl.appendChild(hintLine);
               });
-              fragment.appendChild(hintsEl);
+              container.appendChild(hintsEl);
             }
-            return fragment;
+            return container;
           },
         };
       })

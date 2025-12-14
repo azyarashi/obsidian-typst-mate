@@ -1,0 +1,15 @@
+.cm-diagnostic:has(.typst-mate-diag) {
+  background: none !important;
+  border: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+.typst-mate-diag {
+  background-color: var(--background-secondary);
+}
+
+.typst-mate-diag-hints {
+  margin-top: 4px;
+  color: var(--text-normal);
+}
