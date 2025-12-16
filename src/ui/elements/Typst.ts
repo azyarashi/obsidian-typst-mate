@@ -34,15 +34,17 @@ export default abstract class TypstElement extends HTMLElement {
     this.isErr = false;
 
     // ? キャンバスなどで呼ばれたとき用
-    if (this.plugin.editorHelper.editor)
-      // @ts-expect-error
-      updateDiagnosticEffect(this.plugin.editorHelper.editor.cm, {
-        diags: result.diags,
-        kind: this.kind,
-        processor: this.processor,
-        offset: this.offset,
-        noDiag: this.noDiag,
-      });
+    if (this.plugin.editorHelper?.editor)
+      try {
+        // @ts-expect-error
+        updateDiagnosticEffect(this.plugin.editorHelper.editor.cm, {
+          diags: result.diags,
+          kind: this.kind,
+          processor: this.processor,
+          offset: this.offset,
+          noDiag: this.noDiag,
+        });
+      } catch {}
 
     this.plugin.typstManager.beforeKind = this.kind;
   }
@@ -62,15 +64,17 @@ export default abstract class TypstElement extends HTMLElement {
   handleError(err: Diagnostic[]) {
     this.isErr = true;
 
-    if (this.plugin.editorHelper.editor)
-      // @ts-expect-error
-      updateDiagnosticEffect(this.plugin.editorHelper.editor.cm, {
-        diags: err,
-        kind: this.kind,
-        processor: this.processor,
-        offset: this.offset,
-        noDiag: this.noDiag,
-      });
+    if (this.plugin.editorHelper?.editor)
+      try {
+        // @ts-expect-error
+        updateDiagnosticEffect(this.plugin.editorHelper.editor.cm, {
+          diags: err,
+          kind: this.kind,
+          processor: this.processor,
+          offset: this.offset,
+          noDiag: this.noDiag,
+        });
+      } catch {}
 
     if (this.plugin.settings.enableMathjaxFallback) {
       this.replaceChildren(

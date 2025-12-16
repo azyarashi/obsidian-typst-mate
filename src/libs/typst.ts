@@ -153,7 +153,7 @@ export default class TypstManager {
         return container;
       }
 
-      return r.display ? this.render(e, container, 'display') : this.render(e, container, 'inline');
+      return this.render(e, container, r.display ? 'display' : 'inline');
     };
   }
 
