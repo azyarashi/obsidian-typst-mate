@@ -1,7 +1,9 @@
 import SYMBOLS_BY_NAME from '@/data/symbols.json';
 
 const SYMBOLS_BY_LATEX = Object.fromEntries(
-  Object.entries(SYMBOLS_BY_NAME).map(([_, v]) => [v.latexName.replace(/\\/g, ''), v]),
+  Object.entries(SYMBOLS_BY_NAME)
+    .filter(([_, v]) => v.latexName !== '')
+    .map(([_, v]) => [v.latexName.replace(/\\/g, ''), v]),
 );
 
 // ? サジェストの体験向上のために, 短い順でソート
