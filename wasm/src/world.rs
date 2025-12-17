@@ -9,9 +9,10 @@ use typst::{
     Library, LibraryExt, World,
     diag::{FileError, FileResult, PackageError},
     foundations::{
-        Bytes, Content, Datetime, Element, Property, Recipe, Selector, Style, Transformation, Value,
+        Bytes, Content, Datetime, Element, Property, Recipe, Selector, Style, Styles,
+        Transformation, Value,
     },
-    layout::Abs,
+    layout::{Abs, Length},
     syntax::{FileId, Source, Span, VirtualPath, package::PackageSpec},
     text::{Font, FontBook, FontList, SmallcapsElem, TextElem},
     utils::LazyHash,
@@ -56,7 +57,7 @@ impl WasmWorld {
         // ライブラリのグローバル定義
         // #let fontsize = (16 / 1.25) * 1pt
         let fontsize_abs = Abs::pt(fontsize / 1.25);
-        let fontsize_val = Value::Length(fontsize_abs.into());
+        let fontsize_val = Value::Length(Length::from(fontsize_abs));
         library.global.scope_mut().define("fontsize", fontsize_val);
         // #let CURSOR = text(fill: rgb("#44f"))[▮]
         let cursor_elem = TextElem::new("▮".into());
@@ -71,7 +72,7 @@ impl WasmWorld {
         let font_list = FontList(Vec::new());
         let text_style = Style::Property(Property::new(TextElem::font, font_list));
         let selector = Selector::Elem(Element::of::<SmallcapsElem>(), None);
-        let transformation = Transformation::Style(text_style.into());
+        let transformation = Transformation::Style(Styles::from(text_style));
         let recipe = Style::Recipe(Recipe::new(
             Some(selector),
             transformation,
