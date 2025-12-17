@@ -1,14 +1,14 @@
 # Typst Mate
 
 <a href="https://obsidian.md/">
-  <img alt="Obsidian Plugin" src="https://img.shields.io/badge/Desktop%20%26%20Mobile%28iPhone%2014%2B%2C%20iPad%20Gen11%2B%2C%20iPad%20Air%20Gen4%2B%2C%20iPad%20Pro%2A1%2C%20Rooted%20Android%2A2%29-a78bfa?logo=obsidian&logoColor=white" />
+  <img alt="Obsidian Plugin" src="https://img.shields.io/badge/Desktop%20%26%20Mobile%28iPhone%20XS%2B%2C%20iPad%20Gen10%2B%2C%20iPad%20Air%20Gen4%2B%2C%20iPad%20mini%20Gen6%2B%2C%20iPad%20Pro%2A1%2C%20Rooted%20Android%2A2%29-a78bfa?logo=obsidian&logoColor=white" />
 </a>
 <a href="https://typst.app/docs/changelog/">
   <img alt="Typst Version" src="https://img.shields.io/badge/v0.13.1-239dad?logo=typst&logoColor=white" />
   <img alt="Typst Version" src="https://img.shields.io/badge/v0.14.0-239dad?logo=typst&logoColor=white" />
 </a>
 
-> \*1: On iOS/iPadOS this is stable on devices with `6GB` or more of RAM, or in environments where JIT is available.<br>
+> \*1: On iOS/iPadOS this is stable on devices with `4GB` or more of RAM, or in environments where JIT is available.<br>
 > \*2: You may need to use tools like `resetprop` or directly edit `build.prop` to change `dalvik.vm.heapgrowthlimit` and `dalvik.vm.heapsize` to around `512m`. See [this warning](https://github.com/azyarashi/obsidian-typst-mate?tab=readme-ov-file#network).
 
 Render math expressions in [Obsidian](https://obsidian.md) using [Typst](https://typst.app/) instead of MathJax.
