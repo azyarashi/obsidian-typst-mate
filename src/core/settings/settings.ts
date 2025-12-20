@@ -22,6 +22,7 @@ export interface Settings {
   enableShortcutKeys: boolean;
   openTypstToolsOnStartup: boolean;
   preamble: string;
+  preambleHTML: string;
   processor: {
     inline?: {
       processors: InlineProcessor[];
@@ -57,6 +58,16 @@ export const DEFAULT_SETTINGS: Settings = {
     '#set page(margin: 0pt, width: auto, height: auto)',
     '#show raw: set text(size: 1.25em)',
     '#set text(size: fontsize)',
+  ].join('\n'),
+  preambleHTML: [
+    '#show math.equation.where(block: false): it => {',
+    '  if target() == "html" { html.elem("span", attrs: (role: "math"), html.frame(it)) }',
+    '  else { it }',
+    '}',
+    '#show math.equation.where(block: true): it => {',
+    '  if target() == "html" { html.elem("figure", attrs: (role: "math"), html.frame(it)) }',
+    '  else { it }',
+    '}',
   ].join('\n'),
   processor: {
     inline: {

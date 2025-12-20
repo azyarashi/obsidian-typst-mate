@@ -78,3 +78,7 @@
 .typstmate-excalidraw {
   overflow: visible;
 }
+
+mjx-container[jax="CHTML"] {
+  line-height: normal !important;
+}

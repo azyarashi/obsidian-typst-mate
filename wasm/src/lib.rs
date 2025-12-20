@@ -15,6 +15,7 @@ use typst::{
     },
     text::FontInfo,
 };
+use typst_html::HtmlDocument;
 use typst_pdf::PdfOptions;
 
 mod lexer;
@@ -24,7 +25,7 @@ mod utils;
 mod vfs;
 mod world;
 
-use crate::serde::{diagnostic, font, package, pdf, processor, svg};
+use crate::serde::{diagnostic, font, html, package, pdf, processor, svg};
 use crate::world::WasmWorld;
 
 #[wasm_bindgen]
@@ -196,6 +197,43 @@ impl Typst {
                     .replacen("<svg class", "<svg style=\"overflow: visible;\" class", 1);
 
                 svg::svg(svg, warnings, &self.world)
+            }
+            Err(errs) => {
+                let diags: Vec<diagnostic::SourceDiagnosticSer> = errs
+                    .iter()
+                    .map(|d| diagnostic::SourceDiagnosticSer::from_diag(d, &self.world))
+                    .collect();
+                Err(to_value(&diags).unwrap())
+            }
+        }
+    }
+
+    pub fn html(&mut self, code: &str, kind: &str, id: &str) -> Result<JsValue, JsValue> {
+        if self.last_kind == kind && self.last_id == id {
+            self.world.replace(code);
+        } else {
+            self.last_kind = kind.to_string();
+            self.last_id = id.to_string();
+
+            self.update_source(VirtualPath::new(format!("{}_{}.typ", kind, id)), code);
+        }
+
+        let Warned { output, warnings } = typst::compile::<HtmlDocument>(&mut self.world);
+
+        match output {
+            Ok(document) => {
+                let document = typst_html::html(&document);
+
+                match document {
+                    Ok(html) => html::html(html, warnings, &self.world),
+                    Err(errs) => {
+                        let diags: Vec<diagnostic::SourceDiagnosticSer> = errs
+                            .iter()
+                            .map(|d| diagnostic::SourceDiagnosticSer::from_diag(d, &self.world))
+                            .collect();
+                        Err(to_value(&diags).unwrap())
+                    }
+                }
             }
             Err(errs) => {
                 let diags: Vec<diagnostic::SourceDiagnosticSer> = errs

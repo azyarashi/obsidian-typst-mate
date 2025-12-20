@@ -47,6 +47,10 @@ export default class $ {
     return this.typst.svg(code, kind, id);
   }
 
+  html(code: string, kind: string, id: string): HTMLResult {
+    return this.typst.html(code, kind, id);
+  }
+
   pdf(filename: string, code: string): PDFResult {
     return this.typst.pdf(filename, code);
   }
@@ -225,6 +229,11 @@ export interface Diagnostic {
 
 export interface SVGResult {
   svg: string;
+  diags: Diagnostic[];
+}
+
+export interface HTMLResult {
+  html: string;
   diags: Diagnostic[];
 }
 

@@ -3004,6 +3004,7 @@ dependencies = [
  "tsify",
  "typst",
  "typst-assets",
+ "typst-html",
  "typst-ide",
  "typst-pdf",
  "typst-svg",

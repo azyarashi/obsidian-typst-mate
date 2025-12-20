@@ -11,11 +11,11 @@ typst = "0.14.2"
 typst-ide = "0.14.2"
 typst-svg = "0.14.2"
 typst-pdf = "0.14.2"
+typst-html = "0.14.2"
 typst-assets = { version = "0.14.2", features = ["fonts"] }
 typst-timing = "0.14.2"
 comemo = "^0"
 unscanny = "^0.1"
-
 mitex = "^0.2"
 
 wasm-bindgen = "^0.2"

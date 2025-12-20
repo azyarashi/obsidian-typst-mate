@@ -6,6 +6,7 @@ import SnippetSuggestElement from '@/core/editor/elements/SnippetSuggest';
 import SymbolSuggestElement from '@/core/editor/elements/SymbolSuggest';
 import { DEFAULT_SETTINGS } from '@/core/settings/settings';
 import type ObsidianTypstMate from '@/main';
+import TypstHTMLElement from '@/ui/elements/HTML';
 import TypstSVGElement from '@/ui/elements/SVG';
 import { overwriteCustomElements } from '@/utils/custromElementRegistry';
 import { unzip, zip } from '@/utils/packageCompressor';
@@ -14,6 +15,7 @@ import type { Processor, ProcessorKind } from './processor';
 import type { PackageSpec } from './worker';
 
 import './typst.css';
+import type TypstElement from '@/ui/elements/Typst';
 
 export default class TypstManager {
   plugin: ObsidianTypstMate;
@@ -115,6 +117,7 @@ export default class TypstManager {
 
   registerOnce() {
     overwriteCustomElements('typstmate-svg', TypstSVGElement);
+    overwriteCustomElements('typstmate-html', TypstHTMLElement);
     overwriteCustomElements('typstmate-symbols', SymbolSuggestElement);
     overwriteCustomElements('typstmate-snippets', SnippetSuggestElement);
     overwriteCustomElements('typstmate-inline-preview', InlinePreviewElement);
@@ -227,22 +230,35 @@ export default class TypstManager {
     offset += processor.id.length;
 
     // レンダリング
-    const typstSVGEl = document.createElement('typstmate-svg') as TypstSVGElement;
-    typstSVGEl.plugin = this.plugin;
-    typstSVGEl.kind = kind as ProcessorKind;
-    typstSVGEl.source = code;
-    typstSVGEl.processor = processor;
-    typstSVGEl.offset = offset;
-    typstSVGEl.noDiag = noDiag;
-    containerEl.appendChild(typstSVGEl);
+    let typstEl: TypstElement;
+
+    switch (processor.renderingEngine) {
+      case 'typst-svg': {
+        typstEl = document.createElement('typstmate-svg') as TypstSVGElement;
+
+        break;
+      }
+      case 'typst-html': {
+        typstEl = document.createElement('typstmate-html') as TypstHTMLElement;
+        break;
+      }
+    }
+
+    typstEl.plugin = this.plugin;
+    typstEl.kind = kind as ProcessorKind;
+    typstEl.source = code;
+    typstEl.processor = processor;
+    typstEl.offset = offset;
+    typstEl.noDiag = noDiag;
+    containerEl.appendChild(typstEl);
     // ちらつき防止
     const { id: beforeId } = this.beforeProcessor;
     if (this.beforeKind === kind && beforeId === processor.id)
-      typstSVGEl.replaceChildren(this.beforeElement.cloneNode(true));
+      typstEl.replaceChildren(this.beforeElement.cloneNode(true));
 
-    typstSVGEl.render();
+    typstEl.render();
 
-    this.beforeElement = typstSVGEl;
+    this.beforeElement = typstEl;
     return containerEl as HTMLElement;
   }
 

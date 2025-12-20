@@ -2,7 +2,7 @@ import { Menu, Notice } from 'obsidian';
 import { DEFAULT_FONT_SIZE } from '@/constants';
 import { updateDiagnosticEffect } from '@/core/editor/extensions/decorations/diagnostic';
 import type { Processor, ProcessorKind } from '@/libs/processor';
-import type { Diagnostic, SVGResult } from '@/libs/worker';
+import type { Diagnostic, HTMLResult, SVGResult } from '@/libs/worker';
 import type ObsidianTypstMate from '@/main';
 import { DiagnosticModal } from '@/ui/modals/diagnostic';
 
@@ -30,7 +30,7 @@ export default abstract class TypstElement extends HTMLElement {
   });
 
   abstract render(): Promise<this>;
-  postProcess(result: SVGResult) {
+  postProcess(result: SVGResult | HTMLResult) {
     this.isErr = false;
 
     // ? キャンバスなどで呼ばれたとき用

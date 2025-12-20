@@ -77,6 +77,7 @@ export class ProcessorList {
         })
         .addDropdown((renderingEngineDropdown) => {
           renderingEngineDropdown.addOption('typst-svg', 'Typst SVG');
+          renderingEngineDropdown.addOption('typst-html', 'Typst HTML');
           renderingEngineDropdown.addOption('mathjax', 'MathJax');
 
           // @ts-expect-error: 過去バージョンとの互換性を保つため

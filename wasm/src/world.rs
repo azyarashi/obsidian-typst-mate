@@ -6,7 +6,7 @@ use send_wrapper::SendWrapper;
 use wasm_bindgen::{JsCast, JsValue};
 
 use typst::{
-    Library, LibraryExt, World,
+    Feature, Library, LibraryExt, World,
     diag::{FileError, FileResult, PackageError},
     foundations::{
         Bytes, Content, Datetime, Element, Property, Recipe, Selector, Style, Styles,
@@ -52,7 +52,9 @@ impl WasmWorld {
         }
 
         // ライブラリを設定
-        let mut library = Library::default();
+        let mut library = Library::builder()
+            .with_features([Feature::Html].into_iter().collect())
+            .build();
 
         // ライブラリのグローバル定義
         // #let fontsize = (16 / 1.25) * 1pt
