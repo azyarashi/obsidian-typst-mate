@@ -27,6 +27,8 @@ I welcome [Discussions](https://github.com/azyarashi/obsidian-typst-mate/discuss
 
 Are you an Obsidian LaTeX Suite user? Check out [this guide](docs/obsidian-latex-suite-migration.md).
 
+If you want to use only typst codeblock? Check out [this issue](https://github.com/azyarashi/obsidian-typst-mate/issues/8).
+
 > [!NOTE]
 > For a smoother experience, some values are different from (or added to) standard Typst defaults. (e.g. `datetime`, `smallcaps`, `fontsize`, and `CURSOR`)
 > See the [notes here](docs/processor#notes) for details.
