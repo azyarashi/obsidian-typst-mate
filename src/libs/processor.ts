@@ -64,7 +64,7 @@ export const DefaultNewInlineProcessor: InlineProcessor = {
 export const DefaultNewDisplayProcessor: DisplayProcessor = {
   id: 'new',
   renderingEngine: 'typst-svg',
-  format: '$\n{CODE}\n$',
+  format: '$ {CODE} $',
   styling: 'block-center',
   disableSuggest: false,
   noPreamble: false,
