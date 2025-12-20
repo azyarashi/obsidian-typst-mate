@@ -137,6 +137,14 @@ export const DEFAULT_SETTINGS: Settings = {
           noPreamble: false,
           fitToParentWidth: false,
         },
+        {
+          id: 'lilaq',
+          renderingEngine: 'typst-svg',
+          format: ['#import "@preview/lilaq:0.5.0" as lq', '{CODE}'].join('\n'),
+          styling: 'block-center',
+          noPreamble: false,
+          fitToParentWidth: false,
+        },
       ],
     },
     excalidraw: {
