@@ -67,7 +67,7 @@ export const DEFAULT_SETTINGS: Settings = {
           format: [
             '#import "@preview/typsium:0.3.1": ce',
             '#show math.equation: set text(font: ("New Computer Modern Math", "Noto Serif CJK SC"))',
-            '#ce("{CODE}")',
+            '#ce[{CODE}]',
           ].join('\n'),
           styling: 'inline-middle',
           noPreamble: false,
