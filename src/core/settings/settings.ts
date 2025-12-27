@@ -65,7 +65,7 @@ export const DEFAULT_SETTINGS: Settings = {
           id: 'ce',
           renderingEngine: 'typst-svg',
           format: [
-            '#import "@preview/typsium:0.3.0": ce',
+            '#import "@preview/typsium:0.3.1": ce',
             '#show math.equation: set text(font: ("New Computer Modern Math", "Noto Serif CJK SC"))',
             '#ce("{CODE}")',
           ].join('\n'),

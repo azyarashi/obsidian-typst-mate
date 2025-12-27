@@ -55,7 +55,7 @@ If you want to use only typst codeblock? Check out [this issue](https://github.c
 - **Additional styling customization**
   - e.g., an option `inline-middle` to vertically center *inline math* so it lines up naturally with the surrounding text
 - Use **custom fonts** and import system fonts (desktop app only for import)
-- Almost all **Typst packages** are supported (desktop app only for import local packages)
+- All **Typst packages** are supported (desktop app only for import local packages)
 - **Table and blockquotes support** with proper display math handling (`<br>` and `\n[\s\t]*>` will be automatically replaced with line breaks)
 - [Excalidraw](https://www.obsidianstats.com/plugins/obsidian-excalidraw-plugin) integration
 - [Equation Citator](https://github.com/FRIEDparrot/obsidian-equation-citator) integration
