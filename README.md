@@ -55,7 +55,7 @@ If you want to use only typst codeblock? Check out [this issue](https://github.c
 - **Additional styling customization**
   - e.g., an option `inline-middle` to vertically center *inline math* so it lines up naturally with the surrounding text
 - Use **custom fonts** and import system fonts (desktop app only for import)
-- All **Typst packages** are supported (desktop app only for import local packages)
+- Almost all[^1] **Typst packages** are supported (desktop app only for import local packages)
 - **Table and blockquotes support** with proper display math handling (`<br>` and `\n[\s\t]*>` will be automatically replaced with line breaks)
 - [Excalidraw](https://www.obsidianstats.com/plugins/obsidian-excalidraw-plugin) integration
 - [Equation Citator](https://github.com/FRIEDparrot/obsidian-equation-citator) integration
@@ -74,6 +74,8 @@ If you want to use only typst codeblock? Check out [this issue](https://github.c
   - Copy as PNG (Transparent) <br />
   - Copy as PNG (Opaque) <br />
   - Copy as img tag (for embedding into Obsidian notes) </details>
+
+[^1]: [jlyfish](https://typst.app/universe/package/jlyfish/) probably won't work correctly.
 
 For a better typing experience, I **strongly** recommend installing the [No more flickering inline math](https://www.obsidianstats.com/plugins/inline-math) plugin by [RyotaUshio](https://github.com/RyotaUshio):
 
