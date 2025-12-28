@@ -86,6 +86,7 @@ export default class ObsidianTypstMate extends Plugin {
 
     // 基本的なパスの設定
     this.setPaths();
+    // 色を設定
     this.applyBaseColor();
     // マニフェストの読み込みと Wasm のパスを設定
     const manifestPath = `${this.pluginDirNPath}/manifest.json`;
@@ -316,7 +317,8 @@ export default class ObsidianTypstMate extends Plugin {
 
   private registerListeners() {
     this.listeners.push(
-      this.app.workspace.on('css-change', this.applyBaseColor.bind(this)),
+      // ? css-change が意図しない値を渡すので arrow function で包む
+      this.app.workspace.on('css-change', () => this.applyBaseColor.bind(this)),
       this.app.workspace.on('active-leaf-change', this.editorHelper.onActiveLeafChange.bind(this.editorHelper)),
       this.app.workspace.on('leaf-menu', (menu, leaf) => {
         if (leaf.view.getViewType() === 'markdown') {
