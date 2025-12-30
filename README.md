@@ -47,7 +47,7 @@ If you want to use only typst codeblock? Check out [this issue](https://github.c
 - **Bracket highlights**
 - **Symbol completion**
   - type a leading backslash `\` to make the search look for LaTeX commands
-- **Inline math preview**
+- **Inline math preview** / **Codeblock preview**
 - **Available on mobile app**
 - Offer **background rendering**
 - Use **font size** from Obsidian settings
