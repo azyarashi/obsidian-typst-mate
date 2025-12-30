@@ -20,6 +20,7 @@ const SHORTCUTS_KEYS = Object.keys(SHORTCUTS_DATA);
 export class EditorHelper {
   editor?: Editor;
   plugin: ObsidianTypstMate;
+  supportedCodeBlockLangs: Set<string>;
 
   mathObject?: MathObject;
   bracketPairs?: BracketPair[];
@@ -44,6 +45,10 @@ export class EditorHelper {
     this.plugin.app.workspace.containerEl.appendChild(this.inlinePreviewEl);
     this.plugin.app.workspace.containerEl.appendChild(this.snippetSuggestEl);
     this.plugin.app.workspace.containerEl.appendChild(this.symbolSuggestEl);
+
+    this.supportedCodeBlockLangs = new Set(
+      (this.plugin.settings.processor.codeblock?.processors ?? []).map((p) => p.id),
+    );
 
     // 拡張機能をセット
     this.plugin.registerEditorExtension(
@@ -119,7 +124,8 @@ export class EditorHelper {
     }
 
     const oldLine = this.mathObject?.startPos.line;
-    if (this.mathObject && changes.length === 1) {
+    if (this.mathObject?.kind === 'codeblock') {
+    } else if (this.mathObject && changes.length === 1) {
       changes.iterChanges((fromA, toA, _fromB, _toB, inserted) => {
         this.mathObject!.content =
           this.mathObject!.content.slice(0, fromA - this.mathObject!.startOffset) +
@@ -391,7 +397,10 @@ export class EditorHelper {
 
     // カーソルが数式の範囲外
     const relativeOffset = offset - this.mathObject.startOffset;
-    if (relativeOffset <= 0 || this.mathObject.content.length <= relativeOffset) {
+    if (
+      this.mathObject.kind !== 'codeblock' &&
+      (relativeOffset <= 0 || this.mathObject.content.length <= relativeOffset)
+    ) {
       this.hideAllPopup();
       this.updateMathObject(offset);
       if (!this.mathObject) return null;
@@ -615,15 +624,22 @@ export class EditorHelper {
   // ? カーソルが数式内にあるとは限らない
   // ? |$$ でも $!$ でも 単に範囲選択中でも存在する
   isActiveMathExists() {
-    return this.editor?.containerEl.querySelector('span.cm-formatting-math');
+    return (
+      this.editor?.containerEl.querySelector('span.cm-formatting-math') !== null ||
+      this.mathObject?.kind === 'codeblock'
+    );
   }
 
   // TODO: これは先頭の $$ にしかない. ビューポートから外れると認識されない
   isActiveDisplayMathExists() {
     return (
       this.editor?.containerEl.querySelector('span.cm-formatting-math.cm-math-block') ||
-      this.editor?.containerEl.querySelector('span.cm-formatting-math-end')?.textContent === '$$'
+      this.editor?.containerEl.querySelector('span.cm-active')?.textContent === '$$'
     );
+  }
+
+  isActiveCodeBlockExists() {
+    return this.editor?.containerEl.querySelector('span.cm-active.HyperMD-codeblock');
   }
 
   calculatePopupPosition(startPos: EditorPosition, endPos: EditorPosition): PopupPosition {
@@ -671,7 +687,7 @@ export class EditorHelper {
 }
 
 interface MathObject {
-  kind: 'inline' | 'display';
+  kind: 'inline' | 'display' | 'codeblock';
 
   content: string;
   startPos: EditorPosition; // $ 含まない

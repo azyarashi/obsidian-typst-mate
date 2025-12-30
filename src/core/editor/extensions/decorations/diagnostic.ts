@@ -21,7 +21,10 @@ interface TypstMateResult {
 export const createDiagnosticExtension = (helper: EditorHelper) => {
   return linter((view) => {
     if (!helper.mathObject) return [];
+    // TODO: コードブロックには効かない
+    if (helper.mathObject.kind === 'codeblock') return [];
 
+    // @ts-expect-error
     const result = view.state.field(diagnosticsState);
     if (!result) return [];
     if (result.noDiag) return [];

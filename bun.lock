@@ -5,37 +5,40 @@
     "": {
       "name": "typst-mate",
       "dependencies": {
-        "comlink": "latest",
-        "nanoid": "latest",
-        "pako": "latest",
-        "tex2typst": "latest",
-        "untar-sync": "latest",
+        "comlink": "^4.4.2",
+        "nanoid": "^5.1.6",
+        "pako": "^2.1.0",
+        "tex2typst": "^0.5.5",
+        "untar-sync": "^1.0.4",
       },
       "devDependencies": {
-        "@biomejs/biome": "latest",
-        "@codemirror/lint": "latest",
-        "@codemirror/state": "latest",
-        "@codemirror/view": "latest",
-        "@types/bun": "latest",
-        "@types/pako": "latest",
-        "@zsviczian/excalidraw": "latest",
-        "autoprefixer": "latest",
-        "builtin-modules": "latest",
-        "esbuild": "latest",
-        "i18next": "latest",
-        "obsidian": "latest",
+        "@biomejs/biome": "2.3.10",
+        "@codemirror/lint": "^6.9.2",
+        "@codemirror/state": "^6.5.3",
+        "@codemirror/view": "^6.39.8",
+        "@types/bun": "^1.3.5",
+        "@types/pako": "^2.0.4",
+        "@zsviczian/excalidraw": "^0.18.0-63",
+        "autoprefixer": "^10.4.23",
+        "builtin-modules": "^5.0.0",
+        "esbuild": "^0.27.2",
+        "i18next": "^25.7.3",
+        "obsidian": "^1.11.0",
         "obsidian-excalidraw-plugin": "github:zsviczian/obsidian-excalidraw-plugin#master",
-        "obsidian-typings": "latest",
-        "postcss": "latest",
-        "vite": "npm:rolldown-vite@latest",
-        "vite-plugin-static-copy": "latest",
-        "vite-tsconfig-paths": "latest",
+        "obsidian-typings": "^4.87.0",
+        "postcss": "^8.5.6",
+        "vite": "npm:rolldown-vite@^7.3.0",
+        "vite-plugin-static-copy": "^3.1.4",
+        "vite-tsconfig-paths": "^6.0.3",
       },
       "peerDependencies": {
-        "puppeteer": "latest",
-        "typescript": "latest",
+        "puppeteer": "^24.34.0",
+        "typescript": "^5.9.3",
       },
     },
+  },
+  "overrides": {
+    "@codemirror/state": "^6.5.3",
   },
   "packages": {
     "@antfu/install-pkg": ["@antfu/install-pkg@1.1.0", "", { "dependencies": { "package-manager-detector": "^1.3.0", "tinyexec": "^1.0.1" } }, "sha512-MGQsmw10ZyI+EJo45CdSER4zEb+p31LpDAFp2Z3gkSd1yqVZGi0Ebx++YTEMonJy4oChEMLsxZ64j8FH6sSqtQ=="],
@@ -88,7 +91,7 @@
 
     "@codemirror/state": ["@codemirror/state@6.5.3", "", { "dependencies": { "@marijn/find-cluster-break": "^1.0.0" } }, "sha512-MerMzJzlXogk2fxWFU1nKp36bY5orBG59HnPiz0G9nLRebWa0zXuv2siH6PLIHBvv5TH8CkQRqjBs0MlxCZu+A=="],
 
-    "@codemirror/view": ["@codemirror/view@6.39.7", "", { "dependencies": { "@codemirror/state": "^6.5.0", "crelt": "^1.0.6", "style-mod": "^4.1.0", "w3c-keyname": "^2.2.4" } }, "sha512-3Vif9hnNHJnl2YgOtkR/wzGzhYcQ8gy3LGdUhkLUU8xSBbgsTxrE8he/CMTpeINm5TgxLe2FmzvF6IYQL/BSAg=="],
+    "@codemirror/view": ["@codemirror/view@6.39.8", "", { "dependencies": { "@codemirror/state": "^6.5.0", "crelt": "^1.0.6", "style-mod": "^4.1.0", "w3c-keyname": "^2.2.4" } }, "sha512-1rASYd9Z/mE3tkbC9wInRlCNyCkSn+nLsiQKZhEDUUJiUfs/5FHDpCUDaQpoTIaNGeDc6/bhaEAyLmeEucEFPw=="],
 
     "@electron/get": ["@electron/get@2.0.3", "", { "dependencies": { "debug": "^4.1.1", "env-paths": "^2.2.0", "fs-extra": "^8.1.0", "got": "^11.8.5", "progress": "^2.0.3", "semver": "^6.2.0", "sumchecker": "^3.0.1" }, "optionalDependencies": { "global-agent": "^3.0.0" } }, "sha512-Qkzpg2s9GnVV2I2BjRksUi43U5e6+zaQMcjoJy0C+C5oxaKl+fmckGDQFtRpZpZV0NQekuZZ+tGz7EA9TVnQtQ=="],
 
@@ -1028,7 +1031,7 @@
 
     "obsidian": ["obsidian@1.11.0", "", { "dependencies": { "@types/codemirror": "5.60.8", "moment": "2.29.4" }, "peerDependencies": { "@codemirror/state": "6.5.0", "@codemirror/view": "6.38.6" } }, "sha512-lVqN9AmDWHzhNATi2tDnjqVgI6WUYKeT+lIsAycAyLt4XCC6zRsWzb+tFCiB7Rn3PpttefjoovilhYwvS4Iqxw=="],
 
-    "obsidian-excalidraw-plugin": ["obsidian-excalidraw-plugin@github:zsviczian/obsidian-excalidraw-plugin#cc18cf9", { "dependencies": { "@popperjs/core": "^2.11.8", "@zsviczian/colormaster": "^1.2.2", "@zsviczian/excalidraw": "0.18.0-63", "chroma-js": "^3.1.2", "clsx": "^2.0.0", "es6-promise-pool": "2.5.0", "gl-matrix": "^3.4.3", "js-yaml": "^4.1.0", "lucide-react": "^0.479.0", "mathjax-full": "^3.2.2", "monkey-around": "^2.3.0", "nanoid": "^4.0.2", "opentype.js": "^1.3.4", "polybooljs": "^1.2.0", "react": "^18.2.0", "react-dom": "^18.2.0", "roughjs": "^4.5.2", "woff2sfnt-sfnt2woff": "^1.0.0" } }, "zsviczian-obsidian-excalidraw-plugin-cc18cf9"],
+    "obsidian-excalidraw-plugin": ["obsidian-excalidraw-plugin@github:zsviczian/obsidian-excalidraw-plugin#588dfc5", { "dependencies": { "@popperjs/core": "^2.11.8", "@zsviczian/colormaster": "^1.2.2", "@zsviczian/excalidraw": "0.18.0-63", "chroma-js": "^3.1.2", "clsx": "^2.0.0", "es6-promise-pool": "2.5.0", "gl-matrix": "^3.4.3", "js-yaml": "^4.1.0", "lucide-react": "^0.479.0", "mathjax-full": "^3.2.2", "monkey-around": "^2.3.0", "nanoid": "^4.0.2", "opentype.js": "^1.3.4", "polybooljs": "^1.2.0", "react": "^18.2.0", "react-dom": "^18.2.0", "roughjs": "^4.5.2", "woff2sfnt-sfnt2woff": "^1.0.0" } }, "zsviczian-obsidian-excalidraw-plugin-588dfc5"],
 
     "obsidian-typings": ["obsidian-typings@4.87.0", "", { "dependencies": { "@antfu/utils": "9.2.0", "@capacitor/core": "5.7.8", "@codemirror/language": "6.11.2", "@codemirror/search": "6.5.11", "@codemirror/state": "6.5.0", "@codemirror/view": "6.38.6", "@lezer/common": "1.2.3", "@pixi/color": "7.2.4", "@pixi/events": "7.2.4", "@pixi/settings": "7.2.4", "@types/codemirror": "5.60.8", "@types/css-font-loading-module": "0.0.14", "@types/dompurify": "3.0.1", "@types/node": "25.0.3", "@types/prismjs": "1.26.5", "@types/turndown": "5.0.5", "colord": "2.9.3", "electron": "39.2.7", "i18next": "25.2.1", "mermaid": "11.4.1", "obsidian": "1.11.0", "pdfjs-dist": "5.3.31", "pixi.js": "7.2.4", "scrypt-js": "3.0.1", "style-mod": "4.1.3", "type-fest": "5.3.1" }, "peerDependencies": { "typescript": ">=4.8.0" } }, "sha512-0inO0ymrFZr/VB+qm5aYM7eD+Ob/kPtPs/LS3ZHvb5ufFcz1YN94Q5sSeZzziFBDo2P7VlRLLPWL645KdwmLFA=="],
 
@@ -1218,7 +1221,7 @@
 
     "tar-stream": ["tar-stream@3.1.7", "", { "dependencies": { "b4a": "^1.6.4", "fast-fifo": "^1.2.0", "streamx": "^2.15.0" } }, "sha512-qJj60CXt7IU1Ffyc3NJMjh6EkuCFej46zUqJ4J7pqYlThyd9bO0XBTmcOIhSzZJVWfsLks0+nle/j538YAW9RQ=="],
 
-    "tex2typst": ["tex2typst@0.5.2", "", {}, "sha512-iIZKUbXafDV2B3aq8Jvv2JaXicbVwCHqjyXcnlmgE/jrihQ3428qMxnb/RL6gd//8z/O0vQ3eoDNrnss9g7RyA=="],
+    "tex2typst": ["tex2typst@0.5.5", "", {}, "sha512-NboyPF7STrPPeJOIrs+xZwPi3R55QQnJgj3Hb7yhQzVIdu49y1SXP9sLoYQph4f0Zh/JTBFoelZxNrv6/sJ9Gw=="],
 
     "text-decoder": ["text-decoder@1.2.3", "", { "dependencies": { "b4a": "^1.6.4" } }, "sha512-3/o9z3X0X0fTupwsYvR03pJ/DjWuqqrfwBgTQzdWDiQSm9KitAyz/9WqsT2JQW7KV2m+bC2ol/zqpW37NHxLaA=="],
 
@@ -1318,17 +1321,11 @@
 
     "zustand": ["zustand@4.5.7", "", { "dependencies": { "use-sync-external-store": "^1.2.2" }, "peerDependencies": { "@types/react": ">=16.8", "immer": ">=9.0.6", "react": ">=16.8" }, "optionalPeers": ["@types/react", "immer", "react"] }, "sha512-CHOUy7mu3lbD6o6LJLfllpjkzhHXSBlX8B9+qPddUsIfeF5S/UZ5q0kmCsnRqT1UHFQZchNFDDzMbQsuesHWlw=="],
 
-    "@codemirror/language/@codemirror/state": ["@codemirror/state@6.5.2", "", { "dependencies": { "@marijn/find-cluster-break": "^1.0.0" } }, "sha512-FVqsPqtPWKVVL3dPSxy8wEF/ymIEuVzF1PK3VbUgrxXpJUSHQWWZz4JMToquRxnkw+36LTamCZG2iua2Ptq0fA=="],
-
     "@codemirror/language/@codemirror/view": ["@codemirror/view@6.38.2", "", { "dependencies": { "@codemirror/state": "^6.5.0", "crelt": "^1.0.6", "style-mod": "^4.1.0", "w3c-keyname": "^2.2.4" } }, "sha512-bTWAJxL6EOFLPzTx+O5P5xAO3gTqpatQ2b/ARQ8itfU/v2LlpS3pH2fkL0A3E/Fx8Y2St2KES7ZEV0sHTsSW/A=="],
 
     "@codemirror/language/style-mod": ["style-mod@4.1.2", "", {}, "sha512-wnD1HyVqpJUI2+eKZ+eo1UwghftP6yuFheBqqe+bWCotBjC2K1YnteJILRMs3SM4V/0dLEW1SC27MWP5y+mwmw=="],
 
-    "@codemirror/lint/@codemirror/state": ["@codemirror/state@6.5.2", "", { "dependencies": { "@marijn/find-cluster-break": "^1.0.0" } }, "sha512-FVqsPqtPWKVVL3dPSxy8wEF/ymIEuVzF1PK3VbUgrxXpJUSHQWWZz4JMToquRxnkw+36LTamCZG2iua2Ptq0fA=="],
-
     "@codemirror/lint/@codemirror/view": ["@codemirror/view@6.38.8", "", { "dependencies": { "@codemirror/state": "^6.5.0", "crelt": "^1.0.6", "style-mod": "^4.1.0", "w3c-keyname": "^2.2.4" } }, "sha512-XcE9fcnkHCbWkjeKyi0lllwXmBLtyYb5dt89dJyx23I9+LSh5vZDIuk7OLG4VM1lgrXZQcY6cxyZyk5WVPRv/A=="],
-
-    "@codemirror/search/@codemirror/state": ["@codemirror/state@6.5.2", "", { "dependencies": { "@marijn/find-cluster-break": "^1.0.0" } }, "sha512-FVqsPqtPWKVVL3dPSxy8wEF/ymIEuVzF1PK3VbUgrxXpJUSHQWWZz4JMToquRxnkw+36LTamCZG2iua2Ptq0fA=="],
 
     "@codemirror/search/@codemirror/view": ["@codemirror/view@6.38.2", "", { "dependencies": { "@codemirror/state": "^6.5.0", "crelt": "^1.0.6", "style-mod": "^4.1.0", "w3c-keyname": "^2.2.4" } }, "sha512-bTWAJxL6EOFLPzTx+O5P5xAO3gTqpatQ2b/ARQ8itfU/v2LlpS3pH2fkL0A3E/Fx8Y2St2KES7ZEV0sHTsSW/A=="],
 
@@ -1388,8 +1385,6 @@
 
     "obsidian-excalidraw-plugin/roughjs": ["roughjs@4.6.6", "", { "dependencies": { "hachure-fill": "^0.5.2", "path-data-parser": "^0.1.0", "points-on-curve": "^0.2.0", "points-on-path": "^0.2.1" } }, "sha512-ZUz/69+SYpFN/g/lUlo2FXcIjRkSu3nDarreVdGGndHEBJ6cXPdKguS8JGxwj5HA5xIbVKSmLgr5b3AWxtRfvQ=="],
 
-    "obsidian-typings/@codemirror/state": ["@codemirror/state@6.5.0", "", { "dependencies": { "@marijn/find-cluster-break": "^1.0.0" } }, "sha512-MwBHVK60IiIHDcoMet78lxt6iw5gJOGSbNbOIVBHWVXIH4/Nq1+GQgLLGgI1KlnN86WDXsPudVaqYHKBIx7Eyw=="],
-
     "obsidian-typings/@codemirror/view": ["@codemirror/view@6.38.6", "", { "dependencies": { "@codemirror/state": "^6.5.0", "crelt": "^1.0.6", "style-mod": "^4.1.0", "w3c-keyname": "^2.2.4" } }, "sha512-qiS0z1bKs5WOvHIAC0Cybmv4AJSkAXgX5aD6Mqd2epSLlVJsQl8NG23jCVouIgkh4All/mrbdsf2UOLFnJw0tw=="],
 
     "obsidian-typings/i18next": ["i18next@25.2.1", "", { "dependencies": { "@babel/runtime": "^7.27.1" }, "peerDependencies": { "typescript": "^5" }, "optionalPeers": ["typescript"] }, "sha512-+UoXK5wh+VlE1Zy5p6MjcvctHXAhRwQKCxiJD8noKZzIXmnAX8gdHX5fLPA3MEVxEN4vbZkQFy8N0LyD9tUqPw=="],
@@ -1437,8 +1432,6 @@
     "mlly/pkg-types/confbox": ["confbox@0.1.8", "", {}, "sha512-RMtmw0iFkeR4YV+fUOSucriAQNb9g8zFR52MWCtl+cCZOFRNL6zeB395vPzFhEjjn4fMxXudmELnl/KF/WrK6w=="],
 
     "obsidian-excalidraw-plugin/roughjs/points-on-curve": ["points-on-curve@0.2.0", "", {}, "sha512-0mYKnYYe9ZcqMCWhUjItv/oHjvgEsfKvnUTg8sAtnHr3GVy7rGkXCb6d5cSyqrWqL4k81b9CPg3urd+T7aop3A=="],
-
-    "obsidian-typings/@codemirror/view/@codemirror/state": ["@codemirror/state@6.5.2", "", { "dependencies": { "@marijn/find-cluster-break": "^1.0.0" } }, "sha512-FVqsPqtPWKVVL3dPSxy8wEF/ymIEuVzF1PK3VbUgrxXpJUSHQWWZz4JMToquRxnkw+36LTamCZG2iua2Ptq0fA=="],
 
     "obsidian-typings/@codemirror/view/style-mod": ["style-mod@4.1.2", "", {}, "sha512-wnD1HyVqpJUI2+eKZ+eo1UwghftP6yuFheBqqe+bWCotBjC2K1YnteJILRMs3SM4V/0dLEW1SC27MWP5y+mwmw=="],
   }
