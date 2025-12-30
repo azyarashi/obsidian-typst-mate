@@ -22,6 +22,12 @@ class CodeBlockPreviewWidget extends WidgetType {
     return container;
   }
 
+  override updateDOM(dom: HTMLElement, _view: EditorView): boolean {
+    dom.replaceChildren();
+    this.helper.plugin.typstManager.render(this.code, dom, this.id);
+    return true;
+  }
+
   override eq(other: CodeBlockPreviewWidget): boolean {
     return other.code === this.code && other.id === this.id;
   }
