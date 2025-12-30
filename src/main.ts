@@ -316,6 +316,7 @@ export default class ObsidianTypstMate extends Plugin {
   }
 
   private registerListeners() {
+    const applyBaseColor = this.applyBaseColor.bind(this);
     let theme = this.app.vault.config.theme;
     Object.defineProperty(this.app.vault.config, 'theme', {
       configurable: true,
@@ -325,7 +326,7 @@ export default class ObsidianTypstMate extends Plugin {
       },
       set(v) {
         theme = v;
-        this.applyBaseColor();
+        setTimeout(applyBaseColor);
       },
     });
 
