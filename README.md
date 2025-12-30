@@ -67,7 +67,8 @@ If you want to use only typst codeblock? Check out [this issue](https://github.c
   - Packages viewer <br />
   - Snippets editor <br />
   - Processors editor <br />
-  - Bidirectional converter between TeX/LaTeX and Typst ([MiTex](https://github.com/mitex-rs/mitex) / [tex2typst](https://github.com/qwinsi/tex2typst)) (Typst to TeX/LaTeX conversion is `tex2typst` mode only) </details>
+  - Bidirectional converter between TeX/LaTeX and Typst ([MiTex](https://github.com/mitex-rs/mitex) / [tex2typst](https://github.com/qwinsi/tex2typst)) (Typst to TeX/LaTeX conversion is `tex2typst` mode only) <br />
+  - Commutative diagram editor ([Quiver](https://github.com/varkor/quiver)) </details>
 - <details><summary>Context Menu</summary>
   - Copy as SVG (Obsidian Theme) <br />
   - Copy as SVG (Typst Default) <br />
@@ -135,6 +136,7 @@ Typst Mate leverages the following open-source projects:
 - [MiTex](https://github.com/mitex-rs/mitex) – a fast and lightweight LaTeX to Typst converter with **high compatibility**
 - [tex2typst](https://github.com/qwinsi/tex2typst) – a fast and lightweight bidirectional converter between TeX/LaTeX and Typst with **sophisticated output**
 - [Detypify](https://github.com/QuarticCat/detypify) - a tool for recognizing handwritten math symbols
+- [Quiver](https://github.com/varkor/quiver) - a tool for creating commutative diagrams
 
 I'm grateful to the developers for making this plugin possible!
 
@@ -152,7 +154,7 @@ Bundling it directly would significantly increase startup time, so it is automat
 > [!WARNING]
 > (Android devices only) Android imposes strict limits on heap size, which may cause crashes when loading WebAssembly. Resolving this requires a rooted device or [support from the Obsidian team](https://forum.obsidian.md/t/enable-largeheap-in-obsidian-android-app-to-avoid-ooms/108119) (please `+1`).
 
-Network access is also required for installing Typst packages and for displaying lists of packages and symbols within Typst Tools.
+Network access is required to install Typst packages, and is also required by Typst Tools to display lists of packages and symbols and to use Detypify and Quiver.
 
 ### Reading Local Files (Desktop App only)
 

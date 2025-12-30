@@ -43,7 +43,11 @@ export class TypstToolsView extends ItemView {
     menuEl.className = 'typstmate-menu';
     this.dropdown = new DropdownComponent(menuEl);
     if (Platform.isDesktop) {
-      this.dropdown.addOption('symbols', 'Symbols').addOption('detypify', 'Detypify').addOption('packages', 'Packages');
+      this.dropdown
+        .addOption('symbols', 'Symbols')
+        .addOption('detypify', 'Detypify')
+        .addOption('packages', 'Packages')
+        .addOption('quiver', 'Quiver');
     }
     this.dropdown
       .addOption('snippets', 'Snippets')
@@ -61,6 +65,9 @@ export class TypstToolsView extends ItemView {
           break;
         case 'packages':
           contentEl.createEl('iframe').src = 'https://typst.app/universe/search/';
+          break;
+        case 'quiver':
+          contentEl.createEl('iframe').src = 'https://q.uiver.app/';
           break;
         case 'snippets': {
           new SnippetView(contentEl, this.plugin);
