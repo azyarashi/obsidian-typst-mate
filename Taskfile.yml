@@ -38,6 +38,16 @@ tasks:
       - rm -f '{{.PLUGIN_DIR}}/'*.wasm
       - mv './pkg/typst_wasm_bg.wasm' '{{.PLUGIN_DIR}}/typst-{{.version}}.wasm'
     desc: "Build WASM file and copy to plugin directory"
+  wasm-release:
+    vars:
+      PLUGIN_DIR: "{{.CONFIG_DIR}}/plugins/{{.PLUGIN_ID}}"
+      version:
+        sh: "bun scripts/version.ts --type mock"
+    cmds:
+      - wasm-pack build wasm --target web --release --out-dir ../pkg
+      - rm -f '{{.PLUGIN_DIR}}/'*.wasm
+      - mv './pkg/typst_wasm_bg.wasm' '{{.PLUGIN_DIR}}/typst-{{.version}}.wasm'
+    desc: "Build WASM file and copy to plugin directory"
   dev:
     cmds:
       - bunx --bun vite build -w -m development --outDir '{{.CONFIG_DIR}}/plugins/{{.PLUGIN_ID}}'
@@ -58,7 +68,7 @@ tasks:
       - git tag "{{.tag}}"
       - git push
       - git push origin "{{.tag}}"
-      - task wasm
+      - task wasm-release
       - task placestatic
     preconditions:
       - sh: "[ {{.TYPE}} != '' ]"
