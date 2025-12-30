@@ -316,6 +316,19 @@ export default class ObsidianTypstMate extends Plugin {
   }
 
   private registerListeners() {
+    let theme = this.app.vault.config.theme;
+    Object.defineProperty(this.app.vault.config, 'theme', {
+      configurable: true,
+      enumerable: true,
+      get() {
+        return theme;
+      },
+      set(v) {
+        theme = v;
+        this.applyBaseColor();
+      },
+    });
+
     this.listeners.push(
       // ? css-change が意図しない値を渡すので arrow function で包む
       this.app.workspace.on('css-change', () => this.applyBaseColor.bind(this)),
@@ -461,6 +474,7 @@ export default class ObsidianTypstMate extends Plugin {
 
     const bodyStyles = getComputedStyle(document.body);
     const baseColor = bodyStyles.getPropertyValue('--text-normal').trim();
+    console.log(baseColor);
     document.body.style.setProperty(BASE_COLOR_VAR, baseColor);
   }
 
