@@ -2,7 +2,7 @@ import { type ChangeSet, Prec } from '@codemirror/state';
 import { EditorView } from '@codemirror/view';
 import { type Editor, type EditorPosition, MarkdownView, type WorkspaceLeaf } from 'obsidian';
 
-import type { BracketPair } from '@/libs/worker';
+import type { BracketHighlights, BracketPair } from '@/libs/worker';
 import type ObsidianTypstMate from '@/main';
 import type InlinePreviewElement from './elements/InlinePreview';
 import type SnippetSuggestElement from './elements/SnippetSuggest';
@@ -24,6 +24,7 @@ export class EditorHelper {
 
   mathObject?: MathObject;
   bracketPairs?: BracketPair[];
+  bracketHighlights?: BracketHighlights['highlights'];
   cursorEnclosingBracketPair?: BracketPair;
 
   private inlinePreviewEl: InlinePreviewElement;
@@ -137,8 +138,7 @@ export class EditorHelper {
     } else this.updateMathObject(offset);
     if (!this.mathObject) return;
 
-    await this.updateBracketPairsInMathObject();
-    this.updateHighlightsOnBracketPairs();
+    this.updateBracketPairsInMathObject();
 
     if (this.trySuggest(offset)) {
       this.inlinePreviewEl.close();
@@ -390,8 +390,7 @@ export class EditorHelper {
       this.updateMathObject(offset);
       if (!this.mathObject) return null;
 
-      await this.updateBracketPairsInMathObject();
-      this.updateHighlightsOnBracketPairs();
+      this.updateBracketPairsInMathObject();
       return;
     }
 
@@ -405,8 +404,7 @@ export class EditorHelper {
       this.updateMathObject(offset);
       if (!this.mathObject) return null;
 
-      await this.updateBracketPairsInMathObject();
-      this.updateHighlightsOnBracketPairs();
+      this.updateBracketPairsInMathObject();
       return;
     }
   }
@@ -444,25 +442,11 @@ export class EditorHelper {
     if (!this.mathObject) return;
     this.removeHighlightsFromBracketPairs();
 
-    if (!this.bracketPairs) return;
+    if (!this.bracketHighlights) return;
 
-    for (const pair of this.bracketPairs) {
-      let { ch: startCh, line: startLine } = pair.open_pos;
-      let { ch: endCh, line: endLine } = pair.close_pos;
-      if (pair.open_pos.line === 0) startCh += this.mathObject.startPos.ch;
-      if (pair.close_pos.line === 0) endCh += this.mathObject.startPos.ch;
-      startLine += this.mathObject.startPos.line;
-      endLine += this.mathObject.startPos.line;
-
-      this.addHighlightsWithLength(
-        1,
-        [
-          { line: startLine, ch: startCh },
-          { line: endLine, ch: endCh },
-        ],
-        `typstmate-bracket-${pair.kind}`,
-        false,
-      );
+    for (const kind of ['paren', 'bracket', 'brace'] as const) {
+      if (!this.bracketHighlights[kind].length) continue;
+      this.addHighlightsWithLength(1, this.bracketHighlights[kind], `typstmate-bracket-${kind}`, false);
     }
   }
 
@@ -472,9 +456,33 @@ export class EditorHelper {
     this.editor?.removeHighlights('typstmate-bracket-brace');
   }
 
-  private async updateBracketPairsInMathObject() {
+  private latestBracketHighlightRequestId = 0;
+  private lastAppliedBracketHighlightRequestId = 0;
+
+  private updateBracketPairsInMathObject() {
+    if (this.plugin.settings.disableBracketHighlight) return;
     if (!this.mathObject) return;
-    this.bracketPairs = await this.plugin.typst.findBracketPairs(this.mathObject.content);
+    this.latestBracketHighlightRequestId++;
+    const requestId = this.latestBracketHighlightRequestId;
+
+    const result = this.plugin.typst.getBracketHighlights(this.mathObject.content, this.mathObject.startPos, requestId);
+
+    const handleResult = (res: BracketHighlights) => {
+      if (res.id <= this.lastAppliedBracketHighlightRequestId) return;
+
+      this.lastAppliedBracketHighlightRequestId = res.id;
+      this.bracketPairs = res.pairs;
+      this.bracketHighlights = res.highlights;
+
+      this.updateHighlightsOnBracketPairs();
+      if (this.editor) {
+        const sel = this.editor.getSelection();
+        this.cursorMovedPostProcess(sel === '', this.editor.posToOffset(this.editor.getCursor()));
+      }
+    };
+
+    if (result instanceof Promise) result.then(handleResult);
+    else handleResult(result);
   }
 
   updateHighlightsOnBracketPairEnclosingCursor() {

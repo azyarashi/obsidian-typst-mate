@@ -39,6 +39,7 @@ export interface Settings {
   snippets?: Snippet[];
   complementSymbolWithUnicode?: boolean;
   revertTabToDefault?: boolean;
+  disableBracketHighlight?: boolean;
   patchPDFExport?: boolean;
   disableMacro?: boolean;
   crashCount?: number;
@@ -203,6 +204,7 @@ export const DEFAULT_SETTINGS: Settings = {
   ],
   complementSymbolWithUnicode: true,
   revertTabToDefault: false,
+  disableBracketHighlight: true,
   patchPDFExport: false,
   disableMacro: false,
   crashCount: 0,
@@ -618,6 +620,14 @@ export class SettingTab extends PluginSettingTab {
           this.plugin.saveSettings();
         });
       });
+
+    new Setting(containerEl).setName('Disable Bracket Highlight').addToggle((toggle) => {
+      toggle.setValue(this.plugin.settings.disableBracketHighlight ?? DEFAULT_SETTINGS.disableBracketHighlight!);
+      toggle.onChange((value) => {
+        this.plugin.settings.disableBracketHighlight = value;
+        this.plugin.saveSettings();
+      });
+    });
 
     new Setting(containerEl)
       .setName('Disable Macro')

@@ -71,6 +71,30 @@ export default class $ {
     return this.typst.mitex(code);
   }
 
+  getBracketHighlights(code: string, startPos: EditorPosition, id: number): BracketHighlights {
+    const pairs = this.typst.find_bracket_pairs(code);
+    const highlights: BracketHighlights['highlights'] = {
+      paren: [],
+      bracket: [],
+      brace: [],
+    };
+
+    for (const pair of pairs) {
+      let { ch: startCh, line: startLine } = pair.open_pos;
+      let { ch: endCh, line: endLine } = pair.close_pos;
+
+      if (pair.open_pos.line === 0) startCh += startPos.ch;
+      if (pair.close_pos.line === 0) endCh += startPos.ch;
+      startLine += startPos.line;
+      endLine += startPos.line;
+
+      highlights[pair.kind as keyof BracketHighlights['highlights']].push({ line: startLine, ch: startCh });
+      highlights[pair.kind as keyof BracketHighlights['highlights']].push({ line: endLine, ch: endCh });
+    }
+
+    return { pairs, highlights, id };
+  }
+
   fetch(path: string) {
     if (map.has(path)) {
       const v = map.get(path);
@@ -240,6 +264,16 @@ export interface BracketPair {
   open_pos: EditorPosition;
   close_offset: number;
   close_pos: EditorPosition;
+}
+
+export interface BracketHighlights {
+  id: number;
+  pairs: BracketPair[];
+  highlights: {
+    paren: EditorPosition[];
+    bracket: EditorPosition[];
+    brace: EditorPosition[];
+  };
 }
 
 export interface Main {
