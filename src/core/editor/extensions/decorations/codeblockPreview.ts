@@ -65,7 +65,7 @@ function buildDecorations(state: EditorState, helper: EditorHelper): DecorationS
         inBlock = false;
         const blockEndOffset = line.to;
 
-        if (blockStartOffset <= selection.head && selection.head <= blockEndOffset) {
+        if (blockStartOffset < selection.head && selection.head < blockEndOffset) {
           const code = blockContent.join('\n');
 
           if (helper.editor) {
