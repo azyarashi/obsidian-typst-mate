@@ -95,6 +95,10 @@ export default class $ {
     return { pairs, highlights, id };
   }
 
+  jumpFromClick(x: number, y: number): Jump | null {
+    return this.typst.jump_from_click(x, y);
+  }
+
   fetch(path: string) {
     if (map.has(path)) {
       const v = map.get(path);
@@ -281,3 +285,21 @@ export interface Main {
   readBinary(path: string): Uint8Array | Promise<ArrayBuffer>;
   writePackage(path: string, files: tarFile[]): void;
 }
+
+export type Jump =
+  | {
+      type: 'file';
+      package?: string;
+      path: string;
+      pos?: number;
+    }
+  | {
+      type: 'url';
+      url: string;
+    }
+  | {
+      type: 'position';
+      page: number;
+      x: number;
+      y: number;
+    };

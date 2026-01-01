@@ -8,7 +8,7 @@ use typst::{
     World,
     diag::Warned,
     foundations::Bytes,
-    layout::PagedDocument,
+    layout::{Abs, PagedDocument, Point},
     syntax::{
         FileId, VirtualPath,
         package::{PackageSpec, PackageVersion},
@@ -24,7 +24,7 @@ mod utils;
 mod vfs;
 mod world;
 
-use crate::serde::{diagnostic, font, package, pdf, processor, svg};
+use crate::serde::{diagnostic, font, jump, package, pdf, processor, svg};
 use crate::world::WasmWorld;
 
 #[wasm_bindgen]
@@ -33,6 +33,7 @@ pub struct Typst {
 
     last_kind: String,
     last_id: String,
+    last_document: Option<PagedDocument>,
 }
 
 #[wasm_bindgen]
@@ -47,6 +48,7 @@ impl Typst {
 
             last_kind: String::new(),
             last_id: String::new(),
+            last_document: None,
         }
     }
 
@@ -193,7 +195,9 @@ impl Typst {
                 // ? typst_svg::svg は背景が透過しない
                 let svg = typst_svg::svg_frame(&document.pages[0].frame)
                     .replace("#000000", "var(--typst-base-color)")
+                    .replace("#ffffff", "var(--typst-bg-color)")
                     .replacen("<svg class", "<svg style=\"overflow: visible;\" class", 1);
+                self.last_document = Some(document);
 
                 svg::svg(svg, warnings, &self.world)
             }
@@ -234,6 +238,24 @@ impl Typst {
                     .collect();
                 Err(to_value(&diags).unwrap())
             }
+        }
+    }
+
+    pub fn jump_from_click(&mut self, x: f64, y: f64) -> JsValue {
+        match &self.last_document {
+            Some(document) => {
+                let frame = &document.pages[0].frame;
+                let point = Point::new(Abs::pt(x), Abs::pt(y));
+                let point = typst_ide::jump_from_click(&self.world, document, frame, point);
+                match point {
+                    Some(point) => {
+                        let jump_ser = jump::JumpSer::from_jump(&point, &self.world);
+                        to_value(&jump_ser).unwrap()
+                    }
+                    None => JsValue::NULL,
+                }
+            }
+            None => JsValue::NULL,
         }
     }
 }

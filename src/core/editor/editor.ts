@@ -2,8 +2,9 @@ import { type ChangeSet, Prec } from '@codemirror/state';
 import { EditorView } from '@codemirror/view';
 import { type Editor, type EditorPosition, MarkdownView, type WorkspaceLeaf } from 'obsidian';
 
-import type { BracketHighlights, BracketPair } from '@/libs/worker';
+import type { BracketHighlights, BracketPair, Jump } from '@/libs/worker';
 import type ObsidianTypstMate from '@/main';
+import type TypstElement from '../../ui/elements/Typst';
 import type InlinePreviewElement from './elements/InlinePreview';
 import type SnippetSuggestElement from './elements/SnippetSuggest';
 import type SymbolSuggestElement from './elements/SymbolSuggest';
@@ -604,6 +605,69 @@ export class EditorHelper {
       startOffset: this.editor!.posToOffset(startPos),
       endOffset: this.editor!.posToOffset(endPos),
     };
+  }
+
+  jumpTo(jump: Jump, context?: TypstElement) {
+    if (jump.type === 'file') {
+      if (context && this.editor) {
+        let baseOffset = 0;
+        const view = this.editor.cm;
+        const domPos = view.posAtDOM(context);
+
+        const doc = view.state.doc;
+        const line = doc.lineAt(domPos);
+        const target = context.kind === 'codeblock' ? '```' : context.kind === 'display' ? '$$' : '$';
+
+        // TODO: 同じ行に $ が含まれるかなどの判定が不足
+        for (let i = line.number; i >= 1; i--) {
+          const line = doc.line(i);
+          const text = line.text;
+          const index = text.indexOf(target);
+          if (index !== -1) {
+            baseOffset = line.from + index - target.length + 1;
+            break;
+          }
+        }
+
+        const { noPreamble, format, id } = context.processor;
+        // TODO: 内側にあるかの判定を追加
+        const offset =
+          baseOffset +
+          context.offset +
+          id.length +
+          (jump.pos ?? 0) -
+          (noPreamble ? 0 : this.plugin.settings.preamble.length + 1) -
+          format.indexOf('{CODE}');
+
+        const pos = this.editor?.offsetToPos(offset);
+        if (!pos) return;
+
+        this.editor.setCursor(pos);
+        this.editor.scrollIntoView({ from: pos, to: pos }, true);
+        this.editor.focus();
+        setTimeout(() => {
+          this.editor?.setSelection(pos, pos);
+          this.triggerRippleEffect(pos);
+        }, 50);
+        return;
+      }
+    } else if (jump.type === 'url') window.open(jump.url);
+  }
+
+  triggerRippleEffect(pos: EditorPosition) {
+    if (!this.editor) return;
+    const coords = this.editor.coordsAtPos(pos, false);
+    if (!coords) return;
+
+    const ripple = document.createElement('div');
+    ripple.className = 'typst-mate-jump-ripple';
+    ripple.style.left = `${coords.left}px`;
+    ripple.style.top = `${coords.top}px`;
+    document.body.appendChild(ripple);
+
+    setTimeout(() => {
+      ripple.remove();
+    }, 900);
   }
 
   replaceWithLength(content: string, from: EditorPosition, length: number): number {

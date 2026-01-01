@@ -4,6 +4,29 @@ import type { Diagnostic, SVGResult } from '@/libs/worker';
 import TypstElement from './Typst';
 
 export default class TypstSVGElement extends TypstElement {
+  override connectedCallback() {
+    this.addEventListener('contextmenu', (event) => {
+      const svg = this.querySelector('svg');
+      if (!svg) return;
+
+      event.preventDefault();
+      this.menu.showAtPosition({ x: event.pageX, y: event.pageY });
+    });
+
+    this.addEventListener('click', async (event) => {
+      const svg = this.querySelector('svg');
+      if (!svg) return;
+
+      const rect = svg.getBoundingClientRect();
+      const x = (event.clientX - rect.left) / (rect.width / svg.viewBox.baseVal.width);
+      const y = (event.clientY - rect.top) / (rect.height / svg.viewBox.baseVal.height);
+
+      await this.plugin.typst.svg(this.format(), this.kind, this.processor.id); // フレーム生成のための副作用
+      const result = await this.plugin.typst.jumpFromClick(x, y);
+      if (result) this.plugin.editorHelper?.jumpTo(result, this);
+    });
+  }
+
   constructor() {
     super();
     this.menu.addSeparator();
