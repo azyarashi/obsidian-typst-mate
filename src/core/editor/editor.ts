@@ -610,45 +610,46 @@ export class EditorHelper {
   jumpTo(jump: Jump, context?: TypstElement) {
     if (jump.type === 'file') {
       if (context && this.editor) {
-        let baseOffset = 0;
         const view = this.editor.cm;
         const domPos = view.posAtDOM(context);
 
-        const doc = view.state.doc;
-        const line = doc.lineAt(domPos);
-        const target = context.kind === 'codeblock' ? '```' : context.kind === 'display' ? '$$' : '$';
-
-        // TODO: 同じ行に $ が含まれるかなどの判定が不足
-        for (let i = line.number; i >= 1; i--) {
-          const line = doc.line(i);
-          const text = line.text;
-          const index = text.indexOf(target);
-          if (index !== -1) {
-            baseOffset = line.from + index - target.length + 1;
-            break;
-          }
-        }
-
-        const { noPreamble, format, id } = context.processor;
-        // TODO: 内側にあるかの判定を追加
+        const { noPreamble, format } = context.processor;
         const offset =
-          baseOffset +
           context.offset +
-          id.length +
           (jump.pos ?? 0) -
           (noPreamble ? 0 : this.plugin.settings.preamble.length + 1) -
           format.indexOf('{CODE}');
 
-        const pos = this.editor?.offsetToPos(offset);
-        if (!pos) return;
+        if (context.kind === 'codeblock') {
+          const pos = this.editor?.offsetToPos(domPos + offset + 4);
+          if (!pos) return;
 
-        this.editor.setCursor(pos);
-        this.editor.scrollIntoView({ from: pos, to: pos }, true);
-        this.editor.focus();
-        setTimeout(() => {
-          this.editor?.setSelection(pos, pos);
-          this.triggerRippleEffect(pos);
-        }, 50);
+          this.editor.setCursor(pos);
+          this.editor.scrollIntoView({ from: pos, to: pos }, true);
+          this.editor.focus();
+          setTimeout(() => {
+            this.editor?.setSelection(pos, pos);
+            this.triggerRippleEffect(pos);
+          }, 50);
+        } else {
+          setTimeout(() => {
+            if (!this.editor) return;
+            const head = this.editor.listSelections().at(0)?.head;
+            if (!head) return;
+            const headOffset = this.editor.posToOffset(head);
+            const pos = this.editor.offsetToPos(offset + headOffset);
+            if (!pos) return;
+
+            this.editor?.setSelection(pos, pos);
+            this.editor.setCursor(pos);
+            this.editor.scrollIntoView({ from: pos, to: pos }, true);
+            this.editor.focus();
+
+            setTimeout(() => {
+              this.triggerRippleEffect(pos);
+            }, 50);
+          }, 100);
+        }
         return;
       }
     } else if (jump.type === 'url') window.open(jump.url);

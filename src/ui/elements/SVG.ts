@@ -14,7 +14,7 @@ export default class TypstSVGElement extends TypstElement {
     });
 
     this.addEventListener('click', async (event) => {
-      if (!event.metaKey && !event.ctrlKey) return;
+      if (this.kind !== 'codeblock' && !event.metaKey && !event.ctrlKey) return;
       const svg = this.querySelector('svg');
       if (!svg) return;
 
