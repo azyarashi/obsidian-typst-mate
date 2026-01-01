@@ -39,8 +39,8 @@ span.typstmate-bracket-enclosing-brace .cm-math {
     border-width: 4px;
   }
   100% {
-    width: max(100vw, 100vh);
-    height: max(100vw, 100vh);
+    width: calc(max(100vw, 100vh) / 3);
+    height: calc(max(100vw, 100vh) / 3);
     opacity: 0;
     border-width: 0;
   }
