@@ -195,7 +195,6 @@ impl Typst {
                 // ? typst_svg::svg は背景が透過しない
                 let svg = typst_svg::svg_frame(&document.pages[0].frame)
                     .replace("#000000", "var(--typst-base-color)")
-                    .replace("#ffffff", "var(--typst-bg-color)")
                     .replacen("<svg class", "<svg style=\"overflow: visible;\" class", 1);
                 self.last_document = Some(document);
 

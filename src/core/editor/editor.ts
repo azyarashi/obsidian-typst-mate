@@ -637,7 +637,7 @@ export class EditorHelper {
             const head = this.editor.listSelections().at(0)?.head;
             if (!head) return;
             const headOffset = this.editor.posToOffset(head);
-            const pos = this.editor.offsetToPos(offset + headOffset);
+            const pos = this.editor.offsetToPos(offset + headOffset + (context.kind === 'display' ? 1 : 0));
             if (!pos) return;
 
             this.editor?.setSelection(pos, pos);

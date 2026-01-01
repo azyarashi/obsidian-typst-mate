@@ -475,7 +475,6 @@ export default class ObsidianTypstMate extends Plugin {
 
     const bodyStyles = getComputedStyle(document.body);
     const baseColor = bodyStyles.getPropertyValue('--text-normal').trim();
-    console.log(baseColor);
     document.body.style.setProperty(BASE_COLOR_VAR, baseColor);
   }
 
