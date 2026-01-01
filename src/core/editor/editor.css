@@ -45,3 +45,12 @@ span.typstmate-bracket-enclosing-brace .cm-math {
     border-width: 0;
   }
 }
+
+g.typst-text * {
+  stroke: transparent;
+  stroke-width: 0.15em;
+}
+
+g.typst-text:hover * {
+  fill: var(--interactive-accent) !important;
+}
