@@ -77,7 +77,7 @@ If you want to use only typst codeblock? Check out [this issue](https://github.c
   - Copy as img tag (for embedding into Obsidian notes) </details>
 - Support jump from click (experimental)
   - click codeblock output
-  - click math output with <key>ctrl</key>
+  - click math output with <kbd>ctrl</kbd>
 
 [^1]: [jlyfish](https://typst.app/universe/package/jlyfish/) probably won't work correctly.
 

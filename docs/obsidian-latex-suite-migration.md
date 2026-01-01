@@ -25,7 +25,7 @@ Additionally, this plugin provides symbol suggestions & completion.
 
 ### ✅ Tabout
 
-Additionally, jumping with the <key>Shift + Tab</key> key is also supported.
+Additionally, jumping with the <kbd>Shift + Tab</kbd> key is also supported.
 See [here](/docs/TabJump.md) for details.
 
 ### ✅ Visual snippets
