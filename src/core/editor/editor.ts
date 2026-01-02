@@ -614,41 +614,49 @@ export class EditorHelper {
         const domPos = view.posAtDOM(context);
 
         const { noPreamble, format } = context.processor;
-        const offset =
+        let offset =
           context.offset +
           (jump.pos ?? 0) -
           (noPreamble ? 0 : this.plugin.settings.preamble.length + 1) -
           format.indexOf('{CODE}');
 
-        if (context.kind === 'codeblock') {
-          const pos = this.editor?.offsetToPos(domPos + offset + 4);
-          if (!pos) return;
+        const execute = (pos: EditorPosition) => {
+          this.editor!.setSelection(pos, pos);
+          this.editor!.setCursor(pos);
+          this.editor!.scrollIntoView({ from: pos, to: pos }, true);
+          this.editor!.focus();
 
-          this.editor.setCursor(pos);
-          this.editor.scrollIntoView({ from: pos, to: pos }, true);
-          this.editor.focus();
           setTimeout(() => {
-            this.editor?.setSelection(pos, pos);
             this.triggerRippleEffect(pos);
           }, 50);
+        };
+
+        if (context.kind === 'codeblock') {
+          const line = this.editor.offsetToPos(domPos).line;
+          for (let i = line; i >= 0; i--) {
+            const text = this.editor.getLine(i);
+            if (!text.startsWith('```') && !text.startsWith('~~~')) continue;
+            if (text === '```' || text === '~~~') continue;
+
+            offset += this.editor.posToOffset({ line: i, ch: 0 }) + 4; // ``` と改行
+            break;
+          }
+          const pos = this.editor?.offsetToPos(offset);
+          if (!pos) return;
+
+          execute(pos);
         } else {
           setTimeout(() => {
             if (!this.editor) return;
             const head = this.editor.listSelections().at(0)?.head;
             if (!head) return;
             const headOffset = this.editor.posToOffset(head);
-            const pos = this.editor.offsetToPos(offset + headOffset + (context.kind === 'display' ? 1 : 0));
+            if (this.editor.getRange({ line: head.line, ch: head.ch - 1 }, head).at(0) !== '$') offset -= 1;
+            const pos = this.editor.offsetToPos(offset + headOffset);
             if (!pos) return;
 
-            this.editor?.setSelection(pos, pos);
-            this.editor.setCursor(pos);
-            this.editor.scrollIntoView({ from: pos, to: pos }, true);
-            this.editor.focus();
-
-            setTimeout(() => {
-              this.triggerRippleEffect(pos);
-            }, 50);
-          }, 100);
+            execute(pos);
+          }, 200);
         }
         return;
       }
