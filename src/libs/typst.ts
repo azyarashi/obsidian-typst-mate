@@ -131,7 +131,7 @@ export default class TypstManager {
             return Promise.resolve(el as HTMLElement);
           }
 
-          for (const el of document.body.querySelectorAll('div.typstmate-temporary')) el.remove();
+          for (const el of document.body.querySelectorAll('div.typst-mate-preview')) el.remove();
           return Promise.resolve(this.render(source, el, processor.id));
         });
       } catch {

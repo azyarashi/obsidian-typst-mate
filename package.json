@@ -19,7 +19,7 @@
 		"@codemirror/view": "^6.39.8",
 		"@types/bun": "^1.3.5",
 		"@types/pako": "^2.0.4",
-		"@zsviczian/excalidraw": "^0.18.0-63",
+		"@zsviczian/excalidraw": "^0.18.0-66",
 		"autoprefixer": "^10.4.23",
 		"builtin-modules": "^5.0.0",
 		"esbuild": "^0.27.2",
