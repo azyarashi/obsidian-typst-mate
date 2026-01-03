@@ -59,9 +59,19 @@ export class EditorHelper {
         const ch = stream.peek();
 
         switch (ch) {
+          case '/':
+            if (stream.match('//', false) || stream.match('/*', false)) {
+              return rustToken(stream, state);
+            }
+            stream.next();
+            return null;
           case '#':
+            if (stream.match('#CURSOR', true)) return 'error';
             if (stream.match(/#[\w\d]+/, true)) return 'keyword';
             break;
+          case '{':
+            if (stream.match('{CODE}', true)) return 'error';
+            return rustToken(stream, state);
           case '$':
             stream.next();
             return 'keyword';
@@ -74,7 +84,6 @@ export class EditorHelper {
           case '+':
           case '-':
           case '*':
-          case '/':
           case '_':
             stream.next();
             return null;
