@@ -56,8 +56,30 @@ export class EditorHelper {
       const rustToken = baseMode.token;
 
       baseMode.token = (stream, state) => {
-        if (stream.match(/#[\w\d]+/, true)) return 'keyword';
-        if (stream.match(/\$/, true)) return 'keyword';
+        const ch = stream.peek();
+
+        switch (ch) {
+          case '#':
+            if (stream.match(/#[\w\d]+/, true)) return 'keyword';
+            break;
+          case '$':
+            stream.next();
+            return 'keyword';
+          case '&':
+            stream.next();
+            return 'operator';
+          case '\\':
+            stream.next();
+            return 'comment';
+          case '+':
+          case '-':
+          case '*':
+          case '/':
+          case '_':
+            stream.next();
+            return null;
+        }
+
         return rustToken(stream, state);
       };
 
