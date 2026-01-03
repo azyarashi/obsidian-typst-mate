@@ -51,6 +51,23 @@ export class EditorHelper {
     this.supportedCodeBlockLangs = new Set(
       (this.plugin.settings.processor.codeblock?.processors ?? []).map((p) => p.id),
     );
+    window.CodeMirror.defineMode('typst', (config) => {
+      const baseMode = window.CodeMirror.getMode(config, 'rust');
+      const rustToken = baseMode.token;
+
+      baseMode.token = (stream, state) => {
+        if (stream.match(/#[\w\d]+/, true)) return 'keyword';
+        if (stream.match(/\$/, true)) return 'keyword';
+        return rustToken(stream, state);
+      };
+
+      return baseMode;
+    });
+    const typstMode = window.CodeMirror.getMode({}, 'typst');
+    for (const lang of this.supportedCodeBlockLangs) {
+      if (lang === 'typst') continue;
+      window.CodeMirror.defineMode(lang, () => typstMode);
+    }
 
     // 拡張機能をセット
     this.plugin.registerEditorExtension(

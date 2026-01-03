@@ -133,19 +133,6 @@ export default class ObsidianTypstMate extends Plugin {
       this.registerListeners();
     });
 
-    window.CodeMirror.defineMode('typst', (config) => {
-      const baseMode = window.CodeMirror.getMode(config, 'rust');
-      const rustToken = baseMode.token;
-
-      baseMode.token = (stream, state) => {
-        if (stream.match(/#[\w\d]+/, true)) return 'keyword';
-        if (stream.match(/\$/, true)) return 'keyword';
-        return rustToken(stream, state);
-      };
-
-      return baseMode;
-    });
-
     super.onload();
   }
 
