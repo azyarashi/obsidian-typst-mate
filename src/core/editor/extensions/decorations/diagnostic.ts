@@ -24,7 +24,6 @@ export const createDiagnosticExtension = (helper: EditorHelper) => {
     // TODO: コードブロックには効かない
     if (helper.mathObject.kind === 'codeblock') return [];
 
-    // @ts-expect-error
     const result = view.state.field(diagnosticsState);
     if (!result) return [];
     if (result.noDiag) return [];
