@@ -61,10 +61,10 @@ If you want to use only typst codeblock? Check out [this issue](https://github.c
 - PDF Export, [Better Export PDF](https://www.obsidianstats.com/plugins/better-export-pdf), [Export Image plugin](https://www.obsidianstats.com/plugins/obsidian-export-image), and [Webpage HTML Export](https://www.obsidianstats.com/plugins/webpage-html-export) compatibility
 - Typst Tools
   - Symbols viewer
-  - Typst handwritten symbol recognition (Detypify)
   - Packages viewer
   - Snippets editor
   - Processors editor
+  - Typst handwritten symbol recognition with [Detypify](https://github.com/QuarticCat/detypify)
   - Bidirectional converter between TeX/LaTeX and Typst with [TyLax](https://github.com/scipenai/tylax)
   - Commutative diagram editor with [Quiver](https://github.com/varkor/quiver)
 - Context Menu
@@ -141,6 +141,10 @@ Typst Mate leverages the following open-source projects:
 - [TyLax](https://github.com/scipenai/tylax) – a fast and high compatibility LaTeX to Typst converter
 - [Detypify](https://github.com/QuarticCat/detypify) - a tool for recognizing handwritten math symbols
 - [Quiver](https://github.com/varkor/quiver) - a tool for creating commutative diagrams
+
+and contributors:
+
+- [Merrkry](https://github.com/merrkry)
 
 I'm grateful to the developers for making this plugin possible!
 
