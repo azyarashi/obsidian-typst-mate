@@ -29,6 +29,15 @@ export class EditorHelper {
   bracketHighlights?: BracketHighlights['highlights'];
   cursorEnclosingBracketPair?: BracketPair;
 
+  // Shortcut
+  currShortcutTimeoutId?: number;
+  pendingShortcutKey?: string;
+  savedSelection?: {
+    anchor: EditorPosition;
+    head: EditorPosition;
+    content: string;
+  };
+
   private inlinePreviewEl: InlinePreviewElement;
   private snippetSuggestEl: SnippetSuggestElement;
   private symbolSuggestEl: SymbolSuggestElement;
@@ -74,6 +83,7 @@ export class EditorHelper {
         EditorView.domEventHandlers({
           // インラインプレビューの非表示
           mousedown: (e) => {
+            this.clearShortcutTimeout();
             this.hideAllSuggest();
             if (this.inlinePreviewEl.style.display !== 'none') this.inlinePreviewEl.onClick(e);
           },
@@ -84,6 +94,11 @@ export class EditorHelper {
             else if (this.snippetSuggestEl.style.display !== 'none') this.snippetSuggestEl.onKeyDown(e);
             // CURSOR Jump, Tabout, Shortcut
             else this.keyDown(e);
+          },
+          keyup: (e) => {
+            if (e.key === this.pendingShortcutKey) {
+              this.clearShortcutTimeout();
+            }
           },
         }),
       ]),
@@ -270,8 +285,55 @@ export class EditorHelper {
       }
       default: {
         // Shortcut
-        if (!this.plugin.settings.enableShortcutKeys) break;
-        if (SHORTCUTS_KEYS.includes(e.key) && !e.ctrlKey && !e.metaKey && !e.altKey) this.executeShortcut(e);
+        if (
+          this.editor &&
+          SHORTCUTS_KEYS.includes(e.key) &&
+          !e.ctrlKey &&
+          !e.metaKey &&
+          !e.altKey &&
+          this.editor.getSelection()
+        ) {
+          if (e.repeat && this.currShortcutTimeoutId) {
+            e.preventDefault();
+            return;
+          }
+
+          if (this.currShortcutTimeoutId) this.clearShortcutTimeout();
+
+          this.pendingShortcutKey = e.key;
+          const selection = this.editor.listSelections()[0]!;
+          this.savedSelection = {
+            anchor: selection.anchor,
+            head: selection.head,
+            content: this.editor.getSelection(),
+          };
+
+          this.currShortcutTimeoutId = window.setTimeout(() => {
+            if (!this.editor) return;
+            // Restore selection
+            if (this.savedSelection) {
+              const start =
+                this.savedSelection.head.line === this.savedSelection.anchor.line
+                  ? this.savedSelection.head.ch < this.savedSelection.anchor.ch
+                    ? this.savedSelection.head
+                    : this.savedSelection.anchor
+                  : this.savedSelection.head.line < this.savedSelection.anchor.line
+                    ? this.savedSelection.head
+                    : this.savedSelection.anchor;
+
+              this.editor.replaceRange(this.savedSelection.content, start, {
+                line: start.line,
+                ch: start.ch + 1,
+              });
+              this.editor.setSelection(this.savedSelection.anchor, this.savedSelection.head);
+            }
+            this.executeShortcut(e);
+            this.clearShortcutTimeout();
+          }, 250);
+          return;
+        }
+
+        this.clearShortcutTimeout();
         break;
       }
     }
@@ -658,6 +720,15 @@ export class EditorHelper {
       this.extractDisplayMathObjectInsideTwoDollarsOutsideCursor(editor.posToOffset(editor.getCursor()));
     if (!mathObject) return;
     editor.setSelection(mathObject.startPos, mathObject.endPos);
+  }
+
+  clearShortcutTimeout() {
+    if (!this.currShortcutTimeoutId) return;
+
+    window.clearTimeout(this.currShortcutTimeoutId);
+    this.currShortcutTimeoutId = undefined;
+    this.pendingShortcutKey = undefined;
+    this.savedSelection = undefined;
   }
 }
 
