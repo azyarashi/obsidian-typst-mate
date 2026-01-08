@@ -83,8 +83,8 @@ export const DEFAULT_SETTINGS: Settings = {
     '#import "@preview/mannot:0.3.1": *',
     '#import "@preview/quick-maths:0.2.1": shorthands',
     '#show: shorthands.with(',
-    '  ($+-$, sym.plus.minus)',
-    '  ($|-$, math.tack)',
+    '  ($+-$, sym.plus.minus),',
+    '  ($|-$, math.tack),',
     ')',
   ].join('\n'),
 
