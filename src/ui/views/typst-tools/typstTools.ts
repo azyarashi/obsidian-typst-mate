@@ -81,50 +81,58 @@ export class TypstToolsView extends ItemView {
 
           const updatePreview = () => {
             preview.empty();
-            this.plugin.typstManager.render(output.value, preview, 'inline');
+            switch (dropdown.getValue()) {
+              case 'math-eq':
+                this.plugin.typstManager.render(typst.value, preview, 'display');
+                break;
+              case 'markup-doc':
+              case 'cetz-tikz':
+                this.plugin.typstManager.render(typst.value, preview, 'typst');
+                break;
+            }
           };
 
-          const input = contentEl.createEl('textarea');
-          input.placeholder = 'LaTex';
-          input.addClass('typstmate-form-control');
-          input.addEventListener('input', async () => {
+          const latex = contentEl.createEl('textarea');
+          latex.placeholder = 'LaTex';
+          latex.addClass('typstmate-form-control');
+          latex.addEventListener('input', async () => {
             try {
               switch (dropdown.getValue()) {
                 case 'math-eq':
-                  output.value = await this.plugin.typst!.latexeq_to_typm(input.value);
+                  typst.value = await this.plugin.typst!.latexeq_to_typm(latex.value);
                   break;
                 case 'markup-doc':
-                  output.value = await this.plugin.typst!.latex_to_typst(input.value);
+                  typst.value = await this.plugin.typst!.latex_to_typst(latex.value);
                   break;
                 case 'cetz-tikz':
-                  output.value = await this.plugin.typst!.tikz_to_cetz(input.value);
+                  typst.value = await this.plugin.typst!.tikz_to_cetz(latex.value);
                   break;
               }
               updatePreview();
             } catch (error) {
-              output.value = String(error);
+              typst.value = String(error);
             }
           });
 
-          const output = contentEl.createEl('textarea');
-          output.placeholder = 'Typst';
-          output.addClass('typstmate-form-control');
-          output.addEventListener('input', async () => {
+          const typst = contentEl.createEl('textarea');
+          typst.placeholder = 'Typst';
+          typst.addClass('typstmate-form-control');
+          typst.addEventListener('input', async () => {
             try {
               switch (dropdown.getValue()) {
                 case 'math-eq':
-                  output.value = await this.plugin.typst!.typm_to_latexeq(input.value);
+                  latex.value = await this.plugin.typst!.typm_to_latexeq(typst.value);
                   break;
                 case 'markup-doc':
-                  output.value = await this.plugin.typst!.typst_to_latex(input.value);
+                  latex.value = await this.plugin.typst!.typst_to_latex(typst.value);
                   break;
                 case 'cetz-tikz':
-                  output.value = await this.plugin.typst!.cetz_to_tikz(input.value);
+                  latex.value = await this.plugin.typst!.cetz_to_tikz(typst.value);
                   break;
               }
               updatePreview();
             } catch (error) {
-              input.value = String(error);
+              latex.value = String(error);
             }
           });
 
@@ -135,7 +143,15 @@ export class TypstToolsView extends ItemView {
           button.setText('Copy');
           button.addClass('typstmate-button');
           button.onClickEvent(async () => {
-            navigator.clipboard.writeText(`$${output.value}$`);
+            switch (dropdown.getValue()) {
+              case 'math-eq':
+                navigator.clipboard.writeText(`$ ${typst.value} $`);
+                break;
+              case 'markup-doc':
+              case 'cetz-tikz':
+                navigator.clipboard.writeText(typst.value);
+                break;
+            }
           });
 
           break;
