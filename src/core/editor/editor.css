@@ -1,24 +1,3 @@
-/* ? $の判定により, 通常の文章にハイライトしてしまわないために `.cm-math` は必要 */
-span.typstmate-bracket-paren .cm-math {
-  color: rgb(200, 100, 200);
-}
-span.typstmate-bracket-bracket .cm-math {
-  color: rgb(100, 200, 200);
-}
-span.typstmate-bracket-brace .cm-math {
-  color: rgb(200, 200, 100);
-}
-
-span.typstmate-bracket-enclosing-paren .cm-math {
-  background-color: rgba(225, 125, 225, 0.5);
-}
-span.typstmate-bracket-enclosing-bracket .cm-math {
-  background-color: rgba(125, 225, 225, 0.5);
-}
-span.typstmate-bracket-enclosing-brace .cm-math {
-  background-color: rgba(225, 225, 125, 0.5);
-}
-
 .typst-mate-jump-ripple {
   position: fixed;
   border: 4px solid var(--interactive-accent);
