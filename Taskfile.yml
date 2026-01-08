@@ -68,7 +68,6 @@ tasks:
       - git tag "{{.tag}}"
       - git push
       - git push origin "{{.tag}}"
-      - task wasm-release
       - task placestatic
     preconditions:
       - sh: "[ {{.TYPE}} != '' ]"
