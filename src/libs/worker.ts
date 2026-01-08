@@ -51,10 +51,6 @@ export default class $ {
     return this.typst.pdf(filename, code);
   }
 
-  findBracketPairs(code: string): BracketPair[] {
-    return this.typst.find_bracket_pairs(code);
-  }
-
   listFonts(): FontInfo[] {
     return this.typst.list_fonts();
   }
@@ -67,32 +63,28 @@ export default class $ {
     return this.typst.list_packages();
   }
 
-  mitex(code: string): string {
-    return this.typst.mitex(code);
+  latex_to_typst(code: string): string {
+    return this.typst.latex_to_typst(code);
   }
 
-  getBracketHighlights(code: string, startPos: EditorPosition, id: number): BracketHighlights {
-    const pairs = this.typst.find_bracket_pairs(code);
-    const highlights: BracketHighlights['highlights'] = {
-      paren: [],
-      bracket: [],
-      brace: [],
-    };
+  typst_to_latex(code: string): string {
+    return this.typst.typst_to_latex(code);
+  }
 
-    for (const pair of pairs) {
-      let { ch: startCh, line: startLine } = pair.open_pos;
-      let { ch: endCh, line: endLine } = pair.close_pos;
+  latexeq_to_typm(code: string): string {
+    return this.typst.latexeq_to_typm(code);
+  }
 
-      if (pair.open_pos.line === 0) startCh += startPos.ch;
-      if (pair.close_pos.line === 0) endCh += startPos.ch;
-      startLine += startPos.line;
-      endLine += startPos.line;
+  typm_to_latexeq(code: string): string {
+    return this.typst.typm_to_latexeq(code);
+  }
 
-      highlights[pair.kind as keyof BracketHighlights['highlights']].push({ line: startLine, ch: startCh });
-      highlights[pair.kind as keyof BracketHighlights['highlights']].push({ line: endLine, ch: endCh });
-    }
+  tikz_to_cetz(code: string): string {
+    return this.typst.tikz_to_cetz(code);
+  }
 
-    return { pairs, highlights, id };
+  cetz_to_tikz(code: string): string {
+    return this.typst.cetz_to_tikz(code);
   }
 
   jumpFromClick(x: number, y: number): Jump | null {

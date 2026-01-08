@@ -16,7 +16,6 @@ import {
   type WorkspaceLeaf,
 } from 'obsidian';
 
-import { tex2typst, typst2tex } from 'tex2typst';
 import { BASE_COLOR_VAR } from './constants';
 import { EditorHelper } from './core/editor/editor';
 import { DEFAULT_SETTINGS, type Settings, SettingTab } from './core/settings/settings';
@@ -265,18 +264,9 @@ export default class ObsidianTypstMate extends Plugin {
       editorCallback: async (editor) => {
         const selection = editor.getSelection();
         const tex2typ = async (seg: MathSegment) => {
-          try {
-            // ? typst から tex に変換できればその数式は typst ではない
-            typst2tex(seg.content);
-            return seg.raw;
-          } catch {
-            try {
-              return seg.raw.replace(seg.content, tex2typst(seg.content));
-            } catch {
-              return seg.raw.replace(seg.content, await this.typst.mitex(seg.content));
-            }
-          }
+          return seg.raw.replace(seg.content, await this.typst.latexeq_to_typm(seg.content));
         };
+
         if (selection) {
           const replaced = await replaceMathSegments(selection, tex2typ);
           editor.replaceSelection(replaced);

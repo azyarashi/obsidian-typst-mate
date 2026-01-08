@@ -16,7 +16,7 @@ typst-timing = "0.14.2"
 comemo = "^0"
 unscanny = "^0.1"
 
-mitex = "^0.2"
+tylax = { version = "^0.1", features = [] }
 
 wasm-bindgen = "^0.2"
 wasm-bindgen-futures = "^0.4"

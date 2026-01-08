@@ -1,7 +1,11 @@
 use js_sys::{ArrayBuffer, Uint8Array};
-use mitex::convert_math;
 use rustc_hash::FxHashMap;
 use serde_wasm_bindgen::to_value;
+use tylax::{
+    latex_document_to_typst, latex_to_typst,
+    tikz::{convert_cetz_to_tikz, convert_tikz_to_cetz},
+    typst_document_to_latex, typst_to_latex,
+};
 use wasm_bindgen::prelude::*;
 
 use typst::{
@@ -17,10 +21,7 @@ use typst::{
 };
 use typst_pdf::PdfOptions;
 
-mod lexer;
-mod parser;
 mod serde;
-mod utils;
 mod vfs;
 mod world;
 
@@ -115,14 +116,14 @@ impl Typst {
         Ok(())
     }
 
-    pub fn list_packages(&mut self) -> JsValue {
+    pub fn list_packages(&self) -> JsValue {
         let packages = self.world.list_packages();
         let packages_ser: Vec<package::PackageSpecSer> = packages.iter().map(Into::into).collect();
 
         to_value(&packages_ser).unwrap()
     }
 
-    pub fn list_fonts(&mut self) -> JsValue {
+    pub fn list_fonts(&self) -> JsValue {
         let families = self.world.book().families();
         let infos_ser: Vec<font::FontInfoSer> = families
             .flat_map(|(_, infos)| infos.map(Into::into))
@@ -141,21 +142,25 @@ impl Typst {
         to_value(&infos).unwrap()
     }
 
-    pub fn find_bracket_pairs(&mut self, code: &str) -> JsValue {
-        let tokens = lexer::bracket::bracket_lexer(code);
-        let pairs = parser::bracket::paren_parse(&tokens);
-
-        let pairs_ser: Vec<serde::bracket::BracketPairSer> = pairs.iter().map(Into::into).collect();
-
-        to_value(&pairs_ser).unwrap()
+    pub fn latex_to_typst(&self, code: &str) -> String {
+        latex_document_to_typst(code)
+    }
+    pub fn typst_to_latex(&self, code: &str) -> String {
+        typst_document_to_latex(code)
     }
 
-    // ? ちらつき防止のためカーソルの親括弧の計算は TS 側でする
-    pub fn mitex(&mut self, code: &str) -> Result<JsValue, JsValue> {
-        match convert_math(code, None) {
-            Ok(result) => Ok(JsValue::from_str(&result)),
-            Err(error) => Err(JsValue::from_str(&error)),
-        }
+    pub fn latexeq_to_typm(&self, code: &str) -> String {
+        latex_to_typst(code)
+    }
+    pub fn typm_to_latexeq(&self, code: &str) -> String {
+        typst_to_latex(code)
+    }
+
+    pub fn tikz_to_cetz(&self, code: &str) -> String {
+        convert_tikz_to_cetz(code)
+    }
+    pub fn cetz_to_tikz(&self, code: &str) -> String {
+        convert_cetz_to_tikz(code)
     }
 
     fn update_source(&mut self, vpath: VirtualPath, code: &str) {
@@ -240,7 +245,7 @@ impl Typst {
         }
     }
 
-    pub fn jump_from_click(&mut self, x: f64, y: f64) -> JsValue {
+    pub fn jump_from_click(self, x: f64, y: f64) -> JsValue {
         match &self.last_document {
             Some(document) => {
                 let frame = &document.pages[0].frame;

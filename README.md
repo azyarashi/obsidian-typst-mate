@@ -1,15 +1,13 @@
 # Typst Mate
 
 <a href="https://obsidian.md/">
-  <img alt="Obsidian Plugin" src="https://img.shields.io/badge/Desktop%20%26%20Mobile%28iPhone%20XS%2B%2C%20iPad%20Gen10%2B%2C%20iPad%20Air%20Gen4%2B%2C%20iPad%20mini%20Gen6%2B%2C%20iPad%20Pro%2A1%2C%20Rooted%20Android%2A2%29-a78bfa?logo=obsidian&logoColor=white" />
+  <img alt="Obsidian Plugin" src="https://img.shields.io/badge/Desktop%20%26%20Mobile%28iDevice%2C%20Rooted%20Android%2A%29-a78bfa?logo=obsidian&logoColor=white" />
 </a>
 <a href="https://typst.app/docs/changelog/">
-  <img alt="Typst Version" src="https://img.shields.io/badge/v0.13.1-239dad?logo=typst&logoColor=white" />
-  <img alt="Typst Version" src="https://img.shields.io/badge/v0.14.0-239dad?logo=typst&logoColor=white" />
+  <img alt="Typst Version" src="https://img.shields.io/badge/v0.14.2-239dad?logo=typst&logoColor=white" />
 </a>
 
-> \*1: On iOS/iPadOS this is stable on devices with `4GB` or more of RAM, or in environments where JIT is available.<br>
-> \*2: You may need to use tools like `resetprop` or directly edit `build.prop` to change `dalvik.vm.heapgrowthlimit` and `dalvik.vm.heapsize` to around `512m`. See [this warning](https://github.com/azyarashi/obsidian-typst-mate?tab=readme-ov-file#network).
+> \* You may need to use tools like `resetprop` or directly edit `build.prop` to change `dalvik.vm.heapgrowthlimit` and `dalvik.vm.heapsize` to around `512m`. See [this warning](https://github.com/azyarashi/obsidian-typst-mate?tab=readme-ov-file#network).
 
 Render math expressions in [Obsidian](https://obsidian.md) using [Typst](https://typst.app/) instead of MathJax.
 
@@ -67,7 +65,7 @@ If you want to use only typst codeblock? Check out [this issue](https://github.c
   - Packages viewer <br />
   - Snippets editor <br />
   - Processors editor <br />
-  - Bidirectional converter between TeX/LaTeX and Typst ([MiTex](https://github.com/mitex-rs/mitex) / [tex2typst](https://github.com/qwinsi/tex2typst)) (Typst to TeX/LaTeX conversion is `tex2typst` mode only) <br />
+  - Bidirectional converter between TeX/LaTeX and Typst ([TyLax](https://github.com/scipenai/tylax)) <br />
   - Commutative diagram editor ([Quiver](https://github.com/varkor/quiver)) </details>
 - <details><summary>Context Menu</summary>
   - Copy as SVG (Obsidian Theme) <br />
@@ -136,8 +134,7 @@ Depending on the three modes (`inline`, `display`, and `codeblock`), the styling
 Typst Mate leverages the following open-source projects:
 
 - [Typst](https://typst.app/) – a modern and powerful typesetting system
-- [MiTex](https://github.com/mitex-rs/mitex) – a fast and lightweight LaTeX to Typst converter with **high compatibility**
-- [tex2typst](https://github.com/qwinsi/tex2typst) – a fast and lightweight bidirectional converter between TeX/LaTeX and Typst with **sophisticated output**
+- [TyLax](https://github.com/scipenai/tylax) – a fast and high compatibility LaTeX to Typst converter
 - [Detypify](https://github.com/QuarticCat/detypify) - a tool for recognizing handwritten math symbols
 - [Quiver](https://github.com/varkor/quiver) - a tool for creating commutative diagrams
 

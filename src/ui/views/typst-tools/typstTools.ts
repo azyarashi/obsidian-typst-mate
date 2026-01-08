@@ -1,5 +1,4 @@
 import { ButtonComponent, DropdownComponent, ItemView, Platform, type WorkspaceLeaf } from 'obsidian';
-import { tex2typst, typst2tex } from 'tex2typst';
 
 import { ProcessorList } from '@/core/settings/components/processor';
 import type ObsidianTypstMate from '@/main';
@@ -75,7 +74,10 @@ export class TypstToolsView extends ItemView {
         }
         case 'converter': {
           const dropdown = new DropdownComponent(contentEl);
-          dropdown.addOption('tex2typst', 'tex2typst').addOption('mitex', 'MiTex');
+          dropdown
+            .addOption('math-eq', 'Math Equation')
+            .addOption('markup-doc', 'Markup Document')
+            .addOption('cetz-tikz', 'CeTZ/TikZ');
 
           const updatePreview = () => {
             preview.empty();
@@ -83,16 +85,19 @@ export class TypstToolsView extends ItemView {
           };
 
           const input = contentEl.createEl('textarea');
-          input.placeholder = '(La)Tex';
+          input.placeholder = 'LaTex';
           input.addClass('typstmate-form-control');
           input.addEventListener('input', async () => {
             try {
               switch (dropdown.getValue()) {
-                case 'tex2typst':
-                  output.value = tex2typst(input.value);
+                case 'math-eq':
+                  output.value = await this.plugin.typst!.latexeq_to_typm(input.value);
                   break;
-                case 'mitex':
-                  output.value = await this.plugin.typst!.mitex(input.value);
+                case 'markup-doc':
+                  output.value = await this.plugin.typst!.latex_to_typst(input.value);
+                  break;
+                case 'cetz-tikz':
+                  output.value = await this.plugin.typst!.tikz_to_cetz(input.value);
                   break;
               }
               updatePreview();
@@ -107,11 +112,15 @@ export class TypstToolsView extends ItemView {
           output.addEventListener('input', async () => {
             try {
               switch (dropdown.getValue()) {
-                case 'tex2typst':
-                  input.value = typst2tex(output.value);
+                case 'math-eq':
+                  output.value = await this.plugin.typst!.typm_to_latexeq(input.value);
                   break;
-                case 'mitex':
-                  return;
+                case 'markup-doc':
+                  output.value = await this.plugin.typst!.typst_to_latex(input.value);
+                  break;
+                case 'cetz-tikz':
+                  output.value = await this.plugin.typst!.cetz_to_tikz(input.value);
+                  break;
               }
               updatePreview();
             } catch (error) {
