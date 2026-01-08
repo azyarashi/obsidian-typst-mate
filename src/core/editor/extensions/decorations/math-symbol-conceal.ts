@@ -44,7 +44,7 @@ export const createMathSymbolConcealExtension = (helper: EditorHelper): Extensio
 
     update(u: ViewUpdate) {
       if (u.docChanged || u.selectionSet || u.viewportChanged) {
-        const { decorations, atomicRanges } = this.buildDecorationsAndAtomicRanges(u.view);
+        const { decorations, atomicRanges } = this.buildDecorationsAndAtomicRanges(u.view, u.docChanged);
         this.decorations = decorations;
         this.atomicRanges = atomicRanges;
       }
@@ -56,7 +56,10 @@ export const createMathSymbolConcealExtension = (helper: EditorHelper): Extensio
       }
     }
 
-    buildDecorationsAndAtomicRanges(view: EditorView): { decorations: DecorationSet; atomicRanges: any } {
+    buildDecorationsAndAtomicRanges(
+      view: EditorView,
+      isDocChange: boolean = false,
+    ): { decorations: DecorationSet; atomicRanges: any } {
       const decorationBuilder = new RangeSetBuilder<Decoration>();
       const atomicRangeBuilder = new RangeSetBuilder<any>();
       const state = view.state;
@@ -108,10 +111,8 @@ export const createMathSymbolConcealExtension = (helper: EditorHelper): Extensio
                 if (isNearby) {
                   cursorOnSymbol = { from: absStart, to: absEnd };
 
-                  // If already fully revealed
-                  if (this.activeReveal && this.activeReveal.from === absStart) {
-                    shouldReveal = true;
-                  }
+                  if (this.activeReveal && this.activeReveal.from === absStart) shouldReveal = true;
+                  else if (isDocChange) shouldReveal = true;
                 }
 
                 if (!shouldReveal) {
@@ -132,7 +133,14 @@ export const createMathSymbolConcealExtension = (helper: EditorHelper): Extensio
         const isSameAsActive = this.activeReveal && this.activeReveal.from === cursorOnSymbol.from;
 
         if (!isSameAsActive) {
-          if (!isSameAsPending) {
+          if (isDocChange) {
+            this.activeReveal = cursorOnSymbol;
+            this.pendingReveal = null;
+            if (this.revealTimer !== undefined) {
+              clearTimeout(this.revealTimer);
+              this.revealTimer = undefined;
+            }
+          } else if (!isSameAsPending) {
             if (this.revealTimer !== undefined) clearTimeout(this.revealTimer);
             this.pendingReveal = cursorOnSymbol;
 
