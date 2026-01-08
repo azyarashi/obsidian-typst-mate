@@ -116,14 +116,14 @@ impl Typst {
         Ok(())
     }
 
-    pub fn list_packages(&self) -> JsValue {
+    pub fn list_packages(&mut self) -> JsValue {
         let packages = self.world.list_packages();
         let packages_ser: Vec<package::PackageSpecSer> = packages.iter().map(Into::into).collect();
 
         to_value(&packages_ser).unwrap()
     }
 
-    pub fn list_fonts(&self) -> JsValue {
+    pub fn list_fonts(&mut self) -> JsValue {
         let families = self.world.book().families();
         let infos_ser: Vec<font::FontInfoSer> = families
             .flat_map(|(_, infos)| infos.map(Into::into))
@@ -132,7 +132,7 @@ impl Typst {
         to_value(&infos_ser).unwrap()
     }
 
-    pub fn get_font_info(&self, buffer: JsValue) -> JsValue {
+    pub fn get_font_info(&mut self, buffer: JsValue) -> JsValue {
         let vec = Uint8Array::new(&buffer).to_vec();
         let bytes = Bytes::new(vec);
 
@@ -142,24 +142,24 @@ impl Typst {
         to_value(&infos).unwrap()
     }
 
-    pub fn latex_to_typst(&self, code: &str) -> String {
+    pub fn latex_to_typst(&mut self, code: &str) -> String {
         latex_document_to_typst(code)
     }
-    pub fn typst_to_latex(&self, code: &str) -> String {
+    pub fn typst_to_latex(&mut self, code: &str) -> String {
         typst_document_to_latex(code)
     }
 
-    pub fn latexeq_to_typm(&self, code: &str) -> String {
+    pub fn latexeq_to_typm(&mut self, code: &str) -> String {
         latex_to_typst(code)
     }
-    pub fn typm_to_latexeq(&self, code: &str) -> String {
+    pub fn typm_to_latexeq(&mut self, code: &str) -> String {
         typst_to_latex(code)
     }
 
-    pub fn tikz_to_cetz(&self, code: &str) -> String {
+    pub fn tikz_to_cetz(&mut self, code: &str) -> String {
         convert_tikz_to_cetz(code)
     }
-    pub fn cetz_to_tikz(&self, code: &str) -> String {
+    pub fn cetz_to_tikz(&mut self, code: &str) -> String {
         convert_cetz_to_tikz(code)
     }
 
