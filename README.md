@@ -63,7 +63,6 @@ If you want to use only typst codeblock? Check out [this issue](https://github.c
   - Symbols viewer
   - Packages viewer
   - Snippets editor
-  - Processors editor
   - Typst handwritten symbol recognition with [Detypify](https://github.com/QuarticCat/detypify)
   - Bidirectional converter between TeX/LaTeX and Typst with [TyLax](https://github.com/scipenai/tylax)
   - Commutative diagram editor with [Quiver](https://github.com/varkor/quiver)

@@ -1,7 +1,6 @@
 import { ButtonComponent, DropdownComponent, ItemView, Platform, type WorkspaceLeaf } from 'obsidian';
 
 import type ObsidianTypstMate from '@/main';
-import { ProcessorList } from '@/ui/settingstab/components/processor';
 
 import { SnippetView } from './components/snippet';
 
@@ -48,10 +47,7 @@ export class TypstToolsView extends ItemView {
         .addOption('packages', 'Packages')
         .addOption('quiver', 'Quiver');
     }
-    this.dropdown
-      .addOption('snippets', 'Snippets')
-      .addOption('converter', 'Converter')
-      .addOption('processors', 'Processors');
+    this.dropdown.addOption('snippets', 'Snippets').addOption('converter', 'Converter');
 
     this.onChangeHandler = (value: string) => {
       contentEl.empty();
@@ -156,14 +152,6 @@ export class TypstToolsView extends ItemView {
 
           break;
         }
-        case 'processors':
-          new ProcessorList(this.plugin, 'inline', contentEl, 'Inline($...$) Processors', true);
-          new ProcessorList(this.plugin, 'display', contentEl, 'Display($$...$$) Processors', true);
-          new ProcessorList(this.plugin, 'codeblock', contentEl, 'CodeBlock(```...```) Processors', true);
-          if (this.plugin.excalidrawPluginInstalled) {
-            new ProcessorList(this.plugin, 'excalidraw', contentEl, 'Excalidraw Processors', true);
-          }
-          break;
       }
     };
     this.dropdown.onChange(this.onChangeHandler);
