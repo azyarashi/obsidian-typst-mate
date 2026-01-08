@@ -120,8 +120,7 @@ export default class SymbolSuggestElement extends HTMLElement {
       }
 
       // complete
-      case 'Tab':
-      case 'ArrowRight': {
+      case 'Tab': {
         e.preventDefault();
         if (this.selectedIndex >= 0) this.complete(this.candidates[this.selectedIndex]! ?? this.candidates[0]!);
         else this.complete(this.candidates[0]!);

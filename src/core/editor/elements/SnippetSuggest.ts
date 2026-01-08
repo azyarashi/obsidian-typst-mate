@@ -146,8 +146,7 @@ export default class SnippetSuggestElement extends HTMLElement {
         return;
       }
 
-      case 'Tab':
-      case 'ArrowRight': {
+      case 'Tab': {
         e.preventDefault();
         this.prevEl?.focus();
         if (this.selectedIndex >= 0) this.complete(this.candidates[this.selectedIndex]! ?? this.candidates[0]!);

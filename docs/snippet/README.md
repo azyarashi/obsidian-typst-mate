@@ -12,7 +12,7 @@ For operations like completion and execution, refer to the following:
 |Role|Command|
 |---|---|
 |Select|`↑ Key`, `↓ Key` / `Mouse Over`, `Scroll`|
-|Complete|`→ Key`, `Tab Key`|
+|Complete|`Tab Key`|
 |Execute|`Enter Key` / `Click`, `Touch`|
 
 (\*script snippets will complete instead of execute)
