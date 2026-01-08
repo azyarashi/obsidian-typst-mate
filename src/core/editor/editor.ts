@@ -73,11 +73,13 @@ export class EditorHelper {
         EditorView.domEventHandlers({
           // インラインプレビューの非表示
           mousedown: (e) => {
+            this.hideAllSuggest();
             if (this.inlinePreviewEl.style.display !== 'none') this.inlinePreviewEl.onClick(e);
           },
           // Suggest, CURSOR Jump, Tabout, Shortcut
           keydown: (e) => {
-            if (this.symbolSuggestEl.style.display !== 'none') this.symbolSuggestEl.onKeyDown(e);
+            if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') this.hideAllSuggest();
+            else if (this.symbolSuggestEl.style.display !== 'none') this.symbolSuggestEl.onKeyDown(e);
             else if (this.snippetSuggestEl.style.display !== 'none') this.snippetSuggestEl.onKeyDown(e);
             // CURSOR Jump, Tabout, Shortcut
             else this.keyDown(e);
