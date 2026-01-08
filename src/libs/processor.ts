@@ -74,7 +74,7 @@ export const DefaultNewCodeblockProcessor: CodeblockProcessor = {
   id: 'new',
   renderingEngine: 'typst-svg',
   format: '{CODE}',
-  styling: 'block',
+  styling: 'block-center',
   disableSuggest: false,
   noPreamble: false,
   fitToParentWidth: false,

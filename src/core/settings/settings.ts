@@ -57,6 +57,12 @@ export const DEFAULT_SETTINGS: Settings = {
     '#set page(margin: 0pt, width: auto, height: auto)',
     '#show raw: set text(size: 1.25em)',
     '#set text(size: fontsize)',
+    '#import "@preview/mannot:0.3.1": *',
+    '#import "@preview/quick-maths:0.2.1": shorthands',
+    '#show: shorthands.with(',
+    '  ($+-$, sym.plus.minus)',
+    '  ($|-$, math.tack)',
+    ')',
   ].join('\n'),
   processor: {
     inline: {
@@ -122,17 +128,25 @@ export const DEFAULT_SETTINGS: Settings = {
     codeblock: {
       processors: [
         {
-          id: 'typ',
-          renderingEngine: 'typst-svg',
-          format: '```typst\n{CODE}\n```',
-          styling: 'codeblock',
-          noPreamble: true,
-          fitToParentWidth: true,
-        },
-        {
           id: 'typst',
           renderingEngine: 'typst-svg',
           format: '{CODE}',
+          styling: 'block-center',
+          noPreamble: false,
+          fitToParentWidth: false,
+        },
+        {
+          id: 'fletcher',
+          renderingEngine: 'typst-svg',
+          format: '#import "@preview/fletcher:0.5.8" as fletcher: diagram, node, edge\n{CODE}',
+          styling: 'block-center',
+          noPreamble: false,
+          fitToParentWidth: false,
+        },
+        {
+          id: 'lovelace',
+          renderingEngine: 'typst-svg',
+          format: '#import "@preview/lovelace:0.3.0": *\n#pseudocode-list[\n{CODE}\n]',
           styling: 'block',
           noPreamble: false,
           fitToParentWidth: false,
@@ -140,7 +154,7 @@ export const DEFAULT_SETTINGS: Settings = {
         {
           id: 'lilaq',
           renderingEngine: 'typst-svg',
-          format: ['#import "@preview/lilaq:0.5.0" as lq', '{CODE}'].join('\n'),
+          format: '#import "@preview/lilaq:0.5.0" as lq\n{CODE}',
           styling: 'block-center',
           noPreamble: false,
           fitToParentWidth: false,

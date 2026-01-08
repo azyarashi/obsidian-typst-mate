@@ -116,6 +116,12 @@ If the export doesn't work correctly, try disabling background rendering before 
 #set page(margin: 0pt, width: auto, height: auto)
 #show raw: set text(1.25em)
 #set text(size: fontsize)  // `fontsize` refers to the settings in Obsidian
+#import "@preview/mannot:0.3.1": *
+#import "@preview/quick-maths:0.2.1": shorthands
+#show: shorthands.with(
+  ($+-$, sym.plus.minus),
+  ($|-$, math.tack),
+)
 // Typst 0.13.1 or before (plugin 2.1.7 or before)
 // #let scr(it) = text(features: ("ss01",), box($cal(it)$))
 ```
