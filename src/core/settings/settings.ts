@@ -41,6 +41,7 @@ export interface Settings {
   patchPDFExport?: boolean;
   disableMacro?: boolean;
   crashCount?: number;
+  concealMathSymbols?: boolean;
 }
 export const DEFAULT_SETTINGS: Settings = {
   enableBackgroundRendering: true,
@@ -213,11 +214,12 @@ export const DEFAULT_SETTINGS: Settings = {
       script: true,
     },
   ],
-  complementSymbolWithUnicode: true,
+  complementSymbolWithUnicode: false,
   revertTabToDefault: false,
   patchPDFExport: false,
   disableMacro: false,
   crashCount: 0,
+  concealMathSymbols: true,
 };
 
 export class SettingTab extends PluginSettingTab {
@@ -591,6 +593,15 @@ export class SettingTab extends PluginSettingTab {
           this.plugin.saveSettings();
         });
       });
+
+    new Setting(containerEl).setName('Conceal Math Symbols').addToggle((toggle) => {
+      toggle.setValue(this.plugin.settings.concealMathSymbols ?? DEFAULT_SETTINGS.concealMathSymbols!);
+      toggle.onChange((value) => {
+        this.plugin.settings.concealMathSymbols = value;
+        this.plugin.saveSettings();
+        this.plugin.reload(true);
+      });
+    });
 
     new Setting(containerEl).setName('Complement Symbol with Unicode').addToggle((toggle) => {
       toggle.setValue(

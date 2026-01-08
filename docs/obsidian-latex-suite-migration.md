@@ -20,7 +20,7 @@ Combined with this plugin's unique Tabout feature, matrix editing becomes fast.
 
 ### ✅ Conceal
 
-Typst accepts Unicode characters directly, so concealment is unnecessary.
+Typst accepts Unicode characters directly, so concealment is unnecessary (however implemented).
 Additionally, this plugin provides symbol suggestions & completion.
 
 ### ✅ Tabout

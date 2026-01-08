@@ -1,12 +1,37 @@
 import { syntaxTree } from '@codemirror/language';
 import { type Extension, RangeSetBuilder } from '@codemirror/state';
-import { Decoration, type DecorationSet, type EditorView, ViewPlugin, type ViewUpdate } from '@codemirror/view';
+import {
+  Decoration,
+  type DecorationSet,
+  type EditorView,
+  ViewPlugin,
+  type ViewUpdate,
+  WidgetType,
+} from '@codemirror/view';
+
 import type { EditorHelper } from '../../editor';
 
 import './bracket-highlight.css';
+import * as symbolData from '../../../../data/symbols.json';
+
+const SYMBOL_MAP = new Map<string, string>();
+const data = (symbolData as any).default || symbolData;
+for (const [key, val] of Object.entries(data)) if ((val as any).sym) SYMBOL_MAP.set(key, (val as any).sym);
+
+class SymbolWidget extends WidgetType {
+  constructor(public text: string) {
+    super();
+  }
+  toDOM() {
+    const span = document.createElement('span');
+    span.className = 'typst-symbol-widget';
+    span.textContent = this.text;
+    return span;
+  }
+}
 
 interface Token {
-  type: 'bracket' | 'string' | 'null' | 'keyword' | 'comment' | 'monospace';
+  type: 'bracket' | 'string' | 'null' | 'keyword' | 'comment' | 'monospace' | 'sym';
   from: number;
   to: number;
   text: string;
@@ -30,6 +55,21 @@ class TypstTokenizer {
 
     while (pos < len) {
       const char = text[pos] as string;
+
+      if (/[a-zA-Z]/.test(char)) {
+        let end = pos + 1;
+        while (end < len && /[a-zA-Z0-9._-]/.test(text[end] as string)) end++;
+        while (end > pos && text[end - 1] === '.') end--;
+
+        if (end > pos) {
+          const fullText = text.slice(pos, end);
+          if (SYMBOL_MAP.has(fullText)) {
+            tokens.push({ type: 'sym', from: pos, to: end, text: fullText });
+          }
+          pos = end;
+          continue;
+        }
+      }
 
       if (char === '/' && text[pos + 1] === '/') {
         const end = text.indexOf('\n', pos);
@@ -231,14 +271,34 @@ export const createBracketHighlightExtension = (helper: EditorHelper): Extension
             const absTo = region.from + t.to;
 
             let cls = '';
+            let deco: Decoration | null = null;
+
             if (t.type === 'bracket') {
               const kind = BRACKET_MAP[t.text] || 'paren';
               cls = `typstmate-bracket-${kind}`;
               if (enclosing && (t.from === enclosing.open || t.from === enclosing.close))
                 cls += ' typstmate-bracket-enclosing';
-            } else cls = `typstmate-highlight-${t.type}`;
+              deco = Decoration.mark({ class: cls });
+            } else if (t.type === 'sym') {
+              if (region.type === 'math' && helper.plugin.settings.concealMathSymbols) {
+                const sym = SYMBOL_MAP.get(t.text);
+                if (sym) {
+                  const relStart = t.from;
+                  const relEnd = t.to;
 
-            if (cls) builder.add(absFrom, absTo, Decoration.mark({ class: cls }));
+                  const absStart = region.from + relStart;
+                  const absEnd = region.from + relEnd;
+
+                  const isNearby = absStart <= cursor && cursor <= absEnd;
+                  if (!isNearby) deco = Decoration.replace({ widget: new SymbolWidget(sym) });
+                }
+              }
+            } else {
+              cls = `typstmate-highlight-${t.type}`;
+              deco = Decoration.mark({ class: cls });
+            }
+
+            if (deco) builder.add(absFrom, absTo, deco);
           }
         }
         return builder.finish();
