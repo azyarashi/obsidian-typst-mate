@@ -79,17 +79,16 @@ export function addProcessorTab(
 
   switch (activeTab) {
     case 'inline':
-      new ProcessorList(plugin, 'inline', containerEl, 'Inline($...$) Processors');
+      new ProcessorList(plugin, 'inline', containerEl, 'Inline Math ($id:...$ / $...$)');
       break;
     case 'display':
-      new ProcessorList(plugin, 'display', containerEl, 'Display($$...$$) Processors');
+      new ProcessorList(plugin, 'display', containerEl, 'Display Math ($$id...$$ / $$...$$)');
       break;
     case 'codeblock':
-      new ProcessorList(plugin, 'codeblock', containerEl, 'CodeBlock(```...```) Processors');
+      new ProcessorList(plugin, 'codeblock', containerEl, 'CodeBlock (```id...``` / ~~~id...~~~)');
       break;
     case 'excalidraw':
-      if (plugin.excalidrawPluginInstalled)
-        new ProcessorList(plugin, 'excalidraw', containerEl, 'Excalidraw Processors');
+      if (plugin.excalidrawPluginInstalled) new ProcessorList(plugin, 'excalidraw', containerEl, 'Excalidraw');
       break;
   }
 }

@@ -53,7 +53,7 @@ function buildDecorations(state: EditorState, helper: EditorHelper): DecorationS
     const trimmedText = text.trim();
 
     if (!inBlock) {
-      if (!trimmedText.startsWith('```')) continue;
+      if (!trimmedText.startsWith('```') && !trimmedText.startsWith('~~~')) continue;
 
       const lang = trimmedText.slice(3).trim();
       if (!helper.supportedCodeBlockLangs.has(lang)) continue;
@@ -63,7 +63,7 @@ function buildDecorations(state: EditorState, helper: EditorHelper): DecorationS
       blockContent = [];
       blockStartOffset = line.from;
     } else {
-      if (trimmedText.startsWith('```')) {
+      if (trimmedText.startsWith('```') || trimmedText.startsWith('~~~')) {
         inBlock = false;
         const blockEndOffset = line.to;
 

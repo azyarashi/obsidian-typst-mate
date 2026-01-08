@@ -55,11 +55,12 @@ export const createBracketHighlightExtension = (helper: EditorHelper): Extension
             const line = state.doc.lineAt(region.from);
 
             let langLineNo = line.number;
-            if (!line.text.trim().startsWith('```')) langLineNo = line.number - 1;
+            if (!line.text.trim().startsWith('```') && !line.text.trim().startsWith('~~~'))
+              langLineNo = line.number - 1;
 
             if (1 <= langLineNo) {
               const prevLine = state.doc.line(langLineNo).text;
-              const match = prevLine.match(/^```\s*([\w\-+]+)/);
+              const match = prevLine.match(/^(?:```|~~~)\s*([\w\-+]+)/);
               if (match) {
                 const lang = match[1]!.toLowerCase();
                 if (!helper.supportedCodeBlockLangs.has(lang)) continue;
