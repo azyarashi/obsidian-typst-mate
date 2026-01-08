@@ -9,9 +9,7 @@ export class DiagnosticModal extends Modal {
     for (const diagnostic of diagnosticArray) {
       new Setting(this.contentEl).setName(diagnostic.message).setHeading();
 
-      for (const hint of diagnostic.hints) {
-        new Setting(this.contentEl).setName(`hint: ${hint}`);
-      }
+      for (const hint of diagnostic.hints) new Setting(this.contentEl).setName(`hint: ${hint}`);
     }
   }
 }

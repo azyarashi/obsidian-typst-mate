@@ -74,9 +74,7 @@ export default class TypstManager {
       for (const cachePath of cachePaths) {
         try {
           const cacheMap = unzip(await this.plugin.app.vault.adapter.readBinary(cachePath));
-          for (const [path, data] of cacheMap) {
-            sources.set(`@${path}`, new Uint8Array(data!));
-          }
+          for (const [path, data] of cacheMap) sources.set(`@${path}`, new Uint8Array(data!));
         } catch {
           new Notice(`Failed to load cache: ${cachePath.split('/').pop()}`);
         }
@@ -131,7 +129,6 @@ export default class TypstManager {
             return Promise.resolve(el as HTMLElement);
           }
 
-          for (const el of document.body.querySelectorAll('div.typst-mate-preview')) el.remove();
           return Promise.resolve(this.render(source, el, processor.id));
         });
       } catch {
@@ -306,11 +303,8 @@ export default class TypstManager {
 
       for (const item of items) {
         const fullPath = this.plugin.path!.join(dirPath, item.name);
-        if (item.isDirectory()) {
-          folderPaths.push(fullPath);
-        } else if (item.isFile()) {
-          filePaths.push(fullPath);
-        }
+        if (item.isDirectory()) folderPaths.push(fullPath);
+        else if (item.isFile()) filePaths.push(fullPath);
       }
     } else {
       const listedFiles = await this.plugin.app.vault.adapter.list(dirPath);
