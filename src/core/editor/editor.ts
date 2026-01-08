@@ -15,6 +15,7 @@ import './editor.css';
 import SHORTCUTS_DATA from '@/data/shortcuts.json';
 import { snippetRegex } from './elements/SnippetSuggest';
 import { symbolRegex } from './elements/SymbolSuggest';
+import { clearCodeblockPreviewsEffect } from './extensions/decorations/codeblockPreview';
 
 const SHORTCUTS_KEYS = Object.keys(SHORTCUTS_DATA);
 
@@ -87,6 +88,12 @@ export class EditorHelper {
         }),
       ]),
     ]);
+
+    this.plugin.registerDomEvent(document, 'mousedown', (e) => {
+      const view = this.editor?.cm as EditorView | undefined;
+      if (!view) return;
+      if (!view.dom.contains(e.target as Node)) view.dispatch({ effects: clearCodeblockPreviewsEffect.of() });
+    });
   }
 
   close() {

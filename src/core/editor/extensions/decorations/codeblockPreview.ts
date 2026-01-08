@@ -1,9 +1,11 @@
-import { type EditorState, type Range, StateField } from '@codemirror/state';
+import { type EditorState, type Range, StateEffect, StateField } from '@codemirror/state';
 import { Decoration, type DecorationSet, EditorView, WidgetType } from '@codemirror/view';
 
 import type { EditorHelper } from '../../editor';
 
 import './codeblock-preview.css';
+
+export const clearCodeblockPreviewsEffect = StateEffect.define<void>();
 
 class CodeBlockPreviewWidget extends WidgetType {
   constructor(
@@ -108,6 +110,13 @@ export const createCodeBlockPreviewExtension = (helper: EditorHelper) =>
       return buildDecorations(state, helper);
     },
     update(decorations, tr) {
+      for (const effect of tr.effects) {
+        if (effect.is(clearCodeblockPreviewsEffect)) {
+          if (helper.mathObject?.kind === 'codeblock') helper.mathObject = undefined;
+          return Decoration.none;
+        }
+      }
+
       if (tr.docChanged || tr.selection) return buildDecorations(tr.state, helper);
 
       return decorations;
