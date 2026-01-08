@@ -51,54 +51,6 @@ export class EditorHelper {
     this.supportedCodeBlockLangs = new Set(
       (this.plugin.settings.processor.codeblock?.processors ?? []).map((p) => p.id),
     );
-    window.CodeMirror.defineMode('typst', (config) => {
-      const baseMode = window.CodeMirror.getMode(config, 'rust');
-      const rustToken = baseMode.token;
-
-      baseMode.token = (stream, state) => {
-        const ch = stream.peek();
-
-        switch (ch) {
-          case '/':
-            if (stream.match('//', false) || stream.match('/*', false)) {
-              return rustToken(stream, state);
-            }
-            stream.next();
-            return null;
-          case '#':
-            if (stream.match('#CURSOR', true)) return 'error';
-            if (stream.match(/#[\w\d]+/, true)) return 'keyword';
-            break;
-          case '{':
-            if (stream.match('{CODE}', true)) return 'error';
-            return rustToken(stream, state);
-          case '$':
-            stream.next();
-            return 'keyword';
-          case '&':
-            stream.next();
-            return 'operator';
-          case '\\':
-            stream.next();
-            return 'comment';
-          case '+':
-          case '-':
-          case '*':
-          case '_':
-            stream.next();
-            return null;
-        }
-
-        return rustToken(stream, state);
-      };
-
-      return baseMode;
-    });
-    const typstMode = window.CodeMirror.getMode({}, 'typst');
-    for (const lang of this.supportedCodeBlockLangs) {
-      if (lang === 'typst') continue;
-      window.CodeMirror.defineMode(lang, () => typstMode);
-    }
 
     // 拡張機能をセット
     this.plugin.registerEditorExtension(
@@ -112,10 +64,7 @@ export class EditorHelper {
         // サジェストの開始, インラインプレビューの更新
         else if (update.docChanged && sel.empty) await this.docChanged(sel.head, update.changes);
         // 親括弧のハイライト, MathObject の更新 & 変更あれば括弧のハイライト, なければインラインプレビュー
-        if (update.selectionSet) {
-          const result = await this.cursorMoved(sel.head);
-          if (result !== null) this.cursorMovedPostProcess(sel.empty, sel.head);
-        }
+        if (update.selectionSet) await this.cursorMoved(sel.head);
       }),
     );
     this.plugin.registerEditorExtension([
@@ -186,8 +135,6 @@ export class EditorHelper {
       this.mathObject!.endPos = this.editor!.offsetToPos(this.mathObject!.endOffset);
     } else this.updateMathObject(offset);
     if (!this.mathObject) return;
-
-    this.updateBracketPairsInMathObject();
 
     if (this.trySuggest(offset)) {
       this.inlinePreviewEl.close();
@@ -438,8 +385,6 @@ export class EditorHelper {
       this.hideAllPopup();
       this.updateMathObject(offset);
       if (!this.mathObject) return null;
-
-      this.updateBracketPairsInMathObject();
       return;
     }
 
@@ -452,39 +397,8 @@ export class EditorHelper {
       this.hideAllPopup();
       this.updateMathObject(offset);
       if (!this.mathObject) return null;
-
-      this.updateBracketPairsInMathObject();
       return;
     }
-  }
-
-  private cursorMovedPostProcess(isSelEmpty: boolean, offset: number) {
-    if (isSelEmpty) {
-      this.updateBracketPairEnclosingCursorInMathObject(offset);
-      this.updateHighlightsOnBracketPairEnclosingCursor();
-    }
-    if (this.inlinePreviewEl.style.display === 'none') this.updateInlinePreview();
-
-    let highlighted = false;
-    const observer = new MutationObserver(() => {
-      if (!this.isActiveMathExists()) return;
-
-      observer.disconnect();
-      this.updateHighlightsOnBracketPairs();
-      this.updateHighlightsOnBracketPairEnclosingCursor();
-      highlighted = true;
-    });
-    observer.observe(this.editor!.containerEl, {
-      childList: true,
-      subtree: true,
-    });
-    setTimeout(() => {
-      observer.disconnect();
-
-      if (highlighted) return;
-      this.updateHighlightsOnBracketPairs();
-      this.updateHighlightsOnBracketPairEnclosingCursor();
-    }, 250);
   }
 
   updateHighlightsOnBracketPairs() {
@@ -505,87 +419,10 @@ export class EditorHelper {
     this.editor?.removeHighlights('typstmate-bracket-brace');
   }
 
-  private latestBracketHighlightRequestId = 0;
-  private lastAppliedBracketHighlightRequestId = 0;
-
-  private updateBracketPairsInMathObject() {
-    if (this.plugin.settings.disableBracketHighlight) return;
-    if (!this.mathObject) return;
-    this.latestBracketHighlightRequestId++;
-    const requestId = this.latestBracketHighlightRequestId;
-
-    const result = this.plugin.typst.getBracketHighlights(this.mathObject.content, this.mathObject.startPos, requestId);
-
-    const handleResult = (res: BracketHighlights) => {
-      if (res.id <= this.lastAppliedBracketHighlightRequestId) return;
-
-      this.lastAppliedBracketHighlightRequestId = res.id;
-      this.bracketPairs = res.pairs;
-      this.bracketHighlights = res.highlights;
-
-      this.updateHighlightsOnBracketPairs();
-      if (this.editor) {
-        const sel = this.editor.getSelection();
-        this.cursorMovedPostProcess(sel === '', this.editor.posToOffset(this.editor.getCursor()));
-      }
-    };
-
-    if (result instanceof Promise) result.then(handleResult);
-    else handleResult(result);
-  }
-
-  updateHighlightsOnBracketPairEnclosingCursor() {
-    if (!this.mathObject) return;
-    this.removeHighlightsFromBracketPairEnclosingCursor();
-
-    if (!this.cursorEnclosingBracketPair) return;
-
-    let { ch: startCh, line: startLine } = this.cursorEnclosingBracketPair.open_pos;
-    let { ch: endCh, line: endLine } = this.cursorEnclosingBracketPair.close_pos;
-    if (this.cursorEnclosingBracketPair.open_pos.line === 0) startCh += this.mathObject.startPos.ch;
-    if (this.cursorEnclosingBracketPair.close_pos.line === 0) endCh += this.mathObject.startPos.ch;
-    startLine += this.mathObject.startPos.line;
-    endLine += this.mathObject.startPos.line;
-
-    this.addHighlightsWithLength(
-      1,
-      [
-        { line: startLine, ch: startCh },
-        { line: endLine, ch: endCh },
-      ],
-      `typstmate-bracket-enclosing-${this.cursorEnclosingBracketPair.kind}`,
-      false,
-    );
-  }
-
   private removeHighlightsFromBracketPairEnclosingCursor() {
     this.editor?.removeHighlights('typstmate-bracket-enclosing-paren');
     this.editor?.removeHighlights('typstmate-bracket-enclosing-bracket');
     this.editor?.removeHighlights('typstmate-bracket-enclosing-brace');
-  }
-
-  updateBracketPairEnclosingCursorInMathObject(offset: number) {
-    if (!this.bracketPairs) return;
-    if (!this.mathObject) return;
-    if (!this.editor) return;
-
-    const relative_offset = offset - this.mathObject.startOffset;
-    if (!relative_offset) {
-      this.cursorEnclosingBracketPair = undefined;
-      return;
-    }
-
-    const candidates = this.bracketPairs.filter(
-      (pair) => pair.open_offset < relative_offset && relative_offset <= pair.close_offset,
-    );
-    if (!candidates.length) {
-      this.cursorEnclosingBracketPair = undefined;
-      return;
-    }
-
-    this.cursorEnclosingBracketPair = candidates.reduce((a, b) =>
-      a.open_offset - a.close_offset < b.open_offset - b.close_offset ? b : a,
-    );
   }
 
   /* utils
