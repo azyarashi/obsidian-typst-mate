@@ -18,13 +18,14 @@ import {
 
 import { BASE_COLOR_VAR } from './constants';
 import { EditorHelper } from './core/editor/editor';
-import { DEFAULT_SETTINGS, type Settings, SettingTab } from './core/settings/settings';
+import { DEFAULT_SETTINGS, type Settings } from './data/settings';
 import ExcalidrawPlugin from './extensions/excalidraw';
 import TypstManager from './libs/typst';
 import type $ from './libs/worker';
 import Typst from './libs/worker';
 import TypstWorker from './libs/worker?worker&inline';
 import { ExcalidrawModal } from './ui/modals/excalidraw';
+import { SettingTab } from './ui/settingstab';
 import { TypstPDFView } from './ui/views/typst-pdf/typstPDF';
 import { TypstTextView } from './ui/views/typst-text/typstText';
 import { TypstToolsView } from './ui/views/typst-tools/typstTools';

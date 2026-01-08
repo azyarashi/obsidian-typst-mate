@@ -1,0 +1,97 @@
+/* Compiler Sub-tabs */
+.typstmate-compiler-tabs {
+  display: flex;
+  margin-bottom: 1em;
+  border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.typstmate-compiler-tab {
+  flex: 1;
+  text-align: center;
+  padding: 0.8em;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  color: var(--text-muted);
+  transition: all 0.2s ease;
+}
+
+.typstmate-compiler-tab:hover {
+  background-color: var(--background-modifier-hover);
+  color: var(--text-normal);
+}
+
+.typstmate-compiler-tab.active {
+  border-bottom-color: var(--interactive-accent);
+  color: var(--text-normal);
+  font-weight: 600;
+}
+
+/* Font and Package Settings */
+.typstmate-settings-table {
+  width: 100%;
+  max-height: 400px;
+  overflow-y: auto;
+  margin: 1em 0;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 6px;
+  padding: 8px;
+  background-color: var(--background-primary);
+}
+
+.typstmate-settings-table .setting-item {
+  border-bottom: 1px solid var(--background-modifier-border);
+  padding: 8px 0;
+  margin: 0;
+}
+
+.typstmate-settings-table .setting-item:last-child {
+  border-bottom: none;
+}
+
+.typstmate-settings-table .setting-item-info {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.typstmate-settings-table .setting-item-control {
+  display: flex;
+  gap: 4px;
+}
+
+.typstmate-package-name {
+  font-family: var(--font-monospace);
+  font-size: 0.9em;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.typstmate-font-info {
+  font-size: 0.85em;
+  color: var(--text-muted);
+  margin-top: 4px;
+  padding-left: 8px;
+  border-left: 2px solid var(--background-modifier-border);
+}
+
+/* Old style table fallback if needed (merged for safety) */
+.typstmate-settings-table table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.typstmate-settings-table th,
+.typstmate-settings-table td {
+  padding: 8px 12px;
+  text-align: left;
+  border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.typstmate-settings-table th {
+  position: sticky;
+  top: 0;
+  background: var(--background-primary);
+  font-weight: 600;
+  box-shadow: 0 1px 0 var(--background-modifier-border);
+}

@@ -1,0 +1,166 @@
+/* Buttons and controls */
+.typstmate-button-group {
+  display: flex;
+  gap: 4px;
+  margin: 0.5em 0;
+}
+
+.typstmate-button-primary {
+  background: var(--interactive-accent);
+  color: var(--text-on-accent);
+  border-color: var(--interactive-accent);
+}
+
+.typstmate-button-primary:hover {
+  background: var(--interactive-accent-hover);
+  border-color: var(--interactive-accent-hover);
+}
+
+.typstmate-button {
+  padding: 4px 8px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 4px;
+  background: var(--background-primary);
+  color: var(--text-normal);
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.typstmate-button:hover {
+  background-color: var(--background-modifier-hover);
+}
+
+.typstmate-button.typstmate-button-danger {
+  color: var(--text-error);
+  border-color: var(--background-modifier-error);
+}
+
+.typstmate-button-danger:hover {
+  background-color: var(--background-modifier-error);
+  color: var(--text-on-accent);
+}
+
+.typstmate-button-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.typstmate-button-icon:hover {
+  color: var(--text-normal);
+  background-color: var(--background-modifier-hover);
+  border-radius: 4px;
+}
+
+/* Form elements */
+.typstmate-form-group {
+  margin: 1em 0;
+}
+
+.typstmate-form-label {
+  display: block;
+  margin-bottom: 0.5em;
+  font-weight: 600;
+  color: var(--text-normal);
+}
+
+.typstmate-form-control {
+  width: 100%;
+  padding: 6px 8px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 3px;
+  background: var(--background-primary);
+  color: var(--text-normal);
+  font-family: var(--font-family);
+  font-size: 0.9em;
+  field-sizing: content;
+}
+
+.typstmate-form-control.typstmate-preamble {
+  min-height: 6em;
+}
+
+.typstmate-form-control:focus {
+  border-color: var(--interactive-accent);
+  box-shadow: 0 0 0 1px var(--interactive-accent);
+  outline: none;
+}
+
+/* Utility classes */
+.typstmate-hidden {
+  display: none;
+}
+
+.typstmate-mt-1 {
+  margin-top: 0.5em;
+}
+
+.typstmate-mt-2 {
+  margin-top: 1em;
+}
+
+.typstmate-mb-1 {
+  margin-bottom: 0.5em;
+}
+
+.typstmate-mb-2 {
+  margin-bottom: 1em;
+}
+
+.typstmate-text-muted {
+  color: var(--text-muted);
+}
+
+.typstmate-text-center {
+  text-align: center;
+}
+
+/* Tabs */
+.typstmate-settings-tabs {
+  display: flex !important;
+  border-bottom: 1px solid var(--background-modifier-border);
+  margin-bottom: 1.5em;
+  overflow-x: auto;
+}
+
+.typstmate-settings-tab {
+  padding: 0.8em 1.2em;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  color: var(--text-muted);
+  font-size: 0.9em;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.typstmate-settings-tab:hover {
+  color: var(--text-normal);
+  background: var(--background-modifier-hover);
+}
+
+.typstmate-settings-tab.active {
+  border-bottom-color: var(--interactive-accent);
+  color: var(--text-normal);
+  font-weight: 600;
+  background: transparent;
+}
+
+/* Responsive display handled by TypeScript Platform check */
+.typstmate-settings-tabs-select {
+  width: 100%;
+  margin-bottom: 1.5em;
+  padding: 8px;
+  background: var(--background-primary);
+  color: var(--text-normal);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 4px;
+}

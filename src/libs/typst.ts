@@ -4,7 +4,7 @@ import { DEFAULT_FONT_SIZE } from '@/constants';
 import InlinePreviewElement from '@/core/editor/elements/InlinePreview';
 import SnippetSuggestElement from '@/core/editor/elements/SnippetSuggest';
 import SymbolSuggestElement from '@/core/editor/elements/SymbolSuggest';
-import { DEFAULT_SETTINGS } from '@/core/settings/settings';
+import { DEFAULT_SETTINGS } from '@/data/settings';
 import type ObsidianTypstMate from '@/main';
 import TypstSVGElement from '@/ui/elements/SVG';
 import { overwriteCustomElements } from '@/utils/custromElementRegistry';

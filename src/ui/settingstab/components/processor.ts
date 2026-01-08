@@ -28,19 +28,16 @@ export class ProcessorList {
     this.kind = kind;
     this.simple = simple;
 
-    const detailEl = containerEl.createEl('details');
+    const setting = new Setting(containerEl).setName(summaryText).setHeading();
     if (!this.simple) {
-      new Setting(detailEl).addButton((button) => {
+      setting.addButton((button) => {
         button.setButtonText('New');
 
         button.onClick(this.newProcessor.bind(this));
       });
     }
 
-    const summaryEl = detailEl.createEl('summary');
-    summaryEl.textContent = summaryText;
-
-    this.processorsEl = detailEl.createEl('div');
+    this.processorsEl = containerEl.createEl('div');
     if (!this.plugin.settings.processor[this.kind]) {
       this.plugin.settings.processor[this.kind] = {
         processors: [],

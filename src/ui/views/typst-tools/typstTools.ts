@@ -1,7 +1,7 @@
 import { ButtonComponent, DropdownComponent, ItemView, Platform, type WorkspaceLeaf } from 'obsidian';
 
-import { ProcessorList } from '@/core/settings/components/processor';
 import type ObsidianTypstMate from '@/main';
+import { ProcessorList } from '@/ui/settingstab/components/processor';
 
 import { SnippetView } from './components/snippet';
 
