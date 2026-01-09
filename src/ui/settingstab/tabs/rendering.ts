@@ -12,7 +12,7 @@ export function addRenderingTab(plugin: ObsidianTypstMate, containerEl: HTMLElem
       new CustomFragment()
         .appendText('The UI will no longer freeze, but ')
         .appendText('it may conflict with plugins related to export or rendering.')
-        .appendText(' Disabled automatically when exporting to PDF via Markdown menu.'),
+        .appendText(' (Disabled automatically when exporting to PDF via Markdown menu)'),
     )
     .addToggle((toggle) => {
       toggle.setValue(plugin.settings.enableBackgroundRendering);
@@ -20,6 +20,19 @@ export function addRenderingTab(plugin: ObsidianTypstMate, containerEl: HTMLElem
         plugin.settings.enableBackgroundRendering = value;
         plugin.saveSettings();
         plugin.reload(true);
+      });
+    });
+
+  new Setting(containerEl)
+    .setName('Patch PDF Export')
+    .setDesc(
+      'Temporarily disable AutoBaseColor and use BaseColor during PDF Export to fix white background issues in dark themes.',
+    )
+    .addToggle((toggle) => {
+      toggle.setValue(plugin.settings.patchPDFExport ?? DEFAULT_SETTINGS.patchPDFExport!);
+      toggle.onChange((value) => {
+        plugin.settings.patchPDFExport = value;
+        plugin.saveSettings();
       });
     });
 
@@ -49,34 +62,6 @@ export function addRenderingTab(plugin: ObsidianTypstMate, containerEl: HTMLElem
       colorPicker.onChange((value) => {
         plugin.settings.baseColor = value;
         plugin.applyBaseColor();
-        plugin.saveSettings();
-      });
-    });
-
-  new Setting(containerEl)
-    .setName('Enable MathJax Fallback')
-    .setDesc(
-      new CustomFragment()
-        .appendText('Not recommended. Disables Typst errors/warnings if enabled. ')
-        .appendBoldText(''),
-    )
-    .addToggle((toggle) => {
-      toggle.setValue(plugin.settings.enableMathjaxFallback);
-      toggle.onChange((value) => {
-        plugin.settings.enableMathjaxFallback = value;
-        plugin.saveSettings();
-      });
-    });
-
-  new Setting(containerEl)
-    .setName('Patch PDF Export')
-    .setDesc(
-      'Temporarily disable AutoBaseColor and use BaseColor during PDF Export to fix white background issues in dark themes.',
-    )
-    .addToggle((toggle) => {
-      toggle.setValue(plugin.settings.patchPDFExport ?? DEFAULT_SETTINGS.patchPDFExport!);
-      toggle.onChange((value) => {
-        plugin.settings.patchPDFExport = value;
         plugin.saveSettings();
       });
     });

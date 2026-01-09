@@ -1,5 +1,7 @@
 import { Notice, Setting } from 'obsidian';
+
 import type ObsidianTypstMate from '@/main';
+import { CustomFragment } from '@/utils/customFragment';
 
 export function addAdvancedTab(plugin: ObsidianTypstMate, containerEl: HTMLElement) {
   new Setting(containerEl)
@@ -9,6 +11,21 @@ export function addAdvancedTab(plugin: ObsidianTypstMate, containerEl: HTMLEleme
       toggle.setValue(plugin.settings.openTypstToolsOnStartup);
       toggle.onChange((value) => {
         plugin.settings.openTypstToolsOnStartup = value;
+        plugin.saveSettings();
+      });
+    });
+
+  new Setting(containerEl)
+    .setName('Enable MathJax Fallback')
+    .setDesc(
+      new CustomFragment()
+        .appendText('Not recommended. Disables Typst errors/warnings if enabled. ')
+        .appendBoldText(''),
+    )
+    .addToggle((toggle) => {
+      toggle.setValue(plugin.settings.enableMathjaxFallback);
+      toggle.onChange((value) => {
+        plugin.settings.enableMathjaxFallback = value;
         plugin.saveSettings();
       });
     });

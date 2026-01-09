@@ -10,9 +10,14 @@ import './compiler.css';
 export function addCompilerTab(
   plugin: ObsidianTypstMate,
   containerEl: HTMLElement,
-  activeTab: 'package' | 'font' | null,
+  activeTab: 'package' | 'font',
   setActiveTab: (tab: 'package' | 'font') => void,
 ) {
+  addCompilerSettings(plugin, containerEl);
+  addSubTabs(plugin, containerEl, activeTab, setActiveTab);
+}
+
+function addCompilerSettings(plugin: ObsidianTypstMate, containerEl: HTMLElement) {
   new Setting(containerEl)
     .setName('Skip Preparation Waiting')
     .setDesc('Defers initialization at startup (Unstable on mobile). Reduces startup time but delays first render.')
@@ -36,7 +41,14 @@ export function addCompilerTab(
         plugin.saveSettings();
       });
     });
+}
 
+function addSubTabs(
+  plugin: ObsidianTypstMate,
+  containerEl: HTMLElement,
+  activeTab: 'package' | 'font',
+  setActiveTab: (tab: 'package' | 'font') => void,
+) {
   const subTabsEl = containerEl.createDiv('typstmate-compiler-tabs');
   const subTabs: { id: 'package' | 'font'; name: string }[] = [
     { id: 'package', name: 'Package' },
@@ -53,16 +65,19 @@ export function addCompilerTab(
     });
   });
 
-  if (activeTab === 'package') {
-    new Setting(containerEl)
-      .setName('Package')
-      .setDesc(
-        'When a package is imported, the cache is used instead of the actual files for faster performance. If you make changes directly, please click the package icon to refresh the cache(plugin reload is required.)',
-      )
-      .setHeading();
-    new PackagesList(plugin, containerEl);
-  } else {
-    new Setting(containerEl).setName('Font').setHeading();
-    new FontList(plugin, containerEl);
+  switch (activeTab) {
+    case 'package':
+      new Setting(containerEl)
+        .setName('Package')
+        .setDesc(
+          'When a package is imported, the cache is used instead of the actual files for faster performance. If you make changes directly, please click the package icon to refresh the cache (plugin reload is required.)',
+        )
+        .setHeading();
+      new PackagesList(plugin, containerEl);
+      break;
+    case 'font':
+      new Setting(containerEl).setName('Font').setHeading();
+      new FontList(plugin, containerEl);
+      break;
   }
 }

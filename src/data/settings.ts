@@ -7,23 +7,22 @@ import type { Snippet } from '@/libs/snippet';
 export interface Settings {
   /* エディター */
   // 数学記号の自動表示機能
-  concealMathSymbols: boolean; // TODO: CM 拡張機能の再適用方法を調べてプラグインのリロードの必要性をなくす
+  concealMathSymbols: boolean;
   enableConcealMathSymbolRevealDelay: boolean;
   mathSymbolRevealDelay: number;
+  complementSymbolWithUnicode: boolean;
+  disableBracketHighlight: boolean;
 
   // 振る舞い
-  complementSymbolWithUnicode: boolean;
   enableInlinePreview: boolean;
   revertTabToDefault: boolean;
   disableMacro: boolean;
-  disableBracketHighlight: boolean;
 
   /* レンダリング */
   enableBackgroundRendering: boolean; // プラグインのリロードが必要
+  patchPDFExport: boolean;
   autoBaseColor: boolean;
   baseColor: string;
-  enableMathjaxFallback: boolean;
-  patchPDFExport: boolean;
 
   /* コンパイラ */
   skipPreparationWaiting: boolean;
@@ -32,6 +31,7 @@ export interface Settings {
 
   /* 高度な設定 */
   openTypstToolsOnStartup: boolean;
+  enableMathjaxFallback: boolean;
 
   /* その他の設定 */
   processor: {
@@ -59,19 +59,18 @@ export const DEFAULT_SETTINGS: Settings = {
   concealMathSymbols: true,
   enableConcealMathSymbolRevealDelay: true,
   mathSymbolRevealDelay: 1000,
-
   complementSymbolWithUnicode: false,
+  disableBracketHighlight: false,
+
   enableInlinePreview: true,
   revertTabToDefault: false,
   disableMacro: false,
-  disableBracketHighlight: false,
 
   /* レンダリング */
   enableBackgroundRendering: true,
+  patchPDFExport: false,
   autoBaseColor: true,
   baseColor: '#000000',
-  enableMathjaxFallback: false,
-  patchPDFExport: false,
 
   /* コンパイラ */
   skipPreparationWaiting: false,
@@ -90,6 +89,7 @@ export const DEFAULT_SETTINGS: Settings = {
 
   /* 高度な設定 */
   openTypstToolsOnStartup: true,
+  enableMathjaxFallback: false,
 
   /* その他の設定 */
   processor: {
