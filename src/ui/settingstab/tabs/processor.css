@@ -67,3 +67,30 @@
   color: var(--text-normal);
   font-weight: 600;
 }
+
+/* Processor Drag & Drop */
+.typstmate-settings-processor.dragging {
+  opacity: 0.5;
+  border-color: var(--interactive-accent);
+}
+
+.typstmate-settings-processor.drag-over {
+  border-top: 2px solid var(--interactive-accent);
+}
+
+.typstmate-drag-handle-icon {
+  margin-right: 0.5em;
+  cursor: grab;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+}
+
+.typstmate-processor-id-error {
+  border-color: var(--text-error) !important;
+}
+
+.typstmate-processor-id-error:focus {
+  border-color: var(--text-error) !important;
+  box-shadow: 0 0 0 2px rgba(var(--text-error-rgb), 0.2) !important;
+}
