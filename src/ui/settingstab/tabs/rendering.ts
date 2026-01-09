@@ -107,12 +107,16 @@ function renderInput(type: string, inputEl: HTMLElement, previewEl: HTMLElement,
     const code = codeEl.value;
     previewEl.empty();
     if (code) {
-      if (type === 'inline') {
-        plugin.typstManager.render(`${id ? `${id}:` : ''}${code}`, previewEl, 'inline');
-      } else if (type === 'display') {
-        plugin.typstManager.render(`${id ? `${id}\n` : ''}${code}\n`, previewEl, 'display');
-      } else if (type === 'codeblock') {
-        plugin.typstManager.render(code, previewEl, id || '');
+      switch (type) {
+        case 'inline':
+          plugin.typstManager.render(`${id ? `${id}:` : ''}${code}`, previewEl, 'inline');
+          break;
+        case 'display':
+          plugin.typstManager.render(`${id ? `${id}\n` : ''}${code}\n`, previewEl, 'display');
+          break;
+        case 'codeblock':
+          plugin.typstManager.render(code, previewEl, id || '');
+          break;
       }
     }
   };

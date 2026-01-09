@@ -19,8 +19,8 @@ export function addAdvancedTab(plugin: ObsidianTypstMate, containerEl: HTMLEleme
     .setName('Enable MathJax Fallback')
     .setDesc(
       new CustomFragment()
-        .appendText('Not recommended. Disables Typst errors/warnings if enabled. ')
-        .appendBoldText(''),
+        .appendText('Not recommended for performance reasons. When enabled, ')
+        .appendBoldText('Typst errors, warnings, and hints will be unavailable.'),
     )
     .addToggle((toggle) => {
       toggle.setValue(plugin.settings.enableMathjaxFallback);
