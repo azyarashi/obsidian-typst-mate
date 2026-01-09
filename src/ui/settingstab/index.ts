@@ -2,7 +2,7 @@ import { type App, Platform, PluginSettingTab } from 'obsidian';
 
 import type ObsidianTypstMate from '@/main';
 
-import { addAdvancedTab, addCompilerTab, addEditorTab, addProcessorTab, addRenderingTab } from './tabs';
+import { addAdvancedTab, addCompilerTab, addEditorTab, addProcessorTab, addRendererTab } from './tabs';
 
 import './shared.css';
 
@@ -14,7 +14,8 @@ export class SettingTab extends PluginSettingTab {
     this.plugin = plugin;
   }
 
-  activeTab: 'editor' | 'compiler' | 'rendering' | 'processor' | 'advanced' = 'editor';
+  activeTab: 'processor' | 'editor' | 'compiler' | 'renderer' | 'advanced' = 'processor';
+  activeEditorTab: 'Decoration' | 'Behavior' = 'Decoration';
   activeCompilerTab: 'package' | 'font' = 'package';
   activeKindTab: 'inline' | 'display' | 'codeblock' | 'excalidraw' = 'inline';
 
@@ -23,10 +24,10 @@ export class SettingTab extends PluginSettingTab {
     containerEl.empty();
 
     const options: { id: SettingTab['activeTab']; name: string }[] = [
+      { id: 'processor', name: 'Processor' },
       { id: 'editor', name: 'Editor' },
       { id: 'compiler', name: 'Compiler' },
-      { id: 'rendering', name: 'Rendering' },
-      { id: 'processor', name: 'Processor' },
+      { id: 'renderer', name: 'Renderer' },
       { id: 'advanced', name: 'Advanced' },
     ];
 
@@ -64,7 +65,10 @@ export class SettingTab extends PluginSettingTab {
 
     switch (this.activeTab) {
       case 'editor':
-        addEditorTab(this.plugin, contentEl);
+        addEditorTab(this.plugin, contentEl, this.activeEditorTab, (tab) => {
+          this.activeEditorTab = tab;
+          this.display();
+        });
         break;
       case 'compiler':
         addCompilerTab(this.plugin, contentEl, this.activeCompilerTab, (tab) => {
@@ -72,8 +76,8 @@ export class SettingTab extends PluginSettingTab {
           this.display();
         });
         break;
-      case 'rendering':
-        addRenderingTab(this.plugin, contentEl);
+      case 'renderer':
+        addRendererTab(this.plugin, contentEl);
         break;
       case 'processor':
         addProcessorTab(this.plugin, contentEl, this.activeKindTab, (tab) => {

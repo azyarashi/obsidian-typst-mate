@@ -3,13 +3,40 @@ import { Notice, Setting, type TextComponent, type ToggleComponent } from 'obsid
 import { DEFAULT_SETTINGS } from '@/data/settings';
 import type ObsidianTypstMate from '@/main';
 
-export function addEditorTab(plugin: ObsidianTypstMate, containerEl: HTMLElement) {
-  addMathDecorationSettings(plugin, containerEl);
-  addBehaviorSettings(plugin, containerEl);
+export function addEditorTab(
+  plugin: ObsidianTypstMate,
+  containerEl: HTMLElement,
+  activeTab: 'Decoration' | 'Behavior',
+  setActiveTab: (tab: 'Decoration' | 'Behavior') => void,
+) {
+  const subTabsEl = containerEl.createDiv('typstmate-processor-tabs');
+  const subTabs: { id: 'Decoration' | 'Behavior'; name: string }[] = [
+    { id: 'Decoration', name: 'Decoration' },
+    { id: 'Behavior', name: 'Behavior' },
+  ];
+
+  for (const tab of subTabs) {
+    const tabEl = subTabsEl.createDiv({
+      cls: `typstmate-processor-tab ${activeTab === tab.id ? 'active' : ''}`,
+      text: tab.name,
+    });
+    tabEl.addEventListener('click', () => {
+      setActiveTab(tab.id);
+    });
+  }
+
+  switch (activeTab) {
+    case 'Decoration':
+      addMathDecorationSettings(plugin, containerEl);
+      break;
+    case 'Behavior':
+      addBehaviorSettings(plugin, containerEl);
+      break;
+  }
 }
 
 function addMathDecorationSettings(plugin: ObsidianTypstMate, containerEl: HTMLElement) {
-  new Setting(containerEl).setName('Math Decoration').setHeading();
+  new Setting(containerEl).setName('Conceal & Complement').setHeading();
 
   let concealToggle: ToggleComponent | null = null;
   new Setting(containerEl)
@@ -91,6 +118,8 @@ function addMathDecorationSettings(plugin: ObsidianTypstMate, containerEl: HTMLE
 
       // ここに setDisabled を追加するとデッドロックの恐れがある
     });
+
+  new Setting(containerEl).setName('Highlight').setHeading();
 
   new Setting(containerEl)
     .setName('Disable Bracket Highlight')
