@@ -5,112 +5,6 @@ import { CustomFragment } from '@/utils/customFragment';
 
 import './rendering.css';
 
-function addPreview(plugin: ObsidianTypstMate, containerEl: HTMLElement) {
-  const previewContainer = containerEl.createDiv('typstmate-settings-preview');
-
-  new Setting(previewContainer)
-    .setName('Preview')
-    .setHeading()
-    .addDropdown((dropdown) => {
-      dropdown.addOption('inline', 'Inline');
-      dropdown.addOption('display', 'Display');
-      dropdown.addOption('codeblock', 'CodeBlock');
-      dropdown.setValue('inline');
-
-      dropdown.onChange((value) => {
-        inputEl.empty();
-        previewEl.empty();
-        renderInput(value, inputEl, previewEl, plugin);
-      });
-    });
-
-  const inputEl = previewContainer.createDiv('typstmate-settings-preview-input');
-  const previewEl = previewContainer.createDiv('typstmate-settings-preview-preview');
-  previewEl.setText('Type in the input above to see the preview');
-
-  renderInput('inline', inputEl, previewEl, plugin);
-}
-
-function renderInput(type: string, inputEl: HTMLElement, previewEl: HTMLElement, plugin: ObsidianTypstMate) {
-  inputEl.empty();
-  previewEl.empty();
-
-  // Common logic to setup fields and listener
-  let idEl: HTMLInputElement;
-  let codeEl: HTMLInputElement | HTMLTextAreaElement;
-
-  const updatePreview = () => {
-    const id = idEl.value;
-    const code = codeEl.value;
-    previewEl.empty();
-    if (code) {
-      if (type === 'inline') {
-        plugin.typstManager.render(`${id ? `${id}:` : ''}${code}`, previewEl, 'inline');
-      } else if (type === 'display') {
-        plugin.typstManager.render(`${id ? `${id}\n` : ''}${code}\n`, previewEl, 'display');
-      } else if (type === 'codeblock') {
-        plugin.typstManager.render(code, previewEl, id || '');
-      }
-    }
-  };
-
-  switch (type) {
-    case 'inline': {
-      inputEl.createEl('span', { text: '$' });
-      idEl = inputEl.createEl('input', {
-        type: 'text',
-        placeholder: 'id',
-        cls: 'typstmate-form-control',
-      });
-      inputEl.createEl('span', { text: ':' });
-      codeEl = inputEl.createEl('input', {
-        type: 'text',
-        placeholder: 'code',
-        cls: 'typstmate-form-control',
-      });
-      inputEl.createEl('span', { text: '$' });
-      break;
-    }
-    case 'display': {
-      inputEl.createEl('span', { text: '$$' });
-      idEl = inputEl.createEl('input', {
-        type: 'text',
-        placeholder: 'id',
-        cls: 'typstmate-form-control',
-      });
-      inputEl.createEl('br');
-      codeEl = inputEl.createEl('textarea', {
-        placeholder: 'code',
-        cls: 'typstmate-form-control',
-      });
-      inputEl.createEl('br');
-      inputEl.createEl('span', { text: '$$' });
-      break;
-    }
-    case 'codeblock': {
-      inputEl.createEl('span', { text: '```' });
-      idEl = inputEl.createEl('input', {
-        type: 'text',
-        placeholder: 'id',
-        cls: 'typstmate-form-control',
-      });
-      inputEl.createEl('br');
-      codeEl = inputEl.createEl('textarea', {
-        placeholder: 'code',
-        cls: 'typstmate-form-control',
-      });
-      inputEl.createEl('br');
-      inputEl.createEl('span', { text: '```' });
-      break;
-    }
-    default:
-      return;
-  }
-
-  idEl!.addEventListener('input', updatePreview);
-  codeEl!.addEventListener('input', updatePreview);
-}
-
 export function addRenderingTab(plugin: ObsidianTypstMate, containerEl: HTMLElement) {
   new Setting(containerEl)
     .setName('Enable Background Rendering')
@@ -188,4 +82,109 @@ export function addRenderingTab(plugin: ObsidianTypstMate, containerEl: HTMLElem
     });
 
   addPreview(plugin, containerEl);
+}
+
+function addPreview(plugin: ObsidianTypstMate, containerEl: HTMLElement) {
+  const previewContainer = containerEl.createDiv('typstmate-settings-preview');
+
+  new Setting(previewContainer)
+    .setName('Preview')
+    .setHeading()
+    .addDropdown((dropdown) => {
+      dropdown.addOption('inline', 'Inline');
+      dropdown.addOption('display', 'Display');
+      dropdown.addOption('codeblock', 'CodeBlock');
+      dropdown.setValue('inline');
+
+      dropdown.onChange((value) => {
+        inputEl.empty();
+        previewEl.empty();
+        renderInput(value, inputEl, previewEl, plugin);
+      });
+    });
+
+  const inputEl = previewContainer.createDiv('typstmate-settings-preview-input');
+  const previewEl = previewContainer.createDiv('typstmate-settings-preview-preview');
+  previewEl.setText('Type in the input above to see the preview');
+
+  renderInput('inline', inputEl, previewEl, plugin);
+}
+
+function renderInput(type: string, inputEl: HTMLElement, previewEl: HTMLElement, plugin: ObsidianTypstMate) {
+  inputEl.empty();
+  previewEl.empty();
+
+  let idEl: HTMLInputElement;
+  let codeEl: HTMLInputElement | HTMLTextAreaElement;
+
+  const updatePreview = () => {
+    const id = idEl.value;
+    const code = codeEl.value;
+    previewEl.empty();
+    if (code) {
+      if (type === 'inline') {
+        plugin.typstManager.render(`${id ? `${id}:` : ''}${code}`, previewEl, 'inline');
+      } else if (type === 'display') {
+        plugin.typstManager.render(`${id ? `${id}\n` : ''}${code}\n`, previewEl, 'display');
+      } else if (type === 'codeblock') {
+        plugin.typstManager.render(code, previewEl, id || '');
+      }
+    }
+  };
+
+  switch (type) {
+    case 'inline': {
+      inputEl.createEl('span', { text: '$' });
+      idEl = inputEl.createEl('input', {
+        type: 'text',
+        placeholder: 'id',
+        cls: 'typstmate-form-control',
+      });
+      inputEl.createEl('span', { text: ':' });
+      codeEl = inputEl.createEl('input', {
+        type: 'text',
+        placeholder: 'code',
+        cls: 'typstmate-form-control',
+      });
+      inputEl.createEl('span', { text: '$' });
+      break;
+    }
+    case 'display': {
+      inputEl.createEl('span', { text: '$$' });
+      idEl = inputEl.createEl('input', {
+        type: 'text',
+        placeholder: 'id',
+        cls: 'typstmate-form-control',
+      });
+      inputEl.createEl('br');
+      codeEl = inputEl.createEl('textarea', {
+        placeholder: 'code',
+        cls: 'typstmate-form-control',
+      });
+      inputEl.createEl('br');
+      inputEl.createEl('span', { text: '$$' });
+      break;
+    }
+    case 'codeblock': {
+      inputEl.createEl('span', { text: '```' });
+      idEl = inputEl.createEl('input', {
+        type: 'text',
+        placeholder: 'id',
+        cls: 'typstmate-form-control',
+      });
+      inputEl.createEl('br');
+      codeEl = inputEl.createEl('textarea', {
+        placeholder: 'code',
+        cls: 'typstmate-form-control',
+      });
+      inputEl.createEl('br');
+      inputEl.createEl('span', { text: '```' });
+      break;
+    }
+    default:
+      return;
+  }
+
+  idEl!.addEventListener('input', updatePreview);
+  codeEl!.addEventListener('input', updatePreview);
 }

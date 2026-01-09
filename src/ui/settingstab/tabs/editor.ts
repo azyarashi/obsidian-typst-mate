@@ -1,77 +1,111 @@
-import { Notice, Setting, type ToggleComponent } from 'obsidian';
+import { Notice, Setting, type TextComponent, type ToggleComponent } from 'obsidian';
 
 import { DEFAULT_SETTINGS } from '@/data/settings';
 import type ObsidianTypstMate from '@/main';
 
 export function addEditorTab(plugin: ObsidianTypstMate, containerEl: HTMLElement) {
+  addMathDecorationSettings(plugin, containerEl);
+  addBehaviorSettings(plugin, containerEl);
+}
+
+function addMathDecorationSettings(plugin: ObsidianTypstMate, containerEl: HTMLElement) {
   new Setting(containerEl).setName('Math Decoration').setHeading();
 
   let concealToggle: ToggleComponent | null = null;
-  let complementToggle: ToggleComponent | null = null;
-
   new Setting(containerEl)
     .setName('Conceal Math Symbols')
-    .setDesc('Conceal math symbols (e.g. integral to ∫) in the editor.')
+    .setDesc(
+      'Conceal math symbols (e.g. integral to ∫) in the editor. Requires Complement Symbol with Unicode to be disabled.',
+    )
     .addToggle((toggle) => {
       concealToggle = toggle;
-      toggle.setValue(plugin.settings.concealMathSymbols ?? DEFAULT_SETTINGS.concealMathSymbols!);
+      toggle.setValue(plugin.settings.concealMathSymbols ?? DEFAULT_SETTINGS.concealMathSymbols);
+
       toggle.onChange((value) => {
+        if (value) complementToggle?.setValue(false);
+        revealDelayToggle?.setDisabled(!value);
+        revealDelayText?.setDisabled(!value || !(revealDelayToggle?.getValue() ?? false));
+
         plugin.settings.concealMathSymbols = value;
-        if (value && complementToggle) {
-          complementToggle.setValue(false);
-          plugin.settings.complementSymbolWithUnicode = false;
-        }
         plugin.saveSettings();
-        plugin.reload(true);
       });
+
+      // ここに setDisabled を追加するとデッドロックの恐れがある
     });
 
+  let revealDelayToggle: ToggleComponent | null = null;
   new Setting(containerEl)
     .setName('Enable Math Symbol Reveal Delay')
     .setDesc('Enable delay before revealing concealed math symbols when cursor is nearby.')
     .addToggle((toggle) => {
+      revealDelayToggle = toggle;
       toggle.setValue(
-        plugin.settings.enableConcealMathSymbolRevealDelay ?? DEFAULT_SETTINGS.enableConcealMathSymbolRevealDelay!,
+        plugin.settings.enableConcealMathSymbolRevealDelay ?? DEFAULT_SETTINGS.enableConcealMathSymbolRevealDelay,
       );
+
       toggle.onChange((value) => {
+        revealDelayText?.setDisabled(!value);
+
         plugin.settings.enableConcealMathSymbolRevealDelay = value;
         plugin.saveSettings();
       });
+
+      if (!concealToggle?.getValue()) toggle.setDisabled(true);
     });
 
+  let revealDelayText: TextComponent | null = null;
   new Setting(containerEl)
-    .setName('Conceal Math Symbol Reveal Delay')
+    .setName('Conceal Math Symbol Reveal Delay Duration (ms)')
     .setDesc('Milliseconds to wait before revealing the symbol text.')
     .addText((text) => {
-      text.setValue(String(plugin.settings.mathSymbolRevealDelay ?? DEFAULT_SETTINGS.mathSymbolRevealDelay!));
+      revealDelayText = text;
+      text.setValue(String(plugin.settings.mathSymbolRevealDelay ?? DEFAULT_SETTINGS.mathSymbolRevealDelay));
+
       text.onChange((value) => {
         const num = Number(value);
-        if (Number.isNaN(num)) {
-          new Notice('Invalid number for Reveal Delay');
-          return;
-        }
+        if (Number.isNaN(num)) return new Notice('Invalid number for Reveal Delay');
+        if (num <= 0) return new Notice('Reveal Delay must be greater than 0');
+
         plugin.settings.mathSymbolRevealDelay = num;
         plugin.saveSettings();
       });
+
+      if (!concealToggle?.getValue() || !revealDelayToggle?.getValue()) text.setDisabled(true);
     });
 
+  let complementToggle: ToggleComponent | null = null;
   new Setting(containerEl)
     .setName('Complement Symbol with Unicode')
     .setDesc('Automatically replaces typed symbols with Unicode equivalents.')
     .addToggle((toggle) => {
       complementToggle = toggle;
-      toggle.setValue(plugin.settings.complementSymbolWithUnicode ?? DEFAULT_SETTINGS.complementSymbolWithUnicode!);
+      toggle.setValue(plugin.settings.complementSymbolWithUnicode ?? DEFAULT_SETTINGS.complementSymbolWithUnicode);
+
       toggle.onChange((value) => {
+        if (value) concealToggle?.setValue(false);
+        // 他は concealToggle 側の onChange で制御
+
         plugin.settings.complementSymbolWithUnicode = value;
-        if (value && concealToggle) {
-          concealToggle.setValue(false);
-          plugin.settings.concealMathSymbols = false;
-          plugin.reload(true);
-        }
         plugin.saveSettings();
       });
+
+      // ここに setDisabled を追加するとデッドロックの恐れがある
     });
 
+  new Setting(containerEl)
+    .setName('Disable Bracket Highlight')
+    .setDesc('Disable highlighting of matching brackets.')
+    .addToggle((toggle) => {
+      toggle.setValue(plugin.settings.disableBracketHighlight ?? DEFAULT_SETTINGS.disableBracketHighlight!);
+      toggle.onChange((value) => {
+        plugin.settings.disableBracketHighlight = value;
+        plugin.saveSettings();
+        plugin.reload(true);
+      });
+    });
+}
+
+function addBehaviorSettings(plugin: ObsidianTypstMate, containerEl: HTMLElement) {
   new Setting(containerEl).setName('Behavior').setHeading();
 
   new Setting(containerEl)
@@ -104,18 +138,6 @@ export function addEditorTab(plugin: ObsidianTypstMate, containerEl: HTMLElement
       toggle.onChange((value) => {
         plugin.settings.disableMacro = value;
         plugin.saveSettings();
-      });
-    });
-
-  new Setting(containerEl)
-    .setName('Disable Bracket Highlight')
-    .setDesc('Disable highlighting of matching brackets.')
-    .addToggle((toggle) => {
-      toggle.setValue(plugin.settings.disableBracketHighlight ?? DEFAULT_SETTINGS.disableBracketHighlight!);
-      toggle.onChange((value) => {
-        plugin.settings.disableBracketHighlight = value;
-        plugin.saveSettings();
-        plugin.reload(true);
       });
     });
 }

@@ -2,11 +2,7 @@ import { type App, Platform, PluginSettingTab } from 'obsidian';
 
 import type ObsidianTypstMate from '@/main';
 
-import { addAdvancedTab } from './tabs/advanced';
-import { addCompilerTab } from './tabs/compiler';
-import { addEditorTab } from './tabs/editor';
-import { addProcessorTab } from './tabs/processor';
-import { addRenderingTab } from './tabs/rendering';
+import { addAdvancedTab, addCompilerTab, addEditorTab, addProcessorTab, addRenderingTab } from './tabs';
 
 import './shared.css';
 
@@ -19,7 +15,7 @@ export class SettingTab extends PluginSettingTab {
   }
 
   activeTab: 'editor' | 'compiler' | 'rendering' | 'processor' | 'advanced' = 'editor';
-  activeCompilerTab: 'package' | 'font' | null = 'package';
+  activeCompilerTab: 'package' | 'font' = 'package';
   activeKindTab: 'inline' | 'display' | 'codeblock' | 'excalidraw' = 'inline';
 
   display() {
@@ -35,7 +31,6 @@ export class SettingTab extends PluginSettingTab {
     ];
 
     if (Platform.isMobile) {
-      // Smartphone: Dropdown
       const selectEl = containerEl.createEl('select', { cls: 'typstmate-settings-tabs-select' });
 
       options.forEach((opt) => {
@@ -43,9 +38,7 @@ export class SettingTab extends PluginSettingTab {
           value: opt.id,
           text: opt.name,
         });
-        if (this.activeTab === opt.id) {
-          option.selected = true;
-        }
+        if (this.activeTab === opt.id) option.selected = true;
       });
 
       selectEl.addEventListener('change', () => {
@@ -53,7 +46,6 @@ export class SettingTab extends PluginSettingTab {
         this.display();
       });
     } else {
-      // Desktop: Tabs
       const tabsEl = containerEl.createDiv('typstmate-settings-tabs');
 
       options.forEach((tab) => {
