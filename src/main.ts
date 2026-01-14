@@ -208,13 +208,37 @@ export default class ObsidianTypstMate extends Plugin {
     const asset = releaseData.assets.find((asset) => asset.name === `typst-${version}.wasm`);
     if (!asset) throw new Error(`Could not find ${this.wasmPath} in release assets`);
 
-    // Wasm をダウンロードする
-    const response = await requestUrl({
-      url: asset.url,
-      headers: { Accept: 'application/octet-stream' },
+    // Wasm をダウンロードする (chunked with range headers to prevent memory explosion)
+    const totalSize = asset.size;
+    const CHUNK_SIZE = 5 * 1024 * 1024;
+    const chunkCount = Math.ceil(totalSize / CHUNK_SIZE);
+    const ranges: [number, number][] = [];
+
+    for (let i = 0; i < chunkCount; i++) {
+      const start = i * CHUNK_SIZE;
+      const end = Math.min(start + CHUNK_SIZE - 1, totalSize - 1);
+      ranges.push([start, end]);
+    }
+
+    const chunkPromises = ranges.map(async ([start, end]) => {
+      const response = await requestUrl({
+        url: asset.url,
+        headers: {
+          Accept: 'application/octet-stream',
+          Range: `bytes=${start}-${end}`,
+        },
+      });
+      return { start, data: new Uint8Array(response.arrayBuffer) };
     });
-    const data = response.arrayBuffer;
-    await this.app.vault.adapter.writeBinary(this.wasmPath, data);
+
+    const chunks = await Promise.all(chunkPromises);
+
+    const totalBuffer = new Uint8Array(totalSize);
+    chunks.sort((a, b) => a.start - b.start);
+    for (const chunk of chunks) {
+      totalBuffer.set(chunk.data, chunk.start);
+    }
+    await this.app.vault.adapter.writeBinary(this.wasmPath, totalBuffer.buffer);
 
     new Notice('Wasm downloaded!');
   }
