@@ -3,7 +3,7 @@ import { type EditorView, type Panel, showPanel, type ViewUpdate } from '@codemi
 import { SyntaxKind } from '@/utils/rust/crates/typst-synatx';
 import type { EditorHelper } from '../../../index';
 import { editorHelperFacet } from './Helper';
-import { getActiveRegion, typstMatePlugin } from './TypstMate';
+import { getActiveRegion, typstMateCore } from './TypstMate';
 import './debug.css';
 
 const debugStateField = StateField.define<string>({
@@ -30,7 +30,7 @@ class DebugPanel implements Panel {
   }
 
   render() {
-    const parserData = this.view.plugin(typstMatePlugin);
+    const parserData = this.view.plugin(typstMateCore);
     if (!parserData) return;
 
     const cursor = this.view.state.selection.main.head;
