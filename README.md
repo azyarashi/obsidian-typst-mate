@@ -1,13 +1,11 @@
 # Typst Mate
 
 <a href="https://obsidian.md/">
-  <img alt="Obsidian Plugin" src="https://img.shields.io/badge/Desktop%20%26%20Mobile%28iDevice%2C%20Rooted%20Android%2A%29-a78bfa?logo=obsidian&logoColor=white" />
+  <img alt="Obsidian Plugin" src="https://img.shields.io/badge/Desktop%20%26%20Mobile-a78bfa?logo=obsidian&logoColor=white" />
 </a>
 <a href="https://typst.app/docs/changelog/">
   <img alt="Typst Version" src="https://img.shields.io/badge/v0.14.2-239dad?logo=typst&logoColor=white" />
 </a>
-
-> \* (Android Only) You may need to use tools like `resetprop` or directly edit `build.prop` to change `dalvik.vm.heapgrowthlimit` and `dalvik.vm.heapsize` to around `512m`. See [this warning](https://github.com/azyarashi/obsidian-typst-mate?tab=readme-ov-file#network).
 
 Render math expressions in [Obsidian](https://obsidian.md) using [Typst](https://typst.app/) instead of MathJax.
 
@@ -144,6 +142,7 @@ Typst Mate leverages the following open-source projects:
 and contributors:
 
 - [Merrkry](https://github.com/merrkry)
+- [BridgeSenseDev](https://github.com/BridgeSenseDev)
 
 I'm grateful to the developers for making this plugin possible!
 
@@ -157,9 +156,6 @@ This section contains wording required for publishing on Obsidian's official Com
 
 This plugin makes use of a large WebAssembly (Wasm) binary.
 Bundling it directly would significantly increase startup time, so it is automatically downloaded from the [Releases](https://github.com/azyarashi/obsidian-typst-mate/releases) page instead.
-
-> [!WARNING]
-> (Android devices only) Android imposes strict limits on heap size, which may cause crashes when loading WebAssembly. Resolving this requires a rooted device or [support from the Obsidian team](https://forum.obsidian.md/t/enable-largeheap-in-obsidian-android-app-to-avoid-ooms/108119) (please `+1`).
 
 Network access is required to install Typst packages, and is also required by Typst Tools to display lists of packages and symbols and to use Detypify and Quiver.
 
