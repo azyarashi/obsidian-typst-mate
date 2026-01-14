@@ -1,9 +1,10 @@
 use serde::Serialize;
 
+use tsify::Tsify;
 use typst::World;
 use typst_ide::Jump;
 
-#[derive(Serialize)]
+#[derive(Serialize, Tsify)]
 #[serde(rename_all = "camelCase", tag = "type")]
 pub enum JumpSer {
     File {

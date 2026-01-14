@@ -4,6 +4,7 @@ import type pathModule from 'node:path';
 
 import { proxy, type Remote, wrap } from 'comlink';
 import {
+  addIcon,
   debounce,
   type EventRef,
   loadMathJax,
@@ -16,20 +17,20 @@ import {
   type WorkspaceLeaf,
 } from 'obsidian';
 
-import { BASE_COLOR_VAR } from './constants';
-import { EditorHelper } from './core/editor/editor';
+import { BASE_COLOR_VAR, TYPST_SVG_FILL, TYPST_SVG_STROKE } from './constants';
 import { DEFAULT_SETTINGS, type Settings } from './data/settings';
-import ExcalidrawPlugin from './extensions/excalidraw';
+import { EditorHelper } from './editor';
+import { collectRegions } from './editor/markdown/extensions/core/TypstMate';
 import TypstManager from './libs/typst';
 import type $ from './libs/worker';
 import Typst from './libs/worker';
 import TypstWorker from './libs/worker?worker&inline';
+import ExcalidrawPlugin from './plugins/excalidraw';
 import { ExcalidrawModal } from './ui/modals/excalidraw';
 import { SettingTab } from './ui/settingstab';
 import { TypstPDFView } from './ui/views/typst-pdf/typstPDF';
 import { TypstTextView } from './ui/views/typst-text/typstText';
 import { TypstToolsView } from './ui/views/typst-tools/typstTools';
-import { type MathSegment, replaceMathSegments } from './utils/findMathSegments';
 import { Observer } from './utils/observer';
 import { zip } from './utils/packageCompressor';
 
@@ -88,6 +89,9 @@ export default class ObsidianTypstMate extends Plugin {
     this.setPaths();
     // 色を設定
     this.applyBaseColor();
+    // アイコンを設定
+    addIcon('typst-fill', TYPST_SVG_FILL);
+    addIcon('typst-stroke', TYPST_SVG_STROKE);
     // マニフェストの読み込みと Wasm のパスを設定
     const manifestPath = `${this.pluginDirNPath}/manifest.json`;
     const version = JSON.parse(await adapter.read(manifestPath)).version;
@@ -104,7 +108,7 @@ export default class ObsidianTypstMate extends Plugin {
     await this.prepareTypst();
 
     this.registerView(TypstToolsView.viewtype, (leaf) => new TypstToolsView(leaf, this));
-    this.registerView(TypstTextView.viewtype, (leaf) => new TypstTextView(leaf));
+    this.registerView(TypstTextView.viewtype, (leaf) => new TypstTextView(leaf, this));
     this.registerView(TypstPDFView.viewtype, (leaf) => new TypstPDFView(leaf, this));
 
     // ? Obsidian の起動時間を短縮するため onLayoutReady を使用
@@ -263,22 +267,28 @@ export default class ObsidianTypstMate extends Plugin {
       id: 'tex2typ',
       name: 'Replace tex in markdown content or selection to typst',
       editorCallback: async (editor) => {
-        const selection = editor.getSelection();
-        const tex2typ = async (seg: MathSegment) => {
-          return seg.raw.replace(seg.content, await this.typst.latexeq_to_typm(seg.content));
-        };
+        const view = editor.cm;
+        if (!view) {
+          new Notice('Active view is not found.');
+          return;
+        }
 
-        if (selection) {
-          const replaced = await replaceMathSegments(selection, tex2typ);
-          editor.replaceSelection(replaced);
-        } else {
-          const content = editor.getDoc().getValue();
-          const replaced = await replaceMathSegments(content, tex2typ);
-          editor.replaceRange(
-            replaced,
-            { line: 0, ch: 0 },
-            { line: editor.lineCount(), ch: editor.getLine(editor.lineCount() - 1).length },
-          );
+        const selection = view.state.selection.main;
+        const regions = collectRegions(view, selection.from, selection.to, this.editorHelper, null).filter(
+          (region) => region.kind !== 'codeblock',
+        );
+
+        if (selection.empty && regions.length === 0) {
+          editor.replaceSelection(await this.typst.latexeq_to_typm(editor.getSelection()));
+          return;
+        }
+
+        for (const region of regions) {
+          const content = view.state.sliceDoc(region.from, region.to);
+          const math = await this.typst.latexeq_to_typm(content);
+          const fromPosition = editor.offsetToPos(region.from);
+          const toPosition = editor.offsetToPos(region.to);
+          editor.replaceRange(math, fromPosition, toPosition);
         }
       },
     });
@@ -286,13 +296,19 @@ export default class ObsidianTypstMate extends Plugin {
     this.addCommand({
       id: 'box-current-equation',
       name: 'Box current equation',
-      editorCallback: this.editorHelper.boxCurrentEquation.bind(this.editorHelper),
+      editorCallback: (editor) => {
+        const view = editor.cm;
+        if (view) this.editorHelper.boxCurrentEquation(view);
+      },
     });
 
     this.addCommand({
       id: 'select-current-equation',
       name: 'Select current equation',
-      editorCallback: this.editorHelper.selectCurrentEquation.bind(this.editorHelper),
+      editorCallback: (editor) => {
+        const view = editor.cm;
+        if (view) this.editorHelper.selectCurrentEquation(view);
+      },
     });
 
     if (this.excalidrawPluginInstalled) {

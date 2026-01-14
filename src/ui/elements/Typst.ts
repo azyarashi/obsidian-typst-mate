@@ -1,6 +1,6 @@
 import { Menu, Notice } from 'obsidian';
 import { DEFAULT_FONT_SIZE } from '@/constants';
-import { updateDiagnosticEffect } from '@/core/editor/extensions/decorations/diagnostic';
+import { updateDiagnosticEffect } from '@/editor/markdown/extensions/decorations/Diagnostic';
 import type { Processor, ProcessorKind } from '@/libs/processor';
 import type { Diagnostic, SVGResult } from '@/libs/worker';
 import type ObsidianTypstMate from '@/main';

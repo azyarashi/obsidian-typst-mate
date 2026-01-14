@@ -2,11 +2,10 @@ import type fsModule from 'node:fs';
 import type pathModule from 'node:path';
 
 import { expose } from 'comlink';
-import type { EditorPosition } from 'obsidian';
 import pako from 'pako';
 import untar from 'untar-sync';
 
-import init, { type InitOutput, Typst } from '../../pkg/typst_wasm.js';
+import init, { type DefinitionSer, type InitOutput, type JumpSer, Typst, type ValueSer } from '../../pkg/typst_wasm.js';
 
 let main: Main;
 
@@ -87,8 +86,20 @@ export default class $ {
     return this.typst.cetz_to_tikz(code);
   }
 
-  jumpFromClick(x: number, y: number): Jump | null {
+  jumpFromClick(x: number, y: number): JumpSer | null {
     return this.typst.jump_from_click(x, y);
+  }
+
+  definition(cursor: number, side: boolean): ValueSer | null {
+    return this.typst.definition(cursor, side);
+  }
+
+  tooltip(cursor: number, side: boolean): string | null {
+    return this.typst.tooltip(cursor, side);
+  }
+
+  getTypstVersion(): string | null {
+    return this.typst.get_typst_version();
   }
 
   fetch(path: string) {
@@ -252,46 +263,8 @@ export interface PDFResult {
   pdf: Uint8Array;
   diags: Diagnostic[];
 }
-
-export interface BracketPair {
-  kind: 'paren' | 'bracket' | 'brace';
-  depth: number;
-  open_offset: number;
-  open_pos: EditorPosition;
-  close_offset: number;
-  close_pos: EditorPosition;
-}
-
-export interface BracketHighlights {
-  id: number;
-  pairs: BracketPair[];
-  highlights: {
-    paren: EditorPosition[];
-    bracket: EditorPosition[];
-    brace: EditorPosition[];
-  };
-}
-
 export interface Main {
   notice(message: string, duration?: number): void;
   readBinary(path: string): Uint8Array | Promise<ArrayBuffer>;
   writePackage(path: string, files: tarFile[]): void;
 }
-
-export type Jump =
-  | {
-      type: 'file';
-      package?: string;
-      path: string;
-      pos?: number;
-    }
-  | {
-      type: 'url';
-      url: string;
-    }
-  | {
-      type: 'position';
-      page: number;
-      x: number;
-      y: number;
-    };

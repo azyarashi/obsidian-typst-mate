@@ -1,0 +1,17 @@
+.typst-debug-panel {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  background: var(--background-secondary);
+  border: 1px solid var(--background-modifier-border);
+  padding: 4px 8px;
+  font-size: 16px;
+  z-index: 100;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  opacity: 0.8;
+  white-space: pre;
+  font-family: monospace;
+}

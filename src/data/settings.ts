@@ -1,4 +1,14 @@
-import type { CodeblockProcessor, DisplayProcessor, ExcalidrawProcessor, InlineProcessor } from '@/libs/processor';
+import {
+  type CodeblockProcessor,
+  CodeblockStyling,
+  type DisplayProcessor,
+  DisplayStyling,
+  type ExcalidrawProcessor,
+  ExcalidrawStyling,
+  type InlineProcessor,
+  InlineStyling,
+  RenderingEngine,
+} from '@/libs/processor';
 import type { Snippet } from '@/libs/snippet';
 
 /**
@@ -97,37 +107,37 @@ export const DEFAULT_SETTINGS: Settings = {
       processors: [
         {
           id: 'ce',
-          renderingEngine: 'typst-svg',
+          renderingEngine: RenderingEngine.TypstSVG,
           format: [
             '#import "@preview/typsium:0.3.1": ce',
             '#show math.equation: set text(font: ("New Computer Modern Math", "Noto Serif CJK SC"))',
             '#ce[{CODE}]',
           ].join('\n'),
-          styling: 'inline-middle',
+          styling: InlineStyling.InlineMiddle,
           noPreamble: false,
           fitToParentWidth: false,
         },
         {
           id: 'mid',
-          renderingEngine: 'typst-svg',
+          renderingEngine: RenderingEngine.TypstSVG,
           format: '$ {CODE} $',
-          styling: 'inline-middle',
+          styling: InlineStyling.InlineMiddle,
           noPreamble: true,
           fitToParentWidth: false,
         },
         {
           id: 'tex',
-          renderingEngine: 'mathjax',
+          renderingEngine: RenderingEngine.MathJax,
           format: '',
-          styling: 'inline',
+          styling: InlineStyling.Inline,
           noPreamble: false,
           fitToParentWidth: false,
         },
         {
           id: '',
-          renderingEngine: 'typst-svg',
+          renderingEngine: RenderingEngine.TypstSVG,
           format: '${CODE}$',
-          styling: 'inline',
+          styling: InlineStyling.Inline,
           noPreamble: false,
           fitToParentWidth: false,
         },
@@ -137,17 +147,17 @@ export const DEFAULT_SETTINGS: Settings = {
       processors: [
         {
           id: 'block',
-          renderingEngine: 'typst-svg',
+          renderingEngine: RenderingEngine.TypstSVG,
           format: '$ {CODE} $',
-          styling: 'block',
+          styling: DisplayStyling.Block,
           noPreamble: false,
           fitToParentWidth: false,
         },
         {
           id: '',
-          renderingEngine: 'typst-svg',
+          renderingEngine: RenderingEngine.TypstSVG,
           format: '$ {CODE} $',
-          styling: 'block-center',
+          styling: DisplayStyling.BlockCenter,
           noPreamble: false,
           fitToParentWidth: false,
         },
@@ -157,33 +167,33 @@ export const DEFAULT_SETTINGS: Settings = {
       processors: [
         {
           id: 'typst',
-          renderingEngine: 'typst-svg',
+          renderingEngine: RenderingEngine.TypstSVG,
           format: '{CODE}',
-          styling: 'block-center',
+          styling: CodeblockStyling.BlockCenter,
           noPreamble: false,
           fitToParentWidth: false,
         },
         {
           id: 'fletcher',
-          renderingEngine: 'typst-svg',
+          renderingEngine: RenderingEngine.TypstSVG,
           format: '#import "@preview/fletcher:0.5.8" as fletcher: diagram, node, edge\n{CODE}',
-          styling: 'block-center',
+          styling: CodeblockStyling.BlockCenter,
           noPreamble: false,
           fitToParentWidth: false,
         },
         {
           id: 'lovelace',
-          renderingEngine: 'typst-svg',
+          renderingEngine: RenderingEngine.TypstSVG,
           format: '#import "@preview/lovelace:0.3.0": *\n#pseudocode-list[\n{CODE}\n]',
-          styling: 'block',
+          styling: CodeblockStyling.Block,
           noPreamble: false,
           fitToParentWidth: false,
         },
         {
           id: 'lilaq',
-          renderingEngine: 'typst-svg',
+          renderingEngine: RenderingEngine.TypstSVG,
           format: '#import "@preview/lilaq:0.5.0" as lq\n{CODE}',
-          styling: 'block-center',
+          styling: CodeblockStyling.BlockCenter,
           noPreamble: false,
           fitToParentWidth: false,
         },
@@ -193,9 +203,9 @@ export const DEFAULT_SETTINGS: Settings = {
       processors: [
         {
           id: 'default',
-          renderingEngine: 'typst-svg',
+          renderingEngine: RenderingEngine.TypstSVG,
           format: '#set page(margin: 0.25em)\n{CODE}$',
-          styling: 'default',
+          styling: ExcalidrawStyling.Default,
           noPreamble: false,
           fitToParentWidth: false,
         },

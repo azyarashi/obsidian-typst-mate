@@ -1,13 +1,25 @@
-export const RenderingEngineTokens = ['typst-svg', 'mathjax'] as const;
-export type RenderingEngine = (typeof RenderingEngineTokens)[number];
-export const InlineStylingTokens = ['inline', 'inline-middle'] as const;
-export type InlineStyling = (typeof InlineStylingTokens)[number];
-export const DisplayStylingTokens = ['block', 'block-center'] as const;
-export type DisplayStyling = (typeof DisplayStylingTokens)[number];
-export const CodeblockStylingTokens = ['block', 'block-center', 'codeblock'] as const;
-export type CodeblockStyling = (typeof CodeblockStylingTokens)[number];
-export const ExcalidrawStylingTokens = ['default'] as const;
-export type ExcalidrawStyling = (typeof ExcalidrawStylingTokens)[number];
+import { SyntaxMode } from '@/utils/rust/crates/typst-synatx';
+
+export enum RenderingEngine {
+  TypstSVG = 'typst-svg',
+  MathJax = 'mathjax',
+}
+export enum InlineStyling {
+  Inline = 'inline',
+  InlineMiddle = 'inline-middle',
+}
+export enum DisplayStyling {
+  Block = 'block',
+  BlockCenter = 'block-center',
+}
+export enum CodeblockStyling {
+  Block = 'block',
+  BlockCenter = 'block-center',
+  Codeblock = 'codeblock',
+}
+export enum ExcalidrawStyling {
+  Default = 'default',
+}
 export type Styling = InlineStyling | DisplayStyling | CodeblockStyling | ExcalidrawStyling;
 
 export interface InlineProcessor {
@@ -15,6 +27,7 @@ export interface InlineProcessor {
   renderingEngine: RenderingEngine;
   format: string;
   styling: InlineStyling;
+  mode?: SyntaxMode;
   disableSuggest?: boolean;
   noPreamble?: boolean;
   fitToParentWidth?: boolean;
@@ -24,6 +37,7 @@ export interface DisplayProcessor {
   renderingEngine: RenderingEngine;
   format: string;
   styling: DisplayStyling;
+  mode?: SyntaxMode;
   disableSuggest?: boolean;
   noPreamble?: boolean;
   fitToParentWidth?: boolean;
@@ -33,6 +47,7 @@ export interface CodeblockProcessor {
   renderingEngine: RenderingEngine;
   format: string;
   styling: CodeblockStyling;
+  mode?: SyntaxMode;
   disableSuggest?: boolean;
   noPreamble?: boolean;
   fitToParentWidth?: boolean;
@@ -42,6 +57,7 @@ export interface ExcalidrawProcessor {
   renderingEngine: RenderingEngine;
   format: string;
   styling: ExcalidrawStyling;
+  mode?: SyntaxMode;
   disableSuggest?: boolean;
   noPreamble?: boolean;
   fitToParentWidth?: boolean;
@@ -54,36 +70,40 @@ export type ProcessorKind = (typeof ProcessorKindTokens)[number];
 
 export const DefaultNewInlineProcessor: InlineProcessor = {
   id: 'new',
-  renderingEngine: 'typst-svg',
+  renderingEngine: RenderingEngine.TypstSVG,
   format: '${CODE}$',
-  styling: 'inline',
+  styling: InlineStyling.Inline,
+  mode: SyntaxMode.Math,
   disableSuggest: false,
   noPreamble: false,
   fitToParentWidth: false,
 };
 export const DefaultNewDisplayProcessor: DisplayProcessor = {
   id: 'new',
-  renderingEngine: 'typst-svg',
+  renderingEngine: RenderingEngine.TypstSVG,
   format: '$ {CODE} $',
-  styling: 'block-center',
+  styling: DisplayStyling.BlockCenter,
+  mode: SyntaxMode.Math,
   disableSuggest: false,
   noPreamble: false,
   fitToParentWidth: false,
 };
 export const DefaultNewCodeblockProcessor: CodeblockProcessor = {
   id: 'new',
-  renderingEngine: 'typst-svg',
+  renderingEngine: RenderingEngine.TypstSVG,
   format: '{CODE}',
-  styling: 'block-center',
+  styling: CodeblockStyling.BlockCenter,
+  mode: SyntaxMode.Markup,
   disableSuggest: false,
   noPreamble: false,
   fitToParentWidth: false,
 };
 export const DefaultNewExcalidrawProcessor: ExcalidrawProcessor = {
   id: 'new',
-  renderingEngine: 'typst-svg',
+  renderingEngine: RenderingEngine.TypstSVG,
   format: '#set page(margin: 0.25em)\n${CODE}$',
-  styling: 'default',
+  styling: ExcalidrawStyling.Default,
+  mode: SyntaxMode.Math,
   disableSuggest: false,
   noPreamble: false,
   fitToParentWidth: false,

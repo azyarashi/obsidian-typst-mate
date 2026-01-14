@@ -28,7 +28,7 @@ export class TypstToolsView extends ItemView {
   }
 
   override getIcon(): string {
-    return 'type';
+    return 'typst-stroke';
   }
 
   override async onOpen(): Promise<void> {

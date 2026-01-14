@@ -8,3 +8,17 @@ declare module '@/data/shortcuts.json' {
 
   export default data;
 }
+
+declare module '@/data/symbols.json' {
+  interface SymbolData {
+    sym: string;
+    unicName: string;
+    name: string;
+    shorthand: string | null;
+    mathClass: string;
+    latexName: string;
+  }
+  const data: Record<string, SymbolData>;
+
+  export default data;
+}

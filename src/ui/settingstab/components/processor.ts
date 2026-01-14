@@ -5,7 +5,7 @@ import {
   DefaultNewProcessor,
   type Processor,
   type ProcessorKind,
-  type RenderingEngine,
+  RenderingEngine,
   type Styling,
 } from '@/libs/processor';
 import type ObsidianTypstMate from '@/main';
@@ -167,8 +167,9 @@ export class ProcessorList {
 
         // @ts-expect-error: 過去バージョンとの互換性を保つため
         if (processor.renderingEngine === 'typst') {
-          this.plugin.settings.processor[this.kind].processors[Number(processorEl.id)]!.renderingEngine = 'typst-svg';
-          processor.renderingEngine = 'typst-svg';
+          this.plugin.settings.processor[this.kind].processors[Number(processorEl.id)]!.renderingEngine =
+            RenderingEngine.TypstSVG;
+          processor.renderingEngine = RenderingEngine.TypstSVG;
         }
 
         renderingEngineDropdown.setValue(processor.renderingEngine);

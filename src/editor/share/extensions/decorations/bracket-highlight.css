@@ -1,0 +1,23 @@
+.typstmate-bracket-paren {
+  color: rgb(200, 100, 200) !important;
+}
+.typstmate-bracket-bracket {
+  color: rgb(100, 200, 200) !important;
+}
+.typstmate-bracket-brace {
+  color: rgb(200, 200, 100) !important;
+}
+
+.typstmate-bracket-enclosing {
+  font-weight: bold !important;
+}
+
+.typstmate-bracket-paren.typstmate-bracket-enclosing {
+  background-color: rgba(225, 125, 225, 0.5) !important;
+}
+.typstmate-bracket-bracket.typstmate-bracket-enclosing {
+  background-color: rgba(125, 225, 225, 0.5) !important;
+}
+.typstmate-bracket-brace.typstmate-bracket-enclosing {
+  background-color: rgba(225, 225, 125, 0.5) !important;
+}

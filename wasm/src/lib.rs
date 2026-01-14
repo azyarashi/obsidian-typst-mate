@@ -6,15 +6,16 @@ use tylax::{
     tikz::{convert_cetz_to_tikz, convert_tikz_to_cetz},
     typst_document_to_latex, typst_to_latex,
 };
+use typst_ide::Tooltip;
 use wasm_bindgen::prelude::*;
 
 use typst::{
     World,
     diag::Warned,
-    foundations::Bytes,
+    foundations::{Bytes, Module, Version},
     layout::{Abs, PagedDocument, Point},
     syntax::{
-        FileId, VirtualPath,
+        FileId, Side, VirtualPath,
         package::{PackageSpec, PackageVersion},
     },
     text::FontInfo,
@@ -25,7 +26,9 @@ mod serde;
 mod vfs;
 mod world;
 
-use crate::serde::{diagnostic, font, jump, package, pdf, processor, svg};
+use crate::serde::{
+    definition, diagnostic, font, jump, package, pdf, processor, svg, values::VersionSer,
+};
 use crate::world::WasmWorld;
 
 #[wasm_bindgen]
@@ -261,5 +264,66 @@ impl Typst {
             }
             None => JsValue::NULL,
         }
+    }
+
+    pub fn tooltip(&self, cursor: usize, side: bool) -> Option<String> {
+        match &self.last_document {
+            Some(document) => {
+                let tooltip = typst_ide::tooltip(
+                    &self.world,
+                    Some(document),
+                    &self.world.source(self.world.main()).unwrap(),
+                    cursor,
+                    match side {
+                        false => Side::Before,
+                        true => Side::After,
+                    },
+                );
+                match tooltip {
+                    Some(tooltip) => match tooltip {
+                        Tooltip::Text(value) => Some(value.into()),
+                        Tooltip::Code(code) => Some(code.into()),
+                    },
+                    None => None,
+                }
+            }
+            None => None,
+        }
+    }
+
+    pub fn definition(&self, cursor: usize, side: bool) -> JsValue {
+        match &self.last_document {
+            Some(document) => {
+                let definition = typst_ide::definition(
+                    &self.world,
+                    Some(document),
+                    &self.world.source(self.world.main()).unwrap(),
+                    cursor,
+                    match side {
+                        false => Side::Before,
+                        true => Side::After,
+                    },
+                );
+                match definition {
+                    Some(definition) => {
+                        definition::DefinitionSer::from_definition(&definition, &self.world)
+                            .map(|s| to_value(&s).unwrap())
+                            .unwrap_or(JsValue::NULL)
+                    }
+                    None => JsValue::NULL,
+                }
+            }
+            None => JsValue::NULL,
+        }
+    }
+
+    pub fn get_typst_version(&self) -> Option<JsValue> {
+        let std_scope = self.world.library().std.read().scope()?;
+        let sys_binding = std_scope.get("sys")?;
+        let sys_module = sys_binding.read().clone().cast::<Module>().ok()?;
+        let version_binding = sys_module.scope().get("version")?;
+        let version = version_binding.read().clone().cast::<Version>().ok()?;
+
+        Some(to_value(&VersionSer::from(&version)).unwrap())
     }
 }
