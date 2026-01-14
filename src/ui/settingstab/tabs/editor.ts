@@ -38,26 +38,19 @@ export function addEditorTab(
 function addMathDecorationSettings(plugin: ObsidianTypstMate, containerEl: HTMLElement) {
   new Setting(containerEl).setName('Conceal & Complement').setHeading();
 
-  let concealToggle: ToggleComponent | null = null;
   new Setting(containerEl)
     .setName('Conceal Math Symbols')
-    .setDesc(
-      'Conceal math symbols (e.g. integral to ∫) in the editor. Requires Complement Symbol with Unicode to be disabled.',
-    )
+    .setDesc('Conceal math symbols (e.g. integral to ∫) in the editor.')
     .addToggle((toggle) => {
-      concealToggle = toggle;
       toggle.setValue(plugin.settings.concealMathSymbols ?? DEFAULT_SETTINGS.concealMathSymbols);
 
       toggle.onChange((value) => {
-        if (value) complementToggle?.setValue(false);
         revealDelayToggle?.setDisabled(!value);
         revealDelayText?.setDisabled(!value || !(revealDelayToggle?.getValue() ?? false));
 
         plugin.settings.concealMathSymbols = value;
         plugin.saveSettings();
       });
-
-      // ここに setDisabled を追加するとデッドロックの恐れがある
     });
 
   let revealDelayToggle: ToggleComponent | null = null;
@@ -76,8 +69,6 @@ function addMathDecorationSettings(plugin: ObsidianTypstMate, containerEl: HTMLE
         plugin.settings.enableConcealMathSymbolRevealDelay = value;
         plugin.saveSettings();
       });
-
-      if (!concealToggle?.getValue()) toggle.setDisabled(true);
     });
 
   let revealDelayText: TextComponent | null = null;
@@ -97,26 +88,19 @@ function addMathDecorationSettings(plugin: ObsidianTypstMate, containerEl: HTMLE
         plugin.saveSettings();
       });
 
-      if (!concealToggle?.getValue() || !revealDelayToggle?.getValue()) text.setDisabled(true);
+      if (!revealDelayToggle?.getValue()) text.setDisabled(true);
     });
 
-  let complementToggle: ToggleComponent | null = null;
   new Setting(containerEl)
     .setName('Complement Symbol with Unicode')
     .setDesc('Automatically replaces typed symbols with Unicode equivalents.')
     .addToggle((toggle) => {
-      complementToggle = toggle;
       toggle.setValue(plugin.settings.complementSymbolWithUnicode ?? DEFAULT_SETTINGS.complementSymbolWithUnicode);
 
       toggle.onChange((value) => {
-        if (value) concealToggle?.setValue(false);
-        // 他は concealToggle 側の onChange で制御
-
         plugin.settings.complementSymbolWithUnicode = value;
         plugin.saveSettings();
       });
-
-      // ここに setDisabled を追加するとデッドロックの恐れがある
     });
 
   new Setting(containerEl).setName('Highlight').setHeading();
