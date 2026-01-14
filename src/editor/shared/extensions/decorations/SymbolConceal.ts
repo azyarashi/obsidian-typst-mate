@@ -12,11 +12,11 @@ import {
 import symbolData from '@/data/symbols.json';
 import { SyntaxKind, SyntaxMode, type SyntaxToken } from '@/utils/rust/crates/typst-synatx';
 
-import { type TypstParserPluginValue, typstMatePlugin } from '../core/TypstMate';
+import { type TypstMateCorePluginValue, typstMateCore } from '../core/TypstMate';
 
 const SYMBOL_MAP = new Map<string, string>();
-for (const [key, val] of Object.entries(symbolData as any)) {
-  if ((val as any).sym) SYMBOL_MAP.set(key, (val as any).sym);
+for (const [key, val] of Object.entries(symbolData)) {
+  if (val.sym) SYMBOL_MAP.set(key, val.sym);
 }
 
 class SymbolWidget extends WidgetType {
@@ -181,6 +181,7 @@ const mathSymbolConcealPlugin = ViewPlugin.fromClass(
       }
       this.pendingRange = hovering;
       this.revealTimer = window.setTimeout(() => {
+        if (view.isDestroyed) return;
         this.revealedRange = this.pendingRange;
         this.pendingRange = null;
         this.revealTimer = null;
@@ -195,7 +196,7 @@ const mathSymbolConcealPlugin = ViewPlugin.fromClass(
         return { decorations: Decoration.none, atomicRanges: RangeSet.empty, hoveringRange: null };
       }
 
-      const parserData = view.plugin(typstMatePlugin) as unknown as TypstParserPluginValue | null;
+      const parserData = view.plugin(typstMateCore) as unknown as TypstMateCorePluginValue | null;
       if (!parserData) return { decorations: Decoration.none, atomicRanges: RangeSet.empty, hoveringRange: null };
 
       const builder = new RangeSetBuilder<Decoration>();
@@ -244,7 +245,7 @@ const mathSymbolConcealPlugin = ViewPlugin.fromClass(
             if (shouldConceal) {
               const deco = Decoration.replace({ widget: new SymbolWidget(match.sym) });
               builder.add(startT.from, endT.to, deco);
-              atomicBuilder.add(startT.from, endT.to, true);
+              atomicBuilder.add(startT.from, endT.to, Decoration.mark({}));
             }
 
             i += match.usedTokens;

@@ -5,11 +5,11 @@ import type { Processor, ProcessorKind } from '@/libs/processor';
 
 import './diagnostic.css';
 
-interface TypstDiagnostic extends Diagnostic {
+export interface TypstDiagnostic extends Diagnostic {
   hints: string[];
 }
 
-interface TypstMateResult {
+export interface TypstMateResult {
   diags: TypstDiagnostic[];
   kind: ProcessorKind;
   processor: Processor;
@@ -18,13 +18,14 @@ interface TypstMateResult {
 }
 
 import { editorHelperFacet } from '../core/Helper';
+import { getActiveRegion } from '../core/TypstMate';
 
 export const diagnosticExtension = linter((view) => {
   const helper = view.state.facet(editorHelperFacet);
   if (!helper) return [];
-  if (!helper.mathObject) return [];
-  // TODO: コードブロックには効かない
-  if (helper.mathObject.kind === 'codeblock') return [];
+
+  const region = getActiveRegion(view);
+  if (!region) return [];
 
   const result = view.state.field(diagnosticsState);
   if (!result) return [];
@@ -34,17 +35,14 @@ export const diagnosticExtension = linter((view) => {
   const diagnostics = result?.diags
     .map((diag) => {
       const offset =
-        helper.mathObject!.startOffset +
-        result.offset -
-        (noPreamble ? 0 : helper.plugin.settings.preamble.length + 1) -
-        format.indexOf('{CODE}');
+        region.from - (noPreamble ? 0 : helper.plugin.settings.preamble.length + 1) - format.indexOf('{CODE}');
       return {
         from: diag.from + offset,
         to: diag.to + offset,
         message: '',
         severity: diag.severity,
         renderMessage: () => {
-          if (result.kind === 'inline') helper.hideAllPopup();
+          if (region.kind === 'inline') helper.hideAllPopup();
           const container = document.createElement('div');
           container.classList.add('typst-mate-diag');
 
@@ -66,7 +64,7 @@ export const diagnosticExtension = linter((view) => {
         },
       };
     })
-    .filter((diag) => helper.mathObject!.startOffset <= diag.from && diag.to <= helper.mathObject!.endOffset);
+    .filter((diag) => region.from <= diag.from && diag.to <= region.to);
 
   return diagnostics;
 });

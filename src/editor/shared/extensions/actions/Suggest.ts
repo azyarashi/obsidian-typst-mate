@@ -6,8 +6,8 @@ import type { EditorHelper } from '../../../index';
 import { snippetRegex } from '../../elements/SnippetSuggest';
 import { symbolRegex } from '../../elements/SymbolSuggest';
 import { editorHelperFacet } from '../core/Helper';
-import { type TypstParserPluginValue, typstMatePlugin } from '../core/TypstMate';
-import { type ShortcutPluginValue, shortcutPlugin } from './Shortcut';
+import { getActiveRegion, typstMateCore } from '../core/TypstMate';
+import { shortcutPlugin } from './Shortcut';
 
 export const suggestExtension = [
   EditorView.updateListener.of((update) => {
@@ -20,11 +20,11 @@ export const suggestExtension = [
       if (!update.view.hasFocus) helper.close();
     } else if (update.docChanged && sel.empty) {
       // Check region
-      const parserData = update.view.plugin(typstMatePlugin) as unknown as TypstParserPluginValue | null;
+      const parserData = update.view.plugin(typstMateCore);
       if (!parserData) return;
 
       const cursor = sel.head;
-      const region = parserData.parsedRegions.find((r) => r.from <= cursor && cursor <= r.to);
+      const region = getActiveRegion(update.view);
 
       // We only suggest if in a region
       if (!region) {
@@ -49,7 +49,6 @@ export const suggestExtension = [
       const mode = token?.mode ?? region.mode;
 
       if (trySuggest(helper, update.view, sel.head, mode)) {
-        helper.inlinePreviewEl.close();
         return;
       }
       helper.hideAllSuggest();
@@ -57,15 +56,13 @@ export const suggestExtension = [
   }),
   Prec.high(
     EditorView.domEventHandlers({
-      mousedown: (e, view) => {
+      mousedown: (_e, view) => {
         const helper = view.state.facet(editorHelperFacet);
         if (!helper) return;
 
-        const plugin = view.plugin(shortcutPlugin) as unknown as ShortcutPluginValue | null;
+        const plugin = view.plugin(shortcutPlugin);
         plugin?.clearShortcutTimeout();
         helper.hideAllSuggest();
-
-        if (helper.inlinePreviewEl.style.display !== 'none') helper.inlinePreviewEl.onClick(e);
       },
       keydown: (e, view) => {
         const helper = view.state.facet(editorHelperFacet);

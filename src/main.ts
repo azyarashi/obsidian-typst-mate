@@ -20,7 +20,7 @@ import {
 import { BASE_COLOR_VAR, TYPST_SVG_FILL, TYPST_SVG_STROKE } from './constants';
 import { DEFAULT_SETTINGS, type Settings } from './data/settings';
 import { EditorHelper } from './editor';
-import { collectRegions } from './editor/markdown/extensions/core/TypstMate';
+import { collectRegions } from './editor/shared/extensions/core/TypstMate';
 import TypstManager from './libs/typst';
 import type $ from './libs/worker';
 import Typst from './libs/worker';
@@ -66,6 +66,7 @@ export default class ObsidianTypstMate extends Plugin {
   path?: typeof pathModule;
 
   override async onload() {
+    console.log(1);
     await this.loadSettings(); // ユーザーの設定 (data.json) を読み込む
     if (3 === (this.settings.crashCount ?? 0)) {
       new Notice('[Typst Mate] The plugin has been automatically turned off due to three consecutive crashes');

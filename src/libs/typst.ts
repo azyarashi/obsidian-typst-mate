@@ -2,9 +2,8 @@ import { Notice } from 'obsidian';
 
 import { DEFAULT_FONT_SIZE } from '@/constants';
 import { DEFAULT_SETTINGS, type Settings } from '@/data/settings';
-import InlinePreviewElement from '@/editor/markdown/elements/InlinePreview';
-import SnippetSuggestElement from '@/editor/share/elements/SnippetSuggest';
-import SymbolSuggestElement from '@/editor/share/elements/SymbolSuggest';
+import SnippetSuggestElement from '@/editor/shared/elements/SnippetSuggest';
+import SymbolSuggestElement from '@/editor/shared/elements/SymbolSuggest';
 import type ObsidianTypstMate from '@/main';
 import TypstSVGElement from '@/ui/elements/SVG';
 import { overwriteCustomElements } from '@/utils/custromElementRegistry';
@@ -119,7 +118,6 @@ export default class TypstManager {
     overwriteCustomElements('typstmate-svg', TypstSVGElement);
     overwriteCustomElements('typstmate-symbols', SymbolSuggestElement);
     overwriteCustomElements('typstmate-snippets', SnippetSuggestElement);
-    overwriteCustomElements('typstmate-inline-preview', InlinePreviewElement);
 
     // コードブロックプロセッサーをオーバライド
     this.plugin.registerMarkdownCodeBlockProcessor('typ', (source, el) => {

@@ -1,5 +1,6 @@
 import { syntaxTree } from '@codemirror/language';
 import { type EditorView, type PluginValue, ViewPlugin, type ViewUpdate } from '@codemirror/view';
+import type { EditorHelper } from '@/editor/index';
 import { type Processor, type ProcessorKind, RenderingEngine } from '@/libs/processor';
 import { extarctCMMath } from '@/libs/typst';
 import {
@@ -9,7 +10,6 @@ import {
   type SyntaxToken,
   TypstParser,
 } from '@/utils/rust/crates/typst-synatx';
-import type { EditorHelper } from '../../..';
 import { editorHelperFacet } from './Helper';
 
 export interface ParsedRegion {
@@ -21,6 +21,14 @@ export interface ParsedRegion {
   processor: Processor | null;
   tokens: SyntaxToken[];
   root: SyntaxNode;
+}
+
+export function getActiveRegion(view: EditorView): ParsedRegion | undefined {
+  const pluginVal = view.plugin(typstMateCore);
+  if (!pluginVal) return undefined;
+
+  const cursor = view.state.selection.main.head;
+  return pluginVal.parsedRegions.find((r) => r.from <= cursor && cursor <= r.to);
 }
 
 const INLINE_MATH_BEGIN = 'formatting_formatting-math_formatting-math-begin_keyword_math';
@@ -131,7 +139,7 @@ export const collectRegions = (
   return rawRegions;
 };
 
-export class TypstParserPluginValue implements PluginValue {
+export class TypstMateCorePluginValue implements PluginValue {
   parsedRegions: ParsedRegion[] = [];
 
   constructor(view: EditorView) {
@@ -205,4 +213,4 @@ export class TypstParserPluginValue implements PluginValue {
   }
 }
 
-export const typstMatePlugin = ViewPlugin.fromClass(TypstParserPluginValue);
+export const typstMateCore = ViewPlugin.fromClass(TypstMateCorePluginValue);

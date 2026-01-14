@@ -1,8 +1,8 @@
 import { type EditorState, type Range, StateEffect, StateField } from '@codemirror/state';
 import { Decoration, type DecorationSet, EditorView, WidgetType } from '@codemirror/view';
 
-import type { EditorHelper } from '../../..';
-import { collectRegions } from '../../../share/extensions/core/TypstMate';
+import type { EditorHelper } from '../../../index';
+import { collectRegions } from '../../../shared/extensions/core/TypstMate';
 
 import './codeblock-preview.css';
 
@@ -62,6 +62,7 @@ function buildDecorations(state: EditorState, helper: EditorHelper): DecorationS
     }
 
     if (content.length > 0) {
+      if (!region.processor) continue;
       const widget = new CodeBlockPreviewWidget(content, helper, region.processor.id);
       const deco = Decoration.widget({
         widget,
@@ -77,9 +78,9 @@ function buildDecorations(state: EditorState, helper: EditorHelper): DecorationS
   return Decoration.set(ranges);
 }
 
-import { editorHelperFacet } from '../../../share/extensions/core/Helper';
+import { editorHelperFacet } from '../../../shared/extensions/core/Helper';
 
-export const codeblockPreviewExtension = StateField.define<DecorationSet>({
+export const codeblockPreviewState = StateField.define<DecorationSet>({
   create(state) {
     const helper = state.facet(editorHelperFacet);
     if (!helper) return Decoration.none;
@@ -102,3 +103,5 @@ export const codeblockPreviewExtension = StateField.define<DecorationSet>({
   },
   provide: (field) => EditorView.decorations.from(field),
 });
+
+export const codeblockPreviewExtension = [codeblockPreviewState];

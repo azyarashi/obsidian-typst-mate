@@ -5,7 +5,7 @@ import { expose } from 'comlink';
 import pako from 'pako';
 import untar from 'untar-sync';
 
-import init, { type DefinitionSer, type InitOutput, type JumpSer, Typst, type ValueSer } from '../../pkg/typst_wasm.js';
+import init, { type InitOutput, type JumpSer, Typst, type ValueSer } from '../../pkg/typst_wasm.js';
 
 let main: Main;
 
@@ -94,7 +94,7 @@ export default class $ {
     return this.typst.definition(cursor, side);
   }
 
-  tooltip(cursor: number, side: boolean): string | null {
+  tooltip(cursor: number, side: boolean): string | undefined {
     return this.typst.tooltip(cursor, side);
   }
 

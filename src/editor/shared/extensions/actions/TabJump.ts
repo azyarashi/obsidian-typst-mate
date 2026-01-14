@@ -2,7 +2,7 @@ import { Prec } from '@codemirror/state';
 import { EditorView } from '@codemirror/view';
 import type { EditorHelper } from '../../../index';
 import { editorHelperFacet } from '../core/Helper';
-import { type TypstParserPluginValue, typstMatePlugin } from '../core/TypstMate';
+import { typstMateCore } from '../core/TypstMate';
 
 export const tabJumpExtension = Prec.high(
   EditorView.domEventHandlers({
@@ -23,7 +23,7 @@ const jumpCursor = (
   direction: 'backward' | 'forward',
   preventDefault: () => void,
 ) => {
-  const parserData = view.plugin(typstMatePlugin) as unknown as TypstParserPluginValue | null;
+  const parserData = view.plugin(typstMateCore);
   if (!parserData) return;
 
   const cursor = view.state.selection.main.head;

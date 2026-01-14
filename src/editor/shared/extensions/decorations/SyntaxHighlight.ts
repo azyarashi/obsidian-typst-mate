@@ -4,7 +4,7 @@ import { Decoration, type DecorationSet, type EditorView, ViewPlugin, type ViewU
 
 import { CSSClass, highlight, type SyntaxNode, type SyntaxToken } from '@/utils/rust/crates/typst-synatx';
 
-import { type TypstParserPluginValue, typstMatePlugin } from '../core/TypstMate';
+import { typstMateCore } from '../core/TypstMate';
 
 export const typstSyntaxHighlightExtension: Extension = ViewPlugin.fromClass(
   class {
@@ -20,7 +20,7 @@ export const typstSyntaxHighlightExtension: Extension = ViewPlugin.fromClass(
     }
 
     buildDecorations(view: EditorView) {
-      const parserData = view.plugin(typstMatePlugin) as unknown as TypstParserPluginValue | null;
+      const parserData = view.plugin(typstMateCore);
       if (!parserData) return Decoration.none;
 
       const builder = new RangeSetBuilder<Decoration>();

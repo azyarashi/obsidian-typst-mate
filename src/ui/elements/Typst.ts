@@ -1,6 +1,6 @@
-import { Menu, Notice } from 'obsidian';
+import { MarkdownView, Menu, Notice } from 'obsidian';
 import { DEFAULT_FONT_SIZE } from '@/constants';
-import { updateDiagnosticEffect } from '@/editor/markdown/extensions/decorations/Diagnostic';
+import { type TypstDiagnostic, updateDiagnosticEffect } from '@/editor/shared/extensions/decorations/Diagnostic';
 import type { Processor, ProcessorKind } from '@/libs/processor';
 import type { Diagnostic, SVGResult } from '@/libs/worker';
 import type ObsidianTypstMate from '@/main';
@@ -34,11 +34,11 @@ export default abstract class TypstElement extends HTMLElement {
     this.isErr = false;
 
     // ? キャンバスなどで呼ばれたとき用
-    if (this.plugin.editorHelper?.editor)
+    const view = this.plugin.app.workspace.getActiveViewOfType(MarkdownView);
+    if (view?.editor)
       try {
-        // @ts-expect-error
-        updateDiagnosticEffect(this.plugin.editorHelper.editor.cm, {
-          diags: result.diags,
+        updateDiagnosticEffect(view.editor.cm, {
+          diags: result.diags as unknown[] as TypstDiagnostic[],
           kind: this.kind,
           processor: this.processor,
           offset: this.offset,
@@ -64,11 +64,11 @@ export default abstract class TypstElement extends HTMLElement {
   handleError(err: Diagnostic[]) {
     this.isErr = true;
 
-    if (this.plugin.editorHelper?.editor)
+    const view = this.plugin.app.workspace.getActiveViewOfType(MarkdownView);
+    if (view?.editor)
       try {
-        // @ts-expect-error
-        updateDiagnosticEffect(this.plugin.editorHelper.editor.cm, {
-          diags: err,
+        updateDiagnosticEffect(view.editor.cm, {
+          diags: err as any[] as TypstDiagnostic[],
           kind: this.kind,
           processor: this.processor,
           offset: this.offset,

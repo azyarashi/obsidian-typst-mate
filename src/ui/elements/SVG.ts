@@ -24,7 +24,7 @@ export default class TypstSVGElement extends TypstElement {
 
       await this.plugin.typst.svg(this.format(), this.kind, this.processor.id); // フレーム生成のための副作用
       const result = await this.plugin.typst.jumpFromClick(x, y);
-      if (result) this.plugin.editorHelper?.jumpTo(result, this);
+      if (result) this.plugin.editorHelper?.jumpTo(result);
     });
   }
 

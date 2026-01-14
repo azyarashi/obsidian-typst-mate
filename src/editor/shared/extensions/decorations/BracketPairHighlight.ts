@@ -11,7 +11,7 @@ import {
   type SyntaxToken,
 } from '@/utils/rust/crates/typst-synatx';
 
-import { type TypstParserPluginValue, typstMatePlugin } from '../core/TypstMate';
+import { typstMateCore } from '../core/TypstMate';
 
 // --- Helpers ---
 
@@ -43,14 +43,6 @@ const findInnermostPair = (
       if (child.from <= cursor && child.to >= cursor) {
         const deep = findInnermostPair(child, cursor);
         if (deep) return deep;
-        // If child matches cursor but yields no pair (e.g. it's a leaf block),
-        // we still might find a pair at THIS level (siblings) that encloses the child?
-        // Actually no, if we are INSIDE a child block, the sibling brackets of that child
-        // would NOT enclose the cursor in the "token stream" sense unless the child is PART of the bracket content.
-        // But if `child` is `CodeBlock`, the brackets are INSIDE `CodeBlock` siblings scan.
-        // If `child` is `Expr` inside `( Expr )`.
-        // The `findInnermostPair(child)` returns null.
-        // We fall through to Sibling Scan below.
         break;
       }
     }
@@ -79,21 +71,6 @@ const findInnermostPair = (
             stack.pop();
             // Check overlap
             if (open.from <= cursor && child.to >= cursor) {
-              // This pair encloses cursor.
-              // We want the innermost, i.e., the one with the 'opening' bracket closer to the cursor (highest start pos),
-              // or simply the tightness since we are scanning linear?
-              // L1 ... L2 ... R2 ... R1
-              // We encounter R2 first. Match L2-R2. Fits. Record.
-              // We encounter R1. Match L1-R1. Fits.
-              // L2 > L1. So L2-R2 is better.
-              // Only replace if new pair is better?
-              // In this loop order, we see inner pairs first (usually? No, linear scan).
-              // Actually we see R2 before R1.
-              // So we find L2-R2 first.
-              // We should KEEP L2-R2.
-              // So update if `overrides`. But L1 < L2, so L1-R1 is WORSE.
-              // So condition: `if (!bestPair || open.from > bestPair.open.from)`
-
               if (!bestPair || open.from > bestPair.open.from) {
                 bestPair = { open, close: child };
               }
@@ -128,7 +105,7 @@ export const bracketHighlightExtension: Extension = ViewPlugin.fromClass(
       const helper = view.state.facet(editorHelperFacet);
       if (!helper || helper.plugin.settings.disableBracketHighlight) return Decoration.none;
 
-      const parserData = view.plugin(typstMatePlugin) as unknown as TypstParserPluginValue | null;
+      const parserData = view.plugin(typstMateCore);
       if (!parserData) return Decoration.none;
 
       const builder = new RangeSetBuilder<Decoration>();

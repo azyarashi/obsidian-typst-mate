@@ -5,37 +5,48 @@ import { MarkdownView, type WorkspaceLeaf } from 'obsidian';
 import type ObsidianTypstMate from '@/main';
 import type { JumpSer } from '../../pkg/typst_wasm';
 import type TypstElement from '../ui/elements/Typst';
-import type InlinePreviewElement from './markdown/elements/InlinePreview';
-import { clearCodeblockPreviewsEffect } from './markdown/extensions/decorations/CodeblockPreview';
-import type SnippetSuggestElement from './share/elements/SnippetSuggest';
-import type SymbolSuggestElement from './share/elements/SymbolSuggest';
-import { shortcutPlugin } from './share/extensions/actions/Shortcut';
-import { buildExtension } from './share/extensions/build';
-import { type ParsedRegion, type TypstParserPluginValue, typstMatePlugin } from './share/extensions/core/TypstMate';
 
-import './share/css';
+import { clearCodeblockPreviewsEffect } from './markdown/extensions/decorations/CodeblockPreview';
+import type SnippetSuggestElement from './shared/elements/SnippetSuggest';
+import type SymbolSuggestElement from './shared/elements/SymbolSuggest';
+import { shortcutPlugin } from './shared/extensions/actions/Shortcut';
+import { buildExtension } from './shared/extensions/build';
+import { getActiveRegion, type ParsedRegion } from './shared/extensions/core/TypstMate';
+import type { PopupPosition } from './shared/utils/position';
+
+import './shared/css';
+
+export interface MathObject {
+  kind: 'codeblock';
+  content: string;
+  startPos: { line: number; ch: number };
+  endPos: { line: number; ch: number };
+  startOffset: number;
+  endOffset: number;
+}
 
 export class EditorHelper {
   plugin: ObsidianTypstMate;
   supportedCodeBlockLangs: Set<string>;
 
-  inlinePreviewEl: InlinePreviewElement;
+  // inlinePreviewEl removed - handled by extension
   snippetSuggestEl: SnippetSuggestElement;
   symbolSuggestEl: SymbolSuggestElement;
 
   beforeChar: string | null = null;
   lastKeyDownTime: number = 0;
 
+  mathObject?: MathObject | undefined;
+
   constructor(plugin: ObsidianTypstMate) {
     this.plugin = plugin;
 
-    this.inlinePreviewEl = document.createElement('typstmate-inline-preview') as InlinePreviewElement;
     this.snippetSuggestEl = document.createElement('typstmate-snippets') as SnippetSuggestElement;
     this.symbolSuggestEl = document.createElement('typstmate-symbols') as SymbolSuggestElement;
-    this.inlinePreviewEl.startup(this.plugin);
+
     this.snippetSuggestEl.startup(this.plugin);
     this.symbolSuggestEl.startup(this.plugin);
-    this.plugin.app.workspace.containerEl.appendChild(this.inlinePreviewEl);
+
     this.plugin.app.workspace.containerEl.appendChild(this.snippetSuggestEl);
     this.plugin.app.workspace.containerEl.appendChild(this.symbolSuggestEl);
 
@@ -57,10 +68,10 @@ export class EditorHelper {
       Prec.high([
         buildExtension(this),
         EditorView.domEventHandlers({
-          mousedown: (e, view) => {
+          mousedown: (_e, view) => {
             view.plugin(shortcutPlugin)?.clearShortcutTimeout();
             this.hideAllSuggest();
-            if (this.inlinePreviewEl.style.display !== 'none') this.inlinePreviewEl.onClick(e);
+            // InlinePreview mousedown handler removed
           },
           keydown: (e, view) => {
             this.keyDown(e, view);
@@ -76,14 +87,18 @@ export class EditorHelper {
     });
   }
 
+  get editor() {
+    return this.plugin.app.workspace.getActiveViewOfType(MarkdownView)?.editor;
+  }
+
   close() {
-    this.inlinePreviewEl.close();
+    // this.inlinePreviewEl.close(); removed
     this.symbolSuggestEl.close();
     this.snippetSuggestEl.close();
   }
 
   hideAllPopup() {
-    this.inlinePreviewEl.close();
+    // this.inlinePreviewEl.close(); removed - extension handles its own visibility via focus/selection
     this.hideAllSuggest();
   }
 
@@ -103,7 +118,7 @@ export class EditorHelper {
   }
 
   private keyDown(e: KeyboardEvent, view: EditorView) {
-    const region = this.getActiveRegion(view);
+    const region = getActiveRegion(view);
 
     if (!this.plugin.settings.disableMacro && !region) {
       if (this.beforeChar === 'm' && e.key === 'k') {
@@ -138,7 +153,7 @@ export class EditorHelper {
   }
 
   private async cursorMoved(view: EditorView): Promise<null | undefined> {
-    const region = this.getActiveRegion(view);
+    const region = getActiveRegion(view);
     if (!region) {
       this.close();
       return null;
@@ -146,11 +161,7 @@ export class EditorHelper {
   }
 
   getActiveRegion(view: EditorView): ParsedRegion | undefined {
-    const pluginVal = view.plugin(typstMatePlugin) as unknown as TypstParserPluginValue | null;
-    if (!pluginVal) return undefined;
-
-    const cursor = view.state.selection.main.head;
-    return pluginVal.parsedRegions.find((r) => r.from <= cursor && cursor <= r.to);
+    return getActiveRegion(view);
   }
 
   jumpTo(jump: JumpSer, context: TypstElement | undefined, view: EditorView) {
@@ -278,9 +289,4 @@ export class EditorHelper {
       selection: { anchor: region.from, head: region.to },
     });
   }
-}
-
-export interface PopupPosition {
-  x: number;
-  y: number;
 }

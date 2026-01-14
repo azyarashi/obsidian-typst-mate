@@ -3,7 +3,7 @@ import { EditorView, ViewPlugin } from '@codemirror/view';
 import { TextFileView, type TFile, type WorkspaceLeaf } from 'obsidian';
 import type ObsidianTypstMate from '@/main';
 
-const createDocChangePlugin = (plugin: ObsidianTypstMate) => {
+const createDocChangePlugin = (_plugin: ObsidianTypstMate) => {
   return ViewPlugin.define((_view) => {
     return {
       update(_update) {

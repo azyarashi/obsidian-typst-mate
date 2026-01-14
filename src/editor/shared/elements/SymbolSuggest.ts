@@ -1,10 +1,11 @@
+import type { EditorView } from '@codemirror/view';
+
 import type ObsidianTypstMate from '@/main';
 import { SyntaxMode } from '@/utils/rust/crates/typst-synatx';
 import { type SymbolData, searchSymbols } from '@/utils/symbolSearcher';
-import type { PopupPosition } from '../..';
+import type { PopupPosition } from '../utils/position';
 
 import './symbol-suggest.css';
-import type { EditorView } from '@codemirror/view';
 
 export const symbolRegex =
   /(?:^| |\$|\(|\)|\[|\]|\{|\}|<|>|\+|-|\/|\*|=|!|\?|#|%|&|'|:|;|,|\d)(?<symbol>\\?([a-zA-Z.][a-zA-Z.]+|[-<>|=[\]~:-][-<>|=[\]~:-]+))$/;

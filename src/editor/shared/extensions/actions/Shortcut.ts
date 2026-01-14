@@ -1,7 +1,7 @@
 import { type EditorView, ViewPlugin, type ViewUpdate } from '@codemirror/view';
 import SHORTCUTS_DATA from '@/data/shortcuts.json';
 
-import { typstMatePlugin } from '../core/TypstMate';
+import { typstMateCore } from '../core/TypstMate';
 
 const SHORTCUTS_KEYS = Object.keys(SHORTCUTS_DATA);
 
@@ -33,7 +33,7 @@ export class ShortcutPluginValue {
 
   handleKeyDown(e: KeyboardEvent): boolean {
     const view = this.view;
-    const parserData = view.plugin(typstMatePlugin);
+    const parserData = view.plugin(typstMateCore);
     if (!parserData) return false;
 
     const cursor = view.state.selection.main.head;
