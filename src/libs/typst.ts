@@ -36,8 +36,13 @@ export default class TypstManager {
       this.plugin.app.vault.config.baseFontSize ?? DEFAULT_FONT_SIZE,
     );
 
-    const fontPaths = (await this.plugin.app.vault.adapter.list(this.plugin.fontsDirNPath)).files.filter((file) =>
-      file.endsWith('.font'),
+    const fontPaths = (await this.plugin.app.vault.adapter.list(this.plugin.fontsDirNPath)).files.filter(
+      (file) =>
+        file.endsWith('.font') ||
+        file.endsWith('.otf') ||
+        file.endsWith('.otc') ||
+        file.endsWith('.ttf') ||
+        file.endsWith('.ttc'),
     );
     const fonts = (
       await Promise.all(
