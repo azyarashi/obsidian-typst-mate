@@ -9,14 +9,9 @@ export class Scanner {
     this.len = string.length;
   }
 
-  get done(): boolean {
+  done(): boolean {
     return this.len <= this.cursor;
   }
-
-  get eof(): boolean {
-    return this.done;
-  }
-
   // --- Slicing ---
 
   before(): string {
@@ -50,7 +45,7 @@ export class Scanner {
   }
 
   at(pattern: string | RegExp | ((char: string) => boolean) | string[]): boolean {
-    if (this.done) return false;
+    if (this.done()) return false;
     const char = this.string[this.cursor] || '';
 
     if (typeof pattern === 'string') return this.string.startsWith(pattern, this.cursor);
@@ -74,7 +69,7 @@ export class Scanner {
   // --- Consuming ---
 
   eat(): string | null {
-    if (this.done) return null;
+    if (this.done()) return null;
     const char = this.string[this.cursor];
     this.cursor++;
     return char || null;
@@ -89,7 +84,7 @@ export class Scanner {
   }
 
   eatIf(pattern: string | RegExp | ((char: string) => boolean)): boolean {
-    if (this.done) return false;
+    if (this.done()) return false;
     const char = this.string[this.cursor] || '';
     let matched = false;
     let len = 0;
@@ -120,7 +115,7 @@ export class Scanner {
 
   eatWhile(pattern: string | RegExp | ((char: string) => boolean)): string {
     const start = this.cursor;
-    while (!this.done) {
+    while (!this.done()) {
       const char = this.string[this.cursor] || '';
       let matched = false;
       if (typeof pattern === 'string') {
@@ -142,7 +137,7 @@ export class Scanner {
 
   eatUntil(pattern: string | RegExp | ((char: string) => boolean)): string {
     const start = this.cursor;
-    while (!this.done) {
+    while (!this.done()) {
       const char = this.string[this.cursor] || '';
       let matched = false;
       if (typeof pattern === 'string') {

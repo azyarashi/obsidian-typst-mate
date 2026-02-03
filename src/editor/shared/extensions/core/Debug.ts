@@ -24,9 +24,7 @@ class DebugPanel implements Panel {
   }
 
   update(update: ViewUpdate) {
-    if (update.docChanged || update.selectionSet) {
-      this.render();
-    }
+    if (update.docChanged || update.selectionSet) this.render();
   }
 
   render() {

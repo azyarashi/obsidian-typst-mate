@@ -1,7 +1,7 @@
 import { type EditorView, ViewPlugin, type ViewUpdate } from '@codemirror/view';
 import SHORTCUTS_DATA from '@/data/shortcuts.json';
 
-import { typstMateCore } from '../core/TypstMate';
+import { getActiveRegion, typstMateCore } from '../core/TypstMate';
 
 const SHORTCUTS_KEYS = Object.keys(SHORTCUTS_DATA);
 
@@ -33,11 +33,7 @@ export class ShortcutPluginValue {
 
   handleKeyDown(e: KeyboardEvent): boolean {
     const view = this.view;
-    const parserData = view.plugin(typstMateCore);
-    if (!parserData) return false;
-
-    const cursor = view.state.selection.main.head;
-    const region = parserData.parsedRegions.find((r) => r.from <= cursor && cursor <= r.to);
+    const region = getActiveRegion(view);
     if (!region) return false;
 
     if (SHORTCUTS_KEYS.includes(e.key) && !e.ctrlKey && !e.metaKey && !e.altKey && !view.state.selection.main.empty) {

@@ -17,6 +17,7 @@ export class SettingTab extends PluginSettingTab {
   activeTab: 'processor' | 'editor' | 'compiler' | 'renderer' | 'advanced' = 'processor';
   activeEditorTab: 'Decoration' | 'Behavior' = 'Decoration';
   activeCompilerTab: 'package' | 'font' = 'package';
+  activePreviewTab: 'typst-svg' | 'typst-html' = 'typst-svg';
   activeKindTab: 'inline' | 'display' | 'codeblock' | 'excalidraw' = 'inline';
 
   display() {

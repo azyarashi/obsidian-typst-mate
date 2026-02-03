@@ -2,9 +2,9 @@ import type { Extension } from '@codemirror/state';
 import { RangeSetBuilder } from '@codemirror/state';
 import { Decoration, type DecorationSet, type EditorView, ViewPlugin, type ViewUpdate } from '@codemirror/view';
 
-import { CSSClass, highlight, type SyntaxNode, type SyntaxToken } from '@/utils/rust/crates/typst-synatx';
+import { CSSClass, highlight, type SyntaxNode, type SyntaxToken } from '@/utils/rust/crates/typst-syntax';
 
-import { typstMateCore } from '../core/TypstMate';
+import { getActiveRegion, typstMateCore } from '../core/TypstMate';
 
 export const typstSyntaxHighlightExtension: Extension = ViewPlugin.fromClass(
   class {
@@ -24,8 +24,10 @@ export const typstSyntaxHighlightExtension: Extension = ViewPlugin.fromClass(
       if (!parserData) return Decoration.none;
 
       const builder = new RangeSetBuilder<Decoration>();
+      const region = getActiveRegion(view);
+      if (!region) return builder.finish();
 
-      for (const region of parserData.parsedRegions) this.traverse(region.root, null, 0, [], builder);
+      this.traverse(region.root, null, 0, [], builder);
       return builder.finish();
     }
 

@@ -1,5 +1,3 @@
-import type { SyntaxMode } from '.';
-
 export enum SyntaxKind {
   // Special
   End = 'End',
@@ -151,26 +149,7 @@ export enum SyntaxKind {
   DestructAssignment = 'DestructAssignment',
 }
 
-export interface SyntaxToken {
-  kind: SyntaxKind;
-  from: number;
-  to: number;
-  text: string;
-  mode?: SyntaxMode;
-  parent?: SyntaxNode;
-}
-
-export interface SyntaxNode {
-  kind: SyntaxKind;
-  from: number;
-  to: number;
-  children: (SyntaxNode | SyntaxToken)[];
-  parent?: SyntaxNode;
-  errors?: TypstSyntaxError[];
-  mode?: SyntaxMode;
-}
-
-export interface TypstSyntaxError {
+export interface SyntaxError {
   message: string;
   from: number;
   to: number;

@@ -2,16 +2,13 @@ import type { Extension } from '@codemirror/state';
 import { hoverTooltip } from '@codemirror/view';
 import { Component, MarkdownRenderer } from 'obsidian';
 import { editorHelperFacet } from '../core/Helper';
-import { typstMateCore } from '../core/TypstMate';
+import { getActiveRegion } from '../core/TypstMate';
 
 export const toolTipsExtension: Extension = hoverTooltip(async (view, pos, side) => {
   const helper = view.state.facet(editorHelperFacet);
   if (!helper) return null;
 
-  const parserData = view.plugin(typstMateCore);
-  if (!parserData) return null;
-
-  const region = parserData.parsedRegions.find((r) => r.from <= pos && pos <= r.to);
+  const region = getActiveRegion(view);
   if (!region || !region.processor) return null;
 
   const { format, noPreamble } = region.processor;

@@ -2,7 +2,7 @@ import { Prec } from '@codemirror/state';
 import { EditorView } from '@codemirror/view';
 import type { EditorHelper } from '../../../index';
 import { editorHelperFacet } from '../core/Helper';
-import { typstMateCore } from '../core/TypstMate';
+import { getActiveRegion, typstMateCore } from '../core/TypstMate';
 
 export const tabJumpExtension = Prec.high(
   EditorView.domEventHandlers({
@@ -23,15 +23,10 @@ const jumpCursor = (
   direction: 'backward' | 'forward',
   preventDefault: () => void,
 ) => {
-  const parserData = view.plugin(typstMateCore);
-  if (!parserData) return;
-
-  const cursor = view.state.selection.main.head;
-  const region = parserData.parsedRegions.find((r) => r.from <= cursor && cursor <= r.to);
-
+  const region = getActiveRegion(view);
   if (!region) return;
 
-  const offset = cursor - region.from;
+  const offset = view.state.selection.main.head - region.from;
   const content = view.state.sliceDoc(region.from, region.to);
 
   if (direction === 'backward' && !helper.plugin.settings.revertTabToDefault) {

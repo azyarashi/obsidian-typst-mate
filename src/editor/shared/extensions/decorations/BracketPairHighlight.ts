@@ -11,7 +11,7 @@ import {
   type SyntaxToken,
 } from '@/utils/rust/crates/typst-synatx';
 
-import { typstMateCore } from '../core/TypstMate';
+import { getActiveRegion, typstMateCore } from '../core/TypstMate';
 
 // --- Helpers ---
 
@@ -111,16 +111,16 @@ export const bracketHighlightExtension: Extension = ViewPlugin.fromClass(
       const builder = new RangeSetBuilder<Decoration>();
       const cursor = view.state.selection.main.head;
 
-      for (const region of parserData.parsedRegions) {
-        // Find Pair for this region
-        const pair = findInnermostPair(region.root, cursor);
-        if (pair) {
-          const type = getBracketType(pair.open.kind);
-          if (type) {
-            const cls = `typstmate-bracket-${type} typstmate-bracket-enclosing`;
-            builder.add(pair.open.from, pair.open.to, Decoration.mark({ class: cls }));
-            builder.add(pair.close.from, pair.close.to, Decoration.mark({ class: cls }));
-          }
+      const region = getActiveRegion(view);
+      if (!region) return Decoration.none;
+
+      const pair = findInnermostPair(region.root, cursor);
+      if (pair) {
+        const type = getBracketType(pair.open.kind);
+        if (type) {
+          const cls = `typstmate-bracket-${type} typstmate-bracket-enclosing`;
+          builder.add(pair.open.from, pair.open.to, Decoration.mark({ class: cls }));
+          builder.add(pair.close.from, pair.close.to, Decoration.mark({ class: cls }));
         }
       }
       return builder.finish();

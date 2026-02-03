@@ -16,15 +16,6 @@ import type { PopupPosition } from './shared/utils/position';
 
 import './shared/css';
 
-export interface MathObject {
-  kind: 'codeblock';
-  content: string;
-  startPos: { line: number; ch: number };
-  endPos: { line: number; ch: number };
-  startOffset: number;
-  endOffset: number;
-}
-
 export class EditorHelper {
   plugin: ObsidianTypstMate;
   supportedCodeBlockLangs: Set<string>;
@@ -35,8 +26,6 @@ export class EditorHelper {
 
   beforeChar: string | null = null;
   lastKeyDownTime: number = 0;
-
-  mathObject?: MathObject | undefined;
 
   constructor(plugin: ObsidianTypstMate) {
     this.plugin = plugin;

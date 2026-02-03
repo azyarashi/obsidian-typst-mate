@@ -7,12 +7,12 @@ edition = "2024"
 crate-type = ["cdylib"]
 
 [dependencies]
-typst = "0.14.2"
-typst-ide = "0.14.2"
-typst-svg = "0.14.2"
-typst-pdf = "0.14.2"
+typst = { git = "https://github.com/typst/typst", package = "typst" }
+typst-ide = { git = "https://github.com/typst/typst", package = "typst-ide" }
+typst-svg = { git = "https://github.com/typst/typst", package = "typst-svg" }
+typst-pdf = { git = "https://github.com/typst/typst", package = "typst-pdf" }
 typst-assets = { version = "0.14.2", features = ["fonts"] }
-typst-timing = "0.14.2"
+typst-timing = { git = "https://github.com/typst/typst", package = "typst-timing" }
 comemo = "^0"
 unscanny = "^0.1"
 

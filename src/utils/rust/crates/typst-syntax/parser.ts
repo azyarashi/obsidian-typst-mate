@@ -1,10 +1,9 @@
-import { SyntaxKind, SyntaxMode, type SyntaxNode } from '.';
-import { TypstLexer } from './lexer';
+import { type Lexer, SyntaxKind, SyntaxMode, type SyntaxNode } from '.';
 
 type SyntaxSet = Set<SyntaxKind>;
 
-export class TypstParser {
-  private lexer: TypstLexer;
+export class Parser {
+  private lexer: Lexer;
   private children: SyntaxNode[] = [];
   private rootKind: SyntaxKind;
   private stopAtNewline = false;
@@ -12,7 +11,7 @@ export class TypstParser {
   private currentToken: SyntaxNode;
 
   constructor(text: string, rootKind: SyntaxKind = SyntaxKind.Markup) {
-    this.lexer = new TypstLexer(text, SyntaxMode.Markup);
+    this.lexer = new Lexer(text, SyntaxMode.Markup);
     this.rootKind = rootKind;
     this.currentToken = this.lexer.next();
   }

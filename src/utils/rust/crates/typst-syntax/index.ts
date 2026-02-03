@@ -6,13 +6,14 @@ import {
   isBracket,
   isKeyword,
   isOpenBracket,
+  // biome-ignore lint/suspicious/noShadowRestrictedNames: 他との名前を揃えるため
+  type SyntaxError,
   SyntaxKind,
   type SyntaxNode,
   type SyntaxToken,
-  type TypstSyntaxError,
 } from './kind';
-import { TypstLexer } from './lexer';
-import { TypstParser } from './parser';
+import type { Lexer } from './lexer';
+import type { Parser } from './parser';
 
 export {
   SyntaxKind,
@@ -25,11 +26,11 @@ export {
   CSSClass,
   type SyntaxNode,
   type SyntaxToken,
-  type TypstSyntaxError,
+  type SyntaxError,
 };
 
-export { TypstLexer };
-export { TypstParser };
+export type { Lexer };
+export type { Parser };
 
 export enum SyntaxMode {
   Markup = 'Markup',

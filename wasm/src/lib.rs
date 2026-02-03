@@ -13,9 +13,9 @@ use typst::{
     World,
     diag::Warned,
     foundations::{Bytes, Module, Version},
-    layout::{Abs, PagedDocument, Point},
+    layout::{Abs, PagedDocument, Point, Position},
     syntax::{
-        FileId, Side, VirtualPath,
+        FileId, RootedPath, Side, VirtualPath, VirtualRoot,
         package::{PackageSpec, PackageVersion},
     },
     text::FontInfo,
@@ -102,16 +102,18 @@ impl Typst {
                     },
                 };
 
-                self.world.add_package_file(spec, vpath, bytes);
+                self.world
+                    .add_package_file(spec, VirtualPath::new(vpath).unwrap(), bytes);
             } else {
-                self.world.add_file_bytes(VirtualPath::new(rpath), bytes);
+                self.world
+                    .add_file_bytes(VirtualPath::new(rpath).unwrap(), bytes);
             }
         }
 
         // プロセッサー
         for p in procs_serde {
             self.world.add_file_text(
-                VirtualPath::new(format!("{}-{}.typ", p.kind, p.id)),
+                VirtualPath::new(format!("{}-{}.typ", p.kind, p.id)).unwrap(),
                 p.format,
             );
         }
@@ -129,7 +131,9 @@ impl Typst {
     pub fn list_fonts(&self) -> JsValue {
         let families = self.world.book().families();
         let infos_ser: Vec<font::FontInfoSer> = families
-            .flat_map(|(_, infos)| infos.map(Into::into))
+            .flat_map(|(_, infos)| {
+                infos.filter_map(|i| self.world.font(i).map(|f| f.info().into()))
+            })
             .collect();
 
         to_value(&infos_ser).unwrap()
@@ -167,7 +171,7 @@ impl Typst {
     }
 
     fn update_source(&mut self, vpath: VirtualPath, code: &str) {
-        let file_id = FileId::new(None, vpath.clone());
+        let file_id = FileId::new(RootedPath::new(VirtualRoot::Project, vpath.clone()));
         let result = self.world.source(file_id);
 
         match result {
@@ -189,7 +193,10 @@ impl Typst {
             self.last_kind = kind.to_string();
             self.last_id = id.to_string();
 
-            self.update_source(VirtualPath::new(format!("{}_{}.typ", kind, id)), code);
+            self.update_source(
+                VirtualPath::new(format!("{}_{}.typ", kind, id)).unwrap(),
+                code,
+            );
         }
 
         let Warned { output, warnings } = typst::compile::<PagedDocument>(&mut self.world);
@@ -201,9 +208,9 @@ impl Typst {
                 }
 
                 // ? typst_svg::svg は背景が透過しない
-                let svg = typst_svg::svg_frame(&document.pages[0].frame)
-                    .replace("#000000", "var(--typst-base-color)")
-                    .replacen("<svg class", "<svg style=\"overflow: visible;\" class", 1);
+                let mut svg = typst_svg::svg_frame(&document.pages[0].frame)
+                    .replace("#000000", "var(--typst-base-color)");
+                svg.replace_range(0..4, "<svg style=\"overflow: visible;\"");
                 self.last_document = Some(document);
 
                 svg::svg(svg, warnings, &self.world)
@@ -219,7 +226,7 @@ impl Typst {
     }
 
     pub fn pdf(&mut self, filename: &str, code: &str) -> Result<JsValue, JsValue> {
-        self.update_source(VirtualPath::new(filename), code);
+        self.update_source(VirtualPath::new(filename).unwrap(), code);
         let Warned { output, warnings } = typst::compile::<PagedDocument>(&mut self.world);
 
         match output {
@@ -251,9 +258,12 @@ impl Typst {
     pub fn jump_from_click(&self, x: f64, y: f64) -> JsValue {
         match &self.last_document {
             Some(document) => {
-                let frame = &document.pages[0].frame;
                 let point = Point::new(Abs::pt(x), Abs::pt(y));
-                let point = typst_ide::jump_from_click(&self.world, document, frame, point);
+                let position = Position {
+                    page: std::num::NonZeroUsize::new(1).unwrap(),
+                    point,
+                };
+                let point = typst_ide::jump_from_click(&self.world, document, &position);
                 match point {
                     Some(point) => {
                         let jump_ser = jump::JumpSer::from_jump(&point, &self.world);

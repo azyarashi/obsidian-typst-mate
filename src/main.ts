@@ -275,9 +275,12 @@ export default class ObsidianTypstMate extends Plugin {
         }
 
         const selection = view.state.selection.main;
-        const regions = collectRegions(view, selection.from, selection.to, this.editorHelper, null).filter(
-          (region) => region.kind !== 'codeblock',
-        );
+        const regions = collectRegions(
+          view,
+          this.editorHelper,
+          !selection.empty ? selection.from : undefined,
+          !selection.empty ? selection.to : undefined,
+        ).filter((region) => region.kind !== 'codeblock');
 
         if (selection.empty && regions.length === 0) {
           editor.replaceSelection(await this.typst.latexeq_to_typm(editor.getSelection()));

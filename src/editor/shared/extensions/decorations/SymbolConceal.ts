@@ -10,9 +10,9 @@ import {
 } from '@codemirror/view';
 
 import symbolData from '@/data/symbols.json';
-import { SyntaxKind, SyntaxMode, type SyntaxToken } from '@/utils/rust/crates/typst-synatx';
+import { SyntaxKind, SyntaxMode, type SyntaxToken } from '@/utils/rust/crates/typst-syntax';
 
-import { type TypstMateCorePluginValue, typstMateCore } from '../core/TypstMate';
+import { getActiveRegion, typstMateCore } from '../core/TypstMate';
 
 const SYMBOL_MAP = new Map<string, string>();
 for (const [key, val] of Object.entries(symbolData)) {
@@ -196,7 +196,7 @@ const mathSymbolConcealPlugin = ViewPlugin.fromClass(
         return { decorations: Decoration.none, atomicRanges: RangeSet.empty, hoveringRange: null };
       }
 
-      const parserData = view.plugin(typstMateCore) as unknown as TypstMateCorePluginValue | null;
+      const parserData = view.plugin(typstMateCore);
       if (!parserData) return { decorations: Decoration.none, atomicRanges: RangeSet.empty, hoveringRange: null };
 
       const builder = new RangeSetBuilder<Decoration>();
@@ -205,53 +205,53 @@ const mathSymbolConcealPlugin = ViewPlugin.fromClass(
 
       let hoveringRange: { from: number; to: number } | null = null;
 
-      for (const region of parserData.parsedRegions) {
-        const tokens = region.tokens;
-        let i = 0;
-        while (i < tokens.length) {
-          const match = matchSymbolChain(tokens, i);
-          if (match) {
-            const startT = tokens[i]!;
-            const endT = tokens[i + match.usedTokens - 1]!;
+      const region = getActiveRegion(view);
+      if (!region) return { decorations: Decoration.none, atomicRanges: RangeSet.empty, hoveringRange: null };
+      const tokens = region.tokens;
+      let i = 0;
+      while (i < tokens.length) {
+        const match = matchSymbolChain(tokens, i);
+        if (match) {
+          const startT = tokens[i]!;
+          const endT = tokens[i + match.usedTokens - 1]!;
 
-            const isOverlapping = cursor >= startT.from && cursor <= endT.to;
+          const isOverlapping = cursor >= startT.from && cursor <= endT.to;
 
-            if (isOverlapping) {
-              hoveringRange = { from: startT.from, to: endT.to };
-            }
+          if (isOverlapping) {
+            hoveringRange = { from: startT.from, to: endT.to };
+          }
 
-            // 隠蔽（conceal）するか決定
-            let shouldConceal = true;
+          // 隠蔽（conceal）するか決定
+          let shouldConceal = true;
 
-            if (this.revealedRange && startT.from === this.revealedRange.from && endT.to === this.revealedRange.to) {
-              shouldConceal = false;
-            }
+          if (this.revealedRange && startT.from === this.revealedRange.from && endT.to === this.revealedRange.to) {
+            shouldConceal = false;
+          }
 
-            // ホバー中かつdocChanged（入力中）の場合、直ちにリビール
-            if (isOverlapping && docChanged) {
-              shouldConceal = false;
-            }
+          // ホバー中かつdocChanged（入力中）の場合、直ちにリビール
+          if (isOverlapping && docChanged) {
+            shouldConceal = false;
+          }
 
-            // 空でない選択範囲に含まれる場合、直ちにリビール
-            if (shouldConceal) {
-              for (const range of view.state.selection.ranges) {
-                if (!range.empty && range.from <= endT.to && range.to >= startT.from) {
-                  shouldConceal = false;
-                  break;
-                }
+          // 空でない選択範囲に含まれる場合、直ちにリビール
+          if (shouldConceal) {
+            for (const range of view.state.selection.ranges) {
+              if (!range.empty && range.from <= endT.to && range.to >= startT.from) {
+                shouldConceal = false;
+                break;
               }
             }
-
-            if (shouldConceal) {
-              const deco = Decoration.replace({ widget: new SymbolWidget(match.sym) });
-              builder.add(startT.from, endT.to, deco);
-              atomicBuilder.add(startT.from, endT.to, Decoration.mark({}));
-            }
-
-            i += match.usedTokens;
-          } else {
-            i++;
           }
+
+          if (shouldConceal) {
+            const deco = Decoration.replace({ widget: new SymbolWidget(match.sym) });
+            builder.add(startT.from, endT.to, deco);
+            atomicBuilder.add(startT.from, endT.to, Decoration.mark({}));
+          }
+
+          i += match.usedTokens;
+        } else {
+          i++;
         }
       }
       return {

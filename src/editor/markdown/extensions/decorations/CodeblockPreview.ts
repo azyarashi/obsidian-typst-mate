@@ -1,12 +1,22 @@
-import { type EditorState, type Range, StateEffect, StateField } from '@codemirror/state';
-import { Decoration, type DecorationSet, EditorView, WidgetType } from '@codemirror/view';
+import { type Extension, StateEffect, StateField } from '@codemirror/state';
+import {
+  Decoration,
+  type DecorationSet,
+  EditorView,
+  type PluginValue,
+  ViewPlugin,
+  type ViewUpdate,
+  WidgetType,
+} from '@codemirror/view';
 
 import type { EditorHelper } from '../../../index';
-import { collectRegions } from '../../../shared/extensions/core/TypstMate';
+import { editorHelperFacet } from '../../../shared/extensions/core/Helper';
+import { getActiveRegion } from '../../../shared/extensions/core/TypstMate';
 
 import './codeblock-preview.css';
 
 export const clearCodeblockPreviewsEffect = StateEffect.define<void>();
+export const setCodeblockPreviewsEffect = StateEffect.define<DecorationSet>();
 
 class CodeBlockPreviewWidget extends WidgetType {
   constructor(
@@ -36,33 +46,51 @@ class CodeBlockPreviewWidget extends WidgetType {
   }
 }
 
-function buildDecorations(state: EditorState, helper: EditorHelper): DecorationSet {
-  const ranges: Range<Decoration>[] = [];
-  const selection = state.selection.main;
+export const codeblockPreviewState = StateField.define<DecorationSet>({
+  create() {
+    return Decoration.none;
+  },
+  update(decorations, tr) {
+    for (const effect of tr.effects) {
+      if (effect.is(setCodeblockPreviewsEffect)) return effect.value;
+      if (effect.is(clearCodeblockPreviewsEffect)) return Decoration.none;
+    }
+    return decorations;
+  },
+  provide: (field) => EditorView.decorations.from(field),
+});
 
-  if (helper.mathObject?.kind === 'codeblock') helper.mathObject = undefined;
+class CodeblockPreviewPlugin implements PluginValue {
+  lastStateKey: string = '';
 
-  const mockView = { state } as EditorView;
-  const regions = collectRegions(mockView, 0, state.doc.length, helper, selection.head);
+  constructor(view: EditorView) {
+    this.compute(view);
+  }
 
-  for (const region of regions) {
-    if (region.kind !== 'codeblock') continue;
+  update(update: ViewUpdate) {
+    if (update.docChanged || update.selectionSet) this.compute(update.view);
+  }
 
-    const content = state.sliceDoc(region.from, region.to);
+  compute(view: EditorView) {
+    const helper = view.state.facet(editorHelperFacet);
+    if (!helper) return clearCodeblockPreviewsEffect.of();
 
-    if (helper.editor) {
-      helper.mathObject = {
-        kind: 'codeblock',
-        content,
-        startPos: helper.editor.offsetToPos(region.from),
-        endPos: helper.editor.offsetToPos(region.to),
-        startOffset: region.from,
-        endOffset: region.to,
-      };
+    const region = getActiveRegion(view);
+    if (!region || region.kind !== 'codeblock') return clearCodeblockPreviewsEffect.of();
+
+    let currentKey = '';
+
+    const content = view.state.sliceDoc(region.from, region.to);
+    if (content.length > 0) {
+      currentKey = `${region.from}:${region.to}:${region.processor.id}:${content.length}`;
     }
 
+    if (currentKey === this.lastStateKey) return clearCodeblockPreviewsEffect.of();
+    this.lastStateKey = currentKey;
+
+    let decos = Decoration.none;
+
     if (content.length > 0) {
-      if (!region.processor) continue;
       const widget = new CodeBlockPreviewWidget(content, helper, region.processor.id);
       const deco = Decoration.widget({
         widget,
@@ -70,38 +98,24 @@ function buildDecorations(state: EditorState, helper: EditorHelper): DecorationS
         block: true,
       });
 
-      const line = state.doc.lineAt(region.to + 1);
-      ranges.push(deco.range(line.to));
+      const line = view.state.doc.lineAt(region.to + 1);
+      decos = Decoration.set([deco.range(line.to)]);
     }
-  }
 
-  return Decoration.set(ranges);
+    Promise.resolve().then(() => {
+      // Check if view is still alive/valid?
+      try {
+        view.dispatch({
+          effects: setCodeblockPreviewsEffect.of(decos),
+        });
+      } catch {
+        // View might be destroyed
+      }
+    });
+  }
 }
 
-import { editorHelperFacet } from '../../../shared/extensions/core/Helper';
-
-export const codeblockPreviewState = StateField.define<DecorationSet>({
-  create(state) {
-    const helper = state.facet(editorHelperFacet);
-    if (!helper) return Decoration.none;
-    return buildDecorations(state, helper);
-  },
-  update(decorations, tr) {
-    const helper = tr.state.facet(editorHelperFacet);
-    if (!helper) return Decoration.none;
-
-    for (const effect of tr.effects) {
-      if (effect.is(clearCodeblockPreviewsEffect)) {
-        if (helper.mathObject?.kind === 'codeblock') helper.mathObject = undefined;
-        return Decoration.none;
-      }
-    }
-
-    if (tr.docChanged || tr.selection) return buildDecorations(tr.state, helper);
-
-    return decorations;
-  },
-  provide: (field) => EditorView.decorations.from(field),
-});
-
-export const codeblockPreviewExtension = [codeblockPreviewState];
+export const codeblockPreviewExtension: Extension = [
+  codeblockPreviewState,
+  ViewPlugin.fromClass(CodeblockPreviewPlugin),
+];

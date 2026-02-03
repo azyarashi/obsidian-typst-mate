@@ -1,6 +1,6 @@
 import { type EditorView, type PluginValue, ViewPlugin, type ViewUpdate } from '@codemirror/view';
 import { editorHelperFacet } from '../../../shared/extensions/core/Helper';
-import { typstMateCore } from '../../../shared/extensions/core/TypstMate';
+import { getActiveRegion } from '../../../shared/extensions/core/TypstMate';
 
 import '../../../shared/css/inline-preview.css';
 
@@ -29,12 +29,12 @@ class InlinePreviewPlugin implements PluginValue {
       return;
     }
 
-    const parserData = update.view.plugin(typstMateCore);
-    const region = parserData?.parsedRegions.find((r) => r.from <= selection.head && selection.head <= r.to);
+    const region = getActiveRegion(update.view);
+    if (!region) return this.close();
 
     if (
       region &&
-      region.kind === 'inline' &&
+      (region.kind === 'inline' || region.kind === 'extended') &&
       helper.plugin.settings.enableInlinePreview &&
       helper.symbolSuggestEl.style.display === 'none' &&
       helper.snippetSuggestEl.style.display === 'none'
@@ -54,11 +54,8 @@ class InlinePreviewPlugin implements PluginValue {
           }
         },
         write: (pos) => {
-          if (pos) {
-            this.render(pos, content);
-          } else {
-            this.close();
-          }
+          if (pos) this.render(pos, content);
+          else this.close();
         },
       });
       return;

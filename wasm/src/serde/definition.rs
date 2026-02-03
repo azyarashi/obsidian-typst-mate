@@ -3,7 +3,11 @@ use std::ops::Range;
 use serde::Serialize;
 
 use tsify::Tsify;
-use typst::{World, foundations::Value, syntax};
+use typst::{
+    World,
+    foundations::Value,
+    syntax::{self, VirtualRoot},
+};
 use typst_ide::{Definition, IdeWorld};
 
 use crate::serde::values::ValueSer;
@@ -37,22 +41,16 @@ impl DefinitionSer {
                         let lines = source.lines();
                         let from = lines.byte_to_utf16(range.start).unwrap_or(0);
                         let to = lines.byte_to_utf16(range.end).unwrap_or(0);
-                        let package = match source.id().package() {
-                            Some(package) => Some(format!(
+                        let package = match source.id().root() {
+                            VirtualRoot::Package(spec) => Some(format!(
                                 "@{}/{}:{}",
-                                package.namespace, package.name, package.version
+                                spec.namespace, spec.name, spec.version
                             )),
-                            None => None,
+                            _ => None,
                         };
                         Some(DefinitionSer::Span {
                             package,
-                            file: source
-                                .id()
-                                .vpath()
-                                .as_rootless_path()
-                                .to_str()
-                                .unwrap_or("undefined")
-                                .to_string(),
+                            file: source.id().vpath().get_without_slash().to_string(),
                             start: from,
                             end: to,
                         })

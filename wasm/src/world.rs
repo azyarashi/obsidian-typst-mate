@@ -13,7 +13,7 @@ use typst::{
         Transformation, Value,
     },
     layout::{Abs, Length},
-    syntax::{FileId, Source, Span, VirtualPath, package::PackageSpec},
+    syntax::{FileId, RootedPath, Source, Span, VirtualPath, VirtualRoot, package::PackageSpec},
     text::{Font, FontBook, FontList, SmallcapsElem, TextElem},
     utils::LazyHash,
     visualize::{Color, Paint},
@@ -37,7 +37,10 @@ pub struct WasmWorld {
 impl WasmWorld {
     pub fn new(read: js_sys::Function, fontsize: f64) -> Self {
         // ファイルシステムを設定
-        let main = FileId::new(None, VirtualPath::new("main.typ"));
+        let main = FileId::new(RootedPath::new(
+            VirtualRoot::Project,
+            VirtualPath::new("main.typ").unwrap(),
+        ));
         let mut slots = FxHashMap::default();
         slots.insert(main, FileSlot::new_from_text(main, "".into()));
 
@@ -106,21 +109,21 @@ impl WasmWorld {
 
     pub fn add_file_text(&self, vpath: VirtualPath, text: String) {
         let mut m = self.slots.lock().unwrap();
-        let file_id = FileId::new(None, vpath);
+        let file_id = FileId::new(RootedPath::new(VirtualRoot::Project, vpath));
 
         m.insert(file_id, FileSlot::new_from_text(file_id, text));
     }
 
     pub fn add_file_bytes(&self, vpath: VirtualPath, bytes: Vec<u8>) {
         let mut m = self.slots.lock().unwrap();
-        let file_id = FileId::new(None, vpath);
+        let file_id = FileId::new(RootedPath::new(VirtualRoot::Project, vpath));
 
         m.insert(file_id, FileSlot::new_from_bytes(file_id, bytes));
     }
 
-    pub fn add_package_file(&mut self, spec: PackageSpec, vpath: &str, bytes: Vec<u8>) {
+    pub fn add_package_file(&mut self, spec: PackageSpec, vpath: VirtualPath, bytes: Vec<u8>) {
         let mut m = self.slots.lock().unwrap();
-        let file_id = FileId::new(Some(spec.clone()), VirtualPath::new(vpath));
+        let file_id = FileId::new(RootedPath::new(VirtualRoot::Package(spec.clone()), vpath));
         m.insert(file_id, FileSlot::new_from_bytes(file_id, bytes));
 
         self.packages.insert(spec);
@@ -180,21 +183,20 @@ impl WasmWorld {
         let mut m = self.slots.lock().unwrap();
 
         if m.get(&id).map_or(true, |slot| slot.bytes().is_err()) {
-            let result = match id.package() {
-                Some(spec) => self.fetch_file(
+            let result = match id.root() {
+                VirtualRoot::Package(spec) => self.fetch_file(
                     format!(
                         "@{}/{}/{}/{}",
                         spec.namespace,
                         spec.name,
                         spec.version,
-                        id.vpath().as_rootless_path().to_str().unwrap()
+                        id.vpath().get_without_slash()
                     ),
                     Some(&spec),
                 ),
-                None => self.fetch_file(
-                    id.vpath().as_rootless_path().to_str().unwrap().to_string(),
-                    None,
-                ),
+                VirtualRoot::Project => {
+                    self.fetch_file(id.vpath().get_without_slash().to_string(), None)
+                }
             };
 
             m.insert(id, FileSlot::new_from_result(id, result));

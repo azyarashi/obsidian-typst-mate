@@ -50,7 +50,7 @@ impl SourceDiagnosticSer {
                     point: t.v.to_string(),
                 })
                 .collect(),
-            hints: diag.hints.iter().map(|h| h.as_str().to_string()).collect(),
+            hints: diag.hints.iter().map(|h| h.v.to_string()).collect(),
         }
     }
 }
