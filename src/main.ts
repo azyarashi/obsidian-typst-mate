@@ -314,6 +314,14 @@ export default class ObsidianTypstMate extends Plugin {
     });
 
     this.addCommand({
+      id: 'regenerate-preamble',
+      name: 'Regenerate preamble',
+      callback: () => {
+        this.typst.register_file("test.typ", this.settings.preamble);
+      }
+    });
+
+    this.addCommand({
       id: 'select-current-equation',
       name: 'Select current equation',
       editorCallback: this.editorHelper.selectCurrentEquation.bind(this.editorHelper),

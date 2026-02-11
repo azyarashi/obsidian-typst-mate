@@ -116,6 +116,21 @@ impl Typst {
         Ok(())
     }
 
+    pub fn register_file(&mut self, path: &str, content: &str) -> Result<(), JsValue> {
+        self.world.add_file_text(
+            VirtualPath::new(path),
+            content.to_string()
+        );
+
+        Ok(())
+    }
+
+    pub fn list_vfs_paths(&self) -> JsValue {
+        let paths = self.world.get_all_vfs_paths();
+
+        to_value(&paths).unwrap()
+    }
+
     pub fn list_packages(&self) -> JsValue {
         let packages = self.world.list_packages();
         let packages_ser: Vec<package::PackageSpecSer> = packages.iter().map(Into::into).collect();

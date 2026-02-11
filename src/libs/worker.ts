@@ -43,6 +43,10 @@ export default class $ {
     this.typst.store(args.fonts ?? [], args.sources ?? [], args.processors ?? []);
   }
 
+  register_file(path: string, content: string): void {
+    this.typst.register_file(path, content);
+  }
+
   svg(code: string, kind: string, id: string): SVGResult {
     return this.typst.svg(code, kind, id);
   }
