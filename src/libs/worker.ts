@@ -40,15 +40,15 @@ export default class $ {
   }
 
   store(args: Args): void {
-    this.typst.store(args.fonts ?? [], args.sources ?? [], args.processors ?? []);
+    this.typst.store(args.fonts ?? [], args.sources ?? []);
   }
 
   register_file(path: string, content: string): void {
     this.typst.register_file(path, content);
   }
 
-  svg(code: string, kind: string, id: string): SVGResult {
-    return this.typst.svg(code, kind, id);
+  svg(code: string): SVGResult {
+    return this.typst.svg(code);
   }
 
   pdf(filename: string, code: string): PDFResult {

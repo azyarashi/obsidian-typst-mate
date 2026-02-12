@@ -28,7 +28,7 @@ export default class ExcalidrawPlugin {
         ? processor.format.replace('{CODE}', code)
         : `${this.plugin.settings.preamble}\n${processor.format.replace('{CODE}', code)}`;
 
-      const svg = (await this.plugin.typst.svg(code, 'excalidraw', processor.id)).svg;
+      const svg = (await this.plugin.typst.svg(code)).svg;
 
       const width = parseFloat(svg.match(/width="([\d.]+)pt"/)![1]!);
       const height = parseFloat(svg.match(/height="([\d.]+)pt"/)![1]!);

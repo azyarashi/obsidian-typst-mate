@@ -249,15 +249,6 @@ export class ProcessorList {
             this.plugin.settings.processor[this.kind].processors[Number(processorEl.id)]!.id = cleanId;
             this.updateDraggability();
             this.plugin.saveSettings();
-            await this.plugin.typst.store({
-              processors: [
-                {
-                  kind: this.kind,
-                  id: cleanId,
-                  format: formatTextEl.value,
-                },
-              ],
-            });
           },
           500,
           true,

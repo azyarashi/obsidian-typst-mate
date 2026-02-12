@@ -25,15 +25,13 @@ mod serde;
 mod vfs;
 mod world;
 
-use crate::serde::{diagnostic, font, jump, package, pdf, processor, svg};
+use crate::serde::{diagnostic, font, jump, package, pdf, svg};
 use crate::world::WasmWorld;
 
 #[wasm_bindgen]
 pub struct Typst {
     world: WasmWorld,
 
-    last_kind: String,
-    last_id: String,
     last_document: Option<PagedDocument>,
 }
 
@@ -47,8 +45,6 @@ impl Typst {
         Self {
             world: WasmWorld::new(fetch, fontsize),
 
-            last_kind: String::new(),
-            last_id: String::new(),
             last_document: None,
         }
     }
@@ -57,12 +53,9 @@ impl Typst {
         &mut self,
         fonts: Vec<ArrayBuffer>,
         sources: JsValue,
-        processors: JsValue,
     ) -> Result<(), JsValue> {
         let sources_serde: FxHashMap<String, Vec<u8>> = serde_wasm_bindgen::from_value(sources)
             .map_err(|e| JsValue::from_str(&format!("failed to deserialize sources: {}", e)))?;
-        let procs_serde: Vec<processor::ProcessorDes> = serde_wasm_bindgen::from_value(processors)
-            .map_err(|e| JsValue::from_str(&format!("failed to deserialize processors: {}", e)))?;
 
         for f in fonts.iter() {
             let u8arr = Uint8Array::new(&f);
@@ -105,14 +98,6 @@ impl Typst {
             }
         }
 
-        // プロセッサー
-        for p in procs_serde {
-            self.world.add_file_text(
-                VirtualPath::new(format!("{}-{}.typ", p.kind, p.id)),
-                p.format,
-            );
-        }
-
         Ok(())
     }
 
@@ -123,12 +108,6 @@ impl Typst {
         );
 
         Ok(())
-    }
-
-    pub fn list_vfs_paths(&self) -> JsValue {
-        let paths = self.world.get_all_vfs_paths();
-
-        to_value(&paths).unwrap()
     }
 
     pub fn list_packages(&self) -> JsValue {
@@ -194,15 +173,8 @@ impl Typst {
         }
     }
 
-    pub fn svg(&mut self, code: &str, kind: &str, id: &str) -> Result<JsValue, JsValue> {
-        if self.last_kind == kind && self.last_id == id {
-            self.world.replace(code);
-        } else {
-            self.last_kind = kind.to_string();
-            self.last_id = id.to_string();
-
-            self.update_source(VirtualPath::new(format!("{}_{}.typ", kind, id)), code);
-        }
+    pub fn svg(&mut self, code: &str) -> Result<JsValue, JsValue> {
+        self.world.replace(code);
 
         let Warned { output, warnings } = typst::compile::<PagedDocument>(&mut self.world);
 

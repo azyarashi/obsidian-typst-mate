@@ -317,7 +317,7 @@ export default class ObsidianTypstMate extends Plugin {
       id: 'regenerate-preamble',
       name: 'Regenerate preamble',
       callback: () => {
-        this.typst.register_file("test.typ", this.settings.preamble);
+        this.typst.register_file("main.typ", "#let test = $x^2$\n");
       }
     });
 

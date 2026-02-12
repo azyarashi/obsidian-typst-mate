@@ -89,7 +89,6 @@ export default class TypstManager {
     if (this.plugin.settings.skipPreparationWaiting) {
       const result = this.plugin.typst.store({
         fonts,
-        processors,
         sources,
       });
       if (result instanceof Promise) {
@@ -109,7 +108,7 @@ export default class TypstManager {
         this.plugin.updateCrashStatus(false);
       }
     } else {
-      await this.plugin.typst.store({ fonts, processors, sources });
+      await this.plugin.typst.store({ fonts, sources });
 
       this.ready = true;
       this.plugin.updateCrashStatus(false);
