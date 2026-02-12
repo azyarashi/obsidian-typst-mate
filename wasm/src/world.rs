@@ -93,37 +93,30 @@ impl WasmWorld {
         }
     }
 
-    pub fn set_main(&mut self, id: FileId) {
-        self.main = id;
+    fn set(&mut self, id: FileId, new: &str) {
+        let mut slots = self.slots.lock().unwrap();
+        slots.insert(id, FileSlot::new_from_text(id, new.to_string()));
     }
 
-    // ? 差分コンパイルのため
-    pub fn replace(&mut self, new: &str) {
-        let mut m = self.slots.lock().unwrap();
-
-        m.get_mut(&self.main).unwrap().replace(new);
+    fn set_bytes(&mut self, id: FileId, new: Vec<u8>) {
+        let mut slots = self.slots.lock().unwrap();
+        slots.insert(id, FileSlot::new_from_bytes(id, new));
     }
 
-    pub fn add_file_text(&self, vpath: VirtualPath, text: String) {
-        let mut m = self.slots.lock().unwrap();
-        let file_id = FileId::new(None, vpath);
-
-        m.insert(file_id, FileSlot::new_from_text(file_id, text));
+    pub fn set_file(&mut self, path: &str, new: &str) {
+        let vpath = VirtualPath::new(path);
+        let id = FileId::new(None, vpath);
+        self.set(id, new);
     }
 
-    pub fn add_file_bytes(&self, vpath: VirtualPath, bytes: Vec<u8>) {
-        let mut m = self.slots.lock().unwrap();
-        let file_id = FileId::new(None, vpath);
-
-        m.insert(file_id, FileSlot::new_from_bytes(file_id, bytes));
+    pub fn set_package_bytes(&mut self, spec: Option<PackageSpec>, path: &str, new: Vec<u8>) {
+        let vpath = VirtualPath::new(path);
+        let id = FileId::new(spec, vpath);
+        self.set_bytes(id, new);
     }
 
-    pub fn add_package_file(&mut self, spec: PackageSpec, vpath: &str, bytes: Vec<u8>) {
-        let mut m = self.slots.lock().unwrap();
-        let file_id = FileId::new(Some(spec.clone()), VirtualPath::new(vpath));
-        m.insert(file_id, FileSlot::new_from_bytes(file_id, bytes));
-
-        self.packages.insert(spec);
+    pub fn set_main(&mut self, new: &str) {
+        self.set(self.main, new);
     }
 
     pub fn list_packages(&self) -> Vec<PackageSpec> {
