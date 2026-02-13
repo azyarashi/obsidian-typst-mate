@@ -251,20 +251,11 @@ export class EditorHelper {
 
   boxCurrentEquation(view: EditorView) {
     const region = this.getActiveRegion(view);
-    if (!region || region.kind !== 'inline') return;
+    if (!region || region.kind === 'extended') return;
 
-    // region includes delimiters sometimes according to logic in TypstMate.ts?
-    // Let's check TypstMate.ts "collectRegions" again.
-    // It returns regions WITHOUT delimiters usually?
-    // wait, TypstMate.ts:
-    // rawRegions.push({ skip, from: innerFrom + skip, to: innerTo - skipEnd, ... })
-    // It seems it strips delimiters based on "skip".
-    // "skip" calculates length of "$", "$$", or "codeblock start".
-
-    // So region.from and region.to are CONTENT range.
     this.replaceWithLength(
       view,
-      `box(${view.state.sliceDoc(region.from, region.to)})`,
+      `#box(${view.state.sliceDoc(region.from, region.to)}, stroke: black + 1pt)`,
       region.from,
       region.to - region.from,
     );

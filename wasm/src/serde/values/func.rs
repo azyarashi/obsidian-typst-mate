@@ -51,16 +51,23 @@ impl From<&Func> for FuncSer {
         FuncSer {
             repr: func.repr().to_string(),
             docs: func.docs().unwrap_or("no_doc").to_string(),
-            params: func.params().map(|params| {
-                params
-                    .iter()
-                    .map(|p| ParamSer {
-                        name: p.name.to_string(),
-                        docs: p.docs.into(),
-                        params: cast_info_to_types(&p.input),
+            params: Some(
+                func.params()
+                    .map(|p| {
+                        let (docs, params) = if let Some(native) = p.to_native() {
+                            (native.docs, cast_info_to_types(&native.input))
+                        } else {
+                            ("no_doc", cast_info_to_types(&CastInfo::Any))
+                        };
+
+                        ParamSer {
+                            name: p.name().unwrap_or("no_name").to_string(),
+                            docs: docs.to_string(),
+                            params,
+                        }
                     })
-                    .collect()
-            }),
+                    .collect(),
+            ),
         }
     }
 }

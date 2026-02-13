@@ -1,7 +1,7 @@
 use std::{path::PathBuf, str::FromStr, sync::Mutex};
 
 use chrono::{DateTime, Datelike, FixedOffset, Local, Utc};
-use rustc_hash::{FxHashMap, FxHashSet};
+use rustc_hash::FxHashMap;
 use send_wrapper::SendWrapper;
 use wasm_bindgen::{JsCast, JsValue};
 
@@ -9,7 +9,7 @@ use typst::{
     Library, LibraryExt, World,
     diag::{FileError, FileResult, PackageError},
     foundations::{
-        Bytes, Content, Datetime, Element, Property, Recipe, Selector, Style, Styles,
+        Bytes, Content, Datetime, Duration, Element, Property, Recipe, Selector, Style, Styles,
         Transformation, Value,
     },
     layout::{Abs, Length},
@@ -31,7 +31,8 @@ pub struct WasmWorld {
     now: DateTime<Utc>,
 
     read: SendWrapper<js_sys::Function>,
-    packages: FxHashSet<PackageSpec>,
+    packages: Vec<(PackageSpec, Option<typst::ecow::EcoString>)>,
+    files: Vec<FileId>, // TODO
 }
 
 impl WasmWorld {
@@ -92,7 +93,8 @@ impl WasmWorld {
             now: Utc::now(),
 
             read: SendWrapper::new(read),
-            packages: FxHashSet::default(),
+            packages: Vec::new(),
+            files: Vec::new(),
         }
     }
 
@@ -126,11 +128,13 @@ impl WasmWorld {
         let file_id = FileId::new(RootedPath::new(VirtualRoot::Package(spec.clone()), vpath));
         m.insert(file_id, FileSlot::new_from_bytes(file_id, bytes));
 
-        self.packages.insert(spec);
+        if !self.packages.iter().any(|(p, _)| p == &spec) {
+            self.packages.push((spec, None));
+        }
     }
 
     pub fn list_packages(&self) -> Vec<PackageSpec> {
-        self.packages.iter().cloned().collect()
+        self.packages.iter().map(|(p, _)| p.clone()).collect()
     }
 
     pub fn add_font(&mut self, data: Bytes) {
@@ -238,11 +242,11 @@ impl World for WasmWorld {
         Some(self.fonts[index].clone())
     }
 
-    fn today(&self, offset: Option<i64>) -> Option<Datetime> {
+    fn today(&self, offset: Option<Duration>) -> Option<Datetime> {
         let local_datetime = match offset {
             None => self.now.with_timezone(&Local).fixed_offset(),
             Some(hours) => {
-                let seconds = i32::try_from(hours).ok()?.checked_mul(3600)?;
+                let seconds = hours.seconds() as i32;
                 self.now.with_timezone(&FixedOffset::east_opt(seconds)?)
             }
         };
@@ -262,10 +266,10 @@ impl IdeWorld for WasmWorld {
     }
 
     fn packages(&self) -> &[(PackageSpec, Option<typst::ecow::EcoString>)] {
-        &[]
+        &self.packages
     }
 
     fn files(&self) -> Vec<FileId> {
-        std::vec![]
+        self.files.clone()
     }
 }

@@ -194,7 +194,7 @@ impl Typst {
             self.last_id = id.to_string();
 
             self.update_source(
-                VirtualPath::new(format!("{}_{}.typ", kind, id)).unwrap(),
+                VirtualPath::new(format!("{}-{}.typ", kind, id)).unwrap(),
                 code,
             );
         }
