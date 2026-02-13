@@ -1,4 +1,4 @@
-import { Notice } from 'obsidian';
+import { Notice, type FrontMatterCache } from 'obsidian';
 
 import { DEFAULT_FONT_SIZE } from '@/constants';
 import InlinePreviewElement from '@/core/editor/elements/InlinePreview';
@@ -21,7 +21,10 @@ export default class TypstManager {
 
   beforeKind?: ProcessorKind;
   beforeProcessor?: Processor;
+  beforePath?: string;
   beforeElement: HTMLElement = document.createElement('span');
+
+  preamble: string = "";
 
   constructor(plugin: ObsidianTypstMate) {
     this.plugin = plugin;
@@ -56,19 +59,6 @@ export default class TypstManager {
 
     const kind = ['inline', 'display', 'codeblock'];
     if (this.plugin.excalidrawPluginInstalled) kind.push('excalidraw');
-
-    const processors = kind.flatMap(
-      (kind) =>
-        this.plugin.settings.processor[kind as 'inline' | 'display' | 'codeblock' | 'excalidraw']?.processors.map(
-          (p) => ({
-            kind,
-            id: p.id,
-            format: this.format(p, ''),
-            styling: p.styling,
-            renderingEngine: p.renderingEngine,
-          }),
-        ) ?? [],
-    );
 
     // キャッシュ
     const sources: Map<string, Uint8Array> = new Map();
@@ -147,7 +137,6 @@ export default class TypstManager {
       const math = el.querySelectorAll(".math");
       if (math.length === 0) return;
 
-      const frontmatter = this.plugin.app.metadataCache.getCache(ctx.sourcePath)?.frontmatter;
       for (const mel of math) {
         const inline = mel.hasClass("math-inline");
         const text = mel.textContent;
@@ -156,7 +145,7 @@ export default class TypstManager {
         container.className = 'Mathjax';
         container.setAttribute('jax', 'CHTML');
 
-        mel.appendChild(this.render(text, container, inline ? 'inline' : 'display'));
+        mel.appendChild(this.render(text, container, inline ? 'inline' : 'display', ctx.sourcePath));
 
         mel.setAttribute("contenteditable", "false");
         mel.addClass("is-loaded");
@@ -178,12 +167,15 @@ export default class TypstManager {
         return container;
       }
 
-      return this.render(e, container, r.display ? 'display' : 'inline');
+      const file = this.plugin.app.workspace.getActiveFile();
+
+      return this.render(e, container, r.display ? 'display' : 'inline', file?.path);
     };
   }
 
-  render(code: string, containerEl: Element, kind: string): HTMLElement {
+  render(code: string, containerEl: Element, kind: string, path?: string): HTMLElement {
     // プロセッサーを決定
+    if (path) this.syncFileCache(path);
     let processor: Processor;
     let offset = 0;
     let noDiag = false;
@@ -271,12 +263,6 @@ export default class TypstManager {
     return containerEl as HTMLElement;
   }
 
-  private format(processer: Processor, code: string) {
-    return processer.noPreamble
-      ? processer.format.replace('{CODE}', code)
-      : `${this.plugin.settings.preamble}\n${processer.format.replace('{CODE}', code)}`;
-  }
-
   private async collectFiles(
     baseDirPath: string,
     dirPath: string,
@@ -350,5 +336,16 @@ export default class TypstManager {
       return fs.readFileSync(`${this.plugin.baseDirPath}/${path}`);
     }
     return this.plugin.app.vault.adapter.readBinary(path);
+  }
+
+  private syncFileCache(path: string) {
+    if (path == this.beforePath) return;
+    this.beforePath = path;
+    this.preamble = "";
+    const frontmatter = path ? this.plugin.app.metadataCache.getCache(path)?.frontmatter : undefined;
+    if (!frontmatter) return;
+    const defs = (frontmatter.definitions as string[]).map(d => "#let " + d).join("\n");
+    this.preamble = defs;
+    console.log(this.preamble);
   }
 }
