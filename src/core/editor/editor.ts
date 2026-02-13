@@ -234,7 +234,7 @@ export class EditorHelper {
   private keyDown(e: KeyboardEvent) {
     if (!this.plugin.settings.disableMacro && !this.mathObject) {
       if (!this.editor) return;
-      if (this.beforeChar === 'm' && e.key === 'k') {
+      if (this.beforeChar === 'd' && e.key === 'm') {
         if (Date.now() - this.lastKeyDownTime > 500) return;
         e.preventDefault();
         const { line, ch } = this.editor.getCursor();
@@ -252,7 +252,7 @@ export class EditorHelper {
           ch: 0,
         });
         this.beforeChar = null;
-      } else if (this.beforeChar === 'd' && e.key === 'm') {
+      } else if (this.beforeChar === 'm' && e.key === 'k') {
         if (Date.now() - this.lastKeyDownTime > 500) return;
         e.preventDefault();
         const { line, ch } = this.editor.getCursor();
