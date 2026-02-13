@@ -140,6 +140,29 @@ export default class TypstManager {
       }
     }
 
+    // Handle embeds separately, since they don't share the same frontmatter
+    this.plugin.registerMarkdownPostProcessor((el, ctx) => {
+      const isEmbed = ctx.sourcePath != this.plugin.app.workspace.getActiveFile()?.path;
+      if (!isEmbed) return;
+      const math = el.querySelectorAll(".math");
+      if (math.length === 0) return;
+
+      const frontmatter = this.plugin.app.metadataCache.getCache(ctx.sourcePath)?.frontmatter;
+      for (const mel of math) {
+        const inline = mel.hasClass("math-inline");
+        const text = mel.textContent;
+        mel.setText("");
+        const container = document.createElement('mjx-container');
+        container.className = 'Mathjax';
+        container.setAttribute('jax', 'CHTML');
+
+        mel.appendChild(this.render(text, container, inline ? 'inline' : 'display'));
+
+        mel.setAttribute("contenteditable", "false");
+        mel.addClass("is-loaded");
+      }
+    }, -100);
+
     // MathJax をオーバライド
     window.MathJax!.tex2chtml = (e: string, r: { display?: boolean }) => {
       // タグ名，クラス名，属性がこれ以外だと認識されないない
