@@ -1,4 +1,4 @@
-import { Notice, type FrontMatterCache } from 'obsidian';
+import { MarkdownView, Notice, type FrontMatterCache } from 'obsidian';
 
 import { DEFAULT_FONT_SIZE } from '@/constants';
 import InlinePreviewElement from '@/core/editor/elements/InlinePreview';
@@ -21,7 +21,7 @@ export default class TypstManager {
 
   beforeKind?: ProcessorKind;
   beforeProcessor?: Processor;
-  beforePath?: string;
+  beforeFrontmatter?: FrontMatterCache;
   beforeElement: HTMLElement = document.createElement('span');
 
   preamble: string = "";
@@ -111,6 +111,10 @@ export default class TypstManager {
     overwriteCustomElements('typstmate-snippets', SnippetSuggestElement);
     overwriteCustomElements('typstmate-inline-preview', InlinePreviewElement);
 
+    // Refresh the view if the frontmatter changes
+    this.plugin.registerEvent(this.plugin.app.metadataCache.on("changed", (file) => {
+      if (this.syncFileCache(file.path)) this.refreshView();
+    }))
     // コードブロックプロセッサーをオーバライド
     for (const processor of this.plugin.settings.processor.codeblock?.processors ?? []) {
       try {
@@ -338,14 +342,25 @@ export default class TypstManager {
     return this.plugin.app.vault.adapter.readBinary(path);
   }
 
-  private syncFileCache(path: string) {
-    if (path == this.beforePath) return;
-    this.beforePath = path;
-    this.preamble = "";
+  private syncFileCache(path: string): boolean {
     const frontmatter = path ? this.plugin.app.metadataCache.getCache(path)?.frontmatter : undefined;
-    if (!frontmatter) return;
+    if (frontmatter === this.beforeFrontmatter) return false;
+    this.beforeFrontmatter = frontmatter;
+    this.preamble = "";
+    if (!frontmatter) return true;
     const defs = (frontmatter.definitions as string[]).map(d => "#let " + d).join("\n");
     this.preamble = defs;
-    console.log(this.preamble);
+    return true;
+  }
+
+  private refreshView() {
+    const view = this.plugin.app.workspace.getActiveFileView();
+    if (view instanceof MarkdownView) {
+      if (view.getMode() === 'preview') {
+        view.previewMode.rerender(true);
+      } else {
+        view.leaf.rebuildView()
+      }
+    }
   }
 }
