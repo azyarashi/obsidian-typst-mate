@@ -166,7 +166,6 @@ export default class TypstManager {
       const isEmbed = ctx.sourcePath != this.plugin.app.workspace.getActiveFile()?.path;
       if (!isEmbed) return;
       const math = el.querySelectorAll(".math");
-      if (math.length === 0) return;
 
       for (const mel of math) {
         const inline = mel.hasClass("math-inline");
@@ -176,7 +175,7 @@ export default class TypstManager {
         container.className = 'Mathjax';
         container.setAttribute('jax', 'CHTML');
 
-        mel.appendChild(this.render(text, container, inline ? 'inline' : 'display', ctx.sourcePath));
+        mel.replaceChildren(this.render(text, container, inline ? 'inline' : 'display', ctx.sourcePath));
 
         mel.setAttribute("contenteditable", "false");
         mel.addClass("is-loaded");
@@ -206,7 +205,11 @@ export default class TypstManager {
 
   render(code: string, containerEl: Element, kind: string, path?: string): HTMLElement {
     // プロセッサーを決定
-    if (path) this.syncFileCache(path);
+    if (path) {
+      this.syncFileCache(path);
+    } else {
+      this.preamble = "";
+    }
     let processor: Processor;
     let offset = 0;
     let noDiag = false;

@@ -13,7 +13,10 @@ use typst::{
     diag::Warned,
     foundations::Bytes,
     layout::{Abs, PagedDocument, Point},
-    syntax::package::{PackageSpec, PackageVersion},
+    syntax::{
+        FileId, VirtualPath,
+        package::{PackageSpec, PackageVersion},
+    },
     text::FontInfo,
 };
 use typst_pdf::PdfOptions;
@@ -29,6 +32,8 @@ use crate::world::WasmWorld;
 pub struct Typst {
     world: WasmWorld,
 
+    last_kind: String,
+    last_id: String,
     last_document: Option<PagedDocument>,
 }
 
@@ -42,6 +47,8 @@ impl Typst {
         Self {
             world: WasmWorld::new(fetch, fontsize),
 
+            last_kind: String::new(),
+            last_id: String::new(),
             last_document: None,
         }
     }
@@ -67,7 +74,7 @@ impl Typst {
         }
 
         // ソース
-        for (rpath, text) in sources_serde {
+        for (rpath, bytes) in sources_serde {
             if rpath.starts_with('@') {
                 // unwrap は TS 側で保証
                 let p = rpath.strip_prefix('@').unwrap();
@@ -93,21 +100,15 @@ impl Typst {
                     },
                 };
 
-                self.world.set_package_bytes(Some(spec), vpath, text);
+                self.world.add_package_file(spec, vpath, bytes);
             } else {
-                self.world.set_package_bytes(None, &rpath, text);
+                self.world.add_file_bytes(VirtualPath::new(rpath), bytes);
             }
         }
 
         for (path, text) in files {
-            self.world.set_file(&path, &text);
+            self.world.add_file_text(VirtualPath::new(path), text);
         }
-
-        Ok(())
-    }
-
-    pub fn register_file(&mut self, path: &str, content: &str) -> Result<(), JsValue> {
-        self.world.set_file(path, content);
 
         Ok(())
     }
@@ -159,8 +160,31 @@ impl Typst {
         convert_cetz_to_tikz(code)
     }
 
-    pub fn svg(&mut self, code: &str) -> Result<JsValue, JsValue> {
-        self.world.set_main(code);
+    fn update_source(&mut self, vpath: VirtualPath, code: &str) {
+        let file_id = FileId::new(None, vpath.clone());
+        let result = self.world.source(file_id);
+
+        match result {
+            Ok(_source) => {
+                self.world.set_main(file_id);
+                self.world.replace(code);
+            }
+            Err(_e) => {
+                self.world.add_file_text(vpath.clone(), code.into());
+                self.world.set_main(file_id);
+            }
+        }
+    }
+
+    pub fn svg(&mut self, code: &str, kind: &str, id: &str) -> Result<JsValue, JsValue> {
+        if self.last_kind == kind && self.last_id == id {
+            self.world.replace(code);
+        } else {
+            self.last_kind = kind.to_string();
+            self.last_id = id.to_string();
+
+            self.update_source(VirtualPath::new(format!("{}_{}.typ", kind, id)), code);
+        }
         let Warned { output, warnings } = typst::compile::<PagedDocument>(&mut self.world);
 
         match output {
@@ -188,7 +212,7 @@ impl Typst {
     }
 
     pub fn pdf(&mut self, filename: &str, code: &str) -> Result<JsValue, JsValue> {
-        self.world.set_main(code);
+        self.update_source(VirtualPath::new(filename), code);
         let Warned { output, warnings } = typst::compile::<PagedDocument>(&mut self.world);
 
         match output {

@@ -22,7 +22,7 @@ export default class TypstSVGElement extends TypstElement {
       const x = (event.clientX - rect.left) / (rect.width / svg.viewBox.baseVal.width);
       const y = (event.clientY - rect.top) / (rect.height / svg.viewBox.baseVal.height);
 
-      await this.plugin.typst.svg(this.format()); // フレーム生成のための副作用
+      await this.plugin.typst.svg(this.format(), this.kind, this.id); // フレーム生成のための副作用
       const result = await this.plugin.typst.jumpFromClick(x, y);
       if (result) this.plugin.editorHelper?.jumpTo(result, this);
     });
@@ -110,7 +110,7 @@ export default class TypstSVGElement extends TypstElement {
     const input = this.format();
 
     try {
-      const result = this.plugin.typst.svg(input);
+      const result = this.plugin.typst.svg(input, this.kind, this.id);
 
       if (result instanceof Promise) {
         if (this.kind !== 'inline' && this.processor.fitToParentWidth && !this.source.includes('<br>')) {
@@ -122,7 +122,7 @@ export default class TypstSVGElement extends TypstElement {
                 `#let WIDTH = ${(entry.contentRect.width * 3) / 4}pt\n` +
                 this.format().replace('width: auto', 'width: WIDTH');
 
-              const result = this.plugin.typst.svg(input) as Promise<SVGResult>;
+              const result = this.plugin.typst.svg(input, this.kind, this.id) as Promise<SVGResult>;
 
               result
                 .then((result: SVGResult) => this.postProcess(result))

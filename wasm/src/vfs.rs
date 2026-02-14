@@ -50,6 +50,13 @@ impl FileSlot {
         }
     }
 
+    pub fn replace(&self, new: &str) {
+        let mut source_mut = self.source.borrow_mut();
+        if let Ok(source) = &mut *source_mut {
+            source.replace(new);
+        }
+    }
+
     pub fn source(&self) -> FileResult<Source> {
         self.source.borrow().clone()
     }
