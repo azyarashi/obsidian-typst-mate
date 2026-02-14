@@ -28,7 +28,6 @@ export default class TypstManager {
   preamble: string = "";
 
   tagFiles: Set<string> = new Set();
-  folderFiles: string[] = [];
 
   constructor(plugin: ObsidianTypstMate) {
     this.plugin = plugin;
@@ -98,16 +97,6 @@ export default class TypstManager {
             // The name so far will be something like tags/tag.subtag.subsub.typ
             // So we remove the folder and the .typ then get the tag back
             this.tagFiles.add(name.slice(5).slice(0, -4).replace(".", "/"));
-          }
-        }
-
-        const folders = `${importPath}/folders`;
-        if (filePaths.folders.contains(folders)) {
-          const list = await this.plugin.app.vault.adapter.list(folders);
-          for (const file of list.files) {
-            const name = file.slice(importPath.length + 1);
-            const contents = await this.plugin.app.vault.adapter.read(file);
-            files.set(name, contents);
           }
         }
       }
