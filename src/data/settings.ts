@@ -52,6 +52,9 @@ export interface Settings {
 
   /* 内部設定 */
   crashCount: number; // ? OOM による Boot Loop 回避のため
+
+  // Path to import typst files from
+  importPath: string;
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -246,4 +249,6 @@ export const DEFAULT_SETTINGS: Settings = {
 
   /* 内部設定 */
   crashCount: 0,
+
+  importPath: ".typst",
 };

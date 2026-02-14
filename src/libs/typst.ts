@@ -1,4 +1,4 @@
-import { MarkdownView, Notice, type FrontMatterCache } from 'obsidian';
+import { getAllTags, MarkdownView, Notice } from 'obsidian';
 
 import { DEFAULT_FONT_SIZE } from '@/constants';
 import InlinePreviewElement from '@/core/editor/elements/InlinePreview';
@@ -14,6 +14,7 @@ import type { Processor, ProcessorKind } from './processor';
 import type { PackageSpec } from './worker';
 
 import './typst.css';
+import { expandHierarchicalTags } from '@/utils/tags';
 
 export default class TypstManager {
   plugin: ObsidianTypstMate;
@@ -21,10 +22,13 @@ export default class TypstManager {
 
   beforeKind?: ProcessorKind;
   beforeProcessor?: Processor;
-  beforeFrontmatter?: FrontMatterCache;
   beforeElement: HTMLElement = document.createElement('span');
+  lastStateHash?: string;
 
   preamble: string = "";
+
+  tagFiles: Set<string> = new Set();
+  folderFiles: string[] = [];
 
   constructor(plugin: ObsidianTypstMate) {
     this.plugin = plugin;
@@ -76,10 +80,44 @@ export default class TypstManager {
       }
     }
 
+    const files: Map<string, string> = new Map();
+    if (this.plugin.settings.importPath) {
+      const importPath = this.plugin.settings.importPath
+      if (await this.plugin.app.vault.adapter.exists(importPath)) {
+        const filePaths = await this.plugin.app.vault.adapter.list(importPath);
+
+        const tags = `${importPath}/tags`;
+        if (filePaths.folders.contains(tags)) {
+          const list = await this.plugin.app.vault.adapter.list(tags)
+          for (const file of list.files) {
+            if (!file.endsWith(".typ")) continue;
+            // Remove base folder from the start
+            const name = file.slice(importPath.length + 1);
+            const contents = await this.plugin.app.vault.adapter.read(file);
+            files.set(name, contents);
+            // The name so far will be something like tags/tag.subtag.subsub.typ
+            // So we remove the folder and the .typ then get the tag back
+            this.tagFiles.add(name.slice(5).slice(0, -4).replace(".", "/"));
+          }
+        }
+
+        const folders = `${importPath}/folders`;
+        if (filePaths.folders.contains(folders)) {
+          const list = await this.plugin.app.vault.adapter.list(folders);
+          for (const file of list.files) {
+            const name = file.slice(importPath.length + 1);
+            const contents = await this.plugin.app.vault.adapter.read(file);
+            files.set(name, contents);
+          }
+        }
+      }
+    }
+
     if (this.plugin.settings.skipPreparationWaiting) {
       const result = this.plugin.typst.store({
         fonts,
         sources,
+        files,
       });
       if (result instanceof Promise) {
         result.then(() => {
@@ -98,7 +136,7 @@ export default class TypstManager {
         this.plugin.updateCrashStatus(false);
       }
     } else {
-      await this.plugin.typst.store({ fonts, sources });
+      await this.plugin.typst.store({ fonts, sources, files });
 
       this.ready = true;
       this.plugin.updateCrashStatus(false);
@@ -343,13 +381,28 @@ export default class TypstManager {
   }
 
   private syncFileCache(path: string): boolean {
-    const frontmatter = path ? this.plugin.app.metadataCache.getCache(path)?.frontmatter : undefined;
-    if (frontmatter === this.beforeFrontmatter) return false;
-    this.beforeFrontmatter = frontmatter;
-    this.preamble = "";
-    if (!frontmatter) return true;
-    const defs = (frontmatter.definitions as string[]).map(d => "#let " + d).join("\n");
-    this.preamble = defs;
+    const cache = this.plugin.app.metadataCache.getCache(path);
+    if (!cache) return false;
+    const tags = expandHierarchicalTags(getAllTags(cache) ?? []);
+    const defs = cache.frontmatter?.definitions as string[];
+
+    const currentHash = JSON.stringify([Array.from(tags), (defs ?? []).sort()]);
+    if (currentHash === this.lastStateHash) return false;
+    this.lastStateHash = currentHash;
+
+    const lines: string[] = [];
+    // Imports from the tags
+    for (const tag of tags) {
+      if (!this.tagFiles.has(tag)) continue;
+      lines.push(`#import "tags/${tag.replace('/', '.')}.typ": *;`);
+    }
+
+    // Frontmatter variable definitions
+    if (!defs) return true;
+    lines.push(...defs.map(d => "#let " + d));
+
+    this.preamble = lines.join("\n");
+
     return true;
   }
 

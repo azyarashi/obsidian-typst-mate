@@ -46,9 +46,17 @@ impl Typst {
         }
     }
 
-    pub fn store(&mut self, fonts: Vec<ArrayBuffer>, sources: JsValue) -> Result<(), JsValue> {
-        let sources_serde: FxHashMap<String, Vec<u8>> = serde_wasm_bindgen::from_value(sources)
+    pub fn store(
+        &mut self,
+        fonts: Vec<ArrayBuffer>,
+        packages: JsValue,
+        files: JsValue,
+    ) -> Result<(), JsValue> {
+        let sources_serde: FxHashMap<String, Vec<u8>> = serde_wasm_bindgen::from_value(packages)
             .map_err(|e| JsValue::from_str(&format!("failed to deserialize sources: {}", e)))?;
+
+        let files: FxHashMap<String, String> = serde_wasm_bindgen::from_value(files)
+            .map_err(|e| JsValue::from_str(&format!("failed to deserialize files: {}", e)))?;
 
         for f in fonts.iter() {
             let u8arr = Uint8Array::new(&f);
@@ -89,6 +97,10 @@ impl Typst {
             } else {
                 self.world.set_package_bytes(None, &rpath, text);
             }
+        }
+
+        for (path, text) in files {
+            self.world.set_file(&path, &text);
         }
 
         Ok(())

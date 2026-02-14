@@ -2,8 +2,22 @@ import { Notice, Setting } from 'obsidian';
 
 import type ObsidianTypstMate from '@/main';
 import { CustomFragment } from '@/utils/customFragment';
+import { DEFAULT_SETTINGS } from '@/data/settings';
 
 export function addAdvancedTab(plugin: ObsidianTypstMate, containerEl: HTMLElement) {
+
+  new Setting(containerEl)
+    .setName('Typst file import path')
+    .setDesc('The directory in your vault in which to look for typst files to be allowed to import, if the path does not exist or is empty the feature is disabled')
+    .addText((text) => {
+      text.setValue(String(plugin.settings.importPath ?? DEFAULT_SETTINGS.importPath));
+
+      text.onChange((path) => {
+        plugin.settings.importPath = path;
+        plugin.saveSettings();
+      });
+    });
+
   new Setting(containerEl)
     .setName('Open Typst Tools on Startup')
     .setDesc('Open Typst tools in side panel when launching Obsidian.')

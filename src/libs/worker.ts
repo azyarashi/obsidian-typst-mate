@@ -40,7 +40,7 @@ export default class $ {
   }
 
   store(args: Args): void {
-    this.typst.store(args.fonts ?? [], args.sources ?? []);
+    this.typst.store(args.fonts ?? [], args.sources ?? [], args.files ?? []);
   }
 
   register_file(path: string, content: string): void {
@@ -201,16 +201,10 @@ export default class $ {
 
 expose($, self as any);
 
-interface Processor {
-  kind: string;
-  id: string;
-  format: string;
-}
-
 type Args = {
   fonts?: ArrayBuffer[];
   sources?: Map<string, Uint8Array>;
-  processors?: Processor[];
+  files?: Map<string, string>;
 };
 
 export interface FontVariant {
