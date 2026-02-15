@@ -25,7 +25,7 @@ export default class TypstManager {
   beforeElement: HTMLElement = document.createElement('span');
   lastStateHash?: string;
 
-  preamble: string = "";
+  preamble: string = '';
 
   tagFiles: Set<string> = new Set();
 
@@ -81,22 +81,22 @@ export default class TypstManager {
 
     const files: Map<string, string> = new Map();
     if (this.plugin.settings.importPath) {
-      const importPath = this.plugin.settings.importPath
+      const importPath = this.plugin.settings.importPath;
       if (await this.plugin.app.vault.adapter.exists(importPath)) {
         const filePaths = await this.plugin.app.vault.adapter.list(importPath);
 
         const tags = `${importPath}/tags`;
         if (filePaths.folders.contains(tags)) {
-          const list = await this.plugin.app.vault.adapter.list(tags)
+          const list = await this.plugin.app.vault.adapter.list(tags);
           for (const file of list.files) {
-            if (!file.endsWith(".typ")) continue;
+            if (!file.endsWith('.typ')) continue;
             // Remove base folder from the start
             const name = file.slice(importPath.length + 1);
             const contents = await this.plugin.app.vault.adapter.read(file);
             files.set(name, contents);
             // The name so far will be something like tags/tag.subtag.subsub.typ
             // So we remove the folder and the .typ then get the tag back
-            this.tagFiles.add(name.slice(5).slice(0, -4).replace(".", "/"));
+            this.tagFiles.add(name.slice(5).slice(0, -4).replace('.', '/'));
           }
         }
       }
@@ -139,9 +139,11 @@ export default class TypstManager {
     overwriteCustomElements('typstmate-inline-preview', InlinePreviewElement);
 
     // Refresh the view if the frontmatter changes
-    this.plugin.registerEvent(this.plugin.app.metadataCache.on("changed", (file) => {
-      if (this.syncFileCache(file.path)) this.refreshView();
-    }))
+    this.plugin.registerEvent(
+      this.plugin.app.metadataCache.on('changed', (file) => {
+        if (this.syncFileCache(file.path)) this.refreshView();
+      }),
+    );
     // コードブロックプロセッサーをオーバライド
     for (const processor of this.plugin.settings.processor.codeblock?.processors ?? []) {
       try {
@@ -163,22 +165,22 @@ export default class TypstManager {
 
     // Handle embeds separately, since they don't share the same frontmatter
     this.plugin.registerMarkdownPostProcessor((el, ctx) => {
-      const isEmbed = ctx.sourcePath != this.plugin.app.workspace.getActiveFile()?.path;
+      const isEmbed = ctx.sourcePath !== this.plugin.app.workspace.getActiveFile()?.path;
       if (!isEmbed) return;
-      const math = el.querySelectorAll(".math");
+      const math = el.querySelectorAll('.math');
 
       for (const mel of math) {
-        const inline = mel.hasClass("math-inline");
+        const inline = mel.hasClass('math-inline');
         const text = mel.textContent;
-        mel.setText("");
+        mel.setText('');
         const container = document.createElement('mjx-container');
         container.className = 'Mathjax';
         container.setAttribute('jax', 'CHTML');
 
         mel.replaceChildren(this.render(text, container, inline ? 'inline' : 'display', ctx.sourcePath));
 
-        mel.setAttribute("contenteditable", "false");
-        mel.addClass("is-loaded");
+        mel.setAttribute('contenteditable', 'false');
+        mel.addClass('is-loaded');
       }
     }, -100);
 
@@ -208,7 +210,7 @@ export default class TypstManager {
     if (path) {
       this.syncFileCache(path);
     } else {
-      this.preamble = "";
+      this.preamble = '';
     }
     let processor: Processor;
     let offset = 0;
@@ -391,9 +393,9 @@ export default class TypstManager {
 
     // Frontmatter variable definitions
     if (!defs) return true;
-    lines.push(...defs.map(d => "#let " + d));
+    lines.push(...defs.map((d) => `#let ${d}`));
 
-    this.preamble = lines.join("\n");
+    this.preamble = lines.join('\n');
 
     return true;
   }
@@ -404,7 +406,7 @@ export default class TypstManager {
       if (view.getMode() === 'preview') {
         view.previewMode.rerender(true);
       } else {
-        view.leaf.rebuildView()
+        view.leaf.rebuildView();
       }
     }
   }

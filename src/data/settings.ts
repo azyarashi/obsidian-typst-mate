@@ -250,5 +250,5 @@ export const DEFAULT_SETTINGS: Settings = {
   /* 内部設定 */
   crashCount: 0,
 
-  importPath: ".typst",
+  importPath: '.typst',
 };
