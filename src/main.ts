@@ -413,6 +413,11 @@ export default class ObsidianTypstMate extends Plugin {
           });
         });
       }),
+      this.app.metadataCache.on('changed', (file) => {
+        const cache = this.app.metadataCache.getCache(file.path);
+        if (!cache) return;
+        if (this.typstManager.syncFileCache(cache)) this.typstManager.refreshView();
+      }),
     );
   }
 

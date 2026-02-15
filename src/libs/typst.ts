@@ -1,4 +1,4 @@
-import { getAllTags, MarkdownView, Notice } from 'obsidian';
+import { type CachedMetadata, getAllTags, MarkdownView, Notice } from 'obsidian';
 
 import { DEFAULT_FONT_SIZE } from '@/constants';
 import InlinePreviewElement from '@/core/editor/elements/InlinePreview';
@@ -138,12 +138,6 @@ export default class TypstManager {
     overwriteCustomElements('typstmate-snippets', SnippetSuggestElement);
     overwriteCustomElements('typstmate-inline-preview', InlinePreviewElement);
 
-    // Refresh the view if the frontmatter changes
-    this.plugin.registerEvent(
-      this.plugin.app.metadataCache.on('changed', (file) => {
-        if (this.syncFileCache(file.path)) this.refreshView();
-      }),
-    );
     // コードブロックプロセッサーをオーバライド
     for (const processor of this.plugin.settings.processor.codeblock?.processors ?? []) {
       try {
@@ -206,12 +200,18 @@ export default class TypstManager {
   }
 
   render(code: string, containerEl: Element, kind: string, path?: string): HTMLElement {
-    // プロセッサーを決定
     if (path) {
-      this.syncFileCache(path);
-    } else {
-      this.preamble = '';
-    }
+      const cache = this.plugin.app.metadataCache.getCache(path);
+      if (cache) {
+        if ((kind === 'inline' || kind === 'display') && cache?.frontmatter?.['math-engine'] === 'mathjax')
+          return this.plugin.originalTex2chtml(code, {
+            display: kind !== 'inline',
+          });
+        this.syncFileCache(cache);
+      }
+    } else this.preamble = '';
+
+    // プロセッサーを決定
     let processor: Processor;
     let offset = 0;
     let noDiag = false;
@@ -374,40 +374,29 @@ export default class TypstManager {
     return this.plugin.app.vault.adapter.readBinary(path);
   }
 
-  private syncFileCache(path: string): boolean {
-    const cache = this.plugin.app.metadataCache.getCache(path);
-    if (!cache) return false;
+  syncFileCache(cache: CachedMetadata): boolean {
+    const defs = (cache.frontmatter?.definitions ?? []) as string[];
     const tags = expandHierarchicalTags(getAllTags(cache) ?? []);
-    const defs = cache.frontmatter?.definitions as string[];
 
-    const currentHash = JSON.stringify([Array.from(tags), (defs ?? []).sort()]);
+    const currentHash = JSON.stringify([tags, defs]);
     if (currentHash === this.lastStateHash) return false;
     this.lastStateHash = currentHash;
 
-    const lines: string[] = [];
-    // Imports from the tags
-    for (const tag of tags) {
-      if (!this.tagFiles.has(tag)) continue;
-      lines.push(`#import "tags/${tag.replace('/', '.')}.typ": *;`);
-    }
-
+    this.preamble = tags
+      .filter((tag) => this.tagFiles.has(tag))
+      .map((tag) => `#import "tags/${tag.replace('/', '.')}.typ": *;`)
+      .join('\n');
     // Frontmatter variable definitions
-    if (!defs) return true;
-    lines.push(...defs.map((d) => `#let ${d}`));
-
-    this.preamble = lines.join('\n');
+    if (defs.length) this.preamble += `\n${defs.map((d) => `#let ${d}`).join('\n')}`;
 
     return true;
   }
 
-  private refreshView() {
+  refreshView() {
     const view = this.plugin.app.workspace.getActiveFileView();
     if (view instanceof MarkdownView) {
-      if (view.getMode() === 'preview') {
-        view.previewMode.rerender(true);
-      } else {
-        view.leaf.rebuildView();
-      }
+      if (view.getMode() === 'preview') view.previewMode.rerender(true);
+      else view.leaf.rebuildView();
     }
   }
 }
