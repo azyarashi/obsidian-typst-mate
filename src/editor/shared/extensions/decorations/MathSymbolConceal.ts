@@ -4,7 +4,7 @@ import { Decoration, type DecorationSet, EditorView, ViewPlugin, type ViewUpdate
 
 import * as symbolData from '@/data/symbols.json';
 
-import type { EditorHelper } from '../../editor';
+import type { EditorHelper } from '@/editor';
 import { TypstTokenizer } from '../../utils/tokenizer';
 
 const SYMBOL_MAP = new Map<string, string>();
@@ -64,6 +64,7 @@ export const createMathSymbolConcealExtension = (helper: EditorHelper): Extensio
       const atomicRangeBuilder = new RangeSetBuilder<any>();
       const state = view.state;
       const cursor = state.selection.main.head;
+      // @ts-expect-error
       const tree = syntaxTree(state);
 
       const regions: { from: number; to: number; type: 'math' | 'code' }[] = [];

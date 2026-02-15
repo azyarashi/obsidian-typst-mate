@@ -1,10 +1,10 @@
 import type { EditorPosition } from 'obsidian';
 
+import type { PopupPosition } from '@/editor';
 import type ObsidianTypstMate from '@/main';
 import { type SymbolData, searchSymbols } from '@/utils/symbolSearcher';
-import type { PopupPosition } from '../editor';
 
-import './symbol-suggest.css';
+import './SymbolSuggest.css';
 
 export const symbolRegex =
   /(?:^| |\$|\(|\)|\[|\]|\{|\}|<|>|\+|-|\/|\*|=|!|\?|#|%|&|'|:|;|,|\d)(?<symbol>\\?([a-zA-Z.][a-zA-Z.]+|[-<>|=[\]~:-][-<>|=[\]~:-]+))$/;

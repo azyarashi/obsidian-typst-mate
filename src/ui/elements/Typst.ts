@@ -1,6 +1,7 @@
 import { Menu, Notice } from 'obsidian';
+
 import { DEFAULT_FONT_SIZE } from '@/constants';
-import { updateDiagnosticEffect } from '@/core/editor/extensions/decorations/diagnostic';
+import { updateDiagnosticEffect } from '@/editor/shared/extensions/decorations/Diagnostic';
 import type { Processor, ProcessorKind } from '@/libs/processor';
 import type { Diagnostic, SVGResult } from '@/libs/worker';
 import type ObsidianTypstMate from '@/main';
@@ -36,8 +37,8 @@ export default abstract class TypstElement extends HTMLElement {
     // ? キャンバスなどで呼ばれたとき用
     if (this.plugin.editorHelper?.editor)
       try {
-        // @ts-expect-error
         updateDiagnosticEffect(this.plugin.editorHelper.editor.cm, {
+          // @ts-expect-error
           diags: result.diags,
           kind: this.kind,
           processor: this.processor,
@@ -67,8 +68,8 @@ export default abstract class TypstElement extends HTMLElement {
 
     if (this.plugin.editorHelper?.editor)
       try {
-        // @ts-expect-error
         updateDiagnosticEffect(this.plugin.editorHelper.editor.cm, {
+          // @ts-expect-error
           diags: err,
           kind: this.kind,
           processor: this.processor,

@@ -1,9 +1,9 @@
 import { type EditorState, type Range, StateEffect, StateField } from '@codemirror/state';
 import { Decoration, type DecorationSet, EditorView, WidgetType } from '@codemirror/view';
 
-import type { EditorHelper } from '../../editor';
+import type { EditorHelper } from '@/editor';
 
-import './codeblock-preview.css';
+import './CodeBlockPreview.css';
 
 export const clearCodeblockPreviewsEffect = StateEffect.define<void>();
 

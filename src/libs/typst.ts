@@ -1,10 +1,10 @@
 import { type CachedMetadata, getAllTags, MarkdownView, Notice } from 'obsidian';
 
 import { DEFAULT_FONT_SIZE } from '@/constants';
-import InlinePreviewElement from '@/core/editor/elements/InlinePreview';
-import SnippetSuggestElement from '@/core/editor/elements/SnippetSuggest';
-import SymbolSuggestElement from '@/core/editor/elements/SymbolSuggest';
 import { DEFAULT_SETTINGS } from '@/data/settings';
+import InlinePreviewElement from '@/editor/markdown/extensions/popup/InlineMathPreview';
+import SnippetSuggestElement from '@/editor/shared/extensions/popup/SnippetSuggest';
+import SymbolSuggestElement from '@/editor/shared/extensions/popup/SymbolSuggest';
 import type ObsidianTypstMate from '@/main';
 import TypstSVGElement from '@/ui/elements/SVG';
 import { overwriteCustomElements } from '@/utils/custromElementRegistry';

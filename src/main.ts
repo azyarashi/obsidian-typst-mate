@@ -18,14 +18,14 @@ import {
   type WorkspaceLeaf,
 } from 'obsidian';
 
+import { EditorHelper } from '@/editor';
 import { BASE_COLOR_VAR, TYPST_SVG_FILL, TYPST_SVG_STROKE } from './constants';
-import { EditorHelper } from './core/editor/editor';
 import { DEFAULT_SETTINGS, type Settings } from './data/settings';
-import ExcalidrawPlugin from './extensions/excalidraw';
 import TypstManager from './libs/typst';
 import type $ from './libs/worker';
 import Typst from './libs/worker';
 import TypstWorker from './libs/worker?worker&inline';
+import ExcalidrawPlugin from './plugins/excalidraw';
 import { ExcalidrawModal } from './ui/modals/excalidraw';
 import { SettingTab } from './ui/settingstab';
 import { TypstPDFView } from './ui/views/typst-pdf/typstPDF';

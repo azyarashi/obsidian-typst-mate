@@ -26,10 +26,10 @@ export default defineConfig(async ({ mode }) => {
         apply: 'build',
         enforce: 'post',
         buildStart() {
-          this.addWatchFile(path.resolve(__dirname, 'src/style-settings.css'));
+          this.addWatchFile(path.resolve(__dirname, 'src/plugins/style-settings.css'));
         },
         generateBundle(_, bundle) {
-          const styleSettings = fs.readFileSync('src/style-settings.css', 'utf-8');
+          const styleSettings = fs.readFileSync('src/plugins/style-settings.css', 'utf-8');
           const styleAsset = bundle['styles.css'];
           if (styleAsset.type === 'asset') styleAsset.source = `${styleSettings}${styleAsset.source}`;
         },

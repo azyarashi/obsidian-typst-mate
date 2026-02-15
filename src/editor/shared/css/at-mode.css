@@ -1,0 +1,26 @@
+.typstmate-atmode {
+  background: linear-gradient(
+    66.6deg,
+    #ff9fb3 0%,
+    #ffd29a 18%,
+    #fff48b 36%,
+    #bff0a8 54%,
+    #9dd7ff 72%,
+    #d3b7ff 90%,
+    #ff9fb3 100%
+  );
+  animation: typstmate-rainbow 1s linear infinite;
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+@keyframes typstmate-rainbow {
+  0% {
+    background-position: 100% center;
+  }
+  100% {
+    background-position: -100% center;
+  }
+}

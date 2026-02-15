@@ -2,10 +2,10 @@ import { syntaxTree } from '@codemirror/language';
 import { type Extension, RangeSetBuilder } from '@codemirror/state';
 import { Decoration, type DecorationSet, type EditorView, ViewPlugin, type ViewUpdate } from '@codemirror/view';
 
-import type { EditorHelper } from '../../editor';
+import type { EditorHelper } from '@/editor';
 import { BRACKET_MAP, OPEN_MAP, type Token, TypstTokenizer } from '../../utils/tokenizer';
 
-import './bracket-highlight.css';
+import './BracketHighlight.css';
 
 const parser = new TypstTokenizer();
 
@@ -25,6 +25,7 @@ export const createBracketHighlightExtension = (helper: EditorHelper): Extension
         const builder = new RangeSetBuilder<Decoration>();
         const state = view.state;
         const cursor = state.selection.main.head;
+        // @ts-expect-error
         const tree = syntaxTree(state);
 
         const regions: { from: number; to: number; type: 'math' | 'code' }[] = [];

@@ -4,18 +4,18 @@ import { type Editor, type EditorPosition, MarkdownView, type WorkspaceLeaf } fr
 
 import type { BracketHighlights, BracketPair, Jump } from '@/libs/worker';
 import type ObsidianTypstMate from '@/main';
-import type TypstElement from '../../ui/elements/Typst';
-import type InlinePreviewElement from './elements/InlinePreview';
-import type SnippetSuggestElement from './elements/SnippetSuggest';
-import type SymbolSuggestElement from './elements/SymbolSuggest';
-import { buildExtension } from './extensions/build';
+import type TypstElement from '@/ui/elements/Typst';
+import { buildExtension as buildMarkdownExtensions } from './markdown/extensions/build';
+import { clearCodeblockPreviewsEffect } from './markdown/extensions/decorations/CodeBlockPreview';
+import type InlinePreviewElement from './markdown/extensions/popup/InlineMathPreview';
+import { buildExtension as buildSharedExtensions } from './shared/extensions/build';
+import type SnippetSuggestElement from './shared/extensions/popup/SnippetSuggest';
+import { snippetRegex } from './shared/extensions/popup/SnippetSuggest';
+import type SymbolSuggestElement from './shared/extensions/popup/SymbolSuggest';
+import { symbolRegex } from './shared/extensions/popup/SymbolSuggest';
 
-import './editor.css';
-
+import './shared/css';
 import SHORTCUTS_DATA from '@/data/shortcuts.json';
-import { snippetRegex } from './elements/SnippetSuggest';
-import { symbolRegex } from './elements/SymbolSuggest';
-import { clearCodeblockPreviewsEffect } from './extensions/decorations/codeblockPreview';
 
 const SHORTCUTS_KEYS = Object.keys(SHORTCUTS_DATA);
 
@@ -79,7 +79,7 @@ export class EditorHelper {
     );
     this.plugin.registerEditorExtension([
       Prec.high([
-        buildExtension(this),
+        [...buildSharedExtensions(this), ...buildMarkdownExtensions(this)],
         EditorView.domEventHandlers({
           // インラインプレビューの非表示
           mousedown: (e) => {

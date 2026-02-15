@@ -1,7 +1,7 @@
+import type { PopupPosition } from '@/editor/shared/utils/position';
 import type ObsidianTypstMate from '@/main';
-import type { PopupPosition } from '../editor';
 
-import './inline-preview.css';
+import './InlineMathPreview.css';
 
 export default class InlinePreviewElement extends HTMLElement {
   plugin!: ObsidianTypstMate;

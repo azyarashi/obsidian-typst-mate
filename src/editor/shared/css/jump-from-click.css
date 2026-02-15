@@ -1,0 +1,8 @@
+typstmate-svg g * {
+  stroke: transparent;
+  stroke-width: 0.15em;
+}
+
+typstmate-svg g:hover * {
+  fill: var(--interactive-accent) !important;
+}

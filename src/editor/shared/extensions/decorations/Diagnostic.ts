@@ -1,10 +1,10 @@
 import { type Diagnostic, linter } from '@codemirror/lint';
 import { StateEffect, StateField } from '@codemirror/state';
 import type { EditorView } from '@codemirror/view';
+import type { EditorHelper } from '@/editor';
 import type { Processor, ProcessorKind } from '@/libs/processor';
-import type { EditorHelper } from '../../editor';
 
-import './diagnostic.css';
+import './Diagnostic.css';
 
 interface TypstDiagnostic extends Diagnostic {
   hints: string[];

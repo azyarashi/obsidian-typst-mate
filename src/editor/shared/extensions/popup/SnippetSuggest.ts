@@ -1,10 +1,10 @@
 import { type EditorPosition, Notice } from 'obsidian';
 
+import type { PopupPosition } from '@/editor';
 import type { Snippet } from '@/libs/snippet';
 import type ObsidianTypstMate from '@/main';
-import type { PopupPosition } from '../editor';
 
-import './snippet-suggest.css';
+import './SnippetSuggest.css';
 
 export const snippetRegex =
   /(?:^| |\$|\(|\)|\[|\]|\{|\}|<|>|\+|-|\/|\*|=|!|\?|#|%|&|'|:|;|,|\d)(?<query>[^\W_]+)(?<arg>\(.*\))?@$/;
