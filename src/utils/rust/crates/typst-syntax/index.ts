@@ -36,4 +36,5 @@ export enum SyntaxMode {
   Markup = 'Markup',
   Code = 'Code',
   Math = 'Math',
+  Opaque = 'Opaque', // Shebang, LineComment, BlockComment, Str, Raw, Link, Label
 }

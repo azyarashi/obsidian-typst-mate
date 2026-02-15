@@ -82,13 +82,6 @@ Turned OFF               | Turned ON
 :-----------------------:|:------------------------:
 ![Turned OFF](https://github.com/RyotaUshio/obsidian-inline-math/blob/master/fig/off.gif?raw=true) | ![Turned ON](https://github.com/RyotaUshio/obsidian-inline-math/blob/master/fig/on.gif?raw=true)
 
-## Installation
-
-Currently, it's under review for the official plugin list. This process may take several months.
-Until then, please install using the official plugin [BRAT](https://obsidian.md/plugins?id=obsidian42-brat).
-
-[![Screenshot](assets/install-with-brat.png)](#install-with-brat)
-
 ## Compatibility
 
 ### Obsidian App
@@ -119,8 +112,6 @@ If the export doesn't work correctly, try disabling background rendering before 
   ($+-$, sym.plus.minus),
   ($|-$, math.tack),
 )
-// Typst 0.13.1 or before (plugin 2.1.7 or before)
-// #let scr(it) = text(features: ("ss01",), box($cal(it)$))
 ```
 
 ### Custom Styling
