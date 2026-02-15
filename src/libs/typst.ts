@@ -382,14 +382,13 @@ export default class TypstManager {
 
   syncFileCache(cache: CachedMetadata): boolean {
     const defs = (cache.frontmatter?.definitions ?? []) as string[];
-    const tags = expandHierarchicalTags(getAllTags(cache) ?? []);
+    const tags = expandHierarchicalTags(getAllTags(cache) ?? []).filter((tag) => this.tagFiles.has(tag));
 
     const currentHash = JSON.stringify([tags, defs]);
     if (currentHash === this.lastStateHash) return false;
     this.lastStateHash = currentHash;
 
     this.preamble = tags
-      .filter((tag) => this.tagFiles.has(tag))
       .map((tag) => `#import "tags/${tag.replace('/', '.')}.typ": *;`)
       .join('\n');
     // Frontmatter variable definitions
@@ -400,9 +399,9 @@ export default class TypstManager {
 
   refreshView() {
     const view = this.plugin.app.workspace.getActiveFileView();
-    if (view instanceof MarkdownView) {
-      if (view.getMode() === 'preview') view.previewMode.rerender(true);
-      else view.leaf.rebuildView();
-    }
+    if (!(view instanceof MarkdownView)) return;
+
+    if (view.getMode() === 'preview') view.previewMode.rerender(true);
+    else view.leaf.rebuildView();
   }
 }
