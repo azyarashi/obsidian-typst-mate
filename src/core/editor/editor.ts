@@ -707,7 +707,7 @@ export class EditorHelper {
     );
     if (!inlineMathObject) return;
     this.replaceWithLength(
-      `box(${inlineMathObject.content})`,
+      `#box(${inlineMathObject.content}, inset: 0.25em, stroke: black + 1pt)`,
       inlineMathObject.startPos,
       inlineMathObject.content.length,
     );
