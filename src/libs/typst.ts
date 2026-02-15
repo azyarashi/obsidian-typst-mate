@@ -145,7 +145,7 @@ export default class TypstManager {
     // コードブロックプロセッサーをオーバライド
     for (const processor of this.plugin.settings.processor.codeblock?.processors ?? []) {
       try {
-        this.plugin.registerMarkdownCodeBlockProcessor(processor.id, (source, el, _ctx) => {
+        this.plugin.registerMarkdownCodeBlockProcessor(processor.id, (source, el, ctx) => {
           if (!this.ready) {
             el.textContent = source;
             el.addClass('typstmate-waiting');
@@ -154,7 +154,7 @@ export default class TypstManager {
             return Promise.resolve(el as HTMLElement);
           }
 
-          return Promise.resolve(this.render(source, el, processor.id));
+          return Promise.resolve(this.render(source, el, processor.id, ctx.sourcePath));
         });
       } catch {
         new Notice(`Already registered codeblock language: ${processor.id}`);
