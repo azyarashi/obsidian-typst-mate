@@ -121,7 +121,7 @@ export const DEFAULT_SETTINGS: Settings = {
         {
           id: '',
           renderingEngine: 'typst-svg',
-          format: '$ inline({CODE}) $  // workaround for obsidian',
+          format: '$ inline(zws {CODE}) $  // workaround for obsidian',
           styling: 'inline-middle',
           noPreamble: false,
           fitToParentWidth: false,

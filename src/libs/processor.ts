@@ -55,7 +55,7 @@ export type ProcessorKind = (typeof ProcessorKindTokens)[number];
 export const DefaultNewInlineProcessor: InlineProcessor = {
   id: 'new',
   renderingEngine: 'typst-svg',
-  format: '$ inline({CODE}) $',
+  format: '$ inline(zws {CODE}) $',
   styling: 'inline-middle',
   disableSuggest: false,
   noPreamble: false,
