@@ -1,4 +1,4 @@
-import { MarkdownView, Notice, type TFile, type WorkspaceLeaf } from 'obsidian';
+import { MarkdownView, type WorkspaceLeaf } from 'obsidian';
 
 import type ObsidianTypstMate from '@/main';
 
