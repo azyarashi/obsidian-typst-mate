@@ -1,13 +1,23 @@
-export const RenderingEngineTokens = ['typst-svg', 'mathjax'] as const;
-export type RenderingEngine = (typeof RenderingEngineTokens)[number];
-export const InlineStylingTokens = ['inline', 'inline-middle'] as const;
-export type InlineStyling = (typeof InlineStylingTokens)[number];
-export const DisplayStylingTokens = ['block', 'block-center'] as const;
-export type DisplayStyling = (typeof DisplayStylingTokens)[number];
-export const CodeblockStylingTokens = ['block', 'block-center', 'codeblock'] as const;
-export type CodeblockStyling = (typeof CodeblockStylingTokens)[number];
-export const ExcalidrawStylingTokens = ['default'] as const;
-export type ExcalidrawStyling = (typeof ExcalidrawStylingTokens)[number];
+export enum RenderingEngine {
+  TypstSVG = 'typst-svg',
+  MathJax = 'mathjax',
+}
+export enum InlineStyling {
+  Inline = 'inline',
+  InlineMiddle = 'inline-middle',
+}
+export enum DisplayStyling {
+  Block = 'block',
+  BlockCenter = 'block-center',
+}
+export enum CodeblockStyling {
+  Block = 'block',
+  BlockCenter = 'block-center',
+  Codeblock = 'codeblock',
+}
+export enum ExcalidrawStyling {
+  Default = 'default',
+}
 export type Styling = InlineStyling | DisplayStyling | CodeblockStyling | ExcalidrawStyling;
 
 export interface InlineProcessor {
@@ -54,36 +64,36 @@ export type ProcessorKind = (typeof ProcessorKindTokens)[number];
 
 export const DefaultNewInlineProcessor: InlineProcessor = {
   id: 'new',
-  renderingEngine: 'typst-svg',
+  renderingEngine: RenderingEngine.TypstSVG,
   format: '$ inline(zws {CODE}) $',
-  styling: 'inline-middle',
+  styling: InlineStyling.InlineMiddle,
   disableSuggest: false,
   noPreamble: false,
   fitToParentWidth: false,
 };
 export const DefaultNewDisplayProcessor: DisplayProcessor = {
   id: 'new',
-  renderingEngine: 'typst-svg',
+  renderingEngine: RenderingEngine.TypstSVG,
   format: '$ {CODE} $',
-  styling: 'block-center',
+  styling: DisplayStyling.BlockCenter,
   disableSuggest: false,
   noPreamble: false,
   fitToParentWidth: false,
 };
 export const DefaultNewCodeblockProcessor: CodeblockProcessor = {
   id: 'new',
-  renderingEngine: 'typst-svg',
+  renderingEngine: RenderingEngine.TypstSVG,
   format: '{CODE}',
-  styling: 'block-center',
+  styling: CodeblockStyling.BlockCenter,
   disableSuggest: false,
   noPreamble: false,
   fitToParentWidth: false,
 };
 export const DefaultNewExcalidrawProcessor: ExcalidrawProcessor = {
   id: 'new',
-  renderingEngine: 'typst-svg',
+  renderingEngine: RenderingEngine.TypstSVG,
   format: '#set page(margin: 0.25em)\n${CODE}$',
-  styling: 'default',
+  styling: ExcalidrawStyling.Default,
   disableSuggest: false,
   noPreamble: false,
   fitToParentWidth: false,
