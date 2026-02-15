@@ -56,7 +56,7 @@ export const DefaultNewInlineProcessor: InlineProcessor = {
   id: 'new',
   renderingEngine: 'typst-svg',
   format: '${CODE}$',
-  styling: 'inline',
+  styling: 'inline-middle',
   disableSuggest: false,
   noPreamble: false,
   fitToParentWidth: false,
