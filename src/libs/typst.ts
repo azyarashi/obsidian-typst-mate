@@ -394,7 +394,6 @@ export default class TypstManager {
       .join('\n');
     // Frontmatter variable definitions
     if (defs.length) this.preamble += `\n${defs.map((d) => `#let ${d}`).join('\n')}`;
-    console.log(tags, this.tagFiles);
 
     return true;
   }
