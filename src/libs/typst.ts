@@ -1,4 +1,4 @@
-import { Notice } from 'obsidian';
+import { getAllTags, MarkdownView, Notice } from 'obsidian';
 
 import { DEFAULT_FONT_SIZE } from '@/constants';
 import InlinePreviewElement from '@/core/editor/elements/InlinePreview';
@@ -14,6 +14,7 @@ import type { Processor, ProcessorKind } from './processor';
 import type { PackageSpec } from './worker';
 
 import './typst.css';
+import { expandHierarchicalTags } from '@/utils/tags';
 
 export default class TypstManager {
   plugin: ObsidianTypstMate;
@@ -22,6 +23,11 @@ export default class TypstManager {
   beforeKind?: ProcessorKind;
   beforeProcessor?: Processor;
   beforeElement: HTMLElement = document.createElement('span');
+  lastStateHash?: string;
+
+  preamble: string = '';
+
+  tagFiles: Set<string> = new Set();
 
   constructor(plugin: ObsidianTypstMate) {
     this.plugin = plugin;
@@ -57,19 +63,6 @@ export default class TypstManager {
     const kind = ['inline', 'display', 'codeblock'];
     if (this.plugin.excalidrawPluginInstalled) kind.push('excalidraw');
 
-    const processors = kind.flatMap(
-      (kind) =>
-        this.plugin.settings.processor[kind as 'inline' | 'display' | 'codeblock' | 'excalidraw']?.processors.map(
-          (p) => ({
-            kind,
-            id: p.id,
-            format: this.format(p, ''),
-            styling: p.styling,
-            renderingEngine: p.renderingEngine,
-          }),
-        ) ?? [],
-    );
-
     // キャッシュ
     const sources: Map<string, Uint8Array> = new Map();
     if (!this.plugin.settings.disablePackageCache) {
@@ -86,11 +79,34 @@ export default class TypstManager {
       }
     }
 
+    const files: Map<string, string> = new Map();
+    if (this.plugin.settings.importPath) {
+      const importPath = this.plugin.settings.importPath;
+      if (await this.plugin.app.vault.adapter.exists(importPath)) {
+        const filePaths = await this.plugin.app.vault.adapter.list(importPath);
+
+        const tags = `${importPath}/tags`;
+        if (filePaths.folders.contains(tags)) {
+          const list = await this.plugin.app.vault.adapter.list(tags);
+          for (const file of list.files) {
+            if (!file.endsWith('.typ')) continue;
+            // Remove base folder from the start
+            const name = file.slice(importPath.length + 1);
+            const contents = await this.plugin.app.vault.adapter.read(file);
+            files.set(name, contents);
+            // The name so far will be something like tags/tag.subtag.subsub.typ
+            // So we remove the folder and the .typ then get the tag back
+            this.tagFiles.add(name.slice(5).slice(0, -4).replace('.', '/'));
+          }
+        }
+      }
+    }
+
     if (this.plugin.settings.skipPreparationWaiting) {
       const result = this.plugin.typst.store({
         fonts,
-        processors,
         sources,
+        files,
       });
       if (result instanceof Promise) {
         result.then(() => {
@@ -109,7 +125,7 @@ export default class TypstManager {
         this.plugin.updateCrashStatus(false);
       }
     } else {
-      await this.plugin.typst.store({ fonts, processors, sources });
+      await this.plugin.typst.store({ fonts, sources, files });
 
       this.ready = true;
       this.plugin.updateCrashStatus(false);
@@ -122,10 +138,16 @@ export default class TypstManager {
     overwriteCustomElements('typstmate-snippets', SnippetSuggestElement);
     overwriteCustomElements('typstmate-inline-preview', InlinePreviewElement);
 
+    // Refresh the view if the frontmatter changes
+    this.plugin.registerEvent(
+      this.plugin.app.metadataCache.on('changed', (file) => {
+        if (this.syncFileCache(file.path)) this.refreshView();
+      }),
+    );
     // コードブロックプロセッサーをオーバライド
     for (const processor of this.plugin.settings.processor.codeblock?.processors ?? []) {
       try {
-        this.plugin.registerMarkdownCodeBlockProcessor(processor.id, (source, el, _ctx) => {
+        this.plugin.registerMarkdownCodeBlockProcessor(processor.id, (source, el, ctx) => {
           if (!this.ready) {
             el.textContent = source;
             el.addClass('typstmate-waiting');
@@ -134,12 +156,33 @@ export default class TypstManager {
             return Promise.resolve(el as HTMLElement);
           }
 
-          return Promise.resolve(this.render(source, el, processor.id));
+          return Promise.resolve(this.render(source, el, processor.id, ctx.sourcePath));
         });
       } catch {
         new Notice(`Already registered codeblock language: ${processor.id}`);
       }
     }
+
+    // Handle embeds separately, since they don't share the same frontmatter
+    this.plugin.registerMarkdownPostProcessor((el, ctx) => {
+      const isEmbed = ctx.sourcePath !== this.plugin.app.workspace.getActiveFile()?.path;
+      if (!isEmbed) return;
+      const math = el.querySelectorAll('.math');
+
+      for (const mel of math) {
+        const inline = mel.hasClass('math-inline');
+        const text = mel.textContent;
+        mel.setText('');
+        const container = document.createElement('mjx-container');
+        container.className = 'Mathjax';
+        container.setAttribute('jax', 'CHTML');
+
+        mel.replaceChildren(this.render(text, container, inline ? 'inline' : 'display', ctx.sourcePath));
+
+        mel.setAttribute('contenteditable', 'false');
+        mel.addClass('is-loaded');
+      }
+    }, -100);
 
     // MathJax をオーバライド
     window.MathJax!.tex2chtml = (e: string, r: { display?: boolean }) => {
@@ -156,12 +199,19 @@ export default class TypstManager {
         return container;
       }
 
-      return this.render(e, container, r.display ? 'display' : 'inline');
+      const file = this.plugin.app.workspace.getActiveFile();
+
+      return this.render(e, container, r.display ? 'display' : 'inline', file?.path);
     };
   }
 
-  render(code: string, containerEl: Element, kind: string): HTMLElement {
+  render(code: string, containerEl: Element, kind: string, path?: string): HTMLElement {
     // プロセッサーを決定
+    if (path) {
+      this.syncFileCache(path);
+    } else {
+      this.preamble = '';
+    }
     let processor: Processor;
     let offset = 0;
     let noDiag = false;
@@ -249,12 +299,6 @@ export default class TypstManager {
     return containerEl as HTMLElement;
   }
 
-  private format(processer: Processor, code: string) {
-    return processer.noPreamble
-      ? processer.format.replace('{CODE}', code)
-      : `${this.plugin.settings.preamble}\n${processer.format.replace('{CODE}', code)}`;
-  }
-
   private async collectFiles(
     baseDirPath: string,
     dirPath: string,
@@ -328,5 +372,42 @@ export default class TypstManager {
       return fs.readFileSync(`${this.plugin.baseDirPath}/${path}`);
     }
     return this.plugin.app.vault.adapter.readBinary(path);
+  }
+
+  private syncFileCache(path: string): boolean {
+    const cache = this.plugin.app.metadataCache.getCache(path);
+    if (!cache) return false;
+    const tags = expandHierarchicalTags(getAllTags(cache) ?? []);
+    const defs = cache.frontmatter?.definitions as string[];
+
+    const currentHash = JSON.stringify([Array.from(tags), (defs ?? []).sort()]);
+    if (currentHash === this.lastStateHash) return false;
+    this.lastStateHash = currentHash;
+
+    const lines: string[] = [];
+    // Imports from the tags
+    for (const tag of tags) {
+      if (!this.tagFiles.has(tag)) continue;
+      lines.push(`#import "tags/${tag.replace('/', '.')}.typ": *;`);
+    }
+
+    // Frontmatter variable definitions
+    if (!defs) return true;
+    lines.push(...defs.map((d) => `#let ${d}`));
+
+    this.preamble = lines.join('\n');
+
+    return true;
+  }
+
+  private refreshView() {
+    const view = this.plugin.app.workspace.getActiveFileView();
+    if (view instanceof MarkdownView) {
+      if (view.getMode() === 'preview') {
+        view.previewMode.rerender(true);
+      } else {
+        view.leaf.rebuildView();
+      }
+    }
   }
 }

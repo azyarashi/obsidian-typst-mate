@@ -14,7 +14,7 @@ pub struct FileSlot {
 impl FileSlot {
     pub fn new_from_text(id: FileId, text: String) -> Self {
         let source_result = Ok(Source::new(id, text.clone()));
-        let bytes_result = Ok(Bytes::new(text));
+        let bytes_result = Ok(Bytes::from_string(text));
 
         Self {
             source: RefCell::new(source_result),

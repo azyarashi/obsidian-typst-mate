@@ -51,6 +51,7 @@ export default abstract class TypstElement extends HTMLElement {
 
   format() {
     let formatted = this.processor.format.replace('{CODE}', this.source);
+    formatted = `${this.plugin.typstManager.preamble}\n${formatted}`;
     formatted = this.processor.noPreamble ? formatted : `${this.plugin.settings.preamble}\n${formatted}`;
 
     if (this.kind === 'display' && formatted.includes('<br>')) {

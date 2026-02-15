@@ -40,7 +40,7 @@ export default class $ {
   }
 
   store(args: Args): void {
-    this.typst.store(args.fonts ?? [], args.sources ?? [], args.processors ?? []);
+    this.typst.store(args.fonts ?? [], args.sources ?? [], args.files ?? []);
   }
 
   svg(code: string, kind: string, id: string): SVGResult {
@@ -197,16 +197,10 @@ export default class $ {
 
 expose($, self as any);
 
-interface Processor {
-  kind: string;
-  id: string;
-  format: string;
-}
-
 type Args = {
   fonts?: ArrayBuffer[];
   sources?: Map<string, Uint8Array>;
-  processors?: Processor[];
+  files?: Map<string, string>;
 };
 
 export interface FontVariant {

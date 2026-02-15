@@ -25,7 +25,7 @@ mod serde;
 mod vfs;
 mod world;
 
-use crate::serde::{diagnostic, font, jump, package, pdf, processor, svg};
+use crate::serde::{diagnostic, font, jump, package, pdf, svg};
 use crate::world::WasmWorld;
 
 #[wasm_bindgen]
@@ -56,13 +56,14 @@ impl Typst {
     pub fn store(
         &mut self,
         fonts: Vec<ArrayBuffer>,
-        sources: JsValue,
-        processors: JsValue,
+        packages: JsValue,
+        files: JsValue,
     ) -> Result<(), JsValue> {
-        let sources_serde: FxHashMap<String, Vec<u8>> = serde_wasm_bindgen::from_value(sources)
+        let sources_serde: FxHashMap<String, Vec<u8>> = serde_wasm_bindgen::from_value(packages)
             .map_err(|e| JsValue::from_str(&format!("failed to deserialize sources: {}", e)))?;
-        let procs_serde: Vec<processor::ProcessorDes> = serde_wasm_bindgen::from_value(processors)
-            .map_err(|e| JsValue::from_str(&format!("failed to deserialize processors: {}", e)))?;
+
+        let files: FxHashMap<String, String> = serde_wasm_bindgen::from_value(files)
+            .map_err(|e| JsValue::from_str(&format!("failed to deserialize files: {}", e)))?;
 
         for f in fonts.iter() {
             let u8arr = Uint8Array::new(&f);
@@ -105,12 +106,8 @@ impl Typst {
             }
         }
 
-        // プロセッサー
-        for p in procs_serde {
-            self.world.add_file_text(
-                VirtualPath::new(format!("{}-{}.typ", p.kind, p.id)),
-                p.format,
-            );
+        for (path, text) in files {
+            self.world.add_file_text(VirtualPath::new(path), text);
         }
 
         Ok(())
@@ -188,7 +185,6 @@ impl Typst {
 
             self.update_source(VirtualPath::new(format!("{}_{}.typ", kind, id)), code);
         }
-
         let Warned { output, warnings } = typst::compile::<PagedDocument>(&mut self.world);
 
         match output {
