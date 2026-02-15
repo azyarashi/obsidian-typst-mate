@@ -1,0 +1,25 @@
+/* @settings
+
+name: TypstMate
+id: typst-mate
+settings:
+- id: math-rendering
+  title: Math Rendering
+  type: heading
+  level: 1
+  collapsed: false
+- id: match-mathjax-spacing
+  title: Match MathJax Spacing
+  description: Add vertical spacing to display and codeblock equations to match MathJax rendering. You can also use `Empty Line Around Math Blocks` in Linter plugin instead.
+  type: class-toggle
+*/
+
+.match-mathjax-spacing .typstmate-display {
+  margin-top: 1em;
+  margin-bottom: 1em;
+}
+
+.match-mathjax-spacing .typstmate-codeblock {
+  margin-top: 1em;
+  margin-bottom: 1em;
+}

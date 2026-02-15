@@ -1,3 +1,6 @@
+import fs from 'node:fs';
+import path from 'node:path';
+
 import builtinModules from 'builtin-modules';
 import { defineConfig, type UserConfig } from 'vite';
 import { viteStaticCopy } from 'vite-plugin-static-copy';
@@ -18,6 +21,19 @@ export default defineConfig(async ({ mode }) => {
             ]
           : [],
       }),
+      {
+        name: 'prepend-style-settings',
+        apply: 'build',
+        enforce: 'post',
+        buildStart() {
+          this.addWatchFile(path.resolve(__dirname, 'src/style-settings.css'));
+        },
+        generateBundle(_, bundle) {
+          const styleSettings = fs.readFileSync('src/style-settings.css', 'utf-8');
+          const styleAsset = bundle['styles.css'];
+          if (styleAsset.type === 'asset') styleAsset.source = `${styleSettings}${styleAsset.source}`;
+        },
+      },
     ],
     build: {
       lib: {
