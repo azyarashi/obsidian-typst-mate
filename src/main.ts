@@ -4,6 +4,7 @@ import type pathModule from 'node:path';
 
 import { proxy, type Remote, wrap } from 'comlink';
 import {
+  addIcon,
   debounce,
   type EventRef,
   loadMathJax,
@@ -17,7 +18,7 @@ import {
   type WorkspaceLeaf,
 } from 'obsidian';
 
-import { BASE_COLOR_VAR } from './constants';
+import { BASE_COLOR_VAR, TYPST_SVG_FILL, TYPST_SVG_STROKE } from './constants';
 import { EditorHelper } from './core/editor/editor';
 import { DEFAULT_SETTINGS, type Settings } from './data/settings';
 import ExcalidrawPlugin from './extensions/excalidraw';
@@ -89,6 +90,9 @@ export default class ObsidianTypstMate extends Plugin {
     this.setPaths();
     // 色を設定
     this.applyBaseColor();
+    // アイコンを追加
+    addIcon('typst-fill', TYPST_SVG_FILL);
+    addIcon('typst-stroke', TYPST_SVG_STROKE);
     // マニフェストの読み込みと Wasm のパスを設定
     const manifestPath = `${this.pluginDirNPath}/manifest.json`;
     const version = JSON.parse(await adapter.read(manifestPath)).version;
