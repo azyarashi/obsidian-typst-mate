@@ -111,14 +111,6 @@ export const DEFAULT_SETTINGS: Settings = {
           fitToParentWidth: false,
         },
         {
-          id: 'mid',
-          renderingEngine: 'typst-svg',
-          format: '$ {CODE} $',
-          styling: 'inline-middle',
-          noPreamble: true,
-          fitToParentWidth: false,
-        },
-        {
           id: 'tex',
           renderingEngine: 'mathjax',
           format: '',
@@ -129,7 +121,7 @@ export const DEFAULT_SETTINGS: Settings = {
         {
           id: '',
           renderingEngine: 'typst-svg',
-          format: '${CODE}$',
+          format: '$ inline({CODE}) $  // workaround for obsidian',
           styling: 'inline-middle',
           noPreamble: false,
           fitToParentWidth: false,
