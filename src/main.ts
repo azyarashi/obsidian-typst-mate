@@ -105,7 +105,7 @@ export default class ObsidianTypstMate extends Plugin {
     await this.prepareTypst();
 
     this.registerView(TypstToolsView.viewtype, (leaf) => new TypstToolsView(leaf, this));
-    this.registerView(TypstTextView.viewtype, (leaf) => new TypstTextView(leaf));
+    this.registerView(TypstTextView.viewtype, (leaf) => new TypstTextView(leaf, this));
     this.registerView(TypstPDFView.viewtype, (leaf) => new TypstPDFView(leaf, this));
 
     // ? Obsidian の起動時間を短縮するため onLayoutReady を使用
@@ -318,6 +318,17 @@ export default class ObsidianTypstMate extends Plugin {
       id: 'select-current-equation',
       name: 'Select current equation',
       editorCallback: this.editorHelper.selectCurrentEquation.bind(this.editorHelper),
+    });
+
+    this.addCommand({
+      id: 'reload tag files',
+      name: 'Reload tag files',
+      editorCallback: async () => {
+        const files = await this.typstManager.collectTagFiles();
+        await this.typst.store({ files });
+
+        this.typstManager.refreshView();
+      },
     });
 
     if (this.excalidrawPluginInstalled) {

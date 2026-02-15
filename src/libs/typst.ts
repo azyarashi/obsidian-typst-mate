@@ -79,28 +79,7 @@ export default class TypstManager {
       }
     }
 
-    const files: Map<string, string> = new Map();
-    if (this.plugin.settings.importPath) {
-      const importPath = this.plugin.settings.importPath;
-      if (await this.plugin.app.vault.adapter.exists(importPath)) {
-        const filePaths = await this.plugin.app.vault.adapter.list(importPath);
-
-        const tags = `${importPath}/tags`;
-        if (filePaths.folders.contains(tags)) {
-          const list = await this.plugin.app.vault.adapter.list(tags);
-          for (const file of list.files) {
-            if (!file.endsWith('.typ')) continue;
-            // Remove base folder from the start
-            const name = file.slice(importPath.length + 1);
-            const contents = await this.plugin.app.vault.adapter.read(file);
-            files.set(name, contents);
-            // The name so far will be something like tags/tag.subtag.subsub.typ
-            // So we remove the folder and the .typ then get the tag back
-            this.tagFiles.add(name.slice(5).slice(0, -4).replace('.', '/'));
-          }
-        }
-      }
-    }
+    const files = await this.collectTagFiles();
 
     if (this.plugin.settings.skipPreparationWaiting) {
       const result = this.plugin.typst.store({
@@ -374,6 +353,33 @@ export default class TypstManager {
     return this.plugin.app.vault.adapter.readBinary(path);
   }
 
+  async collectTagFiles() {
+    const files: Map<string, string> = new Map();
+    if (!this.plugin.settings.importPath) return files;
+
+    const importPath = this.plugin.settings.importPath;
+    if (!(await this.plugin.app.vault.adapter.exists(importPath))) return files;
+
+    const filePaths = await this.plugin.app.vault.adapter.list(importPath);
+
+    const tags = `${importPath}/tags`;
+    if (!filePaths.folders.contains(tags)) return files;
+
+    const list = await this.plugin.app.vault.adapter.list(tags);
+    for (const file of list.files) {
+      if (!file.endsWith('.typ')) continue;
+      // Remove base folder from the start
+      const name = file.slice(importPath.length + 1);
+      const contents = await this.plugin.app.vault.adapter.read(file);
+      files.set(name, contents);
+      // The name so far will be something like tags/tag.subtag.subsub.typ
+      // So we remove the folder and the .typ then get the tag back
+      this.tagFiles.add(name.slice(5).slice(0, -4).replace('.', '/'));
+    }
+
+    return files;
+  }
+
   syncFileCache(cache: CachedMetadata): boolean {
     const defs = (cache.frontmatter?.definitions ?? []) as string[];
     const tags = expandHierarchicalTags(getAllTags(cache) ?? []);
@@ -388,6 +394,7 @@ export default class TypstManager {
       .join('\n');
     // Frontmatter variable definitions
     if (defs.length) this.preamble += `\n${defs.map((d) => `#let ${d}`).join('\n')}`;
+    console.log(tags, this.tagFiles);
 
     return true;
   }

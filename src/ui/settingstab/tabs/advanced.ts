@@ -1,4 +1,5 @@
-import { Notice, Setting } from 'obsidian';
+import { debounce, Notice, Setting } from 'obsidian';
+
 import { DEFAULT_SETTINGS } from '@/data/settings';
 import type ObsidianTypstMate from '@/main';
 import { CustomFragment } from '@/utils/customFragment';
@@ -12,9 +13,22 @@ export function addAdvancedTab(plugin: ObsidianTypstMate, containerEl: HTMLEleme
     .addText((text) => {
       text.setValue(String(plugin.settings.importPath ?? DEFAULT_SETTINGS.importPath));
 
-      text.onChange((path) => {
+      const update = debounce(
+        async () => {
+          const files = await plugin.typstManager.collectTagFiles();
+          await plugin.typst.store({ files });
+          new Notice('Files updated.');
+
+          plugin.typstManager.refreshView();
+        },
+        500,
+        true,
+      );
+
+      text.onChange(async (path) => {
         plugin.settings.importPath = path;
         plugin.saveSettings();
+        update();
       });
     });
 
