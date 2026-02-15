@@ -382,7 +382,7 @@ export default class TypstManager {
 
   syncFileCache(cache: CachedMetadata): boolean {
     const defs = (cache.frontmatter?.definitions ?? []) as string[];
-    const tags = expandHierarchicalTags(getAllTags(cache) ?? []).filter((tag) => this.tagFiles.has(tag));
+    const tags = expandHierarchicalTags(getAllTags(cache) ?? []).values().toArray().filter((tag) => this.tagFiles.has(tag));
 
     const currentHash = JSON.stringify([tags, defs]);
     if (currentHash === this.lastStateHash) return false;
