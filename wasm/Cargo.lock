@@ -437,38 +437,15 @@ checksum = "b05b61dc5112cbb17e4b6cd61790d9845d13888356391624cbe7e41efeac1e75"
 
 [[package]]
 name = "comemo"
-version = "0.4.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "df6916408a724339aa77b18214233355f3eb04c42eb895e5f8909215bd8a7a91"
-dependencies = [
- "comemo-macros 0.4.0",
- "once_cell",
- "parking_lot",
- "siphasher",
-]
-
-[[package]]
-name = "comemo"
 version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "649d7b2d867b569729c03c0f6968db10bc95921182a1f2b2012b1b549492f39d"
 dependencies = [
- "comemo-macros 0.5.0",
+ "comemo-macros",
  "parking_lot",
  "rustc-hash 2.1.1",
  "siphasher",
  "slab",
-]
-
-[[package]]
-name = "comemo-macros"
-version = "0.4.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c8936e42f9b4f5bdfaf23700609ac1f11cb03ad4c1ec128a4ee4fd0903e228db"
-dependencies = [
- "proc-macro2",
- "quote",
- "syn 2.0.111",
 ]
 
 [[package]]
@@ -1384,7 +1361,7 @@ checksum = "a0ddfec86fec13d068075e14f22a7e217c281f3ed69ddcb427bf3f5d504fd674"
 dependencies = [
  "base64",
  "bumpalo",
- "comemo 0.5.0",
+ "comemo",
  "flate2",
  "float-cmp 0.10.0",
  "gif 0.13.3",
@@ -2858,12 +2835,14 @@ dependencies = [
 
 [[package]]
 name = "tylax"
-version = "0.1.0"
+version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a40720a1515bb428c762b871c96e8a9075144b6e6a23fb6f843c7bd0dbf4acce"
+checksum = "447e7ec305da687135c404f437fb9bad48e51f9411cdb06b547fa04c901f33ed"
 dependencies = [
+ "chrono",
  "clap",
  "fxhash",
+ "indexmap",
  "lazy_static",
  "mitex",
  "mitex-parser",
@@ -2872,7 +2851,7 @@ dependencies = [
  "phf 0.11.3",
  "regex",
  "rowan",
- "typst-syntax 0.11.1",
+ "typst-syntax",
 ]
 
 [[package]]
@@ -2887,7 +2866,7 @@ version = "0.14.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1f6511ee598476f4f322b4d13891083d96dbacb8f9c2b908604c7094ba390653"
 dependencies = [
- "comemo 0.5.0",
+ "comemo",
  "ecow",
  "rustc-hash 2.1.1",
  "typst-eval",
@@ -2896,7 +2875,7 @@ dependencies = [
  "typst-library",
  "typst-macros",
  "typst-realize",
- "typst-syntax 0.14.2",
+ "typst-syntax",
  "typst-timing",
  "typst-utils",
 ]
@@ -2913,7 +2892,7 @@ version = "0.14.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "687757487dfc0c1e941344d5024cf7a28364e70c3e304faad89ac65597f62526"
 dependencies = [
- "comemo 0.5.0",
+ "comemo",
  "ecow",
  "indexmap",
  "rustc-hash 2.1.1",
@@ -2921,7 +2900,7 @@ dependencies = [
  "toml",
  "typst-library",
  "typst-macros",
- "typst-syntax 0.14.2",
+ "typst-syntax",
  "typst-timing",
  "typst-utils",
  "unicode-segmentation",
@@ -2934,7 +2913,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e29f8da4f964d4c90739c3c1e0288b0ba1bccc3cc50623a6d558300b86ca8aad"
 dependencies = [
  "bumpalo",
- "comemo 0.5.0",
+ "comemo",
  "ecow",
  "palette",
  "rustc-hash 2.1.1",
@@ -2943,7 +2922,7 @@ dependencies = [
  "typst-library",
  "typst-macros",
  "typst-svg",
- "typst-syntax 0.14.2",
+ "typst-syntax",
  "typst-timing",
  "typst-utils",
 ]
@@ -2954,7 +2933,7 @@ version = "0.14.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9411a123dff40c264101af99e043ef292b4b8bc638aa05b328359b859dabaf2a"
 dependencies = [
- "comemo 0.5.0",
+ "comemo",
  "ecow",
  "pathdiff",
  "rustc-hash 2.1.1",
@@ -2973,7 +2952,7 @@ dependencies = [
  "az",
  "bumpalo",
  "codex",
- "comemo 0.5.0",
+ "comemo",
  "ecow",
  "either",
  "hypher",
@@ -2991,7 +2970,7 @@ dependencies = [
  "typst-assets",
  "typst-library",
  "typst-macros",
- "typst-syntax 0.14.2",
+ "typst-syntax",
  "typst-timing",
  "typst-utils",
  "unicode-bidi",
@@ -3012,7 +2991,7 @@ dependencies = [
  "chinese-number",
  "ciborium",
  "codex",
- "comemo 0.5.0",
+ "comemo",
  "csv",
  "ecow",
  "flate2",
@@ -3053,7 +3032,7 @@ dependencies = [
  "typed-arena",
  "typst-assets",
  "typst-macros",
- "typst-syntax 0.14.2",
+ "typst-syntax",
  "typst-timing",
  "typst-utils",
  "unicode-math-class",
@@ -3086,7 +3065,7 @@ checksum = "37c8a4630754767cd10d48e8b8186e7dc784631a30a3a93521edf7d77aebd0c0"
 dependencies = [
  "az",
  "bytemuck",
- "comemo 0.5.0",
+ "comemo",
  "ecow",
  "image",
  "indexmap",
@@ -3099,7 +3078,7 @@ dependencies = [
  "typst-assets",
  "typst-library",
  "typst-macros",
- "typst-syntax 0.14.2",
+ "typst-syntax",
  "typst-timing",
  "typst-utils",
 ]
@@ -3112,12 +3091,12 @@ checksum = "f7ffe964757fb93d2e98978aa2a74ee85b0f94c8643e8f3550737258b58f39d8"
 dependencies = [
  "arrayvec",
  "bumpalo",
- "comemo 0.5.0",
+ "comemo",
  "ecow",
  "regex",
  "typst-library",
  "typst-macros",
- "typst-syntax 0.14.2",
+ "typst-syntax",
  "typst-timing",
  "typst-utils",
 ]
@@ -3129,7 +3108,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e46b811837ade1f0243ef0d8bf3fb06d166443090eac22c28643f374c2ccdc9d"
 dependencies = [
  "base64",
- "comemo 0.5.0",
+ "comemo",
  "ecow",
  "flate2",
  "hayro",
@@ -3144,23 +3123,6 @@ dependencies = [
  "typst-utils",
  "xmlparser",
  "xmlwriter",
-]
-
-[[package]]
-name = "typst-syntax"
-version = "0.11.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e3db69f2f41613b1ff6edbec44fd7dc524137f099ee36c46f560cedeaadb40c4"
-dependencies = [
- "comemo 0.4.0",
- "ecow",
- "once_cell",
- "serde",
- "unicode-ident",
- "unicode-math-class",
- "unicode-script",
- "unicode-segmentation",
- "unscanny",
 ]
 
 [[package]]
@@ -3213,7 +3175,7 @@ name = "typst-wasm"
 version = "0.1.0"
 dependencies = [
  "chrono",
- "comemo 0.5.0",
+ "comemo",
  "console_error_panic_hook",
  "js-sys",
  "rayon",
