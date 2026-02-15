@@ -382,15 +382,14 @@ export default class TypstManager {
 
   syncFileCache(cache: CachedMetadata): boolean {
     const defs = (cache.frontmatter?.definitions ?? []) as string[];
-    const tags = expandHierarchicalTags(getAllTags(cache) ?? []).values().toArray().filter((tag) => this.tagFiles.has(tag));
+    const tags: string[] = [];
+    for (const tag of expandHierarchicalTags(getAllTags(cache) ?? [])) if (this.tagFiles.has(tag)) tags.push(tag);
 
     const currentHash = JSON.stringify([tags, defs]);
     if (currentHash === this.lastStateHash) return false;
     this.lastStateHash = currentHash;
 
-    this.preamble = tags
-      .map((tag) => `#import "tags/${tag.replace('/', '.')}.typ": *;`)
-      .join('\n');
+    this.preamble = tags.map((tag) => `#import "tags/${tag.replace('/', '.')}.typ": *;`).join('\n');
     // Frontmatter variable definitions
     if (defs.length) this.preamble += `\n${defs.map((d) => `#let ${d}`).join('\n')}`;
 
