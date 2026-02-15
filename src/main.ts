@@ -13,6 +13,7 @@ import {
   Plugin,
   renderMath,
   requestUrl,
+  TFolder,
   type WorkspaceLeaf,
 } from 'obsidian';
 
@@ -119,7 +120,7 @@ export default class ObsidianTypstMate extends Plugin {
       this.editorHelper = new EditorHelper(this);
 
       // View を登録
-      this.registerExtensions(['typ'], TypstPDFView.viewtype);
+      this.registerExtensions(['typ'], TypstTextView.viewtype);
       if (
         this.settings.openTypstToolsOnStartup &&
         this.app.workspace.getLeavesOfType(TypstToolsView.viewtype).length === 0
@@ -410,6 +411,22 @@ export default class ObsidianTypstMate extends Plugin {
               type: TypstPDFView.viewtype,
               state: { file: (leaf.view as TypstTextView).file },
             });
+          });
+        });
+      }),
+      this.app.workspace.on('file-menu', (menu, file) => {
+        if (!(file instanceof TFolder)) return;
+        menu.addItem((item) => {
+          item.setTitle('New typst file').onClick(async () => {
+            let i = 0;
+            while (true) {
+              const filename = `Untitled${i === 0 ? '' : ` ${i}`}.typ`;
+              if (!(await this.app.vault.exists(`${file.path}/${filename}`))) {
+                this.app.vault.create(`${file.path}/${filename}`, '');
+                break;
+              }
+              i++;
+            }
           });
         });
       }),
