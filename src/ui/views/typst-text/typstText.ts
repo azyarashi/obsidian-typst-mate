@@ -29,11 +29,15 @@ export class TypstTextView extends TextFileView {
     await super.save(clear);
     if (!this.file) return;
 
+    // ファイルの保存
+    const content = this.view.state.doc.toString();
+    await this.plugin.app.vault.adapter.write(this.file.path, content);
+
+    // タグの更新
     const importPath = this.plugin.settings.importPath;
     if (!this.file.path.startsWith(`${importPath}/tags/`)) return;
 
     const typstPath = this.file.path.slice(importPath.length);
-    const content = await this.plugin.app.vault.read(this.file);
     this.plugin.typst.store({ files: new Map([[typstPath, content]]) });
 
     const tag = typstPath.slice(6).slice(0, -4).replaceAll('.', '/');
