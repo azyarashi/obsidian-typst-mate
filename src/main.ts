@@ -315,13 +315,13 @@ export default class ObsidianTypstMate extends Plugin {
     this.addCommand({
       id: 'box-current-equation',
       name: 'Box current equation',
-      editorCallback: this.editorHelper.boxCurrentEquation.bind(this.editorHelper),
+      editorCallback: (editor) => this.editorHelper.boxCurrentEquation(editor.cm),
     });
 
     this.addCommand({
       id: 'select-current-equation',
       name: 'Select current equation',
-      editorCallback: this.editorHelper.selectCurrentEquation.bind(this.editorHelper),
+      editorCallback: (editor) => this.editorHelper.selectCurrentEquation(editor.cm),
     });
 
     this.addCommand({

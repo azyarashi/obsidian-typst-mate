@@ -3,21 +3,24 @@ use std::{path::PathBuf, str::FromStr, sync::Mutex};
 use chrono::{DateTime, Datelike, FixedOffset, Local, Utc};
 use rustc_hash::{FxHashMap, FxHashSet};
 use send_wrapper::SendWrapper;
+
 use wasm_bindgen::{JsCast, JsValue};
 
+use typst::foundations::{
+    Bytes, Content, Datetime, Element, NativeElement, Property, Recipe, Selector, Smart, Style,
+    Styles, Transformation, Value, func,
+};
+
+use typst::layout::{Abs, BoxElem, Em, Length, Rel, Sides};
+use typst::syntax::{FileId, Source, Span, VirtualPath, package::PackageSpec};
+use typst::text::{Font, FontBook, FontList, SmallcapsElem, TextElem};
 use typst::{
     Library, LibraryExt, World,
     diag::{FileError, FileResult, PackageError},
-    foundations::{
-        Bytes, Content, Datetime, Element, Property, Recipe, Selector, Style, Styles,
-        Transformation, Value,
-    },
-    layout::{Abs, Length},
-    syntax::{FileId, Source, Span, VirtualPath, package::PackageSpec},
-    text::{Font, FontBook, FontList, SmallcapsElem, TextElem},
     utils::LazyHash,
-    visualize::{Color, Paint},
+    visualize::{Color, Paint, Stroke},
 };
+
 use typst_ide::IdeWorld;
 
 use crate::vfs::FileSlot;
@@ -54,17 +57,48 @@ impl WasmWorld {
         // ライブラリを設定
         let mut library = Library::default();
 
-        // ライブラリのグローバル定義
+        // ライブラリのグローバル・数学定義
         // #let fontsize = (16 / 1.25) * 1pt
         let fontsize_abs = Abs::pt(fontsize / 1.25);
         let fontsize_val = Value::Length(Length::from(fontsize_abs));
         library.global.scope_mut().define("fontsize", fontsize_val);
+
         // #let CURSOR = text(fill: rgb("#44f"))[▮]
         let cursor_elem = TextElem::new("▮".into());
         let cursor_paint = Paint::Solid(Color::from_str("#44f").unwrap());
         let cursor_style = Style::Property(Property::new(TextElem::fill, cursor_paint));
         let cursor_val = Value::Content(Content::new(cursor_elem).styled(cursor_style));
         library.global.scope_mut().define("CURSOR", cursor_val);
+
+        // #let boxed(it) = box(if type(it) == content {it} else [#it], inset: 0.25em, stroke: black + 1pt)
+        #[func]
+        pub fn boxed(it: Value) -> Content {
+            let content = if let Value::Content(c) = it {
+                c
+            } else {
+                it.display()
+            };
+
+            let inset = Rel::from(Length::from(Em::new(0.25)));
+            let inset_sides = Sides::splat(Some(inset));
+
+            let paint = Paint::Solid(Color::BLACK);
+            let thickness = Length::from(Abs::pt(1.0));
+            let stroke = Stroke {
+                paint: Smart::Custom(paint),
+                thickness: Smart::Custom(thickness),
+                ..Default::default()
+            };
+            let stroke_sides = Sides::splat(Some(Some(stroke)));
+
+            BoxElem::new()
+                .with_body(Some(content))
+                .with_inset(inset_sides)
+                .with_stroke(stroke_sides)
+                .pack()
+        }
+        library.global.scope_mut().define_func::<boxed>();
+        library.math.scope_mut().define_func::<boxed>();
 
         // ライブラリのスタイル定義
         // #show smallcaps: set text(font: "")

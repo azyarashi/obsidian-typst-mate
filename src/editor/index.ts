@@ -1,33 +1,20 @@
 import { Prec } from '@codemirror/state';
 import { EditorView } from '@codemirror/view';
-import { type Editor, type EditorPosition, MarkdownView, type WorkspaceLeaf } from 'obsidian';
+import { type Editor, type EditorPosition, type MarkdownView, Notice, type WorkspaceLeaf } from 'obsidian';
 
 import type { Jump } from '@/libs/worker';
 import type ObsidianTypstMate from '@/main';
 import type TypstElement from '@/ui/elements/Typst';
 import { buildExtension as buildMarkdownExtensions } from './markdown/extensions/build';
 import { buildExtension as buildSharedExtensions } from './shared/extensions/build';
+import { getActiveRegion } from './shared/extensions/core/TypstMate';
 
 import './shared/css';
-import SHORTCUTS_DATA from '@/data/shortcuts.json';
-
-const SHORTCUTS_KEYS = Object.keys(SHORTCUTS_DATA);
 
 export class EditorHelper {
   editor?: Editor;
   plugin: ObsidianTypstMate;
   supportedCodeBlockLangs: Set<string>;
-
-  mathObject?: MathObject;
-
-  // Shortcut
-  currShortcutTimeoutId?: number;
-  pendingShortcutKey?: string;
-  savedSelection?: {
-    anchor: EditorPosition;
-    head: EditorPosition;
-    content: string;
-  };
 
   beforeChar: string | null = null;
   lastKeyDownTime: number = 0;
@@ -40,31 +27,13 @@ export class EditorHelper {
     );
 
     // 拡張機能をセット
-    this.plugin.registerEditorExtension(
-      EditorView.updateListener.of(async (update) => {
-        if (!this.editor) this.editor = this.plugin.app.workspace.getActiveViewOfType(MarkdownView)?.editor;
-        if (!this.editor) return;
-        const sel = update.state.selection.main;
-
-        // 親括弧のハイライト, MathObject の更新 & 変更あれば括弧のハイライト, なければインラインプレビュー
-        if (update.selectionSet) await this.cursorMoved(sel.head);
-      }),
-    );
     this.plugin.registerEditorExtension([
       Prec.high([
         [...buildSharedExtensions(this), ...buildMarkdownExtensions()],
         EditorView.domEventHandlers({
-          mousedown: (_e) => {
-            this.clearShortcutTimeout();
-          },
           // CURSOR Jump, Tabout, Shortcut
           keydown: (e) => {
             this.keyDown(e);
-          },
-          keyup: (e) => {
-            if (e.key === this.pendingShortcutKey) {
-              this.clearShortcutTimeout();
-            }
           },
         }),
       ]),
@@ -79,7 +48,7 @@ export class EditorHelper {
    */
 
   private keyDown(e: KeyboardEvent) {
-    if (!this.plugin.settings.disableMacro && !this.mathObject) {
+    if (!this.plugin.settings.disableMacro) {
       if (!this.editor) return;
       if (this.beforeChar === 'd' && e.key === 'm') {
         if (Date.now() - this.lastKeyDownTime > 500) return;
@@ -123,265 +92,10 @@ export class EditorHelper {
       }
       return;
     }
-
-    switch (e.key) {
-      case 'Tab': {
-        // TabJump
-        this.jumpCursor(e.shiftKey ? 'backward' : 'forward', e.preventDefault.bind(e));
-        break;
-      }
-      default: {
-        // Shortcut
-        if (
-          this.editor &&
-          SHORTCUTS_KEYS.includes(e.key) &&
-          !e.ctrlKey &&
-          !e.metaKey &&
-          !e.altKey &&
-          this.editor.getSelection()
-        ) {
-          if (e.repeat && this.currShortcutTimeoutId) {
-            e.preventDefault();
-            return;
-          }
-
-          if (this.currShortcutTimeoutId) this.clearShortcutTimeout();
-
-          this.pendingShortcutKey = e.key;
-          const selection = this.editor.listSelections()[0]!;
-          this.savedSelection = {
-            anchor: selection.anchor,
-            head: selection.head,
-            content: this.editor.getSelection(),
-          };
-
-          this.currShortcutTimeoutId = window.setTimeout(() => {
-            if (!this.editor) return;
-            // Restore selection
-            if (this.savedSelection) {
-              const start =
-                this.savedSelection.head.line === this.savedSelection.anchor.line
-                  ? this.savedSelection.head.ch < this.savedSelection.anchor.ch
-                    ? this.savedSelection.head
-                    : this.savedSelection.anchor
-                  : this.savedSelection.head.line < this.savedSelection.anchor.line
-                    ? this.savedSelection.head
-                    : this.savedSelection.anchor;
-
-              this.editor.replaceRange(this.savedSelection.content, start, {
-                line: start.line,
-                ch: start.ch + 1,
-              });
-              this.editor.setSelection(this.savedSelection.anchor, this.savedSelection.head);
-            }
-            this.executeShortcut(e);
-            this.clearShortcutTimeout();
-          }, 250);
-          return;
-        }
-
-        this.clearShortcutTimeout();
-        break;
-      }
-    }
-  }
-
-  async jumpCursor(direction: 'backward' | 'forward', preventDefault = () => {}) {
-    if (!this.mathObject) return;
-    if (!this.editor) return;
-
-    const pos = this.editor.getCursor();
-    const offset = this.editor.posToOffset(pos) - this.mathObject.startOffset;
-
-    let startOffset: number;
-    let targetContent: string;
-    if (direction === 'backward' && !this.plugin.settings.revertTabToDefault) {
-      if (offset === 0) {
-        const cursorPos = this.editor!.offsetToPos(this.mathObject.startOffset - 2);
-        preventDefault();
-        this.editor?.setCursor(cursorPos);
-        return;
-      }
-      // 前側
-      startOffset = this.mathObject.startOffset;
-      targetContent = this.mathObject.content.slice(0, offset);
-    } else {
-      if (offset === this.mathObject.content.length) {
-        const cursorPos = this.editor!.offsetToPos(this.mathObject.endOffset + 2);
-        preventDefault();
-        this.editor?.setCursor(cursorPos);
-        return;
-      }
-      // 後側
-      // ? 括弧の直前に Jump するので +1 が必要
-      startOffset = this.mathObject.startOffset + offset + 1;
-      targetContent = this.mathObject.content.slice(offset) + 1;
-    }
-
-    const cursorIndex = targetContent.indexOf('#CURSOR');
-    if (cursorIndex !== -1) {
-      // CURSOR Jump
-      preventDefault();
-      const cursorPos = this.editor!.offsetToPos(startOffset + cursorIndex - 1);
-      // ? こうしないとエラーが発生する
-      this.editor?.setSelection(cursorPos, {
-        line: cursorPos.line,
-        ch: cursorPos.ch + 7,
-      });
-      this.editor?.replaceSelection('');
-      return;
-    } else if (!this.plugin.settings.revertTabToDefault) {
-      // Bracket Jump
-      let parenIndex: number, bracketIndex: number, braceIndex: number;
-
-      if (direction === 'backward') {
-        parenIndex = targetContent.lastIndexOf('(');
-        bracketIndex = targetContent.lastIndexOf('[');
-        braceIndex = targetContent.lastIndexOf('{');
-      } else {
-        parenIndex = targetContent.indexOf(')');
-        bracketIndex = targetContent.indexOf(']');
-        braceIndex = targetContent.indexOf('}');
-        parenIndex = parenIndex === -1 ? Infinity : parenIndex;
-        bracketIndex = bracketIndex === -1 ? Infinity : bracketIndex;
-        braceIndex = braceIndex === -1 ? Infinity : braceIndex;
-      }
-
-      let targetIndex =
-        direction === 'backward'
-          ? Math.max(parenIndex, bracketIndex, braceIndex)
-          : Math.min(parenIndex, bracketIndex, braceIndex);
-      targetIndex = targetIndex === Infinity ? -1 : targetIndex;
-      if (targetIndex === -1) {
-        // Content Jump
-        preventDefault();
-        const cursorPos =
-          direction === 'backward'
-            ? this.editor!.offsetToPos(this.mathObject.startOffset)
-            : this.editor!.offsetToPos(this.mathObject.endOffset);
-        this.editor?.setCursor(cursorPos);
-        return;
-      }
-      preventDefault();
-      const cursorPos = this.editor!.offsetToPos(startOffset + targetIndex);
-
-      this.editor?.setCursor(cursorPos);
-      return;
-    }
-  }
-
-  async executeShortcut(e: KeyboardEvent) {
-    if (!this.mathObject) return;
-    if (!this.editor) return;
-
-    const selection = this.editor.getSelection();
-    if (!selection) return;
-
-    e.preventDefault();
-    const data = SHORTCUTS_DATA[e.key]!;
-    this.editor.replaceSelection(data.content.replaceAll('$1', selection));
-
-    if (!data.offset) return;
-    const cursor = this.editor.getCursor();
-    this.editor.setCursor({
-      line: cursor.line,
-      ch: cursor.ch + data.offset,
-    });
-  }
-
-  /* cursor moved
-   */
-
-  private async cursorMoved(offset: number): Promise<null | undefined> {
-    if (!this.isActiveMathExists()) {
-      this.mathObject = undefined;
-      return null;
-    }
-
-    if (!this.mathObject) {
-      this.updateMathObject(offset);
-      if (!this.mathObject) return null;
-      return;
-    }
-
-    // カーソルが数式の範囲外
-    const relativeOffset = offset - this.mathObject.startOffset;
-    if (
-      this.mathObject.kind !== 'codeblock' &&
-      (relativeOffset <= 0 || this.mathObject.content.length <= relativeOffset)
-    ) {
-      this.updateMathObject(offset);
-      if (!this.mathObject) return null;
-      return;
-    }
   }
 
   /* utils
    */
-
-  updateMathObject(offset: number) {
-    if (this.isActiveDisplayMathExists())
-      this.mathObject = this.extractDisplayMathObjectInsideTwoDollarsOutsideCursor(offset);
-    else this.mathObject = this.extractInlineMathObjectInsideDollarOutsideCursor(offset);
-  }
-
-  private extractInlineMathObjectInsideDollarOutsideCursor(offset: number): MathObject | undefined {
-    const doc = this.editor?.cm.state.doc;
-    if (!doc) return;
-
-    const cursor = this.editor!.offsetToPos(offset);
-    const lineOnCursor = doc.line(cursor.line + 1).text;
-
-    const lineBeforeCursor = lineOnCursor.slice(0, cursor.ch);
-    const lineAfterCursor = lineOnCursor.slice(cursor.ch);
-    const dollarIndexBeforeCursor = lineBeforeCursor.lastIndexOf('$');
-    const dollarIndexAfterCursor = lineAfterCursor.indexOf('$');
-
-    // カーソルを囲む $ がない場合は return
-    if (dollarIndexBeforeCursor === -1 || dollarIndexAfterCursor === -1) return;
-
-    const content = lineOnCursor.slice(dollarIndexBeforeCursor + 1, cursor.ch + dollarIndexAfterCursor);
-    const startPos = { line: cursor.line, ch: dollarIndexBeforeCursor + 1 };
-    const endPos = { line: cursor.line, ch: cursor.ch + dollarIndexAfterCursor };
-    return {
-      kind: 'inline',
-      content: content,
-      startPos: startPos,
-      endPos: endPos,
-      startOffset: this.editor!.posToOffset(startPos),
-      endOffset: this.editor!.posToOffset(endPos),
-    };
-  }
-
-  private extractDisplayMathObjectInsideTwoDollarsOutsideCursor(offset: number): MathObject | undefined {
-    const doc = this.editor?.cm.state.doc;
-    if (!doc) return;
-
-    // カーソル前後のドキュメントを取得
-    const docBeforeCursor = doc.sliceString(0, offset);
-    const docAfterCursor = doc.sliceString(offset);
-
-    // $$ の間にカーソルがある
-    if (docBeforeCursor.endsWith('$') && docAfterCursor.startsWith('$')) return;
-
-    const dollarOffsetBeforeCursor = docBeforeCursor.lastIndexOf('$$') + 2; // ? $$ の分
-    const dollarOffsetAfterCursor = offset + docAfterCursor.indexOf('$$');
-
-    // カーソルを囲む $$ がない場合は return
-    if (dollarOffsetBeforeCursor === -1 + 2 || dollarOffsetAfterCursor === -1) return;
-
-    const content = doc.sliceString(dollarOffsetBeforeCursor, dollarOffsetAfterCursor);
-    const startPos = this.editor!.offsetToPos(dollarOffsetBeforeCursor);
-    const endPos = this.editor!.offsetToPos(dollarOffsetAfterCursor);
-    return {
-      kind: 'display',
-      content: content,
-      startPos: startPos,
-      endPos: endPos,
-      startOffset: this.editor!.posToOffset(startPos),
-      endOffset: this.editor!.posToOffset(endPos),
-    };
-  }
 
   jumpTo(jump: Jump, context?: TypstElement) {
     if (jump.type === 'file') {
@@ -478,74 +192,34 @@ export class EditorHelper {
     );
   }
 
-  // ? カーソルが数式内にあるとは限らない
-  // ? |$$ でも $!$ でも 単に範囲選択中でも存在する
-  isActiveMathExists() {
-    return (
-      this.editor?.containerEl.querySelector('span.cm-formatting-math') !== null ||
-      this.mathObject?.kind === 'codeblock'
-    );
-  }
-
-  // TODO: これは先頭の $$ にしかない. ビューポートから外れると認識されない
-  isActiveDisplayMathExists() {
-    return (
-      this.editor?.containerEl.querySelector('span.cm-formatting-math.cm-math-block') ||
-      this.editor?.containerEl.querySelector('span.cm-active')?.textContent === '$$'
-    );
-  }
-
-  isActiveCodeBlockExists() {
-    return this.editor?.containerEl.querySelector('span.cm-active.HyperMD-codeblock');
-  }
-
   /* Editor Commands
    * Obsidian LaTeX Suite からの輸入
    */
 
-  boxCurrentEquation(editor: Editor) {
-    if (!editor) return;
-    const inlineMathObject = this.extractInlineMathObjectInsideDollarOutsideCursor(
-      editor.posToOffset(editor.getCursor()),
-    );
-    if (!inlineMathObject) return;
-    this.replaceWithLength(
-      `#box(${inlineMathObject.content}, inset: 0.25em, stroke: black + 1pt)`,
-      inlineMathObject.startPos,
-      inlineMathObject.content.length,
-    );
+  boxCurrentEquation(view: EditorView) {
+    const region = getActiveRegion(view);
+    if (!region) return new Notice('There is no active region');
+
+    const content = view.state.sliceDoc(region.from + region.skip, region.to);
+
+    view.dispatch({
+      changes: {
+        from: region.from + region.skip,
+        to: region.to,
+        insert: `${region.kind === 'display' ? ' ' : ''}boxed(${content})`,
+      },
+      selection: {
+        anchor: region.from + region.skip + `boxed(${content})`.length,
+      },
+    });
   }
 
-  selectCurrentEquation(editor: Editor) {
-    if (!editor) return;
-    const mathObject =
-      this.extractInlineMathObjectInsideDollarOutsideCursor(editor.posToOffset(editor.getCursor())) ??
-      this.extractDisplayMathObjectInsideTwoDollarsOutsideCursor(editor.posToOffset(editor.getCursor()));
-    if (!mathObject) return;
-    editor.setSelection(mathObject.startPos, mathObject.endPos);
+  selectCurrentEquation(view: EditorView) {
+    const region = getActiveRegion(view);
+    if (!region) return new Notice('There is no active region');
+
+    view.dispatch({
+      selection: { anchor: region.from + region.skip, head: region.to },
+    });
   }
-
-  clearShortcutTimeout() {
-    if (!this.currShortcutTimeoutId) return;
-
-    window.clearTimeout(this.currShortcutTimeoutId);
-    this.currShortcutTimeoutId = undefined;
-    this.pendingShortcutKey = undefined;
-    this.savedSelection = undefined;
-  }
-}
-
-interface MathObject {
-  kind: 'inline' | 'display' | 'codeblock';
-
-  content: string;
-  startPos: EditorPosition; // $ 含まない
-  endPos: EditorPosition; // $ 含まない
-  startOffset: number;
-  endOffset: number;
-}
-
-export interface PopupPosition {
-  x: number;
-  y: number;
 }
