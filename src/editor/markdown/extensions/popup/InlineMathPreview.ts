@@ -1,39 +1,72 @@
-import type { PopupPosition } from '@/editor/shared/utils/position';
-import type ObsidianTypstMate from '@/main';
+import { type EditorView, type PluginValue, ViewPlugin, type ViewUpdate } from '@codemirror/view';
+import { editorHelperFacet } from '@/editor/shared/extensions/core/Helper';
+import { getActiveRegion } from '@/editor/shared/extensions/core/TypstMate';
 
 import './InlineMathPreview.css';
+import { calculatePopupPosition } from '@/editor/shared/utils/position';
 
-export default class InlinePreviewElement extends HTMLElement {
-  plugin!: ObsidianTypstMate;
+class InlinePreviewPlugin implements PluginValue {
+  container: HTMLElement;
 
-  startup(plugin: ObsidianTypstMate) {
-    this.plugin = plugin;
-    this.addClasses(['typstmate-inline-preview', 'typstmate-temporary']);
-    this.hide();
+  constructor(public view: EditorView) {
+    this.container = document.createElement('div');
+    this.container.classList.add('typstmate-inlinemathpreview', 'typstmate-temporary');
+    this.container.hide();
+
+    document.body.appendChild(this.container);
   }
 
-  render(position: PopupPosition, content: string) {
-    this.style.setProperty('--preview-left', `${position.x}px`);
-    this.style.setProperty('--preview-top', `${position.y}px`);
+  update(update: ViewUpdate) {
+    if (!update.docChanged && !update.selectionSet) {
+      if (!update.view.hasFocus || !update.state.selection.main.empty) this.hide();
+      return;
+    }
 
-    if (this.style.display === 'none') this.firstRender();
-    this.show();
+    const helper = update.state.facet(editorHelperFacet)!;
+    if (!helper.plugin.settings.enableInlinePreview) return;
 
-    const html = window.MathJax!.tex2chtml(content, { display: false });
-    this.replaceChildren(html);
+    const region = getActiveRegion(update.view);
+    if (!region || region.kind !== 'inline') return this.hide();
+
+    const content = update.state.sliceDoc(region.from, region.to);
+    if (content.startsWith('\\ref') || content.startsWith('{} \\ref')) {
+      this.hide();
+      return;
+    }
+
+    this.view.requestMeasure({
+      read: () => {
+        try {
+          return calculatePopupPosition(this.view, region.from, region.to);
+        } catch {
+          return null;
+        }
+      },
+      write: (pos) => {
+        if (pos) this.render(pos, content);
+        else this.hide();
+      },
+    });
   }
 
-  firstRender() {
-    this.show();
+  render(pos: { x: number; y: number }, content: string) {
+    if (!window.MathJax) return;
+
+    const html = window.MathJax.tex2chtml(content, { display: false });
+    this.container.replaceChildren(html);
+
+    this.container.style.setProperty('--preview-left', `${pos.x}px`);
+    this.container.style.setProperty('--preview-top', `${pos.y}px`);
+    this.container.show();
   }
 
-  close() {
-    this.hide();
+  hide() {
+    this.container.hide();
   }
 
-  onClick(e: MouseEvent) {
-    const target = e.targetNode as HTMLElement | null;
-    if (!target) return;
-    if (!target.classList.contains('cm-math')) this.close();
+  destroy() {
+    this.container.remove();
   }
 }
+
+export const inlinePreviewExtension = ViewPlugin.fromClass(InlinePreviewPlugin);

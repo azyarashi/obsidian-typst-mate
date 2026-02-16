@@ -539,7 +539,7 @@ export default class ObsidianTypstMate extends Plugin {
     // 監視を終了
     this.observer.stopAll();
     this.listeners.forEach(this.app.workspace.offref.bind(this.app.workspace));
-    this.editorHelper.close();
+    // this.editorHelper.close();
 
     // Worker を終了
     this.worker?.terminate();

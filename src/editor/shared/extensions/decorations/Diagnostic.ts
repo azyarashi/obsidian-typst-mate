@@ -1,9 +1,10 @@
 import { type Diagnostic, linter } from '@codemirror/lint';
 import { StateEffect, StateField } from '@codemirror/state';
 import type { EditorView } from '@codemirror/view';
-import type { EditorHelper } from '@/editor';
 import type { Processor, ProcessorKind } from '@/libs/processor';
 
+import { editorHelperFacet } from '../core/Helper';
+import { getActiveRegion } from '../core/TypstMate';
 import './Diagnostic.css';
 
 interface TypstDiagnostic extends Diagnostic {
@@ -18,33 +19,35 @@ interface TypstMateResult {
   noDiag: boolean;
 }
 
-export const createDiagnosticExtension = (helper: EditorHelper) => {
-  return linter((view) => {
-    if (!helper.mathObject) return [];
-    // TODO: コードブロックには効かない
-    if (helper.mathObject.kind === 'codeblock') return [];
+export const diagnosticExtension = linter(
+  (view) => {
+    const helper = view.state.facet(editorHelperFacet);
+    if (!helper) return [];
+
+    const region = getActiveRegion(view);
+    if (!region) return [];
 
     const result = view.state.field(diagnosticsState);
     if (!result) return [];
     if (result.noDiag) return [];
 
     const { noPreamble, format } = result.processor;
-    const diagnostics = result?.diags
+    const diagnostics = result.diags
       .map((diag) => {
         const offset =
-          helper.mathObject!.startOffset +
-          result.offset -
-          (noPreamble ? 0 : helper.plugin.settings.preamble.length + 1) -
-          format.indexOf('{CODE}');
+          region.from -
+          (noPreamble ? 0 : helper.plugin.settings.preamble.length + 2) -
+          format.indexOf('{CODE}') -
+          helper.plugin.typstManager.preamble.length;
         return {
           from: diag.from + offset,
           to: diag.to + offset,
           message: '',
           severity: diag.severity,
           renderMessage: () => {
-            if (result.kind === 'inline') helper.hideAllPopup();
+            if (result.kind === 'inline') [];
             const container = document.createElement('div');
-            container.classList.add('typst-mate-diag');
+            container.classList.add('typstmate-diag');
 
             const messageEl =
               diag.severity === 'error' ? document.createElement('strong') : document.createElement('em');
@@ -53,7 +56,7 @@ export const createDiagnosticExtension = (helper: EditorHelper) => {
 
             if (0 < diag.hints.length) {
               const hintsEl = document.createElement('div');
-              hintsEl.classList.add('typst-mate-diag-hints');
+              hintsEl.classList.add('typstmate-diag-hints');
               diag.hints.forEach((hint, i) => {
                 const hintLine = document.createElement('div');
                 hintLine.textContent = `${i + 1}. ${hint}`;
@@ -65,11 +68,14 @@ export const createDiagnosticExtension = (helper: EditorHelper) => {
           },
         };
       })
-      .filter((diag) => helper.mathObject!.startOffset <= diag.from && diag.to <= helper.mathObject!.endOffset);
+      .filter((diag) => region.from <= diag.from && diag.to <= region.to);
 
     return diagnostics;
-  });
-};
+  },
+  {
+    delay: 10,
+  },
+);
 
 export const diagnosticsState = StateField.define<TypstMateResult | undefined>({
   create() {
@@ -82,10 +88,16 @@ export const diagnosticsState = StateField.define<TypstMateResult | undefined>({
   },
 });
 
-export const diagnosticsStateEffect = StateEffect.define<TypstMateResult>();
+export const diagnosticsStateEffect = StateEffect.define<TypstMateResult | undefined>();
 
 export const updateDiagnosticEffect = (view: EditorView, diags: TypstMateResult) => {
   return view.dispatch({
     effects: diagnosticsStateEffect.of(diags),
+  });
+};
+
+export const clearDiagnosticEffect = (view: EditorView) => {
+  return view.dispatch({
+    effects: diagnosticsStateEffect.of(undefined),
   });
 };

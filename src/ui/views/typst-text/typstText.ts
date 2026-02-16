@@ -1,6 +1,6 @@
 import { EditorState } from '@codemirror/state';
 import { EditorView } from '@codemirror/view';
-import { TextFileView, type TFile, type WorkspaceLeaf } from 'obsidian';
+import { debounce, TextFileView, type TFile, type WorkspaceLeaf } from 'obsidian';
 import type ObsidianTypstMate from '@/main';
 
 export class TypstTextView extends TextFileView {
@@ -9,6 +9,8 @@ export class TypstTextView extends TextFileView {
   plugin: ObsidianTypstMate;
 
   view!: EditorView;
+
+  override requestSave = debounce(this.save.bind(this), 1000);
 
   constructor(leaf: WorkspaceLeaf, plugin: ObsidianTypstMate) {
     super(leaf);
@@ -43,7 +45,7 @@ export class TypstTextView extends TextFileView {
   }
 
   override getViewData() {
-    return '';
+    return this.view?.state.doc.toString() ?? '';
   }
 
   override setViewData() {}
@@ -52,9 +54,13 @@ export class TypstTextView extends TextFileView {
     this.contentEl.empty();
 
     const fileContent = await this.app.vault.read(file);
+    const updateListener = EditorView.updateListener.of((update) => {
+      if (update.docChanged) this.requestSave();
+    });
+
     const startState = EditorState.create({
       doc: fileContent,
-      extensions: [],
+      extensions: [updateListener],
     });
 
     this.view = new EditorView({ parent: this.contentEl, state: startState });

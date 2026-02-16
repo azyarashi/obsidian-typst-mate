@@ -1,10 +1,7 @@
 import { type CachedMetadata, getAllTags, MarkdownView, Notice } from 'obsidian';
 
 import { DEFAULT_FONT_SIZE } from '@/constants';
-import { DEFAULT_SETTINGS } from '@/data/settings';
-import InlinePreviewElement from '@/editor/markdown/extensions/popup/InlineMathPreview';
-import SnippetSuggestElement from '@/editor/shared/extensions/popup/SnippetSuggest';
-import SymbolSuggestElement from '@/editor/shared/extensions/popup/SymbolSuggest';
+import { DEFAULT_SETTINGS, type Settings } from '@/data/settings';
 import type ObsidianTypstMate from '@/main';
 import TypstSVGElement from '@/ui/elements/SVG';
 import { overwriteCustomElements } from '@/utils/custromElementRegistry';
@@ -15,6 +12,8 @@ import type { PackageSpec } from './worker';
 
 import './typst.css';
 import { expandHierarchicalTags } from '@/utils/tags';
+
+const re = /\n([ \t]*> )/g;
 
 export default class TypstManager {
   plugin: ObsidianTypstMate;
@@ -113,9 +112,6 @@ export default class TypstManager {
 
   registerOnce() {
     overwriteCustomElements('typstmate-svg', TypstSVGElement);
-    overwriteCustomElements('typstmate-symbols', SymbolSuggestElement);
-    overwriteCustomElements('typstmate-snippets', SnippetSuggestElement);
-    overwriteCustomElements('typstmate-inline-preview', InlinePreviewElement);
 
     // コードブロックプロセッサーをオーバライド
     for (const processor of this.plugin.settings.processor.codeblock?.processors ?? []) {
@@ -193,41 +189,13 @@ export default class TypstManager {
     // プロセッサーを決定
     let processor: Processor;
     let offset = 0;
-    let noDiag = false;
     switch (kind) {
       case 'inline':
-        // ? プラグイン No more flickering inline math との互換性のため
-        if (code.startsWith('{}') && code.endsWith('{}')) {
-          offset += code.at(2) === ' ' ? 3 : 2;
-          code = code.slice(offset, code.at(-3) === ' ' ? -3 : -2);
-        }
-        // ? プラグイン obsidian-equation-citator との互換性のため
-        if (code.startsWith('\\ref'))
-          return 10 <= code.length
-            ? document.createSpan(code.slice(5, -1))
-            : this.plugin.originalTex2chtml(code, {
-                display: kind !== 'inline',
-              });
-
-        processor =
-          this.plugin.settings.processor.inline?.processors.find((p) => code.startsWith(`${p.id}:`)) ??
-          this.plugin.settings.processor.inline?.processors.at(-1) ??
-          DEFAULT_SETTINGS.processor.inline?.processors.at(-1)!;
-        if (processor.id.length !== 0) {
-          code = code.slice(processor.id.length + 1);
-          offset += 1;
-        }
-
-        break;
       case 'display': {
-        const newCode = code.replaceAll(/\n[\s\t]*> /g, '\n');
-        if (newCode !== code) noDiag = true;
-        code = newCode;
-
-        processor =
-          this.plugin.settings.processor.display?.processors.find((p) => code.startsWith(`${p.id}`)) ??
-          DEFAULT_SETTINGS.processor.display?.processors.at(-1)!;
-        if (processor.id.length !== 0) code = code.slice(processor.id.length);
+        const { eqStart, eqEnd, processor: processor_ } = extarctCMMath(this.plugin.settings, code, kind === 'display');
+        if (eqEnd !== 0) code = code.slice(eqStart, -eqEnd);
+        else code = code.slice(eqStart);
+        processor = processor_;
 
         break;
       }
@@ -265,7 +233,6 @@ export default class TypstManager {
     typstSVGEl.source = code;
     typstSVGEl.processor = processor;
     typstSVGEl.offset = offset;
-    typstSVGEl.noDiag = noDiag;
     containerEl.appendChild(typstSVGEl);
     // ちらつき防止
     const { id: beforeId } = this.beforeProcessor;
@@ -404,3 +371,38 @@ export default class TypstManager {
     else view.leaf.rebuildView();
   }
 }
+
+export const extarctCMMath = (settings: Settings, code: string, display: boolean) => {
+  let eqStart = 0;
+  let eqEnd = 0;
+
+  let processor: Processor;
+  if (display) {
+    // Display
+    code = code.replaceAll('<br>', '​​​​'); // ? 文字の長さを合わせる
+    code = code.replace(re, (_, s) => `\n${'​'.repeat(s.length)}`); // ? 文字の長さを合わせる
+
+    // プロセッサー選択
+    const processors = settings.processor.display?.processors;
+    processor = processors?.find((p) => code.startsWith(p.id)) ?? processors?.at(-1)!;
+    if (processor.id.length > 0) eqStart += processor.id.length;
+  } else {
+    // Inline
+    if (code.startsWith('{}')) {
+      if (code.startsWith('{} ')) eqStart += 3;
+      else eqStart += 2;
+    }
+    if (code.endsWith('{}')) {
+      if (code.endsWith(' {}')) eqEnd += 3;
+      else eqEnd += 2;
+    }
+
+    // プロセッサー選択
+    code = code.slice(eqStart);
+    const processors = settings.processor.inline?.processors;
+    processor = processors?.find((p) => code.startsWith(p.id)) ?? processors.at(-1)!;
+    if (processor.id.length > 0) eqStart += processor.id.length + 1; // ? : の分
+  }
+
+  return { eqStart, eqEnd, processor };
+};

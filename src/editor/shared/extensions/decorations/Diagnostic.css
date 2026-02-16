@@ -5,11 +5,11 @@
   margin: 0 !important;
 }
 
-.typst-mate-diag {
+.typstmate-diag {
   background-color: var(--background-secondary);
 }
 
-.typst-mate-diag-hints {
+.typstmate-diag-hints {
   margin-top: 4px;
   color: var(--text-normal);
 }

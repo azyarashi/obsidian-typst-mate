@@ -1,4 +1,4 @@
-.typstmate-inline-preview {
+.typstmate-inlinemathpreview {
   position: fixed;
   left: var(--preview-left, 0);
   top: var(--preview-top, 0);

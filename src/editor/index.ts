@@ -1,18 +1,12 @@
-import { type ChangeSet, Prec } from '@codemirror/state';
+import { Prec } from '@codemirror/state';
 import { EditorView } from '@codemirror/view';
 import { type Editor, type EditorPosition, MarkdownView, type WorkspaceLeaf } from 'obsidian';
 
-import type { BracketHighlights, BracketPair, Jump } from '@/libs/worker';
+import type { Jump } from '@/libs/worker';
 import type ObsidianTypstMate from '@/main';
 import type TypstElement from '@/ui/elements/Typst';
 import { buildExtension as buildMarkdownExtensions } from './markdown/extensions/build';
-import { clearCodeblockPreviewsEffect } from './markdown/extensions/decorations/CodeBlockPreview';
-import type InlinePreviewElement from './markdown/extensions/popup/InlineMathPreview';
 import { buildExtension as buildSharedExtensions } from './shared/extensions/build';
-import type SnippetSuggestElement from './shared/extensions/popup/SnippetSuggest';
-import { snippetRegex } from './shared/extensions/popup/SnippetSuggest';
-import type SymbolSuggestElement from './shared/extensions/popup/SymbolSuggest';
-import { symbolRegex } from './shared/extensions/popup/SymbolSuggest';
 
 import './shared/css';
 import SHORTCUTS_DATA from '@/data/shortcuts.json';
@@ -25,9 +19,6 @@ export class EditorHelper {
   supportedCodeBlockLangs: Set<string>;
 
   mathObject?: MathObject;
-  bracketPairs?: BracketPair[];
-  bracketHighlights?: BracketHighlights['highlights'];
-  cursorEnclosingBracketPair?: BracketPair;
 
   // Shortcut
   currShortcutTimeoutId?: number;
@@ -38,25 +29,11 @@ export class EditorHelper {
     content: string;
   };
 
-  private inlinePreviewEl: InlinePreviewElement;
-  private snippetSuggestEl: SnippetSuggestElement;
-  private symbolSuggestEl: SymbolSuggestElement;
-
   beforeChar: string | null = null;
   lastKeyDownTime: number = 0;
 
   constructor(plugin: ObsidianTypstMate) {
     this.plugin = plugin;
-
-    this.inlinePreviewEl = document.createElement('typstmate-inline-preview') as InlinePreviewElement;
-    this.snippetSuggestEl = document.createElement('typstmate-snippets') as SnippetSuggestElement;
-    this.symbolSuggestEl = document.createElement('typstmate-symbols') as SymbolSuggestElement;
-    this.inlinePreviewEl.startup(this.plugin);
-    this.snippetSuggestEl.startup(this.plugin);
-    this.symbolSuggestEl.startup(this.plugin);
-    this.plugin.app.workspace.containerEl.appendChild(this.inlinePreviewEl);
-    this.plugin.app.workspace.containerEl.appendChild(this.snippetSuggestEl);
-    this.plugin.app.workspace.containerEl.appendChild(this.symbolSuggestEl);
 
     this.supportedCodeBlockLangs = new Set(
       (this.plugin.settings.processor.codeblock?.processors ?? []).map((p) => p.id),
@@ -69,31 +46,20 @@ export class EditorHelper {
         if (!this.editor) return;
         const sel = update.state.selection.main;
 
-        // サジェストやプレビューの非表示
-        if (update.focusChanged) this.focusChanged(update.view.hasFocus);
-        // サジェストの開始, インラインプレビューの更新
-        else if (update.docChanged && sel.empty) await this.docChanged(sel.head, update.changes);
         // 親括弧のハイライト, MathObject の更新 & 変更あれば括弧のハイライト, なければインラインプレビュー
         if (update.selectionSet) await this.cursorMoved(sel.head);
       }),
     );
     this.plugin.registerEditorExtension([
       Prec.high([
-        [...buildSharedExtensions(this), ...buildMarkdownExtensions(this)],
+        [...buildSharedExtensions(this), ...buildMarkdownExtensions()],
         EditorView.domEventHandlers({
-          // インラインプレビューの非表示
-          mousedown: (e) => {
+          mousedown: (_e) => {
             this.clearShortcutTimeout();
-            this.hideAllSuggest();
-            if (this.inlinePreviewEl.style.display !== 'none') this.inlinePreviewEl.onClick(e);
           },
-          // Suggest, CURSOR Jump, Tabout, Shortcut
+          // CURSOR Jump, Tabout, Shortcut
           keydown: (e) => {
-            if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') this.hideAllSuggest();
-            else if (this.symbolSuggestEl.style.display !== 'none') this.symbolSuggestEl.onKeyDown(e);
-            else if (this.snippetSuggestEl.style.display !== 'none') this.snippetSuggestEl.onKeyDown(e);
-            // CURSOR Jump, Tabout, Shortcut
-            else this.keyDown(e);
+            this.keyDown(e);
           },
           keyup: (e) => {
             if (e.key === this.pendingShortcutKey) {
@@ -103,129 +69,10 @@ export class EditorHelper {
         }),
       ]),
     ]);
-
-    this.plugin.registerDomEvent(document, 'mousedown', (e) => {
-      const view = this.editor?.cm as EditorView | undefined;
-      if (!view) return;
-      if (!view.dom.contains(e.target as Node)) view.dispatch({ effects: clearCodeblockPreviewsEffect.of() });
-    });
-  }
-
-  close() {
-    this.inlinePreviewEl.close();
-    this.symbolSuggestEl.close();
-    this.snippetSuggestEl.close();
-    this.removeHighlightsFromBracketPairs();
-    this.removeHighlightsFromBracketPairEnclosingCursor();
-    this.editor?.removeHighlights('typstmate-atmode');
-  }
-
-  hideAllPopup() {
-    this.inlinePreviewEl.close();
-    this.hideAllSuggest();
-  }
-
-  hideAllSuggest() {
-    this.symbolSuggestEl.close();
-    this.snippetSuggestEl.close();
   }
 
   onActiveLeafChange(leaf: WorkspaceLeaf | null) {
     this.editor = leaf?.view.getViewType() === 'markdown' ? (leaf?.view as MarkdownView)?.editor : undefined;
-    if (this.editor) this.mathObject = undefined;
-    this.close();
-  }
-
-  /* doc changed
-   */
-
-  private async docChanged(offset: number, changes: ChangeSet): Promise<void> {
-    if (!this.isActiveMathExists()) {
-      this.mathObject = undefined;
-      this.hideAllPopup();
-      return;
-    }
-
-    const oldLine = this.mathObject?.startPos.line;
-    if (this.mathObject?.kind === 'codeblock') {
-    } else if (this.mathObject && changes.length === 1) {
-      changes.iterChanges((fromA, toA, _fromB, _toB, inserted) => {
-        this.mathObject!.content =
-          this.mathObject!.content.slice(0, fromA - this.mathObject!.startOffset) +
-          inserted.toString() +
-          this.mathObject!.content.slice(toA - this.mathObject!.startOffset);
-      });
-      this.mathObject!.endOffset = this.mathObject!.startOffset + this.mathObject!.content.length;
-      this.mathObject!.endPos = this.editor!.offsetToPos(this.mathObject!.endOffset);
-    } else this.updateMathObject(offset);
-    if (!this.mathObject) return;
-
-    if (this.trySuggest(offset)) {
-      this.inlinePreviewEl.close();
-      return;
-    }
-    this.hideAllSuggest();
-    if (oldLine === undefined || oldLine === this.mathObject.startPos.line) this.updateInlinePreview();
-    else this.inlinePreviewEl.close();
-  }
-
-  private updateInlinePreview() {
-    if (
-      this.mathObject?.kind !== 'inline' ||
-      this.symbolSuggestEl.style.display !== 'none' ||
-      this.snippetSuggestEl.style.display !== 'none' ||
-      !this.plugin.settings.enableInlinePreview ||
-      this.mathObject.content.startsWith('\\ref') ||
-      this.mathObject.content.startsWith('{} \\ref')
-    ) {
-      this.inlinePreviewEl.close();
-      return;
-    }
-
-    const position = this.calculatePopupPosition(this.mathObject!.startPos, this.mathObject!.endPos);
-    this.inlinePreviewEl.render(position, this.mathObject!.content);
-  }
-
-  private trySuggest(offset: number): boolean {
-    if (!this.editor) return false;
-    const cursor = this.editor.offsetToPos(offset);
-    const line = this.editor.getLine(cursor.line);
-    const textBeforeCursor = line.slice(0, cursor.ch);
-
-    // symbol / snippet
-    if (textBeforeCursor.endsWith('@') && !textBeforeCursor.startsWith('#import')) {
-      this.symbolSuggestEl.close();
-
-      const match = textBeforeCursor.match(snippetRegex);
-      if (match) {
-        if (match.groups?.query === undefined) return true;
-
-        this.snippetSuggestEl.suggest(match.groups.query, cursor, match.groups.arg);
-        return true;
-      }
-
-      this.snippetSuggestEl.close();
-    } else if (!this.plugin.typstManager.beforeProcessor?.disableSuggest && !textBeforeCursor.endsWith(' ')) {
-      this.snippetSuggestEl.close();
-
-      const match = textBeforeCursor.match(symbolRegex);
-      if (match) {
-        if (match.groups?.symbol === undefined) return true;
-
-        this.symbolSuggestEl.suggest(match.groups.symbol, cursor);
-        return true;
-      }
-    }
-
-    return false;
-  }
-
-  /* focus changed
-   */
-
-  private focusChanged(hasFocus: boolean) {
-    if (hasFocus) return;
-    this.close();
   }
 
   /* key down
@@ -448,12 +295,10 @@ export class EditorHelper {
   private async cursorMoved(offset: number): Promise<null | undefined> {
     if (!this.isActiveMathExists()) {
       this.mathObject = undefined;
-      this.close();
       return null;
     }
 
     if (!this.mathObject) {
-      this.hideAllPopup();
       this.updateMathObject(offset);
       if (!this.mathObject) return null;
       return;
@@ -465,35 +310,10 @@ export class EditorHelper {
       this.mathObject.kind !== 'codeblock' &&
       (relativeOffset <= 0 || this.mathObject.content.length <= relativeOffset)
     ) {
-      this.hideAllPopup();
       this.updateMathObject(offset);
       if (!this.mathObject) return null;
       return;
     }
-  }
-
-  updateHighlightsOnBracketPairs() {
-    if (!this.mathObject) return;
-    this.removeHighlightsFromBracketPairs();
-
-    if (!this.bracketHighlights) return;
-
-    for (const kind of ['paren', 'bracket', 'brace'] as const) {
-      if (!this.bracketHighlights[kind].length) continue;
-      this.addHighlightsWithLength(1, this.bracketHighlights[kind], `typstmate-bracket-${kind}`, false);
-    }
-  }
-
-  private removeHighlightsFromBracketPairs() {
-    this.editor?.removeHighlights('typstmate-bracket-paren');
-    this.editor?.removeHighlights('typstmate-bracket-bracket');
-    this.editor?.removeHighlights('typstmate-bracket-brace');
-  }
-
-  private removeHighlightsFromBracketPairEnclosingCursor() {
-    this.editor?.removeHighlights('typstmate-bracket-enclosing-paren');
-    this.editor?.removeHighlights('typstmate-bracket-enclosing-bracket');
-    this.editor?.removeHighlights('typstmate-bracket-enclosing-brace');
   }
 
   /* utils
@@ -677,23 +497,6 @@ export class EditorHelper {
 
   isActiveCodeBlockExists() {
     return this.editor?.containerEl.querySelector('span.cm-active.HyperMD-codeblock');
-  }
-
-  calculatePopupPosition(startPos: EditorPosition, endPos: EditorPosition): PopupPosition {
-    if (!this.editor) throw new Error();
-    const startCoords = this.editor.coordsAtPos(startPos, false);
-    const endCoords = this.editor.coordsAtPos(endPos, false);
-
-    if (!startCoords || !endCoords) throw new Error();
-
-    const x =
-      Math.abs(startCoords.top - endCoords.top) > 8
-        ? this.editor.coordsAtPos({ line: startPos.line, ch: 0 }, false).left
-        : startCoords.left;
-
-    const y = endCoords.bottom + 2;
-
-    return { x, y };
   }
 
   /* Editor Commands

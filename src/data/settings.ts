@@ -42,6 +42,8 @@ export interface Settings {
   /* 高度な設定 */
   openTypstToolsOnStartup: boolean;
   enableMathjaxFallback: boolean;
+  importPath: string;
+  enableDebugger: boolean;
 
   /* その他の設定 */
   processor: {
@@ -62,9 +64,6 @@ export interface Settings {
 
   /* 内部設定 */
   crashCount: number; // ? OOM による Boot Loop 回避のため
-
-  // Path to import typst files from
-  importPath: string;
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -103,6 +102,8 @@ export const DEFAULT_SETTINGS: Settings = {
   /* 高度な設定 */
   openTypstToolsOnStartup: true,
   enableMathjaxFallback: false,
+  importPath: '.typst',
+  enableDebugger: false,
 
   /* その他の設定 */
   processor: {
@@ -251,6 +252,4 @@ export const DEFAULT_SETTINGS: Settings = {
 
   /* 内部設定 */
   crashCount: 0,
-
-  importPath: '.typst',
 };

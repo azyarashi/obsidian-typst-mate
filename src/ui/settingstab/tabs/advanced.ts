@@ -32,6 +32,14 @@ export function addAdvancedTab(plugin: ObsidianTypstMate, containerEl: HTMLEleme
       });
     });
 
+  new Setting(containerEl).setName('Enable Debugger').addToggle((toggle) => {
+    toggle.setValue(plugin.settings.enableDebugger);
+    toggle.onChange((value) => {
+      plugin.settings.enableDebugger = value;
+      plugin.saveSettings();
+    });
+  });
+
   new Setting(containerEl)
     .setName('Open Typst Tools on Startup')
     .setDesc('Open Typst tools in side panel when launching Obsidian.')

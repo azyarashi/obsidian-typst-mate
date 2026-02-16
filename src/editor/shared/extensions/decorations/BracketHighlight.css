@@ -12,14 +12,8 @@
   font-weight: bold !important;
 }
 
-.typstmate-bracket-paren.typstmate-bracket-enclosing {
-  background-color: rgba(225, 125, 225, 0.5) !important;
-}
-.typstmate-bracket-bracket.typstmate-bracket-enclosing {
-  background-color: rgba(125, 225, 225, 0.5) !important;
-}
-.typstmate-bracket-brace.typstmate-bracket-enclosing {
-  background-color: rgba(225, 225, 125, 0.5) !important;
+.typstmate-bracket-enclosing {
+  background-color: var(--text-highlight-bg) !important;
 }
 
 .typstmate-highlight-null {

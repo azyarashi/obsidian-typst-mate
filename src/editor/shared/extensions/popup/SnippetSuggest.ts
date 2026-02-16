@@ -1,79 +1,152 @@
-import { type EditorPosition, Notice } from 'obsidian';
-
-import type { PopupPosition } from '@/editor';
+import { StateField } from '@codemirror/state';
+import {
+  Decoration,
+  type DecorationSet,
+  EditorView,
+  type PluginValue,
+  ViewPlugin,
+  type ViewUpdate,
+} from '@codemirror/view';
+import { Notice } from 'obsidian';
 import type { Snippet } from '@/libs/snippet';
-import type ObsidianTypstMate from '@/main';
+import { calculatePopupPosition } from '../../utils/position';
+import { editorHelperFacet } from '../core/Helper';
+import { getActiveRegion } from '../core/TypstMate';
 
 import './SnippetSuggest.css';
 
 export const snippetRegex =
   /(?:^| |\$|\(|\)|\[|\]|\{|\}|<|>|\+|-|\/|\*|=|!|\?|#|%|&|'|:|;|,|\d)(?<query>[^\W_]+)(?<arg>\(.*\))?@$/;
 
-// TODO! Abstract Class にする
+const atHighlightField = StateField.define<DecorationSet>({
+  create() {
+    return Decoration.none;
+  },
+  update(decorations, tr) {
+    decorations = decorations.map(tr.changes);
 
-export default class SnippetSuggestElement extends HTMLElement {
-  plugin!: ObsidianTypstMate;
-  items!: HTMLElement;
+    if (tr.docChanged || tr.selection) {
+      const cursor = tr.state.selection.main.head;
+      const line = tr.state.doc.lineAt(cursor);
+      const textBefore = tr.state.sliceDoc(line.from, cursor);
+      const match = textBefore.match(snippetRegex);
 
+      if (match?.groups?.query) {
+        const atPos = cursor - 1;
+        const deco = Decoration.mark({ class: 'typstmate-atmode' }).range(atPos, cursor);
+        decorations = Decoration.set([deco]);
+      } else {
+        decorations = Decoration.none;
+      }
+    }
+
+    return decorations;
+  },
+  provide: (field) => EditorView.decorations.from(field),
+});
+
+class SnippetSuggestPlugin implements PluginValue {
+  container: HTMLElement;
+  items: HTMLElement;
   candidates: Snippet[] = [];
   selectedIndex: number = -1;
-
   query?: string;
-  argument?: string; // () 含む
-  queryPos?: EditorPosition;
-
+  argument?: string;
+  queryFrom?: number;
+  queryTo?: number;
   prevEl?: HTMLElement;
 
   private mouseMoveListener = (e: MouseEvent) => this.onMouseMove(e);
   private mouseDownListener = (e: MouseEvent) => this.onMouseDown(e);
 
-  startup(plugin: ObsidianTypstMate) {
-    this.plugin = plugin;
-    this.addClasses(['typstmate-snippets', 'typstmate-temporary']);
-    this.hide();
-    this.items = this.createEl('div', { cls: 'items' });
+  constructor(public view: EditorView) {
+    this.container = document.createElement('div');
+    this.container.classList.add('typstmate-snippets', 'typstmate-temporary');
+    this.container.hide();
+    this.items = document.createElement('div');
+    this.items.className = 'items';
+    this.container.appendChild(this.items);
+    document.body.appendChild(this.container);
   }
 
-  suggest(query: string, cursorPos: EditorPosition, argument?: string) {
-    this.candidates = this.plugin.settings.snippets?.filter((s) => s.name.includes(query)) ?? [];
-    if (!this.candidates.length) return this.close();
+  update(update: ViewUpdate) {
+    if (!update.view.hasFocus || !update.state.selection.main.empty) {
+      this.hide();
+      return;
+    }
+
+    if (!update.docChanged && !update.selectionSet) return;
+
+    const helper = update.state.facet(editorHelperFacet);
+    if (!helper) return;
+
+    const region = getActiveRegion(update.view);
+    if (!region) {
+      this.hide();
+      return;
+    }
+
+    const cursor = update.state.selection.main.head;
+    const line = update.state.doc.lineAt(cursor);
+    const textBefore = update.state.sliceDoc(line.from, cursor);
+    const match = textBefore.match(snippetRegex);
+
+    if (!match || !match.groups?.query) {
+      this.hide();
+      return;
+    }
+
+    const query = match.groups.query;
+    const argument = match.groups.arg;
+
+    this.suggest(query, cursor, argument, update.view, helper);
+  }
+
+  suggest(query: string, cursor: number, argument: string | undefined, view: EditorView, helper: any) {
+    this.candidates = helper.plugin.settings.snippets?.filter((s: Snippet) => s.name.includes(query)) ?? [];
+    if (!this.candidates.length) {
+      this.hide();
+      return;
+    }
+
     this.query = query;
-    this.queryPos = {
-      line: cursorPos.line,
-      ch: cursorPos.ch - query.length - (argument?.length ?? 0) - 1,
-    };
     this.argument = argument;
+    const queryLength = query.length + (argument?.length ?? 0) + 1;
+    this.queryFrom = cursor - queryLength;
+    this.queryTo = cursor;
 
-    const position = this.plugin.editorHelper.calculatePopupPosition(this.queryPos, cursorPos);
-
-    // @ のハイライト
-    this.plugin.editorHelper.addHighlightsWithLength(
-      1,
-      [
-        {
-          line: cursorPos.line,
-          ch: cursorPos.ch - 1,
-        },
-      ],
-      'typstmate-atmode',
-      true,
-    );
-
-    this.render(position);
+    view.requestMeasure({
+      read: () => {
+        try {
+          return calculatePopupPosition(view, this.queryFrom!, this.queryTo!);
+        } catch {
+          return null;
+        }
+      },
+      write: (position) => {
+        if (position) {
+          this.render(position, helper);
+        } else {
+          this.hide();
+        }
+      },
+    });
   }
 
-  private render(position: PopupPosition) {
-    this.style.setProperty('--preview-left', `${position.x}px`);
-    this.style.setProperty('--preview-top', `${position.y}px`);
+  private render(position: { x: number; y: number }, helper: any) {
+    this.container.style.setProperty('--preview-left', `${position.x}px`);
+    this.container.style.setProperty('--preview-top', `${position.y}px`);
 
-    if (this.style.display === 'none') this.renderFirst();
-    this.items.empty();
+    if (this.container.style.display === 'none') this.renderFirst();
+
+    this.items.replaceChildren();
+    this.selectedIndex = -1;
 
     this.candidates.forEach((snippet, index) => {
-      const item = this.items.createEl('div', { cls: 'item' });
+      const item = document.createElement('div');
+      item.className = 'item';
       item.dataset.index = index.toString();
 
-      this.selectedIndex = -1;
       let content: string = snippet.content;
       if (snippet.script) {
         item.append(`📦${snippet.name} (${snippet.category})`);
@@ -89,26 +162,26 @@ export default class SnippetSuggestElement extends HTMLElement {
             content = `${snippet.id}\n${content}\n`;
             break;
         }
-        const contentEl = item.createEl('div');
-        this.plugin.typstManager.render(content, contentEl, snippet.kind);
+        const contentEl = document.createElement('div');
+        helper.plugin.typstManager.render(content, contentEl, snippet.kind);
         item.appendChild(document.createTextNode(`${snippet.name} (${snippet.category})`));
         item.appendChild(contentEl);
       }
 
       if (this.query === snippet.name) this.updateSelection(index);
+      this.items.appendChild(item);
     });
   }
 
   private renderFirst() {
     this.prevEl = document.activeElement as HTMLElement;
-    this.show();
+    this.container.show();
     document.addEventListener('mousemove', this.mouseMoveListener);
     document.addEventListener('mousedown', this.mouseDownListener);
   }
 
-  close() {
-    this.plugin.editorHelper.editor?.removeHighlights('typstmate-atmode');
-    this.hide();
+  hide() {
+    this.container.hide();
     document.removeEventListener('mousemove', this.mouseMoveListener);
     document.removeEventListener('mousedown', this.mouseDownListener);
   }
@@ -123,12 +196,12 @@ export default class SnippetSuggestElement extends HTMLElement {
     const item = (e.target as HTMLElement).closest('.item') as HTMLElement | null;
     if (!item) return;
     this.execute(this.candidates[Number(item.dataset.index)] ?? this.candidates[0]!);
-    this.close();
+    this.hide();
     e.preventDefault();
   }
 
-  onKeyDown(e: KeyboardEvent) {
-    if (this.candidates.length === 0) return;
+  onKeyDown(e: KeyboardEvent): boolean {
+    if (this.container.style.display === 'none' || this.candidates.length === 0) return false;
 
     switch (e.key) {
       case 'ArrowDown':
@@ -143,7 +216,7 @@ export default class SnippetSuggestElement extends HTMLElement {
           else this.updateSelection((this.selectedIndex + 1) % candidatesLength);
         }
         this.scrollSelectedIntoView();
-        return;
+        return true;
       }
 
       case 'Tab': {
@@ -151,8 +224,9 @@ export default class SnippetSuggestElement extends HTMLElement {
         this.prevEl?.focus();
         if (this.selectedIndex >= 0) this.complete(this.candidates[this.selectedIndex]! ?? this.candidates[0]!);
         else this.complete(this.candidates[0]!);
-        return;
+        return true;
       }
+
       case 'Enter': {
         e.preventDefault();
         this.prevEl?.focus();
@@ -162,78 +236,81 @@ export default class SnippetSuggestElement extends HTMLElement {
 
         if (snippet.script && this.argument === undefined) this.complete(snippet);
         else this.execute(snippet);
-        return;
+        return true;
       }
 
       case 'Shift': {
         e.preventDefault();
-        return;
+        return true;
       }
 
       default: {
         if (e.key === '(' && !e.ctrlKey && !e.metaKey && !e.altKey) {
           e.preventDefault();
-          const cursor = this.plugin.editorHelper.editor!.getCursor();
-          this.plugin.editorHelper.editor!.replaceRange('()', {
-            line: cursor.line,
-            ch: cursor.ch - (this.argument ? 2 : 1),
+          const cursor = this.view.state.selection.main.head;
+          this.view.dispatch({
+            changes: {
+              from: cursor - (this.argument ? 2 : 1),
+              insert: '()',
+            },
           });
-          return;
+          return true;
         } else if (e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {
           if (e.key === ' ' && this.argument === undefined) {
             this.prevEl?.focus();
-            this.blur();
-            this.close();
-            return;
+            this.hide();
+            return false;
           }
           e.preventDefault();
-          const cursor = this.plugin.editorHelper.editor!.getCursor();
-          this.plugin.editorHelper.editor!.replaceRange(e.key, {
-            line: cursor.line,
-            ch: cursor.ch - (this.argument ? 2 : 1),
+          const cursor = this.view.state.selection.main.head;
+          this.view.dispatch({
+            changes: {
+              from: cursor - (this.argument ? 2 : 1),
+              insert: e.key,
+            },
           });
-          return;
+          return true;
         } else if (e.key === 'Backspace') {
-          // @ のみのとき
           if (this.query === undefined) break;
 
-          // @ 直前を消す
           e.preventDefault();
-          const cursor = this.plugin.editorHelper.editor!.getCursor();
-          this.plugin.editorHelper.replaceWithLength(
-            '',
-            {
-              line: cursor.line,
-              ch: cursor.ch - (this.argument ? 3 : 2),
+          const cursor = this.view.state.selection.main.head;
+          this.view.dispatch({
+            changes: {
+              from: cursor - (this.argument ? 3 : 2),
+              to: cursor - (this.argument && this.argument === '()' ? 1 : 0),
             },
-            this.argument === '()' ? 2 : 1,
-          );
-          return;
+          });
+          return true;
         } else if (e.key === 'Shift') {
           e.preventDefault();
-          return;
+          return true;
         }
       }
     }
 
     this.prevEl?.focus();
-    this.blur();
-    this.close();
+    this.hide();
+    return false;
   }
 
   private complete(snippet: Snippet) {
     if (!(snippet.script && !this.argument) && snippet.name === this.query) return this.execute(snippet);
 
-    this.plugin.editorHelper.replaceWithLength(
-      `${snippet.name + (snippet.script ? (this.argument ? this.argument : '()') : '')}@`,
-      this.queryPos!,
-      this.query!.length + (this.argument?.length ?? 0) + 1,
-    );
+    if (this.queryFrom === undefined || this.queryTo === undefined) return;
+
+    this.view.dispatch({
+      changes: {
+        from: this.queryFrom,
+        to: this.queryTo,
+        insert: `${snippet.name + (snippet.script ? (this.argument ? this.argument : '()') : '')}@`,
+      },
+    });
   }
 
   private execute(snippet: Snippet) {
     let content = snippet.content;
-    // スクリプトの実行
+
     if (snippet.script) {
       try {
         content = new Function('input', 'window', content)(this.argument?.slice(1, -1), window);
@@ -247,19 +324,14 @@ export default class SnippetSuggestElement extends HTMLElement {
     content = content.replace('#CURSOR', '');
     if (cursorIndex === -1) content = `${content} `;
 
-    this.plugin.editorHelper.replaceWithLength(
-      content,
-      this.queryPos!,
-      this.query!.length + (this.argument?.length ?? 0) + 1,
-    );
-    const newCursorPos = {
-      line: this.queryPos!.line,
-      ch: this.queryPos!.ch + (cursorIndex === -1 ? content.length : cursorIndex),
-    };
-    this.plugin.editorHelper.editor?.setCursor(newCursorPos);
+    if (this.queryFrom === undefined || this.queryTo === undefined) return;
 
-    const offset = this.plugin.editorHelper.editor!.posToOffset(newCursorPos);
-    this.plugin.editorHelper.updateMathObject(offset);
+    const newCursorPos = this.queryFrom + (cursorIndex === -1 ? content.length : cursorIndex);
+
+    this.view.dispatch({
+      changes: { from: this.queryFrom, to: this.queryTo, insert: content },
+      selection: { anchor: newCursorPos },
+    });
   }
 
   private updateSelection(newIndex: number) {
@@ -273,4 +345,15 @@ export default class SnippetSuggestElement extends HTMLElement {
     const el = this.items.children[this.selectedIndex];
     if (el) el.scrollIntoView({ block: 'nearest', behavior: 'auto' });
   }
+
+  destroy() {
+    this.hide();
+    this.container.remove();
+  }
 }
+
+export { SnippetSuggestPlugin };
+
+const snippetSuggestPlugin = ViewPlugin.fromClass(SnippetSuggestPlugin);
+
+export const snippetSuggestExtension = [atHighlightField, snippetSuggestPlugin];
