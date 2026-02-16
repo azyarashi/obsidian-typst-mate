@@ -1,8 +1,13 @@
-typstmate-svg g * {
+typstmate-svg g *:not([stroke]):not(:has(g)) {
   stroke: transparent;
+}
+
+typstmate-svg g *:not([stroke-width]):not(:has(g)) {
   stroke-width: 0.15em;
 }
 
-typstmate-svg g:hover * {
+/* 各文字: typstmate-svg g *:not(:has(g)):hover { */
+
+typstmate-svg g:not(:has(g)):hover * {
   fill: var(--interactive-accent) !important;
 }
