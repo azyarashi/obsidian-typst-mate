@@ -364,7 +364,6 @@ export default class ObsidianTypstMate extends Plugin {
     this.listeners.push(
       // ? css-change が意図しない値を渡すので arrow function で包む
       this.app.workspace.on('css-change', () => this.applyBaseColor.bind(this)),
-      this.app.workspace.on('active-leaf-change', this.editorHelper.onActiveLeafChange.bind(this.editorHelper)),
       this.app.workspace.on('leaf-menu', (menu, leaf) => {
         if (leaf.view.getViewType() === 'markdown') {
           const pdfItems = menu.items

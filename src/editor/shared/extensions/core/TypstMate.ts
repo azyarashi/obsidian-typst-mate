@@ -87,7 +87,7 @@ export const collectRegions = (view: EditorView, helper: EditorHelper, from?: nu
           if (codeBlockStart < codeBlockEnd)
             // ? 改行の分 + 1
             rawRegions.push({
-              skip: 0,
+              skip: processor.id.length + 1,
               from: codeBlockStart + 1,
               to: codeBlockEnd,
               kind: 'codeblock',
@@ -121,7 +121,7 @@ export class TypstMateCorePluginValue implements PluginValue {
   constructor(view: EditorView) {
     this.computeFull(view);
 
-    this.computeDebounce = debounce((view: EditorView) => this.computeSelection(view), 100, true);
+    this.computeDebounce = debounce((view: EditorView) => this.computeFull(view), 100, true);
   }
 
   update(update: ViewUpdate) {
@@ -176,6 +176,13 @@ export function getRegionAt(view: EditorView, cursor: number): ParsedRegion | nu
   const pluginVal = view.plugin(typstMateCore);
   if (!pluginVal) return null;
 
-  const region = pluginVal.typstRegions.find((r) => r.from <= cursor && cursor <= r.to);
+  if (pluginVal.typstRegions.length === 0) pluginVal.computeFull(view);
+
+  const region = pluginVal.typstRegions.find(
+    (r) =>
+      r.from - (r.kind === 'inline' ? 1 : r.kind === 'display' ? 2 : r.kind === 'codeblock' ? 3 : 0) - r.skip <=
+        cursor && cursor <= r.to,
+  );
+
   return region ? parseRegion(view, region) : null;
 }

@@ -35,7 +35,8 @@ class CodeBlockPreviewWidget extends WidgetType {
   toDOM(_view: EditorView): HTMLElement {
     const container = document.createElement('div');
     container.addClass('typstmate-codeblockpreview');
-    this.helper.plugin.typstManager.render(this.code, container, this.id);
+    const file = this.helper.plugin.app.workspace.getActiveFile();
+    this.helper.plugin.typstManager.render(this.code, container, this.id, file?.path);
     return container;
   }
 
@@ -45,7 +46,8 @@ class CodeBlockPreviewWidget extends WidgetType {
 
   override updateDOM(dom: HTMLElement, _view: EditorView): boolean {
     dom.replaceChildren();
-    this.helper.plugin.typstManager.render(this.code, dom, this.id);
+    const file = this.helper.plugin.app.workspace.getActiveFile();
+    this.helper.plugin.typstManager.render(this.code, dom, this.id, file?.path);
 
     return true;
   }

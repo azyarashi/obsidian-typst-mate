@@ -1,5 +1,6 @@
-import { Notice } from 'obsidian';
+import { MarkdownView, Notice } from 'obsidian';
 import { BASE_COLOR_VAR } from '@/constants';
+import { jumpFromClickPlugin } from '@/editor/shared/extensions/actions/JumpFromClick';
 import type { Diagnostic, SVGResult } from '@/libs/worker';
 import TypstElement from './Typst';
 
@@ -14,7 +15,8 @@ export default class TypstSVGElement extends TypstElement {
     });
 
     this.addEventListener('click', async (event) => {
-      if (this.kind !== 'codeblock' && !event.metaKey && !event.ctrlKey) return;
+      if (this.kind !== 'codeblock') return; // TODO: 不安定
+
       const svg = this.querySelector('svg');
       if (!svg) return;
 
@@ -24,7 +26,11 @@ export default class TypstSVGElement extends TypstElement {
 
       await this.plugin.typst.svg(this.format(), this.kind, this.id); // フレーム生成のための副作用
       const result = await this.plugin.typst.jumpFromClick(x, y);
-      if (result) this.plugin.editorHelper?.jumpTo(result, this);
+      if (result) {
+        const view = this.plugin.app.workspace.getActiveFileView();
+        if (!(view instanceof MarkdownView)) return;
+        view.editor.cm.plugin(jumpFromClickPlugin)?.jumpTo(result, this);
+      }
     });
   }
 

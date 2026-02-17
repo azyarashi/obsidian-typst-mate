@@ -2,6 +2,8 @@ import type { Extension } from '@codemirror/state';
 import { EditorView, type ViewPlugin } from '@codemirror/view';
 
 import type { EditorHelper } from '@/editor';
+import { jumpFromClickExtension } from './actions/JumpFromClick';
+import { mathMacroExtension } from './actions/MathMacro';
 import { shortcutExtension } from './actions/Shortcut';
 import { tabJumpExtension } from './actions/Tabjump';
 import { debuggerExtension } from './core/Debugger';
@@ -30,6 +32,8 @@ export function buildExtension(editorHelper: EditorHelper) {
     mathSymbolConcealExtension,
 
     // Actions
+    jumpFromClickExtension,
+    mathMacroExtension,
     shortcutExtension,
     tabJumpExtension,
 

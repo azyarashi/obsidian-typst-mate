@@ -356,9 +356,10 @@ export default class TypstManager {
     if (currentHash === this.lastStateHash) return false;
     this.lastStateHash = currentHash;
 
-    this.preamble = tags.map((tag) => `#import "tags/${tag.replace('/', '.')}.typ": *;`).join('\n');
+    this.preamble = '';
+    for (const tag of tags) this.preamble += `#import "tags/${tag.replace('/', '.')}.typ": *;`;
     // Frontmatter variable definitions
-    if (defs.length) this.preamble += `\n${defs.map((d) => `#let ${d}`).join('\n')}`;
+    for (const def of defs) this.preamble += `#let ${def};`;
 
     return true;
   }
@@ -400,7 +401,7 @@ export const extarctCMMath = (settings: Settings, code: string, display: boolean
     // プロセッサー選択
     code = code.slice(eqStart);
     const processors = settings.processor.inline?.processors;
-    processor = processors?.find((p) => code.startsWith(p.id)) ?? processors.at(-1)!;
+    processor = processors?.find((p) => code.startsWith(`${p.id}:`)) ?? processors.at(-1)!;
     if (processor.id.length > 0) eqStart += processor.id.length + 1; // ? : の分
   }
 
