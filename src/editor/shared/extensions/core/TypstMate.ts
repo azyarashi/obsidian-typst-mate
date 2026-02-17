@@ -132,10 +132,57 @@ export class TypstMateCorePluginValue implements PluginValue {
   }
 
   update(update: ViewUpdate) {
-    // 編集中ならfrom, toを限定
-    if (update.docChanged) this.computeFull(update.view);
-    else if (update.selectionSet) this.computeSelection(update.view);
+    if (update.docChanged) {
+      if (!this.computeIncremental(update)) this.computeFull(update.view);
+    } else if (update.selectionSet) this.computeSelection(update.view);
     else if (update.viewportChanged) this.computeDebounce(update.view);
+  }
+
+  private computeIncremental(update: ViewUpdate): boolean {
+    const delta = update.changes.newLength - update.changes.length;
+    if (delta !== 1 && delta !== -1) return false;
+
+    const cursor = update.state.selection.main.head;
+    // 1文字挿入 / 1文字削除
+    const changePos = delta === 1 ? cursor - 1 : cursor;
+
+    const ch =
+      delta === 1 ? update.state.sliceDoc(cursor - 1, cursor) : update.startState.sliceDoc(changePos, changePos + 1);
+    if (ch === '$' || ch === '`' || ch === `~`) return false;
+
+    const helper = update.view.state.facet(editorHelperFacet);
+    if (!helper) return false;
+
+    // activeRegion 内の変更
+    if (this.activeRegion) {
+      if (changePos <= this.activeRegion.to && this.activeRegion.from <= changePos) {
+        this.activeRegion.to += delta;
+
+        for (const r of this.typstRegions) {
+          if (r.from <= changePos && changePos <= r.to) {
+            r.to += delta;
+          } else if (changePos <= r.from) {
+            r.from += delta;
+            r.to += delta;
+          }
+        }
+
+        return true;
+      }
+      return false;
+    }
+
+    // activeRegion 外の変更
+    for (const r of this.typstRegions.filter((r) => changePos <= r.from)) {
+      r.from += delta;
+      r.to += delta;
+    }
+
+    const region = this.typstRegions.find((r) => r.from <= cursor && cursor <= r.to);
+    if (!region) this.unsetActiveRegion(helper);
+    else this.activeRegion = parseRegion(update.view, helper, region);
+
+    return true;
   }
 
   computeFull(view: EditorView) {
@@ -158,14 +205,19 @@ export class TypstMateCorePluginValue implements PluginValue {
     if (!helper) return this.unsetActiveRegion();
 
     const cursor = view.state.selection.main.head;
+
+    // 変更なし
+    if (this.activeRegion && this.activeRegion.from <= cursor && cursor <= this.activeRegion.to) return;
+
+    // 変更あり
     const region = this.typstRegions.find((r) => r.from <= cursor && cursor <= r.to);
     if (!region) return this.unsetActiveRegion(helper);
 
     this.activeRegion = parseRegion(view, helper, region);
   }
 
-  private unsetActiveRegion(_helper?: EditorHelper) {
-    // helper?.hideAllPopup();
+  private unsetActiveRegion(helper?: EditorHelper) {
+    if (helper) helper.hideAllPopup();
     this.activeRegion = null;
   }
 }
