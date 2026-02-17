@@ -8,6 +8,7 @@ import {
   debounce,
   type EventRef,
   loadMathJax,
+  type MarkdownView,
   MenuItem,
   Notice,
   Platform,
@@ -448,6 +449,13 @@ export default class ObsidianTypstMate extends Plugin {
         const cache = this.app.metadataCache.getCache(file.path);
         if (!cache) return;
         if (this.typstManager.syncFileCache(cache)) this.typstManager.refreshView();
+      }),
+      this.app.workspace.on('active-leaf-change', (leaf) => {
+        if (leaf?.view.getViewType() !== 'markdown') return;
+        const path = (leaf?.view as MarkdownView).file?.path;
+        if (!path) return;
+        const cache = this.app.metadataCache.getCache(path);
+        if (cache) this.typstManager.syncFileCache(cache);
       }),
     );
   }
