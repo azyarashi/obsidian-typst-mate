@@ -121,14 +121,14 @@ export class TypstMateCorePluginValue implements PluginValue {
   constructor(view: EditorView) {
     this.computeFull(view);
 
-    this.computeDebounce = debounce((view: EditorView) => this.computeFull(view), 100, true);
+    this.computeDebounce = debounce((view: EditorView) => this.computeFull(view), 500, true);
   }
 
   update(update: ViewUpdate) {
     // 編集中ならfrom, toを限定
-    if (update.docChanged || this.activeRegion === null) this.computeFull(update.view);
-    else if (update.viewportChanged) this.computeDebounce(update.view);
+    if (update.docChanged) this.computeFull(update.view);
     else if (update.selectionSet) this.computeSelection(update.view);
+    else if (update.viewportChanged) this.computeDebounce(update.view);
   }
 
   computeFull(view: EditorView) {
@@ -139,10 +139,10 @@ export class TypstMateCorePluginValue implements PluginValue {
     const { from, to } = view.viewport;
 
     const regions = collectRegions(view, helper, from, to);
+    this.typstRegions = regions;
+
     const region = regions.find((r) => r.from <= cursor && cursor <= r.to);
     if (!region) return this.unsetActiveRegion(helper);
-
-    this.typstRegions = regions;
     this.activeRegion = parseRegion(view, region);
   }
 
