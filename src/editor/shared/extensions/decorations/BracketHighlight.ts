@@ -2,6 +2,7 @@ import { RangeSetBuilder } from '@codemirror/state';
 import { Decoration, type DecorationSet, type EditorView, ViewPlugin, type ViewUpdate } from '@codemirror/view';
 
 import { BRACKET_MAP, OPEN_MAP, type Token, TypstTokenizer } from '../../utils/tokenizer';
+import { editorHelperFacet } from '../core/Helper';
 import { typstMateCore } from '../core/TypstMate';
 
 import './BracketHighlight.css';
@@ -21,12 +22,15 @@ export const bracketHighlightExtension = () => {
       }
 
       buildDecorations(view: EditorView): DecorationSet {
-        const builder = new RangeSetBuilder<Decoration>();
-        const state = view.state;
-        const cursor = state.selection.main.head;
+        const helper = view.state.facet(editorHelperFacet);
+        if (!helper || helper.plugin.settings.disableBracketHighlight) return Decoration.none;
 
         const corePlugin = view.plugin(typstMateCore);
         if (!corePlugin) return Decoration.none;
+
+        const builder = new RangeSetBuilder<Decoration>();
+        const state = view.state;
+        const cursor = state.selection.main.head;
 
         const regions = corePlugin.typstRegions;
 

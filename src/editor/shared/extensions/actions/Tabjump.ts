@@ -10,7 +10,7 @@ export const tabJumpExtension = Prec.high(
       if (e.key !== 'Tab') return false;
 
       const helper = view.state.facet(editorHelperFacet);
-      if (!helper) return false;
+      if (!helper || helper.plugin.settings.revertTabToDefault) return false;
 
       const region = getActiveRegion(view);
       if (!region) return false;
