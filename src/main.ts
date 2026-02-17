@@ -22,6 +22,7 @@ import {
 import { EditorHelper } from '@/editor';
 import { BASE_COLOR_VAR, TYPST_SVG_FILL, TYPST_SVG_STROKE } from './constants';
 import { DEFAULT_SETTINGS, type Settings } from './data/settings';
+import { collectRegions } from './editor/shared/extensions/core/TypstMate';
 import TypstManager from './libs/typst';
 import type $ from './libs/worker';
 import Typst from './libs/worker';
@@ -32,7 +33,6 @@ import { SettingTab } from './ui/settingstab';
 import { TypstPDFView } from './ui/views/typst-pdf/typstPDF';
 import { TypstTextView } from './ui/views/typst-text/typstText';
 import { TypstToolsView } from './ui/views/typst-tools/typstTools';
-import { type MathSegment, replaceMathSegments } from './utils/findMathSegments';
 import { Observer } from './utils/observer';
 import { zip } from './utils/packageCompressor';
 
@@ -293,22 +293,30 @@ export default class ObsidianTypstMate extends Plugin {
       id: 'tex2typ',
       name: 'Replace tex in markdown content or selection to typst',
       editorCallback: async (editor) => {
-        const selection = editor.getSelection();
-        const tex2typ = async (seg: MathSegment) => {
-          return seg.raw.replace(seg.content, await this.typst.latexeq_to_typm(seg.content));
-        };
+        const view = editor.cm;
+        if (!view) {
+          new Notice('Active view is not found.');
+          return;
+        }
 
-        if (selection) {
-          const replaced = await replaceMathSegments(selection, tex2typ);
-          editor.replaceSelection(replaced);
-        } else {
-          const content = editor.getDoc().getValue();
-          const replaced = await replaceMathSegments(content, tex2typ);
-          editor.replaceRange(
-            replaced,
-            { line: 0, ch: 0 },
-            { line: editor.lineCount(), ch: editor.getLine(editor.lineCount() - 1).length },
-          );
+        const selection = view.state.selection.main;
+        const regions = collectRegions(
+          view,
+          !selection.empty ? selection.from : undefined,
+          !selection.empty ? selection.to : undefined,
+        ).filter((region) => region.kind !== 'codeblock');
+
+        if (selection.empty && regions.length === 0) {
+          editor.replaceSelection(await this.typst.latexeq_to_typm(editor.getSelection()));
+          return;
+        }
+
+        for (const region of regions) {
+          const content = view.state.sliceDoc(region.from, region.to);
+          const math = await this.typst.latexeq_to_typm(content);
+          const fromPosition = editor.offsetToPos(region.from);
+          const toPosition = editor.offsetToPos(region.to);
+          editor.replaceRange(math, fromPosition, toPosition);
         }
       },
     });
