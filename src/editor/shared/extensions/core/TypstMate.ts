@@ -22,14 +22,13 @@ const CODEBLOCK_BEGIN = 'HyperMD-codeblock_HyperMD-codeblock-begin_HyperMD-codeb
 const CODEBLOCK_END = 'HyperMD-codeblock_HyperMD-codeblock-bg_HyperMD-codeblock-end_HyperMD-codeblock-end-bg';
 
 interface TypstRegion {
-  skip: number;
   from: number;
   to: number;
   kind: ProcessorKind;
-  processor: Processor;
+  lang?: string;
 }
 
-export const collectRegions = (view: EditorView, helper: EditorHelper, from?: number, to?: number): TypstRegion[] => {
+export const collectRegions = (view: EditorView, from?: number, to?: number): TypstRegion[] => {
   const tree = syntaxTree(view.state);
 
   const rawRegions: TypstRegion[] = [];
@@ -56,14 +55,9 @@ export const collectRegions = (view: EditorView, helper: EditorHelper, from?: nu
 
           const innerFrom = mathStart;
           const innerTo = node.from;
-
-          // プロセッサーによるモード切り替え
-          const content = view.state.sliceDoc(innerFrom, innerTo);
-          const { processor, eqStart, eqEnd } = extarctCMMath(helper.plugin.settings, content, isDisplayMath);
           const kind = !isDisplayMath ? 'inline' : 'display';
 
-          if (innerFrom + eqStart <= innerTo)
-            rawRegions.push({ skip: eqStart, from: innerFrom + eqStart, to: innerTo - eqEnd, kind, processor });
+          if (innerFrom <= innerTo) rawRegions.push({ from: innerFrom, to: innerTo, kind });
           mathStart = null;
           break;
         }
@@ -77,21 +71,13 @@ export const collectRegions = (view: EditorView, helper: EditorHelper, from?: nu
           if (codeBlockStart === null) break;
           const codeBlockEnd = node.from - 1;
 
-          // プロセッサーによるモード切り替え
-          const processor = helper.plugin.settings.processor.codeblock?.processors.find((p) => p.id === codeBlockLang);
-          if (processor === undefined || processor.renderingEngine === RenderingEngine.MathJax) {
-            codeBlockStart = null;
-            break;
-          }
-
           if (codeBlockStart < codeBlockEnd)
             // ? 改行の分 + 1
             rawRegions.push({
-              skip: processor.id.length + 1,
               from: codeBlockStart + 1,
               to: codeBlockEnd,
               kind: 'codeblock',
-              processor,
+              lang: codeBlockLang,
             });
           codeBlockStart = null;
           break;
@@ -103,13 +89,34 @@ export const collectRegions = (view: EditorView, helper: EditorHelper, from?: nu
   return rawRegions;
 };
 
-const parseRegion = (_view: EditorView, region: TypstRegion): ParsedRegion => {
+const parseRegion = (view: EditorView, helper: EditorHelper, region: TypstRegion): ParsedRegion | null => {
+  if (region.kind === 'codeblock') {
+    // プロセッサーによるモード切り替え
+    const processor = helper.plugin.settings.processor.codeblock?.processors.find((p) => p.id === region.lang);
+    if (processor === undefined || processor.renderingEngine === RenderingEngine.MathJax) return null;
+
+    return {
+      skip: processor.id.length + 1,
+      from: region.from,
+      to: region.to,
+      kind: 'codeblock',
+      processor,
+    };
+  }
+
+  // Math (inline / display)
+  const isDisplay = region.kind === 'display';
+  const content = view.state.sliceDoc(region.from, region.to);
+  const { processor, eqStart, eqEnd } = extarctCMMath(helper.plugin.settings, content, isDisplay);
+
+  if (region.from + eqStart > region.to) return null;
+
   return {
-    skip: region.skip,
-    from: region.from,
-    to: region.to,
+    skip: eqStart,
+    from: region.from + eqStart,
+    to: region.to - eqEnd,
     kind: region.kind,
-    processor: region.processor,
+    processor,
   };
 };
 
@@ -138,12 +145,12 @@ export class TypstMateCorePluginValue implements PluginValue {
     const cursor = view.state.selection.main.head;
     const { from, to } = view.viewport;
 
-    const regions = collectRegions(view, helper, from, to);
+    const regions = collectRegions(view, from, to);
     this.typstRegions = regions;
 
     const region = regions.find((r) => r.from <= cursor && cursor <= r.to);
     if (!region) return this.unsetActiveRegion(helper);
-    this.activeRegion = parseRegion(view, region);
+    this.activeRegion = parseRegion(view, helper, region);
   }
 
   computeSelection(view: EditorView) {
@@ -154,7 +161,7 @@ export class TypstMateCorePluginValue implements PluginValue {
     const region = this.typstRegions.find((r) => r.from <= cursor && cursor <= r.to);
     if (!region) return this.unsetActiveRegion(helper);
 
-    this.activeRegion = parseRegion(view, region);
+    this.activeRegion = parseRegion(view, helper, region);
   }
 
   private unsetActiveRegion(_helper?: EditorHelper) {
@@ -176,13 +183,16 @@ export function getRegionAt(view: EditorView, cursor: number): ParsedRegion | nu
   const pluginVal = view.plugin(typstMateCore);
   if (!pluginVal) return null;
 
+  const helper = view.state.facet(editorHelperFacet);
+  if (!helper) return null;
+
   if (pluginVal.typstRegions.length === 0) pluginVal.computeFull(view);
 
   const region = pluginVal.typstRegions.find(
     (r) =>
-      r.from - (r.kind === 'inline' ? 1 : r.kind === 'display' ? 2 : r.kind === 'codeblock' ? 3 : 0) - r.skip <=
+      r.from - (r.kind === 'inline' ? 1 : r.kind === 'display' ? 2 : r.kind === 'codeblock' ? 4 + r.lang!.length : 0) <=
         cursor && cursor <= r.to,
   );
 
-  return region ? parseRegion(view, region) : null;
+  return region ? parseRegion(view, helper, region) : null;
 }

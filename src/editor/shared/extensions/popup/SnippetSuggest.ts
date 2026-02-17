@@ -176,12 +176,14 @@ class SnippetSuggestPlugin implements PluginValue {
   private renderFirst() {
     this.prevEl = document.activeElement as HTMLElement;
     this.container.show();
+    document.body.classList.add('typstmate-snippet-suggesting');
     document.addEventListener('mousemove', this.mouseMoveListener);
     document.addEventListener('mousedown', this.mouseDownListener);
   }
 
   hide() {
     this.container.hide();
+    document.body.classList.remove('typstmate-snippet-suggesting');
     document.removeEventListener('mousemove', this.mouseMoveListener);
     document.removeEventListener('mousedown', this.mouseDownListener);
   }

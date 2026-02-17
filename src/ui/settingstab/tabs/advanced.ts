@@ -5,7 +5,7 @@ import type ObsidianTypstMate from '@/main';
 import { CustomFragment } from '@/utils/customFragment';
 
 export function addAdvancedTab(plugin: ObsidianTypstMate, containerEl: HTMLElement) {
-  new Setting(containerEl)
+  const setting = new Setting(containerEl)
     .setName('Typst file import path')
     .setDesc(
       'The directory in your vault in which to look for typst files to be allowed to import, if the path does not exist or is empty the feature is disabled',
@@ -31,6 +31,10 @@ export function addAdvancedTab(plugin: ObsidianTypstMate, containerEl: HTMLEleme
         update();
       });
     });
+  setting.infoEl.createEl('a', {
+    text: 'Open Details',
+    href: 'https://github.com/azyarashi/obsidian-typst-mate/releases/tag/2.2.28',
+  });
 
   new Setting(containerEl).setName('Enable Debugger').addToggle((toggle) => {
     toggle.setValue(plugin.settings.enableDebugger);

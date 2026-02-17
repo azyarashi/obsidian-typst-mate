@@ -32,67 +32,66 @@ export const bracketHighlightExtension = () => {
         const state = view.state;
         const cursor = state.selection.main.head;
 
-        const regions = corePlugin.typstRegions;
+        const region = corePlugin.activeRegion;
+        if (!region) return Decoration.none;
 
-        for (const region of regions) {
-          const text = state.sliceDoc(region.from, region.to);
-          const tokens = parser.tokenize(text);
+        const text = state.sliceDoc(region.from, region.to);
+        const tokens = parser.tokenize(text);
 
-          const brackets = tokens.filter((t) => t.type === 'bracket');
-          const pairMap = new Map<number, number>();
-          const stack: Token[] = [];
+        const brackets = tokens.filter((t) => t.type === 'bracket');
+        const pairMap = new Map<number, number>();
+        const stack: Token[] = [];
 
-          for (const b of brackets) {
-            if ('([{'.includes(b.text)) stack.push(b);
-            else {
-              const expected = OPEN_MAP[b.text];
-              if (!expected) continue;
-              const idx = stack.findLastIndex((s) => s.text === expected);
-              if (idx === -1) continue;
-              const open = stack.splice(idx, 1)[0];
-              if (!open) continue;
-              pairMap.set(open.from, b.from);
-              pairMap.set(b.from, open.from);
-            }
+        for (const b of brackets) {
+          if ('([{'.includes(b.text)) stack.push(b);
+          else {
+            const expected = OPEN_MAP[b.text];
+            if (!expected) continue;
+            const idx = stack.findLastIndex((s) => s.text === expected);
+            if (idx === -1) continue;
+            const open = stack.splice(idx, 1)[0];
+            if (!open) continue;
+            pairMap.set(open.from, b.from);
+            pairMap.set(b.from, open.from);
           }
+        }
 
-          let enclosing: { open: number; close: number } | null = null;
-          if (region.from <= cursor && cursor <= region.to) {
-            const relCursor = cursor - region.from;
-            for (const b of brackets) {
-              if ('([{'.includes(b.text) && pairMap.has(b.from)) {
-                const closePos = pairMap.get(b.from);
-                if (closePos !== undefined && b.from <= relCursor && relCursor <= closePos + 1) {
-                  const dist = closePos - b.from;
-                  if (!enclosing || dist < enclosing.close - enclosing.open)
-                    enclosing = { open: b.from, close: closePos };
-                }
+        let enclosing: { open: number; close: number } | null = null;
+        if (region.from <= cursor && cursor <= region.to) {
+          const relCursor = cursor - region.from;
+          for (const b of brackets) {
+            if ('([{'.includes(b.text) && pairMap.has(b.from)) {
+              const closePos = pairMap.get(b.from);
+              if (closePos !== undefined && b.from <= relCursor && relCursor <= closePos + 1) {
+                const dist = closePos - b.from;
+                if (!enclosing || dist < enclosing.close - enclosing.open)
+                  enclosing = { open: b.from, close: closePos };
               }
             }
           }
+        }
 
-          for (const t of tokens) {
-            const absFrom = region.from + t.from;
-            const absTo = region.from + t.to;
+        for (const t of tokens) {
+          const absFrom = region.from + t.from;
+          const absTo = region.from + t.to;
 
-            let cls = '';
-            let deco: Decoration | null = null;
+          let cls = '';
+          let deco: Decoration | null = null;
 
-            if (t.type === 'bracket') {
-              const kind = BRACKET_MAP[t.text] || 'paren';
-              cls = `typstmate-bracket-${kind}`;
-              if (enclosing && (t.from === enclosing.open || t.from === enclosing.close))
-                cls += ' typstmate-bracket-enclosing';
-              deco = Decoration.mark({ class: cls });
-            } else if (t.type === 'sym') {
-              continue;
-            } else {
-              cls = `typstmate-highlight-${t.type}`;
-              deco = Decoration.mark({ class: cls });
-            }
-
-            if (deco) builder.add(absFrom, absTo, deco);
+          if (t.type === 'bracket') {
+            const kind = BRACKET_MAP[t.text] || 'paren';
+            cls = `typstmate-bracket-${kind}`;
+            if (enclosing && (t.from === enclosing.open || t.from === enclosing.close))
+              cls += ' typstmate-bracket-enclosing';
+            deco = Decoration.mark({ class: cls });
+          } else if (t.type === 'sym') {
+            continue;
+          } else {
+            cls = `typstmate-highlight-${t.type}`;
+            deco = Decoration.mark({ class: cls });
           }
+
+          if (deco) builder.add(absFrom, absTo, deco);
         }
 
         return builder.finish();

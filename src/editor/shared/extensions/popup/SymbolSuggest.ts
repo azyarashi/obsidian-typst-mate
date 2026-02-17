@@ -125,12 +125,14 @@ class SymbolSuggestPlugin implements PluginValue {
   private renderFirst() {
     this.prevEl = document.activeElement as HTMLElement;
     this.container.show();
+    document.body.classList.add('typstmate-symbol-suggesting');
     document.addEventListener('mousemove', this.mouseMoveListener);
     document.addEventListener('mousedown', this.mouseDownListener);
   }
 
   hide() {
     this.container.hide();
+    document.body.classList.remove('typstmate-symbol-suggesting');
     document.removeEventListener('mousemove', this.mouseMoveListener);
     document.removeEventListener('mousedown', this.mouseDownListener);
   }

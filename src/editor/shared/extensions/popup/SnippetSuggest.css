@@ -28,3 +28,8 @@
 .typstmate-snippets .item.selected {
   background-color: var(--nav-item-background-selected);
 }
+
+body.typstmate-snippet-suggesting .typstmate-symbols,
+body.typstmate-snippet-suggesting .typstmate-inlinemathpreview {
+  display: none !important;
+}

@@ -26,6 +26,9 @@ export class EditorHelper {
 
   /* utils
    */
+  hideAllPopup() {
+    // TODO
+  }
 
   triggerRippleEffect(view: EditorView, pos: number) {
     const coords = view.coordsAtPos(pos);

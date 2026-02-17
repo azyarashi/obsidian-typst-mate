@@ -44,3 +44,7 @@
 .typstmate-symbols .item.selected {
   background-color: var(--nav-item-background-selected);
 }
+
+body.typstmate-symbol-suggesting .typstmate-inlinemathpreview {
+  display: none !important;
+}
