@@ -32,45 +32,42 @@ export const diagnosticExtension = linter(
     if (result.noDiag) return [];
 
     const { noPreamble, format } = result.processor;
-    const diagnostics = result.diags
-      .map((diag) => {
-        const offset =
-          region.from -
-          format.indexOf('{CODE}') -
-          (noPreamble ? 0 : helper.plugin.settings.preamble.length + 1) -
-          helper.plugin.typstManager.preamble.length -
-          1;
+    const diagnostics = result.diags.map((diag) => {
+      const offset =
+        region.from -
+        format.indexOf('{CODE}') -
+        (noPreamble ? 0 : helper.plugin.settings.preamble.length + 1) -
+        helper.plugin.typstManager.preamble.length -
+        1;
 
-        return {
-          from: diag.from + offset,
-          to: diag.to + offset,
-          message: '',
-          severity: diag.severity,
-          renderMessage: () => {
-            if (result.kind === 'inline') [];
-            const container = document.createElement('div');
-            container.classList.add('typstmate-diag');
+      return {
+        from: Math.max(region.from, diag.from + offset),
+        to: Math.max(region.from, diag.to + offset),
+        message: '',
+        severity: diag.severity,
+        renderMessage: () => {
+          if (result.kind === 'inline') [];
+          const container = document.createElement('div');
+          container.classList.add('typstmate-diag');
 
-            const messageEl =
-              diag.severity === 'error' ? document.createElement('strong') : document.createElement('em');
-            messageEl.textContent = diag.message;
-            container.appendChild(messageEl);
+          const messageEl = diag.severity === 'error' ? document.createElement('strong') : document.createElement('em');
+          messageEl.textContent = diag.message;
+          container.appendChild(messageEl);
 
-            if (0 < diag.hints.length) {
-              const hintsEl = document.createElement('div');
-              hintsEl.classList.add('typstmate-diag-hints');
-              diag.hints.forEach((hint, i) => {
-                const hintLine = document.createElement('div');
-                hintLine.textContent = `${i + 1}. ${hint}`;
-                hintsEl.appendChild(hintLine);
-              });
-              container.appendChild(hintsEl);
-            }
-            return container;
-          },
-        };
-      })
-      .filter((diag) => region.from <= diag.from && diag.to <= region.to);
+          if (0 < diag.hints.length) {
+            const hintsEl = document.createElement('div');
+            hintsEl.classList.add('typstmate-diag-hints');
+            diag.hints.forEach((hint, i) => {
+              const hintLine = document.createElement('div');
+              hintLine.textContent = `${i + 1}. ${hint}`;
+              hintsEl.appendChild(hintLine);
+            });
+            container.appendChild(hintsEl);
+          }
+          return container;
+        },
+      };
+    });
 
     return diagnostics;
   },
