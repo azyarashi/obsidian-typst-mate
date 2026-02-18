@@ -10,12 +10,20 @@ const SYMBOL_MAP = new Map<string, string>();
 const data = (symbolData as any).default || symbolData;
 for (const [key, val] of Object.entries(data)) if ((val as any).sym) SYMBOL_MAP.set(key, (val as any).sym);
 
+// WidgetType キャッシュ: 同じシンボル文字に対して同一インスタンスを再利用
+// CodeMirror の decoration diff で eq() が true → DOM 再構築を回避
+const widgetCache = new Map<string, SymbolWidget>();
+
 class SymbolWidget extends WidgetType {
   constructor(public text: string) {
     super();
   }
 
-  toDOM() {
+  override eq(other: SymbolWidget): boolean {
+    return this.text === other.text;
+  }
+
+  override toDOM() {
     const span = document.createElement('span');
     span.className = 'typst-symbol-widget';
     span.textContent = this.text;
@@ -23,7 +31,29 @@ class SymbolWidget extends WidgetType {
   }
 }
 
+function getSymbolWidget(text: string): SymbolWidget {
+  let w = widgetCache.get(text);
+  if (!w) {
+    w = new SymbolWidget(text);
+    widgetCache.set(text, w);
+  }
+  return w;
+}
+
 const parser = new TypstTokenizer();
+
+/** sym トークン情報（軽量版） */
+interface SymToken {
+  from: number;
+  to: number;
+  text: string;
+}
+
+/** tree.iterate で収集する math region */
+interface MathRegion {
+  from: number;
+  to: number;
+}
 
 class MathSymbolConcealPlugin {
   decorations: DecorationSet;
@@ -32,6 +62,13 @@ class MathSymbolConcealPlugin {
   activeReveal: { from: number; to: number } | null = null;
   pendingReveal: { from: number; to: number } | null = null;
   revealTimer: number | undefined;
+
+  // トークンキャッシュ: doc / viewport が変わった時のみ再トークン化
+  private cachedRegions: MathRegion[] | null = null;
+  private cachedSymTokens: SymToken[][] | null = null;
+  private cachedDocLength = -1;
+  private cachedViewportFrom = -1;
+  private cachedViewportTo = -1;
 
   constructor(public view: EditorView) {
     const { decorations, atomicRanges } = this.buildDecorationsAndAtomicRanges(view);
@@ -53,6 +90,28 @@ class MathSymbolConcealPlugin {
     }
   }
 
+  private collectMathRegions(view: EditorView): MathRegion[] {
+    const tree = syntaxTree(view.state);
+    const regions: MathRegion[] = [];
+    tree.iterate({
+      from: view.viewport.from,
+      to: view.viewport.to,
+      enter: (node) => {
+        const name = node.name.toLowerCase();
+        if (!name.includes('math')) return;
+
+        const last = regions[regions.length - 1];
+        if (last && node.from <= last.to + 1) {
+          last.to = Math.max(last.to, node.to);
+        } else {
+          regions.push({ from: node.from, to: node.to });
+        }
+        return false;
+      },
+    });
+    return regions;
+  }
+
   buildDecorationsAndAtomicRanges(
     view: EditorView,
     isDocChange: boolean = false,
@@ -69,62 +128,71 @@ class MathSymbolConcealPlugin {
     const atomicRangeBuilder = new RangeSetBuilder<any>();
     const state = view.state;
     const cursor = state.selection.main.head;
-    const tree = syntaxTree(state);
 
-    const regions: { from: number; to: number; type: 'math' | 'code' }[] = [];
-    tree.iterate({
-      from: view.viewport.from,
-      to: view.viewport.to,
-      enter: (node) => {
-        const name = node.name.toLowerCase();
-        const isMath = name.includes('math');
-        const isCode = /codeblock|hmd-code/.test(name);
+    // doc 変更 または viewport 変更時のみ region 収集とトークン化を再実行
+    const docLen = state.doc.length;
+    const vpFrom = view.viewport.from;
+    const vpTo = view.viewport.to;
+    const needsRetokenize =
+      isDocChange ||
+      this.cachedRegions === null ||
+      this.cachedDocLength !== docLen ||
+      this.cachedViewportFrom !== vpFrom ||
+      this.cachedViewportTo !== vpTo;
 
-        if (!isMath && !isCode) return;
+    if (needsRetokenize) {
+      const regions = this.collectMathRegions(view);
+      this.cachedRegions = regions;
 
-        const type = isMath ? 'math' : 'code';
-
-        const last = regions[regions.length - 1];
-        if (last && last.type === type && node.from <= last.to + 1) {
-          last.to = Math.max(last.to, node.to);
-        } else {
-          regions.push({ from: node.from, to: node.to, type });
+      this.cachedSymTokens = [];
+      for (const region of regions) {
+        const text = state.sliceDoc(region.from, region.to);
+        const tokens = parser.tokenize(text);
+        const symTokens: SymToken[] = [];
+        for (const t of tokens) {
+          if (t.type === 'sym') {
+            symTokens.push({ from: t.from, to: t.to, text: t.text });
+          }
         }
-        return false;
-      },
-    });
+        this.cachedSymTokens.push(symTokens);
+      }
+
+      this.cachedDocLength = docLen;
+      this.cachedViewportFrom = vpFrom;
+      this.cachedViewportTo = vpTo;
+    }
+
+    const regions = this.cachedRegions!;
+    const allSymTokens = this.cachedSymTokens!;
 
     let cursorOnSymbol: { from: number; to: number } | null = null;
 
-    for (const region of regions) {
-      if (region.type === 'code') continue;
+    for (let i = 0; i < regions.length; i++) {
+      const region = regions[i]!;
+      const symTokens = allSymTokens[i];
+      if (!symTokens) continue;
 
-      const text = state.sliceDoc(region.from, region.to);
-      const tokens = parser.tokenize(text);
+      for (const t of symTokens) {
+        if (helper.plugin.settings.concealMathSymbols) {
+          const sym = SYMBOL_MAP.get(t.text);
+          if (sym) {
+            const absStart = region.from + t.from;
+            const absEnd = region.from + t.to;
+            const isNearby = absStart <= cursor && cursor <= absEnd;
 
-      for (const t of tokens) {
-        if (t.type === 'sym') {
-          if (helper.plugin.settings.concealMathSymbols) {
-            const sym = SYMBOL_MAP.get(t.text);
-            if (sym) {
-              const absStart = region.from + t.from;
-              const absEnd = region.from + t.to;
-              const isNearby = absStart <= cursor && cursor <= absEnd;
+            let shouldReveal = false;
 
-              let shouldReveal = false;
+            if (isNearby) {
+              cursorOnSymbol = { from: absStart, to: absEnd };
 
-              if (isNearby) {
-                cursorOnSymbol = { from: absStart, to: absEnd };
+              if (this.activeReveal && this.activeReveal.from === absStart) shouldReveal = true;
+              else if (isDocChange) shouldReveal = true;
+            }
 
-                if (this.activeReveal && this.activeReveal.from === absStart) shouldReveal = true;
-                else if (isDocChange) shouldReveal = true;
-              }
-
-              if (!shouldReveal) {
-                const deco = Decoration.replace({ widget: new SymbolWidget(sym) });
-                decorationBuilder.add(absStart, absEnd, deco);
-                atomicRangeBuilder.add(absStart, absEnd, true);
-              }
+            if (!shouldReveal) {
+              const deco = Decoration.replace({ widget: getSymbolWidget(sym) });
+              decorationBuilder.add(absStart, absEnd, deco);
+              atomicRangeBuilder.add(absStart, absEnd, true);
             }
           }
         }

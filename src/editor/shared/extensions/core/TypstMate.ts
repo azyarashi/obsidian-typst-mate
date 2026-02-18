@@ -2,7 +2,7 @@ import { syntaxTree } from '@codemirror/language';
 import { type EditorView, type PluginValue, ViewPlugin, type ViewUpdate } from '@codemirror/view';
 import { debounce } from 'obsidian';
 import type { EditorHelper } from '@/editor/index';
-import { type Processor, type ProcessorKind, RenderingEngine } from '@/libs/processor';
+import type { Processor, ProcessorKind } from '@/libs/processor';
 import { extarctCMMath } from '@/libs/typst';
 import { editorHelperFacet } from './Helper';
 
@@ -100,9 +100,13 @@ export const collectRegions = (view: EditorView, from?: number, to?: number): Ty
 
 const parseRegion = (view: EditorView, helper: EditorHelper, region: TypstRegion): ParsedRegion | null => {
   if (region.kind === 'codeblock') {
+    const beginLine = view.state.doc.lineAt(region.from - 1);
+    const lang = beginLine.text.slice(3).trim();
+    region.lang = lang;
+
     // プロセッサーによるモード切り替え
-    const processor = helper.plugin.settings.processor.codeblock?.processors.find((p) => p.id === region.lang);
-    if (processor === undefined || processor.renderingEngine === RenderingEngine.MathJax) return null;
+    const processor = helper.plugin.settings.processor.codeblock?.processors.find((p) => p.id === lang);
+    if (processor === undefined) return null;
 
     return {
       index: region.index,
@@ -171,18 +175,21 @@ export class TypstMateCorePluginValue implements PluginValue {
      */
 
     // activeRegion 外の変更
+    let region: TypstRegion | null = null;
     for (const r of this.typstRegions) {
       if (r.from <= changePos && changePos <= r.to) {
         r.to += delta;
+        region = r;
       } else if (changePos <= r.from) {
         r.from += delta;
         r.to += delta;
       }
     }
 
-    const region = this.typstRegions.find((r) => r.from <= cursor && cursor <= r.to);
-    if (!region) this.unsetActiveRegion(helper);
-    else this.activeRegion = parseRegion(update.view, helper, region);
+    if (!region) {
+      if (ch === '\n') return false;
+      this.unsetActiveRegion(helper);
+    } else this.activeRegion = parseRegion(update.view, helper, region);
 
     return true;
   }

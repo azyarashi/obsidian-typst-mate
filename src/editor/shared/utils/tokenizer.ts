@@ -20,6 +20,18 @@ export const BRACKET_MAP: Record<string, string> = {
   '}': 'brace',
 };
 
+function isAlpha(code: number): boolean {
+  return (code >= 65 && code <= 90) || (code >= 97 && code <= 122); // A-Z, a-z
+}
+
+function isAlphaOrDot(code: number): boolean {
+  return isAlpha(code) || code === 46; // '.'
+}
+
+function isAlphaNumericOrDash(code: number): boolean {
+  return isAlpha(code) || (code >= 48 && code <= 57) || code === 95 || code === 45; // a-zA-Z0-9_-
+}
+
 export class TypstTokenizer {
   tokenize(text: string): Token[] {
     const tokens: Token[] = [];
@@ -27,12 +39,13 @@ export class TypstTokenizer {
     const len = text.length;
 
     while (pos < len) {
+      const charCode = text.charCodeAt(pos);
       const char = text[pos] as string;
 
-      if (/[a-zA-Z]/.test(char)) {
+      if (isAlpha(charCode)) {
         let end = pos + 1;
-        while (end < len && /[a-zA-Z.]/.test(text[end] as string)) end++;
-        while (end > pos && text[end - 1] === '.') end--;
+        while (end < len && isAlphaOrDot(text.charCodeAt(end))) end++;
+        while (end > pos && text.charCodeAt(end - 1) === 46 /* '.' */) end--;
 
         if (end > pos) {
           const fullText = text.slice(pos, end);
@@ -42,21 +55,22 @@ export class TypstTokenizer {
         }
       }
 
-      if (char === '/' && text[pos + 1] === '/') {
+      if (charCode === 47 /* '/' */ && text.charCodeAt(pos + 1) === 47 /* '/' */) {
         const end = text.indexOf('\n', pos);
         const to = end === -1 ? len : end;
         tokens.push({ type: 'comment', from: pos, to: to, text: text.slice(pos, to) });
         pos = to;
         continue;
       }
-      if (char === '/' && text[pos + 1] === '*') {
+      if (charCode === 47 /* '/' */ && text.charCodeAt(pos + 1) === 42 /* '*' */) {
         let depth = 1;
         let current = pos + 2;
         while (current < len && depth > 0) {
-          if (text[current] === '/' && text[current + 1] === '*') {
+          const c = text.charCodeAt(current);
+          if (c === 47 /* '/' */ && text.charCodeAt(current + 1) === 42 /* '*' */) {
             depth++;
             current += 2;
-          } else if (text[current] === '*' && text[current + 1] === '/') {
+          } else if (c === 42 /* '*' */ && text.charCodeAt(current + 1) === 47 /* '/' */) {
             depth--;
             current += 2;
           } else current++;
@@ -67,15 +81,16 @@ export class TypstTokenizer {
         continue;
       }
 
-      if (char === '`') {
+      if (charCode === 96 /* '`' */) {
         let end = pos + 1;
         let isMultiLine = false;
         while (end < len) {
-          if (text[end] === '\n') {
+          const ec = text.charCodeAt(end);
+          if (ec === 10 /* '\n' */) {
             isMultiLine = true;
             break;
           }
-          if (text[end] === '`' && text[end - 1] !== '\\') {
+          if (ec === 96 /* '`' */ && text.charCodeAt(end - 1) !== 92 /* '\\' */) {
             end++;
             break;
           }
@@ -88,15 +103,16 @@ export class TypstTokenizer {
         }
       }
 
-      if (char === '"' || char === "'") {
+      if (charCode === 34 /* '"' */ || charCode === 39 /* "'" */) {
         let end = pos + 1;
         let isMultiLine = false;
         while (end < len) {
-          if (text[end] === '\n') {
+          const ec = text.charCodeAt(end);
+          if (ec === 10 /* '\n' */) {
             isMultiLine = true;
             break;
           }
-          if (text[end] === char && text[end - 1] !== '\\') {
+          if (ec === charCode && text.charCodeAt(end - 1) !== 92 /* '\\' */) {
             end++;
             break;
           }
@@ -109,20 +125,20 @@ export class TypstTokenizer {
         }
       }
 
-      if (char === '#' && text.startsWith('#CURSOR', pos)) {
+      if (charCode === 35 /* '#' */ && text.startsWith('#CURSOR', pos)) {
         tokens.push({ type: 'null', from: pos, to: pos + 7, text: '#CURSOR' });
         pos += 7;
         continue;
       }
-      if (char === '{' && text.startsWith('{CODE}', pos)) {
+      if (charCode === 123 /* '{' */ && text.startsWith('{CODE}', pos)) {
         tokens.push({ type: 'null', from: pos, to: pos + 6, text: '{CODE}' });
         pos += 6;
         continue;
       }
 
-      if (char === '#') {
+      if (charCode === 35 /* '#' */) {
         let end = pos + 1;
-        while (end < len && /[a-zA-Z0-9_-]/.test(text[end] as string)) end++;
+        while (end < len && isAlphaNumericOrDash(text.charCodeAt(end))) end++;
         if (end > pos + 1) {
           tokens.push({ type: 'keyword', from: pos, to: end, text: text.slice(pos, end) });
           pos = end;
@@ -130,7 +146,15 @@ export class TypstTokenizer {
         }
       }
 
-      if ('()[]{}'.includes(char)) {
+      // '(' = 40, ')' = 41, '[' = 91, ']' = 93, '{' = 123, '}' = 125
+      if (
+        charCode === 40 ||
+        charCode === 41 ||
+        charCode === 91 ||
+        charCode === 93 ||
+        charCode === 123 ||
+        charCode === 125
+      ) {
         tokens.push({ type: 'bracket', from: pos, to: pos + 1, text: char });
         pos++;
         continue;
