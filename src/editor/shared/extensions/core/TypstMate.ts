@@ -128,7 +128,7 @@ export class TypstMateCorePluginValue implements PluginValue {
   constructor(view: EditorView) {
     this.computeFull(view);
 
-    this.computeDebounce = debounce((view: EditorView) => this.computeFull(view), 500, true);
+    this.computeDebounce = debounce((view: EditorView) => this.computeFull(view, false), 500, true);
   }
 
   update(update: ViewUpdate) {
@@ -148,7 +148,7 @@ export class TypstMateCorePluginValue implements PluginValue {
 
     const ch =
       delta === 1 ? update.state.sliceDoc(cursor - 1, cursor) : update.startState.sliceDoc(changePos, changePos + 1);
-    if (ch === '$' || ch === '`' || ch === `~`) return false;
+    if (ch === '$' || ch === '`' || ch === `~` || ch === '\\') return false;
 
     const helper = update.view.state.facet(editorHelperFacet);
     if (!helper) return false;
@@ -173,9 +173,13 @@ export class TypstMateCorePluginValue implements PluginValue {
     }
 
     // activeRegion 外の変更
-    for (const r of this.typstRegions.filter((r) => changePos <= r.from)) {
-      r.from += delta;
-      r.to += delta;
+    for (const r of this.typstRegions) {
+      if (r.from <= changePos && changePos <= r.to) {
+        r.to += delta;
+      } else if (changePos <= r.from) {
+        r.from += delta;
+        r.to += delta;
+      }
     }
 
     const region = this.typstRegions.find((r) => r.from <= cursor && cursor <= r.to);
@@ -185,7 +189,7 @@ export class TypstMateCorePluginValue implements PluginValue {
     return true;
   }
 
-  computeFull(view: EditorView) {
+  computeFull(view: EditorView, parse: boolean = true) {
     const helper = view.state.facet(editorHelperFacet);
     if (!helper) return this.unsetActiveRegion();
 
@@ -194,6 +198,8 @@ export class TypstMateCorePluginValue implements PluginValue {
 
     const regions = collectRegions(view, from, to);
     this.typstRegions = regions;
+
+    if (!parse) return;
 
     const region = regions.find((r) => r.from <= cursor && cursor <= r.to);
     if (!region) return this.unsetActiveRegion(helper);
