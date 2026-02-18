@@ -3,7 +3,7 @@ import { Decoration, type DecorationSet, type EditorView, ViewPlugin, type ViewU
 
 import { BRACKET_MAP, OPEN_MAP, type Token, TypstTokenizer } from '../../utils/tokenizer';
 import { editorHelperFacet } from '../core/Helper';
-import { typstMateCore } from '../core/TypstMate';
+import { getActiveRegion } from '../core/TypstMate';
 
 import './BracketHighlight.css';
 
@@ -41,15 +41,12 @@ export const bracketHighlightExtension = () => {
         const helper = view.state.facet(editorHelperFacet);
         if (!helper || helper.plugin.settings.disableBracketHighlight) return Decoration.none;
 
-        const corePlugin = view.plugin(typstMateCore);
-        if (!corePlugin) return Decoration.none;
+        const region = getActiveRegion(view);
+        if (!region) return Decoration.none;
 
         const builder = new RangeSetBuilder<Decoration>();
         const state = view.state;
         const cursor = state.selection.main.head;
-
-        const region = corePlugin.activeRegion;
-        if (!region) return Decoration.none;
 
         if (this.cachedTokens === null || this.cachedRegionFrom !== region.from || this.cachedRegionTo !== region.to) {
           const text = state.sliceDoc(region.from, region.to);
