@@ -7,6 +7,7 @@ import { extarctCMMath } from '@/libs/typst';
 import { editorHelperFacet } from './Helper';
 
 export interface ParsedRegion {
+  index: number;
   skip: number;
   from: number;
   to: number;
@@ -22,6 +23,7 @@ const CODEBLOCK_BEGIN = 'HyperMD-codeblock_HyperMD-codeblock-begin_HyperMD-codeb
 const CODEBLOCK_END = 'HyperMD-codeblock_HyperMD-codeblock-bg_HyperMD-codeblock-end_HyperMD-codeblock-end-bg';
 
 interface TypstRegion {
+  index: number;
   from: number;
   to: number;
   kind: ProcessorKind;
@@ -32,6 +34,7 @@ export const collectRegions = (view: EditorView, from?: number, to?: number): Ty
   const tree = syntaxTree(view.state);
 
   const rawRegions: TypstRegion[] = [];
+  let index = 0;
   let mathStart: number | null = null; // 区切り文字は含まない
   let isDisplayMath = false;
   let codeBlockStart: number | null = null; // 区切り文字は含まない
@@ -57,7 +60,10 @@ export const collectRegions = (view: EditorView, from?: number, to?: number): Ty
           const innerTo = node.from;
           const kind = !isDisplayMath ? 'inline' : 'display';
 
-          if (innerFrom <= innerTo) rawRegions.push({ from: innerFrom, to: innerTo, kind });
+          if (innerFrom <= innerTo) {
+            rawRegions.push({ from: innerFrom, to: innerTo, kind, index });
+            index++;
+          }
           mathStart = null;
           break;
         }
@@ -71,14 +77,17 @@ export const collectRegions = (view: EditorView, from?: number, to?: number): Ty
           if (codeBlockStart === null) break;
           const codeBlockEnd = node.from - 1;
 
-          if (codeBlockStart < codeBlockEnd)
+          if (codeBlockStart < codeBlockEnd) {
             // ? 改行の分 + 1
             rawRegions.push({
+              index,
               from: codeBlockStart + 1,
               to: codeBlockEnd,
               kind: 'codeblock',
               lang: codeBlockLang,
             });
+            index++;
+          }
           codeBlockStart = null;
           break;
         }
@@ -96,6 +105,7 @@ const parseRegion = (view: EditorView, helper: EditorHelper, region: TypstRegion
     if (processor === undefined || processor.renderingEngine === RenderingEngine.MathJax) return null;
 
     return {
+      index: region.index,
       skip: processor.id.length + 1,
       from: region.from,
       to: region.to,
@@ -112,6 +122,7 @@ const parseRegion = (view: EditorView, helper: EditorHelper, region: TypstRegion
   if (region.from + eqStart > region.to) return null;
 
   return {
+    index: region.index,
     skip: eqStart,
     from: region.from + eqStart,
     to: region.to - eqEnd,
@@ -153,24 +164,11 @@ export class TypstMateCorePluginValue implements PluginValue {
     const helper = update.view.state.facet(editorHelperFacet);
     if (!helper) return false;
 
-    // activeRegion 内の変更
+    // TODO: activeRegion 内の変更
+    /*
     if (this.activeRegion) {
-      if (changePos <= this.activeRegion.to && this.activeRegion.from <= changePos) {
-        this.activeRegion.to += delta;
-
-        for (const r of this.typstRegions) {
-          if (r.from <= changePos && changePos <= r.to) {
-            r.to += delta;
-          } else if (changePos <= r.from) {
-            r.from += delta;
-            r.to += delta;
-          }
-        }
-
-        return true;
-      }
-      return false;
-    }
+      if (changePos <= this.activeRegion.to && this.activeRegion.from <= changePos) {}
+     */
 
     // activeRegion 外の変更
     for (const r of this.typstRegions) {
