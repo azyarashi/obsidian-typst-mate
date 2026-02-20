@@ -41,9 +41,18 @@ export class FontList {
     }
 
     // 読み込み済みフォント
-    new Setting(containerEl)
-      .setName('Imported Font(s)')
+    const settings = new Setting(containerEl)
+      .setName('Imported Fonts')
       .setDesc('The string next to the font name is used to identify fonts that share the same PostScript name.');
+    if (Platform.isDesktopApp) {
+      settings.addButton((button) => {
+        button.setTooltip('Open Folder');
+        button.setIcon('folder');
+        button.onClick(async () => {
+          window.open(`file://${this.plugin.baseDirPath}/${this.plugin.fontsDirNPath}`);
+        });
+      });
+    }
 
     this.importedFontTableEl = containerEl.createDiv('typstmate-settings-table typstmate-hidden');
 

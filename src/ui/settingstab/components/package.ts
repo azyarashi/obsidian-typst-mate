@@ -31,7 +31,16 @@ export class PackagesList {
     }
 
     // キャッシュ一覧
-    new Setting(containerEl).setName('Cached Package(s)');
+    const settings = new Setting(containerEl).setName('Cached Packages');
+    if (Platform.isDesktopApp) {
+      settings.addButton((button) => {
+        button.setTooltip('Open Folder');
+        button.setIcon('folder');
+        button.onClick(async () => {
+          window.open(`file://${this.plugin.baseDirPath}/${this.plugin.packagesDirNPath}`);
+        });
+      });
+    }
 
     this.packageTableEl = containerEl.createDiv('typstmate-settings-table typstmate-hidden');
     this.displayPackageList();
