@@ -48,6 +48,10 @@ class SymbolSuggestPlugin implements PluginValue {
       this.hide();
       return;
     }
+    if (region.processor.disableSuggest) {
+      this.hide();
+      return;
+    }
 
     const cursor = update.state.selection.main.head;
     const line = update.state.doc.lineAt(cursor);
