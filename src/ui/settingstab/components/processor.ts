@@ -11,6 +11,14 @@ import {
 import type ObsidianTypstMate from '@/main';
 import { ProcessorExtModal } from '@/ui/modals/processorExt';
 
+const description = {
+  inline:
+    'Only inline elements are expected. If you use block elements, please convert them to inline elements using the box function. If you want to use the same typesetting as Typst, set the style to inline. If you want to use display math equations, setting $display(zws {CODE})$ is recommended.',
+  display: '',
+  codeblock: '',
+  excalidraw: '',
+};
+
 export class ProcessorList {
   plugin: ObsidianTypstMate;
   kind: ProcessorKind;
@@ -21,6 +29,8 @@ export class ProcessorList {
   constructor(plugin: ObsidianTypstMate, kind: ProcessorKind, containerEl: HTMLElement, title: string) {
     this.plugin = plugin;
     this.kind = kind;
+
+    if (kind === 'inline') new Setting(containerEl).setDesc(description[kind]);
 
     // プロセッサー追加ボタンを追加
     const setting = new Setting(containerEl).setName(title).setHeading();
