@@ -38,7 +38,8 @@ export const diagnosticExtension = linter(
         format.indexOf('{CODE}') -
         (noPreamble ? 0 : helper.plugin.settings.preamble.length + 1) -
         helper.plugin.typstManager.preamble.length -
-        1;
+        1 -
+        (result.kind === 'inline' ? 27 : 0);
 
       return {
         from: Math.max(region.from, diag.from + offset),
@@ -46,7 +47,6 @@ export const diagnosticExtension = linter(
         message: '',
         severity: diag.severity,
         renderMessage: () => {
-          if (result.kind === 'inline') [];
           const container = document.createElement('div');
           container.classList.add('typstmate-diag');
 

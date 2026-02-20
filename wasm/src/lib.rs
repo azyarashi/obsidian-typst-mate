@@ -12,7 +12,7 @@ use typst::{
     World,
     diag::Warned,
     foundations::Bytes,
-    layout::{Abs, PagedDocument, Point},
+    layout::{Abs, Frame, FrameItem, PagedDocument, Point},
     syntax::{
         FileId, VirtualPath,
         package::{PackageSpec, PackageVersion},
@@ -193,10 +193,26 @@ impl Typst {
                     return Err(JsValue::from_str("document has no pages"));
                 }
 
+                let frame = &document.pages[0].frame;
+                let descent = if kind == "inline" {
+                    (find_baseline_recursive(frame, -frame.height()).unwrap_or(Abs::zero())).to_pt()
+                } else {
+                    0.0
+                };
+
                 // ? typst_svg::svg は背景が透過しない
-                let svg = typst_svg::svg_frame(&document.pages[0].frame)
+                let svg = typst_svg::svg_frame(&frame)
                     .replace("#000000", "var(--typst-base-color)")
-                    .replacen("<svg class", "<svg style=\"overflow: visible;\" class", 1);
+                    .replacen(
+                        "<svg class",
+                        format!(
+                            "<svg style=\"overflow: visible; vertical-align: {:.2}pt;\" class",
+                            descent
+                        )
+                        .as_str(),
+                        1,
+                    );
+
                 self.last_document = Some(document);
 
                 svg::svg(svg, warnings, &self.world)
@@ -258,4 +274,25 @@ impl Typst {
             None => JsValue::NULL,
         }
     }
+}
+
+fn find_baseline_recursive(frame: &Frame, offset_y: Abs) -> Option<Abs> {
+    for (pos, item) in frame.items() {
+        match item {
+            FrameItem::Text(text) => {
+                if text.text == "TypstMate" {
+                    return Some(offset_y + pos.y);
+                }
+                continue;
+            }
+            FrameItem::Group(group) => {
+                let inner_offset = offset_y + pos.y; // + group.transform.ty;
+                if let Some(b) = find_baseline_recursive(&group.frame, inner_offset) {
+                    return Some(b);
+                }
+            }
+            _ => {}
+        }
+    }
+    None
 }
