@@ -13,8 +13,20 @@
   vertical-align: baseline;
 }
 
-.typstmate-inline.typstmate-style-inline-middle {
+.typstmate-inline.typstmate-style-baseline {
+  vertical-align: baseline;
+}
+
+.typstmate-inline.typstmate-style-baseline typstmate-svg svg {
+  vertical-align: 0pt !important;
+}
+
+.typstmate-inline.typstmate-style-middle {
   vertical-align: middle;
+}
+
+.typstmate-inline.typstmate-style-middle typstmate-svg svg {
+  vertical-align: 0pt !important;
 }
 
 /* display */

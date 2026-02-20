@@ -4,7 +4,8 @@ export enum RenderingEngine {
 }
 export enum InlineStyling {
   Inline = 'inline',
-  InlineMiddle = 'inline-middle',
+  Baseline = 'baseline',
+  Middle = 'middle',
 }
 export enum DisplayStyling {
   Block = 'block',
@@ -65,8 +66,8 @@ export type ProcessorKind = (typeof ProcessorKindTokens)[number];
 export const DefaultNewInlineProcessor: InlineProcessor = {
   id: 'new',
   renderingEngine: RenderingEngine.TypstSVG,
-  format: '$ inline(zws {CODE}) $',
-  styling: InlineStyling.InlineMiddle,
+  format: '${CODE}$',
+  styling: InlineStyling.Inline,
   disableSuggest: false,
   noPreamble: false,
   fitToParentWidth: false,

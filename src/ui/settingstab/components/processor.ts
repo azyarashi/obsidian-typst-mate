@@ -185,7 +185,8 @@ export class ProcessorList {
         switch (this.kind) {
           case 'inline':
             stylingDropdown.addOption('inline', 'inline');
-            stylingDropdown.addOption('inline-middle', 'inline-middle');
+            stylingDropdown.addOption('middle', 'middle');
+            stylingDropdown.addOption('baseline', 'baseline');
             break;
           case 'display':
             stylingDropdown.addOption('block', 'block');
