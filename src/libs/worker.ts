@@ -26,8 +26,11 @@ export default class $ {
     this.localPackagesDirPaths = localPackagesDirPaths;
     this.baseDirPath = baseDirPath;
     if (isDesktopApp) {
-      this.fs = require('node:fs');
-      this.path = require('node:path');
+      // biome-ignore lint/security/noGlobalEval: to use require in worker
+      // biome-ignore lint/complexity/noCommaOperator: to use require in worker with safely
+      const req = (0, eval)('require');
+      this.fs = req('node:fs');
+      this.path = req('node:path');
     }
   }
 
