@@ -55,13 +55,13 @@ jobs:
             dist/main.js \
             dist/styles.css \
             dist/manifest.json \
-            dist/typst-${TAG}.wasm
+            dist/typst-*.wasm
 
-      - name: Upload artifacts
+      - name: Upload Artifacts
         if: github.event_name == 'workflow_dispatch' && ((github.repository != 'azyarashi/obsidian-typst-mate') || (github.actor == 'azyarashi'))
         uses: actions/upload-artifact@v6
         with:
-          name: typst-mate-build
+          name: typst-mate
           retention-days: 7
           path: |
             dist/main.js
