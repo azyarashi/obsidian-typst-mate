@@ -52,6 +52,13 @@
   },
   "files": {
     "ignoreUnknown": false,
-    "includes": ["src/**", "scripts/*", "vite.config.ts", "postcss.config.cjs", ".vscode/settings.json"]
+    "includes": [
+      "src/**",
+      "scripts/*",
+      "vite.config.ts",
+      "postcss.config.cjs",
+      ".vscode/settings.json",
+      "!src/data/symbols.json"
+    ]
   }
 }

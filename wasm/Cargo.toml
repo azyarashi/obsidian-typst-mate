@@ -34,9 +34,25 @@ rustc-hash = "^2.1"
 chrono = "^0.4"
 send_wrapper = "^0.6"
 
+serde_json = "^1"
+unicode_names2 = "^2"
+
+[patch.crates-io]
+typst = { path = "../typst/crates/typst" }
+typst-ide = { path = "../typst/crates/typst-ide" }
+typst-svg = { path = "../typst/crates/typst-svg" }
+typst-pdf = { path = "../typst/crates/typst-pdf" }
+typst-library = { path = "../typst/crates/typst-library" }
+typst-macros = { path = "../typst/crates/typst-macros" }
+typst-timing = { path = "../typst/crates/typst-timing" }
+
 [profile.release]
 lto = true
 codegen-units = 1
 panic = "abort"
 debug = false
 strip = "debuginfo"
+
+[[bin]]
+name = "symbol"
+path = "src/tools/symbol.rs"

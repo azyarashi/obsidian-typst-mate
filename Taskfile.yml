@@ -54,10 +54,10 @@ tasks:
       - bunx --bun vite build -w -m development --outDir '{{.CONFIG_DIR}}/plugins/{{.PLUGIN_ID}}'
     desc: "Build in development mode and copy to plugin directory"
 
-  symbol:
+  update_symbols:
     cmds:
-      - bun scripts/symbols.ts
-    desc: "build symbols file"
+      - cd wasm && cargo run --bin symbol
+    desc: "Update symbols"
 
   release:
     vars:
