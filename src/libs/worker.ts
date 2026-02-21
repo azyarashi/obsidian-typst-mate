@@ -39,7 +39,7 @@ export default class $ {
     this.module = await init({
       module_or_path: await WebAssembly.compile(wasm),
     });
-    this.typst = new Typst(this.fetch.bind(this), fontsize);
+    this.typst = new Typst(this.baseDirPath, this.fetch.bind(this), fontsize);
   }
 
   store(args: Args): void {
@@ -104,8 +104,6 @@ export default class $ {
     let isPackage = false;
     const readBinary = (vpath: string, rpath: string) => {
       const f = this.fs?.readFileSync ?? main.readBinary;
-
-      if (this.path && !this.path.isAbsolute(rpath)) rpath = `${this.baseDirPath}/${rpath}`;
 
       const result = f(rpath);
       if (result instanceof Promise) {

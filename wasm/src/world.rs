@@ -226,7 +226,7 @@ impl WasmWorld {
                     Some(&spec),
                 ),
                 None => self.fetch_file(
-                    id.vpath().as_rootless_path().to_str().unwrap().to_string(),
+                    id.vpath().as_rooted_path().to_str().unwrap().to_string(),
                     None,
                 ),
             };

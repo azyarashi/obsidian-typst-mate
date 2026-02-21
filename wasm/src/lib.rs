@@ -32,6 +32,8 @@ use crate::world::WasmWorld;
 pub struct Typst {
     world: WasmWorld,
 
+    basepath: String,
+
     last_kind: String,
     last_id: String,
     last_document: Option<PagedDocument>,
@@ -40,12 +42,14 @@ pub struct Typst {
 #[wasm_bindgen]
 impl Typst {
     #[wasm_bindgen(constructor)]
-    pub fn new(fetch: js_sys::Function, fontsize: f64) -> Self {
+    pub fn new(basepath: String, fetch: js_sys::Function, fontsize: f64) -> Self {
         #[cfg(debug_assertions)]
         console_error_panic_hook::set_once();
 
         Self {
             world: WasmWorld::new(fetch, fontsize),
+
+            basepath,
 
             last_kind: String::new(),
             last_id: String::new(),
@@ -107,7 +111,10 @@ impl Typst {
         }
 
         for (path, text) in files {
-            self.world.add_file_text(VirtualPath::new(path), text);
+            self.world.add_file_text(
+                VirtualPath::new(format!("{}/{}", self.basepath, path)),
+                text,
+            );
         }
 
         Ok(())
@@ -183,7 +190,10 @@ impl Typst {
             self.last_kind = kind.to_string();
             self.last_id = id.to_string();
 
-            self.update_source(VirtualPath::new(format!("{}_{}.typ", kind, id)), code);
+            self.update_source(
+                VirtualPath::new(format!("{}/{}_{}.typ", self.basepath, kind, id)),
+                code,
+            );
         }
         let Warned { output, warnings } = typst::compile::<PagedDocument>(&mut self.world);
 
@@ -195,7 +205,9 @@ impl Typst {
 
                 let frame = &document.pages[0].frame;
                 let descent = if kind == "inline" {
-                    (find_baseline_recursive(frame, -frame.height()).unwrap_or(Abs::zero())).to_pt()
+                    find_baseline_recursive(frame, -frame.height())
+                        .map(Abs::to_pt)
+                        .unwrap_or(0.0)
                 } else {
                     0.0
                 };
@@ -228,7 +240,10 @@ impl Typst {
     }
 
     pub fn pdf(&mut self, filename: &str, code: &str) -> Result<JsValue, JsValue> {
-        self.update_source(VirtualPath::new(filename), code);
+        self.update_source(
+            VirtualPath::new(format!("{}/{}", self.basepath, filename)),
+            code,
+        );
         let Warned { output, warnings } = typst::compile::<PagedDocument>(&mut self.world);
 
         match output {
@@ -277,7 +292,7 @@ impl Typst {
 }
 
 fn find_baseline_recursive(frame: &Frame, offset_y: Abs) -> Option<Abs> {
-    for (pos, item) in frame.items() {
+    for (pos, item) in frame.items().rev() {
         match item {
             FrameItem::Text(text) => {
                 if text.text == "TypstMate" {

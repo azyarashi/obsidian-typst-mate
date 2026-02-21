@@ -143,7 +143,7 @@ export default class ObsidianTypstMate extends Plugin {
   }
 
   private setPaths() {
-    this.baseDirPath = this.app.vault.adapter.basePath;
+    this.baseDirPath = Platform.isDesktopApp ? this.app.vault.adapter.basePath : '';
     this.pluginDirNPath = `${this.app.vault.configDir}/plugins/${this.pluginId}`; // .obsidian/plugins/typst-mate
     this.fontsDirNPath = `${this.pluginDirNPath}/fonts`;
     this.cachesDirNPath = `${this.pluginDirNPath}/caches`;
@@ -451,6 +451,8 @@ export default class ObsidianTypstMate extends Plugin {
               i++;
             }
           });
+          // TODO: New typst file with template
+          // TODO: 再起動時に削除
         });
       }),
       this.app.metadataCache.on('changed', (file) => {
