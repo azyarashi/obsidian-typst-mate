@@ -366,7 +366,7 @@ export default class TypstManager {
     this.lastStateHash = currentHash;
 
     this.preamble = '';
-    for (const tag of tags) this.preamble += `#import "tags/${tag.replace('/', '.')}.typ": *;`;
+    for (const tag of tags) this.preamble += `#import "tags/${tag.replaceAll('/', '.')}.typ": *;`;
     // Frontmatter variable definitions
     for (const def of defs) this.preamble += `#let ${def};`;
 
