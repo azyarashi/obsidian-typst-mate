@@ -53,7 +53,7 @@ export default abstract class TypstElement extends HTMLElement {
 
   format() {
     let formatted = this.processor.format.replace('{CODE}', this.source);
-    formatted = `${this.plugin.typstManager.preamble}\n${formatted}${this.kind === 'inline' ? '\n#text(size:0pt)[TypstMate]' : ''}`;
+    formatted = `${this.plugin.typstManager.preamble}\n${formatted}${this.kind === 'inline' ? '#text(size:0pt)[TypstMate]' : ''}`;
     formatted = this.processor.noPreamble ? formatted : `${this.plugin.settings.preamble}\n${formatted}`;
 
     return formatted;
