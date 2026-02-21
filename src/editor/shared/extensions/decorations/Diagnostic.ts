@@ -38,8 +38,7 @@ export const diagnosticExtension = linter(
         format.indexOf('{CODE}') -
         (noPreamble ? 0 : helper.plugin.settings.preamble.length + 1) -
         helper.plugin.typstManager.preamble.length -
-        1 -
-        (result.kind === 'inline' ? 27 : 0);
+        1;
 
       return {
         from: Math.max(region.from, diag.from + offset),

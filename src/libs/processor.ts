@@ -66,7 +66,7 @@ export type ProcessorKind = (typeof ProcessorKindTokens)[number];
 export const DefaultNewInlineProcessor: InlineProcessor = {
   id: 'new',
   renderingEngine: RenderingEngine.TypstSVG,
-  format: '${CODE}$',
+  format: '#set page(margin: (x: 0pt, y: 0.3125em))\n${CODE}$',
   styling: InlineStyling.Inline,
   disableSuggest: false,
   noPreamble: false,
@@ -84,7 +84,7 @@ export const DefaultNewDisplayProcessor: DisplayProcessor = {
 export const DefaultNewCodeblockProcessor: CodeblockProcessor = {
   id: 'new',
   renderingEngine: RenderingEngine.TypstSVG,
-  format: '{CODE}',
+  format: '#{CODE}',
   styling: CodeblockStyling.BlockCenter,
   disableSuggest: false,
   noPreamble: false,
@@ -93,7 +93,7 @@ export const DefaultNewCodeblockProcessor: CodeblockProcessor = {
 export const DefaultNewExcalidrawProcessor: ExcalidrawProcessor = {
   id: 'new',
   renderingEngine: RenderingEngine.TypstSVG,
-  format: '#set page(margin: 0.25em)\n${CODE}$',
+  format: '#set page(margin: 0.3125em)\n${CODE}$',
   styling: ExcalidrawStyling.Default,
   disableSuggest: false,
   noPreamble: false,

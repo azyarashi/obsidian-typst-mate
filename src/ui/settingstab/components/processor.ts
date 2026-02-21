@@ -13,7 +13,7 @@ import { ProcessorExtModal } from '@/ui/modals/processorExt';
 
 const description = {
   inline:
-    'Only inline elements are expected. If you use block elements, please convert them to inline elements using the box function. If you want to use the same typesetting as Typst, set the style to inline. If you want to use display math equations, setting $display(zws {CODE})$ is recommended.',
+    'It expects only inline elements to be placed and no extra line breaks (including ; in Code mode) on the last line. If you use block elements, please convert them to inline elements using the box function. If you want to use the same typesetting as Typst, set the style to inline. If you want to use display math equations, setting $#math.equation($ {CODE} $, block: false)$ is recommended.',
   display: '',
   codeblock: '',
   excalidraw: '',
