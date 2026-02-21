@@ -25,6 +25,7 @@ tasks:
       version:
         sh: "bun scripts/version.ts --type mock"
     cmds:
+      - mkdir -p "{{.PLUGIN_DIR}}"
       - touch '{{.PLUGIN_DIR}}/.hotreload'
       - cp manifest.json '{{.PLUGIN_DIR}}'
     desc: "Copy static files to plugin directory"
