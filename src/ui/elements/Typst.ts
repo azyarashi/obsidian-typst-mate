@@ -39,14 +39,16 @@ export default abstract class TypstElement extends HTMLElement {
     // ? キャンバスなどで呼ばれたとき用
     const view = this.plugin.app.workspace.getActiveFileView();
     if (view instanceof MarkdownView)
-      updateDiagnosticEffect(view.editor.cm, {
-        // @ts-expect-error
-        diags: result.diags,
-        kind: this.kind,
-        processor: this.processor,
-        offset: this.offset,
-        noDiag: this.noDiag,
-      });
+      setTimeout(() => {
+        updateDiagnosticEffect(view.editor.cm, {
+          // @ts-expect-error
+          diags: result.diags,
+          kind: this.kind,
+          processor: this.processor,
+          offset: this.offset,
+          noDiag: this.noDiag,
+        });
+      }, 0);
 
     this.plugin.typstManager.beforeKind = this.kind;
   }
