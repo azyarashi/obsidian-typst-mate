@@ -329,6 +329,15 @@ export default class TypstManager {
 
     const filePaths = await this.plugin.app.vault.adapter.list(importPath);
 
+    // Import dependency files
+    for (const file of filePaths.files) {
+      if (!file.endsWith(".typ")) continue;
+
+      const name = file.slice(importPath.length + 1);
+      const contents = await this.plugin.app.vault.adapter.read(file);
+      files.set(name, contents);
+    }
+
     const tags = `${importPath}/tags`;
     if (!filePaths.folders.contains(tags)) return files;
 
@@ -341,7 +350,7 @@ export default class TypstManager {
       files.set(name, contents);
       // The name so far will be something like tags/tag.subtag.subsub.typ
       // So we remove the folder and the .typ then get the tag back
-      this.tagFiles.add(name.slice(5).slice(0, -4).replace('.', '/'));
+      this.tagFiles.add(name.slice(5).slice(0, -4).replaceAll('.', '/'));
     }
 
     return files;
@@ -357,7 +366,7 @@ export default class TypstManager {
     this.lastStateHash = currentHash;
 
     this.preamble = '';
-    for (const tag of tags) this.preamble += `#import "tags/${tag.replace('/', '.')}.typ": *;`;
+    for (const tag of tags) this.preamble += `#import "tags/${tag.replaceAll('/', '.')}.typ": *;`;
     // Frontmatter variable definitions
     for (const def of defs) this.preamble += `#let ${def};`;
 
