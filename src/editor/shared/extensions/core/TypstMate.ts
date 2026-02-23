@@ -9,8 +9,9 @@ import { editorHelperFacet } from './Helper';
 export interface ParsedRegion {
   index: number;
   skip: number;
-  from: number;
-  to: number;
+  skipEnd: number;
+  from: number; // ! skip 含まない
+  to: number; // ! skipEnd 含む
   kind: ProcessorKind;
   processor: Processor;
 }
@@ -111,6 +112,7 @@ const parseRegion = (view: EditorView, helper: EditorHelper, region: TypstRegion
     return {
       index: region.index,
       skip: processor.id.length + 1,
+      skipEnd: 1,
       from: region.from,
       to: region.to,
       kind: 'codeblock',
@@ -128,7 +130,8 @@ const parseRegion = (view: EditorView, helper: EditorHelper, region: TypstRegion
   return {
     index: region.index,
     skip: eqStart,
-    from: region.from + eqStart,
+    skipEnd: eqEnd,
+    from: region.from,
     to: region.to - eqEnd,
     kind: region.kind,
     processor,
