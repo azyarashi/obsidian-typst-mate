@@ -6,13 +6,14 @@ import type ObsidianTypstMate from '@/main';
 export function addEditorTab(
   plugin: ObsidianTypstMate,
   containerEl: HTMLElement,
-  activeTab: 'Decoration' | 'Behavior',
-  setActiveTab: (tab: 'Decoration' | 'Behavior') => void,
+  activeTab: 'Decoration' | 'Popup' | 'Action',
+  setActiveTab: (tab: 'Decoration' | 'Popup' | 'Action') => void,
 ) {
   const subTabsEl = containerEl.createDiv('typstmate-processor-tabs');
-  const subTabs: { id: 'Decoration' | 'Behavior'; name: string }[] = [
+  const subTabs: { id: 'Decoration' | 'Popup' | 'Action'; name: string }[] = [
     { id: 'Decoration', name: 'Decoration' },
-    { id: 'Behavior', name: 'Behavior' },
+    { id: 'Popup', name: 'Popup' },
+    { id: 'Action', name: 'Action' },
   ];
 
   for (const tab of subTabs) {
@@ -29,8 +30,11 @@ export function addEditorTab(
     case 'Decoration':
       addMathDecorationSettings(plugin, containerEl);
       break;
-    case 'Behavior':
-      addBehaviorSettings(plugin, containerEl);
+    case 'Popup':
+      addPopupSettings(plugin, containerEl);
+      break;
+    case 'Action':
+      addActionSettings(plugin, containerEl);
       break;
   }
 }
@@ -118,8 +122,8 @@ function addMathDecorationSettings(plugin: ObsidianTypstMate, containerEl: HTMLE
     });
 }
 
-function addBehaviorSettings(plugin: ObsidianTypstMate, containerEl: HTMLElement) {
-  new Setting(containerEl).setName('Behavior').setHeading();
+function addPopupSettings(plugin: ObsidianTypstMate, containerEl: HTMLElement) {
+  new Setting(containerEl).setName('Inline Preview').setHeading();
 
   new Setting(containerEl)
     .setName('Enable Inline Preview')
@@ -131,6 +135,10 @@ function addBehaviorSettings(plugin: ObsidianTypstMate, containerEl: HTMLElement
         plugin.saveSettings();
       });
     });
+}
+
+function addActionSettings(plugin: ObsidianTypstMate, containerEl: HTMLElement) {
+  new Setting(containerEl).setName('Tab Jump').setHeading();
 
   new Setting(containerEl)
     .setName('Revert Tab to Default')
@@ -142,6 +150,46 @@ function addBehaviorSettings(plugin: ObsidianTypstMate, containerEl: HTMLElement
         plugin.saveSettings();
       });
     });
+
+  new Setting(containerEl)
+    .setName('Jump Outside Bracket')
+    .setDesc('Allow the cursor to jump outside the current bracket pair.')
+    .addToggle((toggle) => {
+      toggle.setValue(plugin.settings.jumpOutsideBracket ?? DEFAULT_SETTINGS.jumpOutsideBracket!);
+      toggle.onChange((value) => {
+        plugin.settings.jumpOutsideBracket = value;
+        plugin.saveSettings();
+      });
+    });
+
+  new Setting(containerEl)
+    .setName('Move to End of Math Block Before Exiting')
+    .setDesc('When exiting math, first move the cursor to the end of the block.')
+    .addToggle((toggle) => {
+      toggle.setValue(
+        plugin.settings.moveToEndOfMathBlockBeforeExiting ?? DEFAULT_SETTINGS.moveToEndOfMathBlockBeforeExiting!,
+      );
+      toggle.onChange((value) => {
+        plugin.settings.moveToEndOfMathBlockBeforeExiting = value;
+        plugin.saveSettings();
+      });
+    });
+
+  new Setting(containerEl)
+    .setName('Prefer Inline Exit for Single Line Display Math')
+    .setDesc('If a display math block fits on a single line, exit inline instead of creating a new line.')
+    .addToggle((toggle) => {
+      toggle.setValue(
+        plugin.settings.preferInlineExitForSingleLineDisplayMath ??
+          DEFAULT_SETTINGS.preferInlineExitForSingleLineDisplayMath!,
+      );
+      toggle.onChange((value) => {
+        plugin.settings.preferInlineExitForSingleLineDisplayMath = value;
+        plugin.saveSettings();
+      });
+    });
+
+  new Setting(containerEl).setName('Macro').setHeading();
 
   new Setting(containerEl)
     .setName('Disable Macro')

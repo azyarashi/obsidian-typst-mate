@@ -23,9 +23,14 @@ export interface Settings {
   complementSymbolWithUnicode: boolean;
   disableBracketHighlight: boolean;
 
-  // 振る舞い
+  // 表示
   enableInlinePreview: boolean;
+
+  // アクション
   revertTabToDefault: boolean;
+  jumpOutsideBracket: boolean;
+  preferInlineExitForSingleLineDisplayMath: boolean;
+  moveToEndOfMathBlockBeforeExiting: boolean;
   disableMacro: boolean;
 
   /* レンダリング */
@@ -74,8 +79,14 @@ export const DEFAULT_SETTINGS: Settings = {
   complementSymbolWithUnicode: false,
   disableBracketHighlight: false,
 
+  // 表示
   enableInlinePreview: true,
+
+  // アクション
   revertTabToDefault: false,
+  jumpOutsideBracket: true,
+  preferInlineExitForSingleLineDisplayMath: true,
+  moveToEndOfMathBlockBeforeExiting: false,
   disableMacro: false,
 
   /* レンダリング */

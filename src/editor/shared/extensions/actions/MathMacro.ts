@@ -18,7 +18,7 @@ const MACROS: MacroDefinition[] = [
   {
     trigger: ['m', 'k'],
     insert: '${}  {}$',
-    cursorOffset: (from) => from + 3,
+    cursorOffset: (from) => from + 4,
   },
 ];
 
