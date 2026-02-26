@@ -225,10 +225,23 @@ export class TypstMateCorePluginValue implements PluginValue {
       if (this.activeRegion) {
         const cursor = update.state.selection.main.head;
         const newFrom = update.changes.mapPos(this.activeRegion.from, -1);
-        const newTo = update.changes.mapPos(this.activeRegion.to, 1);
-        if (newFrom <= cursor && cursor <= newTo) {
-          this.activeRegion.from = newFrom;
-          this.activeRegion.to = newTo;
+        const rawTo =
+          this.activeRegion.kind === 'codeblock'
+            ? this.activeRegion.to
+            : this.activeRegion.to + this.activeRegion.skipEnd;
+        const newRawTo = update.changes.mapPos(Math.min(rawTo, update.changes.length), -1);
+        if (newFrom <= cursor && cursor <= newRawTo) {
+          const helper = update.view.state.facet(editorHelperFacet);
+          if (!helper) {
+            this.activeRegion = null;
+            return;
+          }
+          this.activeRegion = parseRegion(update.view, helper, {
+            index: this.activeRegion.index,
+            from: newFrom,
+            to: newRawTo,
+            kind: this.activeRegion.kind,
+          });
           return;
         }
         this.recompute(update.view);
