@@ -42,6 +42,7 @@ export default defineConfig(async ({ mode }) => {
       },
       emptyOutDir: prod,
       minify: 'oxc',
+      sourcemap: !prod,
       rollupOptions: {
         output: {
           entryFileNames: 'main.js',
