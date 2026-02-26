@@ -54,7 +54,17 @@ tasks:
       - bunx --bun vite build -w -m development --outDir '{{.CONFIG_DIR}}/plugins/{{.PLUGIN_ID}}'
     desc: "Build in development mode and copy to plugin directory"
 
+  fetch_unicode_math_table:
+    cmds:
+      - curl -sL https://raw.githubusercontent.com/wspr/unicode-math/master/unicode-math-table.tex -o wasm/src/tools/unicode-math-table.tex
+    desc: "Fetch latest unicode-math-table.tex from GitHub"
+    status:
+      - 'test "{{.UPDATE}}" != "true"'
+      - "test -f wasm/src/tools/unicode-math-table.tex"
+
   update_symbols:
+    deps:
+      - fetch_unicode_math_table
     cmds:
       - cd wasm && cargo run --bin symbol
     desc: "Update symbols"

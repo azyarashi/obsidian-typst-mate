@@ -36,6 +36,7 @@ send_wrapper = "^0.6"
 
 serde_json = "^1"
 unicode_names2 = "^2"
+unicode-math-class = "^0.1"
 
 [patch.crates-io]
 typst = { path = "../typst/crates/typst" }
