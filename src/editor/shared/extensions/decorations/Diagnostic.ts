@@ -34,7 +34,8 @@ export const diagnosticExtension = linter(
     const { noPreamble, format } = result.processor;
     const diagnostics = result.diags.map((diag) => {
       const offset =
-        region.from -
+        region.from +
+        region.skip -
         format.indexOf('{CODE}') -
         (noPreamble ? 0 : helper.plugin.settings.preamble.length + 1) -
         helper.plugin.typstManager.preamble.length -
