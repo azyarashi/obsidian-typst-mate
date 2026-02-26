@@ -33,14 +33,14 @@ function isAlphaNumericOrDash(code: number): boolean {
 }
 
 export class TypstTokenizer {
-  tokenize(text: string): Token[] {
+  tokenize(text: string, options?: { includeSym?: boolean }): Token[] {
+    const { includeSym = true } = options || {};
     const tokens: Token[] = [];
     let pos = 0;
     const len = text.length;
 
     while (pos < len) {
       const charCode = text.charCodeAt(pos);
-      const char = text[pos] as string;
 
       if (isAlpha(charCode)) {
         let end = pos + 1;
@@ -48,8 +48,7 @@ export class TypstTokenizer {
         while (end > pos && text.charCodeAt(end - 1) === 46 /* '.' */) end--;
 
         if (end > pos) {
-          const fullText = text.slice(pos, end);
-          tokens.push({ type: 'sym', from: pos, to: end, text: fullText });
+          if (includeSym) tokens.push({ type: 'sym', from: pos, to: end, text: text.slice(pos, end) });
           pos = end;
           continue;
         }
@@ -155,7 +154,7 @@ export class TypstTokenizer {
         charCode === 123 ||
         charCode === 125
       ) {
-        tokens.push({ type: 'bracket', from: pos, to: pos + 1, text: char });
+        tokens.push({ type: 'bracket', from: pos, to: pos + 1, text: String.fromCharCode(charCode) });
         pos++;
         continue;
       }

@@ -40,17 +40,6 @@ function getSymbolWidget(text: string): SymbolWidget {
 
 const parser = new TypstTokenizer();
 
-interface SymToken {
-  from: number;
-  to: number;
-  text: string;
-}
-
-interface MathRegion {
-  from: number;
-  to: number;
-}
-
 class MathSymbolConcealPlugin {
   decorations: DecorationSet;
   atomicRanges: any;
@@ -58,12 +47,6 @@ class MathSymbolConcealPlugin {
   activeReveal: { from: number; to: number } | null = null;
   pendingReveal: { from: number; to: number } | null = null;
   revealTimer: number | undefined;
-
-  private cachedRegion: MathRegion | null = null;
-  private cachedSymTokens: SymToken[] | null = null;
-  private cachedDocLength = -1;
-  private cachedViewportFrom = -1;
-  private cachedViewportTo = -1;
 
   constructor(public view: EditorView) {
     const { decorations, atomicRanges } = this.buildDecorationsAndAtomicRanges(view);
@@ -93,56 +76,28 @@ class MathSymbolConcealPlugin {
     if (!helper) return { decorations: Decoration.none, atomicRanges: new RangeSetBuilder<any>().finish() };
 
     const region = getActiveRegion(view);
-    if (!region) {
-      this.cachedRegion = null;
-      this.cachedSymTokens = null;
-      return { decorations: Decoration.none, atomicRanges: new RangeSetBuilder<any>().finish() };
-    }
+    if (!region) return { decorations: Decoration.none, atomicRanges: new RangeSetBuilder<any>().finish() };
 
     const decorationBuilder = new RangeSetBuilder<Decoration>();
     const atomicRangeBuilder = new RangeSetBuilder<any>();
     const state = view.state;
     const cursor = state.selection.main.head;
 
-    const docLen = state.doc.length;
-    const vpFrom = view.viewport.from;
-    const vpTo = view.viewport.to;
-
-    const hasCachedRegion =
-      this.cachedRegion !== null && this.cachedRegion.from === region.from && this.cachedRegion.to === region.to;
-
-    const needsRetokenize =
-      isDocChange ||
-      !hasCachedRegion ||
-      this.cachedDocLength !== docLen ||
-      this.cachedViewportFrom !== vpFrom ||
-      this.cachedViewportTo !== vpTo;
-
-    if (needsRetokenize) {
-      this.cachedRegion = { from: region.from, to: region.to };
-
-      const text = state.sliceDoc(region.from, region.to);
-      const tokens = parser.tokenize(text);
-      const symTokens: SymToken[] = [];
-      for (const t of tokens) if (t.type === 'sym') symTokens.push({ from: t.from, to: t.to, text: t.text });
-      this.cachedSymTokens = symTokens;
-
-      this.cachedDocLength = docLen;
-      this.cachedViewportFrom = vpFrom;
-      this.cachedViewportTo = vpTo;
-    }
-
-    const cachedRegion = this.cachedRegion!;
-    const symTokens = this.cachedSymTokens!;
+    const text = state.sliceDoc(region.from, region.to);
+    const tokens = parser.tokenize(text);
+    const symTokens = [];
+    for (const t of tokens) if (t.type === 'sym') symTokens.push({ from: t.from, to: t.to, text: t.text });
+    const cachedRegionFrom = region.from;
 
     let cursorOnSymbol: { from: number; to: number } | null = null;
 
-    for (const t of symTokens) {
-      if (helper.plugin.settings.concealMathSymbols) {
+    const conceal = helper.plugin.settings.concealMathSymbols;
+    if (conceal) {
+      for (const t of symTokens) {
         const sym = SYMBOL_MAP.get(t.text);
         if (sym) {
-          const absStart = cachedRegion.from + t.from;
-          const absEnd = cachedRegion.from + t.to;
+          const absStart = cachedRegionFrom + t.from;
+          const absEnd = cachedRegionFrom + t.to;
           const isNearby = absStart <= cursor && cursor <= absEnd;
 
           let shouldReveal = false;

@@ -5,7 +5,7 @@ import type { EditorHelper } from '@/editor';
 import { jumpFromClickExtension } from './actions/JumpFromClick';
 import { mathMacroExtension } from './actions/MathMacro';
 import { shortcutExtension } from './actions/Shortcut';
-import { tabJumpExtension } from './actions/Tabjump';
+import { tabJumpExtension } from './actions/TabJump';
 import { debuggerExtension } from './core/Debugger';
 import { editorHelperFacet } from './core/Helper';
 import { typstMateCore } from './core/TypstMate';
@@ -28,7 +28,7 @@ export function buildExtension(editorHelper: EditorHelper) {
     // Decorations
     diagnosticsState,
     diagnosticExtension,
-    editorHelper.plugin.settings.disableBracketHighlight ? [] : bracketHighlightExtension(),
+    bracketHighlightExtension(),
     mathSymbolConcealExtension,
 
     // Actions

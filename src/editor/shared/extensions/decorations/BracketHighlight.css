@@ -1,18 +1,5 @@
-.typstmate-bracket-paren {
-  color: rgb(200, 100, 200) !important;
-}
-.typstmate-bracket-bracket {
-  color: rgb(100, 200, 200) !important;
-}
-.typstmate-bracket-brace {
-  color: rgb(200, 200, 100) !important;
-}
-
 .typstmate-bracket-enclosing {
   font-weight: bold !important;
-}
-
-.typstmate-bracket-enclosing {
   background-color: var(--text-highlight-bg) !important;
 }
 
