@@ -31,6 +31,10 @@ class DebugPlugin implements PluginValue {
     if (update.docChanged || update.selectionSet) this.render();
   }
 
+  destroy() {
+    this.dom.remove();
+  }
+
   render() {
     if (!this.helper) return;
 
