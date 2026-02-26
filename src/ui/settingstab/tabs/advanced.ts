@@ -41,6 +41,9 @@ export function addAdvancedTab(plugin: ObsidianTypstMate, containerEl: HTMLEleme
     toggle.onChange((value) => {
       plugin.settings.enableDebugger = value;
       plugin.saveSettings();
+
+      if (value) (document.querySelector('.typstmate-debug-panel') as HTMLElement).show();
+      else (document.querySelector('.typstmate-debug-panel') as HTMLElement).hide();
     });
   });
 
