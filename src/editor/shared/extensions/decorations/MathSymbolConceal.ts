@@ -2,6 +2,7 @@ import { RangeSetBuilder } from '@codemirror/state';
 import { Decoration, type DecorationSet, EditorView, ViewPlugin, type ViewUpdate, WidgetType } from '@codemirror/view';
 
 import * as symbolData from '@/data/symbols.json';
+import { RenderingEngine } from '@/libs/processor';
 import { TypstTokenizer } from '../../utils/tokenizer';
 import { editorHelperFacet } from '../core/Helper';
 import { getActiveRegion } from '../core/TypstMate';
@@ -76,7 +77,8 @@ class MathSymbolConcealPlugin {
     if (!helper) return { decorations: Decoration.none, atomicRanges: new RangeSetBuilder<any>().finish() };
 
     const region = getActiveRegion(view);
-    if (!region) return { decorations: Decoration.none, atomicRanges: new RangeSetBuilder<any>().finish() };
+    if (!region || region.processor.renderingEngine !== RenderingEngine.MathJax)
+      return { decorations: Decoration.none, atomicRanges: new RangeSetBuilder<any>().finish() };
 
     const decorationBuilder = new RangeSetBuilder<Decoration>();
     const atomicRangeBuilder = new RangeSetBuilder<any>();
