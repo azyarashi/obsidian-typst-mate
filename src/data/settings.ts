@@ -38,6 +38,7 @@ export interface Settings {
   patchPDFExport: boolean;
   autoBaseColor: boolean;
   baseColor: string;
+  offset: number;
 
   /* コンパイラ */
   skipPreparationWaiting: boolean;
@@ -94,6 +95,7 @@ export const DEFAULT_SETTINGS: Settings = {
   patchPDFExport: false,
   autoBaseColor: true,
   baseColor: '#000000',
+  offset: 0.0,
 
   /* コンパイラ */
   skipPreparationWaiting: false,

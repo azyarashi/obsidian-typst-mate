@@ -39,6 +39,7 @@ export default class TypstManager {
     await this.plugin.typst.init(
       await this.plugin.app.vault.adapter.readBinary(this.plugin.wasmPath),
       this.plugin.app.vault.config.baseFontSize ?? DEFAULT_FONT_SIZE,
+      this.plugin.settings.offset,
     );
 
     const fontPaths = (await this.plugin.app.vault.adapter.list(this.plugin.fontsDirNPath)).files.filter(

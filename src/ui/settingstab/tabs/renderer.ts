@@ -65,4 +65,21 @@ export function addRendererTab(plugin: ObsidianTypstMate, containerEl: HTMLEleme
         plugin.saveSettings();
       });
     });
+
+  new Setting(containerEl)
+    .setName('Offset')
+    .setDesc(
+      'Offset for inline math. The appearance may look unappealing depending on the font used in Obsidian. Please adjust it here if necessary.',
+    )
+    .addSlider((slider) => {
+      slider.setLimits(-0.5, 0.5, 0.05);
+      slider.setValue(plugin.settings.offset);
+      slider.setDynamicTooltip();
+
+      slider.onChange(async (value) => {
+        plugin.settings.offset = value;
+        plugin.saveSettings();
+        await plugin.typst.setOffset(plugin.settings.offset);
+      });
+    });
 }

@@ -42,12 +42,13 @@ pub struct Typst {
 #[wasm_bindgen]
 impl Typst {
     #[wasm_bindgen(constructor)]
-    pub fn new(basepath: String, fetch: js_sys::Function, fontsize: f64) -> Self {
+    pub fn new(basepath: String, fetch: js_sys::Function, fontsize: f64, offset: f64) -> Self {
         #[cfg(debug_assertions)]
         console_error_panic_hook::set_once();
 
         Self {
             world: WasmWorld::new(fetch, fontsize),
+            offset,
 
             basepath,
 
@@ -55,6 +56,10 @@ impl Typst {
             last_id: String::new(),
             last_document: None,
         }
+    }
+
+    pub fn set_offset(&mut self, offset: f64) {
+        self.offset = offset;
     }
 
     pub fn store(
@@ -205,9 +210,10 @@ impl Typst {
 
                 let frame = &document.pages[0].frame;
                 let descent = if kind == "inline" {
-                    find_baseline_recursive(frame, -frame.height())
-                        .map(Abs::to_pt)
-                        .unwrap_or(0.0)
+                    (match find_baseline(frame, Abs::zero()) {
+                        Some(b) => (b - frame.height()).to_pt(),
+                        None => -frame.height().to_pt(),
+                    }) + self.offset
                 } else {
                     0.0
                 };
@@ -291,22 +297,19 @@ impl Typst {
     }
 }
 
-fn find_baseline_recursive(frame: &Frame, offset_y: Abs) -> Option<Abs> {
-    for (pos, item) in frame.items().rev() {
-        match item {
-            FrameItem::Text(text) => {
-                if text.text == "TypstMate" {
-                    return Some(offset_y + pos.y);
+fn find_baseline(frame: &Frame, offset_y: Abs) -> Option<Abs> {
+    let mut stack: Vec<(&Frame, Abs)> = Vec::with_capacity(16);
+    stack.push((frame, offset_y));
+
+    while let Some((cur, cur_offset)) = stack.pop() {
+        for (pos, item) in cur.items().rev() {
+            if let FrameItem::Text(text) = item {
+                if text.text.as_bytes() == b"TypstMate" {
+                    return Some(cur_offset + pos.y);
                 }
-                continue;
+            } else if let FrameItem::Group(group) = item {
+                stack.push((&group.frame, cur_offset + pos.y));
             }
-            FrameItem::Group(group) => {
-                let inner_offset = offset_y + pos.y; // + group.transform.ty;
-                if let Some(b) = find_baseline_recursive(&group.frame, inner_offset) {
-                    return Some(b);
-                }
-            }
-            _ => {}
         }
     }
     None

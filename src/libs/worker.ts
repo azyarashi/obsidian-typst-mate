@@ -34,12 +34,16 @@ export default class $ {
     }
   }
 
-  async init(wasm: ArrayBuffer, fontsize: number): Promise<void> {
+  async init(wasm: ArrayBuffer, fontsize: number, offset: number): Promise<void> {
     if (this.typst) this.typst.free();
     this.module = await init({
       module_or_path: await WebAssembly.compile(wasm),
     });
-    this.typst = new Typst(this.baseDirPath, this.fetch.bind(this), fontsize);
+    this.typst = new Typst(this.baseDirPath, this.fetch.bind(this), fontsize, offset);
+  }
+
+  setOffset(offset: number): void {
+    this.typst.set_offset(offset);
   }
 
   store(args: Args): void {
