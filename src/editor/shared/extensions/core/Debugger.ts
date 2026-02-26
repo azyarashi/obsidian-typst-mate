@@ -1,5 +1,5 @@
 import { type Extension, StateField } from '@codemirror/state';
-import { type EditorView, type Panel, showPanel, type ViewUpdate } from '@codemirror/view';
+import { type EditorView, type PluginValue, ViewPlugin, type ViewUpdate } from '@codemirror/view';
 
 import type { EditorHelper } from '@/editor';
 
@@ -13,16 +13,18 @@ const debugStateField = StateField.define<string>({
   update: (value) => value,
 });
 
-class DebugPanel implements Panel {
+class DebugPlugin implements PluginValue {
   dom: HTMLElement;
+  helper: EditorHelper | null;
 
-  constructor(
-    readonly view: EditorView,
-    readonly helper: EditorHelper,
-  ) {
+  constructor(readonly view: EditorView) {
+    this.helper = view.state.facet(editorHelperFacet);
     this.dom = document.createElement('div');
-    this.dom.className = 'typst-debug-panel';
-    this.render();
+    this.dom.className = 'typstmate-debug-panel';
+    view.dom.appendChild(this.dom);
+
+    if (!this.helper || !this.helper.plugin.settings.enableDebugger) this.dom.hide();
+    else this.render();
   }
 
   update(update: ViewUpdate) {
@@ -30,7 +32,7 @@ class DebugPanel implements Panel {
   }
 
   render() {
-    if (!this.helper.plugin.settings.enableDebugger) return;
+    if (!this.helper) return;
 
     const parserData = this.view.plugin(typstMateCore);
     if (!parserData) return;
@@ -73,10 +75,4 @@ class DebugPanel implements Panel {
   }
 }
 
-export const debuggerExtension: Extension = [
-  debugStateField,
-  showPanel.of((view) => {
-    const helper = view.state.facet(editorHelperFacet);
-    return helper ? new DebugPanel(view, helper) : { dom: document.createElement('div') };
-  }),
-];
+export const debuggerExtension: Extension = [debugStateField, ViewPlugin.fromClass(DebugPlugin)];
