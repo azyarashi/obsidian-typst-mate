@@ -137,6 +137,9 @@ export default class ObsidianTypstMate extends Plugin {
 
       // 監視を登録する
       this.registerListeners();
+
+      // Style Settings に登録
+      app.workspace.trigger('parse-style-settings');
     });
 
     super.onload();
