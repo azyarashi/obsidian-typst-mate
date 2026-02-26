@@ -138,6 +138,7 @@ Typst Mate leverages the following open-source projects:
 - [TyLax](https://github.com/scipenai/tylax) – a fast and high compatibility LaTeX to Typst converter
 - [Detypify](https://github.com/QuarticCat/detypify) - a tool for recognizing handwritten math symbols
 - [Quiver](https://github.com/varkor/quiver) - a tool for creating commutative diagrams
+- [unicode-math](https://github.com/latex3/unicode-math) - distributed under the [LaTeX Project Public License (LPPL) 1.3c](https://ctan.org/license/lppl1.3c).
 
 and contributors:
 
