@@ -1,6 +1,5 @@
 import { syntaxTree } from '@codemirror/language';
 import { type EditorView, type PluginValue, ViewPlugin, type ViewUpdate } from '@codemirror/view';
-import { debounce } from 'obsidian';
 import type { EditorHelper } from '@/editor/index';
 import type { Processor, ProcessorKind } from '@/libs/processor';
 import { extarctCMMath } from '@/libs/typst';
@@ -99,6 +98,82 @@ export const collectRegions = (view: EditorView, from?: number, to?: number): Ty
   return rawRegions;
 };
 
+const FOUND = Symbol('found');
+
+const findRegionContaining = (view: EditorView, cursor: number): TypstRegion | null => {
+  const tree = syntaxTree(view.state);
+  const { from, to } = view.viewport;
+
+  let mathStart: number | null = null;
+  let isDisplayMath = false;
+  let codeBlockStart: number | null = null;
+  let codeBlockLang = '';
+  let result: TypstRegion | null = null;
+  let index = 0;
+
+  try {
+    tree.iterate({
+      from,
+      to,
+      enter: (node) => {
+        switch (node.name) {
+          case INLINE_MATH_BEGIN:
+            mathStart = node.to;
+            isDisplayMath = false;
+            break;
+          case DISPLAY_MATH_BEGIN:
+            mathStart = node.to;
+            isDisplayMath = true;
+            break;
+          case MATH_END: {
+            if (mathStart === null) break;
+            const innerFrom = mathStart;
+            const innerTo = node.from;
+            const kind: ProcessorKind = !isDisplayMath ? 'inline' : 'display';
+
+            if (innerFrom <= innerTo) {
+              if (innerFrom <= cursor && cursor <= innerTo) {
+                result = { from: innerFrom, to: innerTo, kind, index };
+                throw FOUND;
+              }
+              if (innerFrom > cursor) throw FOUND;
+              index++;
+            }
+            mathStart = null;
+            break;
+          }
+          case CODEBLOCK_BEGIN: {
+            codeBlockStart = node.to;
+            codeBlockLang = view.state.sliceDoc(node.from + 3, codeBlockStart).trim();
+            break;
+          }
+          case CODEBLOCK_END: {
+            if (codeBlockStart === null) break;
+            const codeBlockEnd = node.from - 1;
+
+            if (codeBlockStart < codeBlockEnd) {
+              const regionFrom = codeBlockStart + 1;
+              if (regionFrom <= cursor && cursor <= codeBlockEnd) {
+                result = { index, from: regionFrom, to: codeBlockEnd, kind: 'codeblock', lang: codeBlockLang };
+                throw FOUND;
+              }
+              if (regionFrom > cursor) throw FOUND;
+              index++;
+            }
+            codeBlockStart = null;
+            break;
+          }
+        }
+        return true;
+      },
+    });
+  } catch (e) {
+    if (e !== FOUND) throw e;
+  }
+
+  return result;
+};
+
 const parseRegion = (view: EditorView, helper: EditorHelper, region: TypstRegion): ParsedRegion | null => {
   if (region.kind === 'codeblock') {
     const beginLine = view.state.doc.lineAt(region.from - 1);
@@ -139,100 +214,59 @@ const parseRegion = (view: EditorView, helper: EditorHelper, region: TypstRegion
 };
 
 export class TypstMateCorePluginValue implements PluginValue {
-  typstRegions: TypstRegion[] = [];
   activeRegion: ParsedRegion | null = null;
-  computeDebounce: (view: EditorView) => void;
 
   constructor(view: EditorView) {
-    this.computeFull(view);
-
-    this.computeDebounce = debounce((view: EditorView) => this.computeFull(view, false), 500, true);
+    this.recompute(view);
   }
 
   update(update: ViewUpdate) {
     if (update.docChanged) {
-      if (!this.computeIncremental(update)) this.computeFull(update.view);
-    } else if (update.selectionSet) this.computeSelection(update.view);
-    else if (update.viewportChanged) this.computeDebounce(update.view);
-  }
-
-  private computeIncremental(update: ViewUpdate): boolean {
-    const delta = update.changes.newLength - update.changes.length;
-    if (delta !== 1 && delta !== -1) return false;
-
-    const cursor = update.state.selection.main.head;
-    // 1文字挿入 / 1文字削除
-    const changePos = delta === 1 ? cursor - 1 : cursor;
-
-    const ch =
-      delta === 1 ? update.state.sliceDoc(cursor - 1, cursor) : update.startState.sliceDoc(changePos, changePos + 1);
-    if (ch === '$' || ch === '`' || ch === `~` || ch === '\\') return false;
-
-    const helper = update.view.state.facet(editorHelperFacet);
-    if (!helper) return false;
-
-    // TODO: activeRegion 内の変更
-    /*
-    if (this.activeRegion) {
-      if (changePos <= this.activeRegion.to && this.activeRegion.from <= changePos) {}
-     */
-
-    // activeRegion 外の変更
-    let region: TypstRegion | null = null;
-    for (const r of this.typstRegions) {
-      if (r.from <= changePos && changePos <= r.to) {
-        r.to += delta;
-        region = r;
-      } else if (changePos <= r.from) {
-        r.from += delta;
-        r.to += delta;
+      if (this.activeRegion) {
+        const cursor = update.state.selection.main.head;
+        const newFrom = update.changes.mapPos(this.activeRegion.from, -1);
+        const newTo = update.changes.mapPos(this.activeRegion.to, 1);
+        if (newFrom <= cursor && cursor <= newTo) {
+          this.activeRegion.from = newFrom;
+          this.activeRegion.to = newTo;
+          return;
+        }
+        this.recompute(update.view);
+      } else {
+        let hasDelimiter = false;
+        update.changes.iterChanges((_fA, _tA, _fB, _tB, inserted) => {
+          if (hasDelimiter) return;
+          const text = inserted.toString();
+          if (text.includes('$') || text.includes('`') || text.includes('~') || text.includes('\\')) {
+            hasDelimiter = true;
+          }
+        });
+        if (hasDelimiter) this.recompute(update.view);
       }
     }
 
+    if (update.selectionSet) {
+      const cursor = update.state.selection.main.head;
+      if (this.activeRegion && this.activeRegion.from <= cursor && cursor <= this.activeRegion.to) return;
+      this.recompute(update.view);
+    }
+  }
+
+  recompute(view: EditorView) {
+    const helper = view.state.facet(editorHelperFacet);
+    if (!helper) {
+      this.activeRegion = null;
+      return;
+    }
+
+    const cursor = view.state.selection.main.head;
+    const region = findRegionContaining(view, cursor);
     if (!region) {
-      if (ch === '\n') return false;
-      this.unsetActiveRegion(helper);
-    } else this.activeRegion = parseRegion(update.view, helper, region);
-
-    return true;
-  }
-
-  computeFull(view: EditorView, parse: boolean = true) {
-    const helper = view.state.facet(editorHelperFacet);
-    if (!helper) return this.unsetActiveRegion();
-
-    const cursor = view.state.selection.main.head;
-    const { from, to } = view.viewport;
-
-    const regions = collectRegions(view, from, to);
-    this.typstRegions = regions;
-
-    if (!parse) return;
-
-    const region = regions.find((r) => r.from <= cursor && cursor <= r.to);
-    if (!region) return this.unsetActiveRegion(helper);
+      helper.hideAllPopup();
+      this.activeRegion = null;
+      return;
+    }
     this.activeRegion = parseRegion(view, helper, region);
-  }
-
-  computeSelection(view: EditorView) {
-    const helper = view.state.facet(editorHelperFacet);
-    if (!helper) return this.unsetActiveRegion();
-
-    const cursor = view.state.selection.main.head;
-
-    // 変更なし
-    if (this.activeRegion && this.activeRegion.from <= cursor && cursor <= this.activeRegion.to) return;
-
-    // 変更あり
-    const region = this.typstRegions.find((r) => r.from <= cursor && cursor <= r.to);
-    if (!region) return this.unsetActiveRegion(helper);
-
-    this.activeRegion = parseRegion(view, helper, region);
-  }
-
-  private unsetActiveRegion(helper?: EditorHelper) {
-    if (helper) helper.hideAllPopup();
-    this.activeRegion = null;
   }
 }
 
@@ -246,15 +280,13 @@ export function getActiveRegion(view: EditorView): ParsedRegion | null {
 }
 
 export function getRegionAt(view: EditorView, cursor: number): ParsedRegion | null {
-  const pluginVal = view.plugin(typstMateCore);
-  if (!pluginVal) return null;
-
   const helper = view.state.facet(editorHelperFacet);
   if (!helper) return null;
 
-  if (pluginVal.typstRegions.length === 0) pluginVal.computeFull(view);
+  const { from, to } = view.viewport;
+  const regions = collectRegions(view, from, to);
 
-  const region = pluginVal.typstRegions.find(
+  const region = regions.find(
     (r) =>
       r.from - (r.kind === 'inline' ? 1 : r.kind === 'display' ? 2 : r.kind === 'codeblock' ? 4 + r.lang!.length : 0) <=
         cursor && cursor <= r.to,
