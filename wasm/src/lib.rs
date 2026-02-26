@@ -31,6 +31,7 @@ use crate::world::WasmWorld;
 #[wasm_bindgen]
 pub struct Typst {
     world: WasmWorld,
+    offset: f64,
 
     basepath: String,
 
@@ -188,7 +189,13 @@ impl Typst {
         }
     }
 
-    pub fn svg(&mut self, code: &str, kind: &str, id: &str) -> Result<JsValue, JsValue> {
+    pub fn svg(
+        &mut self,
+        code: &str,
+        ndir: &str, // ndir starts and ends with "/"
+        kind: &str,
+        id: &str,
+    ) -> Result<JsValue, JsValue> {
         if self.last_kind == kind && self.last_id == id {
             self.world.replace(code);
         } else {
@@ -196,7 +203,7 @@ impl Typst {
             self.last_id = id.to_string();
 
             self.update_source(
-                VirtualPath::new(format!("{}/{}_{}.typ", self.basepath, kind, id)),
+                VirtualPath::new(format!("{}{}{}_{}.typ", self.basepath, ndir, kind, id)),
                 code,
             );
         }
