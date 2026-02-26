@@ -382,7 +382,7 @@ export default class TypstManager {
 
     this.preamble = '';
     for (const tag of tags)
-      this.preamble += `#import "${this.plugin.settings.importPath}/tags/${tag.replaceAll('/', '.')}.typ": *;`;
+      this.preamble += `#import "${this.plugin.baseDirPath}/${this.plugin.settings.importPath}/tags/${tag.replaceAll('/', '.')}.typ": *;`;
     // Frontmatter variable definitions
     for (const def of defs) this.preamble += `#let ${def};`;
 
