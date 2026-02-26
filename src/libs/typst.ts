@@ -199,7 +199,6 @@ export default class TypstManager {
 
     // プロセッサーを決定
     let processor: Processor;
-    let offset = 0;
     switch (kind) {
       case 'inline':
       case 'display': {
@@ -235,7 +234,6 @@ export default class TypstManager {
         display: kind !== 'inline',
       });
     containerEl.addClass(`typstmate-${kind}`, `typstmate-style-${processor.styling}`, `typstmate-id-${processor.id}`);
-    offset += processor.id.length;
 
     // レンダリング
     const typstSVGEl = document.createElement('typstmate-svg') as TypstSVGElement;
@@ -243,7 +241,6 @@ export default class TypstManager {
     typstSVGEl.kind = kind as ProcessorKind;
     typstSVGEl.source = code;
     typstSVGEl.processor = processor;
-    typstSVGEl.offset = offset;
     typstSVGEl.ndir = ndir;
     typstSVGEl.npath = npath;
     containerEl.appendChild(typstSVGEl);

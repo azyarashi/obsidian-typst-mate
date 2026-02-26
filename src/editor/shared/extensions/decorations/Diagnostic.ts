@@ -1,7 +1,7 @@
 import { type Diagnostic, linter } from '@codemirror/lint';
 import { StateEffect, StateField } from '@codemirror/state';
 import type { EditorView } from '@codemirror/view';
-import type { Processor, ProcessorKind } from '@/libs/processor';
+import type { Processor } from '@/libs/processor';
 
 import { editorHelperFacet } from '../core/Helper';
 import { getActiveRegion } from '../core/TypstMate';
@@ -13,9 +13,7 @@ interface TypstDiagnostic extends Diagnostic {
 
 interface TypstMateResult {
   diags: TypstDiagnostic[];
-  kind: ProcessorKind;
   processor: Processor;
-  offset: number;
   noDiag: boolean;
 }
 

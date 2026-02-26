@@ -15,7 +15,6 @@ export default abstract class TypstElement extends HTMLElement {
   source!: string;
   processor!: Processor;
 
-  offset!: number;
   noDiag!: boolean;
 
   plugin!: ObsidianTypstMate;
@@ -45,9 +44,7 @@ export default abstract class TypstElement extends HTMLElement {
         updateDiagnosticEffect(view.editor.cm, {
           // @ts-expect-error
           diags: result.diags,
-          kind: this.kind,
           processor: this.processor,
-          offset: this.offset,
           noDiag: this.noDiag,
         });
       }, 0);
@@ -72,9 +69,7 @@ export default abstract class TypstElement extends HTMLElement {
       updateDiagnosticEffect(view.editor.cm, {
         // @ts-expect-error
         diags: err,
-        kind: this.kind,
         processor: this.processor,
-        offset: this.offset,
         noDiag: this.noDiag,
       });
 
