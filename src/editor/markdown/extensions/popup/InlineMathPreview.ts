@@ -28,7 +28,7 @@ class InlinePreviewPlugin implements PluginValue {
     const region = getActiveRegion(update.view);
     if (!region || region.kind !== 'inline') return this.hide();
 
-    const content = update.state.sliceDoc(region.from - region.skip, region.to);
+    const content = update.state.sliceDoc(region.from + region.skip, region.to);
     if (content.startsWith('\\ref') || content.startsWith('{} \\ref')) {
       this.hide();
       return;
