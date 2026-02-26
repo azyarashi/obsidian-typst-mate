@@ -39,7 +39,10 @@ class SymbolSuggestPlugin implements PluginValue {
       return;
     }
 
-    if (!update.docChanged && !update.selectionSet) return;
+    if (!update.docChanged) {
+      if (update.selectionSet) this.hide();
+      return;
+    }
 
     const helper = update.state.facet(editorHelperFacet);
     if (!helper) return;
