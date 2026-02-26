@@ -1,8 +1,9 @@
 import { type EditorView, type PluginValue, ViewPlugin, type ViewUpdate } from '@codemirror/view';
-import { type SymbolData, searchSymbols } from '@/utils/symbolSearcher';
+
 import { calculatePopupPosition } from '../../utils/position';
 import { editorHelperFacet } from '../core/Helper';
 import { getActiveRegion } from '../core/TypstMate';
+import { type SymbolData, searchSymbols } from './symbolSearcher';
 
 import './SymbolSuggest.css';
 
@@ -89,11 +90,8 @@ class SymbolSuggestPlugin implements PluginValue {
         }
       },
       write: (position) => {
-        if (position) {
-          this.render(position, latex);
-        } else {
-          this.hide();
-        }
+        if (position) this.render(position, latex);
+        else this.hide();
       },
     });
   }
@@ -115,7 +113,7 @@ class SymbolSuggestPlugin implements PluginValue {
       item.classList.add(symbol.kind!);
       if (latex) {
         item.classList.add('latex');
-        item.textContent = `${symbol.sym}: ${symbol.latexName} (${symbol.mathClass})`;
+        item.textContent = `${symbol.sym}: \\${symbol.latexName} (${symbol.mathClass})`;
       } else {
         item.classList.add('typst');
         item.textContent = `${symbol.sym}: ${symbol.name} (${symbol.mathClass})`;
@@ -209,15 +207,13 @@ class SymbolSuggestPlugin implements PluginValue {
     const helper = this.view.state.facet(editorHelperFacet);
     if (!helper || this.queryFrom === undefined || this.queryTo === undefined) return;
 
-    let content: string;
     const region = getActiveRegion(this.view);
-    if (region && region.processor.renderingEngine === 'mathjax') {
-      content = symbol.latexName;
-    } else if (helper.plugin.settings.complementSymbolWithUnicode) {
-      content = symbol.sym;
-    } else {
-      content = symbol.name;
-    }
+    if (!region) return;
+
+    let content: string;
+    if (region.processor.renderingEngine === 'mathjax') content = `\\${symbol.latexName}`;
+    else if (helper.plugin.settings.complementSymbolWithUnicode) content = symbol.sym;
+    else content = symbol.name;
 
     if (!['op', 'Large'].includes(symbol.mathClass)) content = `${content} `;
 
