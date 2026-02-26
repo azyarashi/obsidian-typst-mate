@@ -50,8 +50,8 @@ export default class $ {
     this.typst.store(args.fonts ?? [], args.sources ?? [], args.files ?? []);
   }
 
-  svg(code: string, kind: string, id: string): SVGResult {
-    return this.typst.svg(code, kind, id);
+  svg(code: string, ndir: string, kind: string, id: string): SVGResult {
+    return this.typst.svg(code, ndir, kind, id);
   }
 
   pdf(filename: string, code: string): PDFResult {

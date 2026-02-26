@@ -9,6 +9,8 @@ import type ObsidianTypstMate from '@/main';
 import { DiagnosticModal } from '../modals/diagnostic';
 
 export default abstract class TypstElement extends HTMLElement {
+  ndir!: string;
+  npath?: string;
   kind!: ProcessorKind;
   source!: string;
   processor!: Processor;

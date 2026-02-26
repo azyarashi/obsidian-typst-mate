@@ -157,7 +157,7 @@ export class SnippetEditModal extends Modal {
           content = content ?? this.content;
       }
       this.previewContentEl.empty();
-      this.plugin.typstManager.render(content, this.previewContentEl, this.kind);
+      this.plugin.typstManager.render(content, this.previewContentEl, this.kind, '/');
     }
   }
 

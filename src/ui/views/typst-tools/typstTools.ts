@@ -79,11 +79,11 @@ export class TypstToolsView extends ItemView {
             preview.empty();
             switch (dropdown.getValue()) {
               case 'math-eq':
-                this.plugin.typstManager.render(typst.value, preview, 'display');
+                this.plugin.typstManager.render(typst.value, preview, 'display', '/');
                 break;
               case 'markup-doc':
               case 'cetz-tikz':
-                this.plugin.typstManager.render(typst.value, preview, 'typst');
+                this.plugin.typstManager.render(typst.value, preview, 'typst', '/');
                 break;
             }
           };

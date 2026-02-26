@@ -29,7 +29,7 @@ export class ExcalidrawModal extends Modal {
       text.onChange((value) => {
         code = value;
         previewEl.empty();
-        if (code) plugin.typstManager.render(`${id}\n${code}`, previewEl, 'excalidraw');
+        if (code) plugin.typstManager.render(`${id}\n${code}`, previewEl, 'excalidraw', '/');
       });
     });
 

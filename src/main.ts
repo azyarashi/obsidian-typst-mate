@@ -43,7 +43,7 @@ export default class ObsidianTypstMate extends Plugin {
   settings!: Settings;
 
   wasmPath!: string;
-  baseDirPath!: string;
+  baseDirPath!: string; // ? Vaultのパス (末尾の / は含まない) MobileApp では空文字列
   fontsDirNPath!: string; // ? NPath ... Obsidian 用に Normalized された Path
   cachesDirNPath!: string;
   pluginDirNPath!: string;

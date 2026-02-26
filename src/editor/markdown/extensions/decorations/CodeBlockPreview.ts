@@ -12,6 +12,7 @@ import {
 import type { EditorHelper } from '@/editor';
 import { editorHelperFacet } from '@/editor/shared/extensions/core/Helper';
 import { getActiveRegion } from '@/editor/shared/extensions/core/TypstMate';
+import { ctxToNDir } from '@/libs/typst';
 
 import './CodeBlockPreview.css';
 
@@ -35,8 +36,12 @@ class CodeBlockPreviewWidget extends WidgetType {
   toDOM(_view: EditorView): HTMLElement {
     const container = document.createElement('div');
     container.addClass('typstmate-codeblockpreview');
+
     const file = this.helper.plugin.app.workspace.getActiveFile();
-    this.helper.plugin.typstManager.render(this.code, container, this.id, file?.path);
+    const ndir = file?.parent ? ctxToNDir(file.path) : '/';
+    const npath = file?.path;
+
+    this.helper.plugin.typstManager.render(this.code, container, this.id, ndir, npath);
     return container;
   }
 
@@ -46,8 +51,12 @@ class CodeBlockPreviewWidget extends WidgetType {
 
   override updateDOM(dom: HTMLElement, _view: EditorView): boolean {
     dom.replaceChildren();
+
     const file = this.helper.plugin.app.workspace.getActiveFile();
-    this.helper.plugin.typstManager.render(this.code, dom, this.id, file?.path);
+    const ndir = file?.parent ? ctxToNDir(file.path) : '/';
+    const npath = file?.path;
+
+    this.helper.plugin.typstManager.render(this.code, dom, this.id, ndir, npath);
 
     return true;
   }

@@ -40,7 +40,11 @@ export class TypstTextView extends TextFileView {
     const typstPath = this.file.path.slice(importPath.length);
     this.plugin.typst.store({ files: new Map([[typstPath, content]]) });
 
-    const tag = typstPath.slice(6).slice(0, -4).replaceAll('.', '/');
+    const tag = typstPath
+      .slice(importPath.length + 1) // importPath + "/" の分
+      .slice(5) // "tags/" の分
+      .slice(0, -4) // ".typ" の分
+      .replaceAll('.', '/');
     this.plugin.typstManager.tagFiles.add(tag);
   }
 
@@ -58,13 +62,10 @@ export class TypstTextView extends TextFileView {
     this.contentEl.empty();
 
     const fileContent = await this.app.vault.read(file);
-    const updateListener = EditorView.updateListener.of((update) => {
-      if (update.docChanged) this.requestSave();
-    });
 
     const startState = EditorState.create({
       doc: fileContent,
-      extensions: [updateListener],
+      extensions: [],
     });
 
     this.view = new EditorView({ parent: this.contentEl, state: startState });

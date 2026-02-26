@@ -144,13 +144,13 @@ function renderInput(
     if (code) {
       switch (type) {
         case 'inline':
-          plugin.typstManager.render(`${id ? `${id}:` : ''}${code}`, previewEl, 'inline');
+          plugin.typstManager.render(`${id ? `${id}:` : ''}${code}`, previewEl, 'inline', '/');
           break;
         case 'display':
-          plugin.typstManager.render(`${id ? `${id}\n` : ''}${code}\n`, previewEl, 'display');
+          plugin.typstManager.render(`${id ? `${id}\n` : ''}${code}\n`, previewEl, 'display', '/');
           break;
         case 'codeblock':
-          plugin.typstManager.render(code, previewEl, id || '');
+          plugin.typstManager.render(code, previewEl, id || '', '/');
           break;
       }
     }

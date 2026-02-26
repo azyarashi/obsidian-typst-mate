@@ -95,8 +95,13 @@ export default class TypstManager {
           const waitingElements = document.querySelectorAll('.typstmate-waiting');
           for (const el of waitingElements) {
             const content = el.textContent!;
+
+            const file = this.plugin.app.workspace.getActiveFile();
+            const ndir = file?.parent ? ctxToNDir(file.path) : '/';
+            const npath = file?.path;
+
             el.empty();
-            this.render(content, el, el.getAttribute('kind')!);
+            this.render(content, el, el.getAttribute('kind')!, ndir, npath);
           }
         });
       } else {
@@ -126,7 +131,10 @@ export default class TypstManager {
             return Promise.resolve(el as HTMLElement);
           }
 
-          return Promise.resolve(this.render(source, el, processor.id, ctx.sourcePath));
+          const npath = ctx.sourcePath;
+          const ndir = ctxToNDir(npath);
+
+          return Promise.resolve(this.render(source, el, processor.id, ndir, npath));
         });
       } catch {
         new Notice(`Already registered codeblock language: ${processor.id}`);
@@ -170,14 +178,16 @@ export default class TypstManager {
       }
 
       const file = this.plugin.app.workspace.getActiveFile();
+      const ndir = file?.parent ? ctxToNDir(file.path) : '/';
+      const npath = file?.path;
 
-      return this.render(e, container, r.display ? 'display' : 'inline', file?.path);
+      return this.render(e, container, r.display ? 'display' : 'inline', ndir, npath);
     };
   }
 
-  render(code: string, containerEl: Element, kind: string, path?: string): HTMLElement {
-    if (path) {
-      const cache = this.plugin.app.metadataCache.getCache(path);
+  render(code: string, containerEl: Element, kind: string, ndir: string, npath?: string): HTMLElement {
+    if (npath) {
+      const cache = this.plugin.app.metadataCache.getCache(npath);
       if (cache) {
         if ((kind === 'inline' || kind === 'display') && cache?.frontmatter?.['math-engine'] === 'mathjax')
           return this.plugin.originalTex2chtml(code, {
@@ -234,6 +244,8 @@ export default class TypstManager {
     typstSVGEl.source = code;
     typstSVGEl.processor = processor;
     typstSVGEl.offset = offset;
+    typstSVGEl.ndir = ndir;
+    typstSVGEl.npath = npath;
     containerEl.appendChild(typstSVGEl);
     // ちらつき防止
     const { id: beforeId } = this.beforeProcessor;
@@ -332,11 +344,10 @@ export default class TypstManager {
 
     // Import dependency files
     for (const file of filePaths.files) {
-      if (!file.endsWith(".typ")) continue;
+      if (!file.endsWith('.typ')) continue;
 
-      const name = file.slice(importPath.length + 1);
       const contents = await this.plugin.app.vault.adapter.read(file);
-      files.set(name, contents);
+      files.set(`/${file}`, contents);
     }
 
     const tags = `${importPath}/tags`;
@@ -345,13 +356,19 @@ export default class TypstManager {
     const list = await this.plugin.app.vault.adapter.list(tags);
     for (const file of list.files) {
       if (!file.endsWith('.typ')) continue;
-      // Remove base folder from the start
-      const name = file.slice(importPath.length + 1);
+
       const contents = await this.plugin.app.vault.adapter.read(file);
-      files.set(name, contents);
+      files.set(`/${file}`, contents);
+
       // The name so far will be something like tags/tag.subtag.subsub.typ
       // So we remove the folder and the .typ then get the tag back
-      this.tagFiles.add(name.slice(5).slice(0, -4).replaceAll('.', '/'));
+      this.tagFiles.add(
+        file
+          .slice(importPath.length + 1) // importPath + "/" の分
+          .slice(5) // "tags/" の分
+          .slice(0, -4) // ".typ" の分
+          .replaceAll('.', '/'),
+      );
     }
 
     return files;
@@ -367,7 +384,8 @@ export default class TypstManager {
     this.lastStateHash = currentHash;
 
     this.preamble = '';
-    for (const tag of tags) this.preamble += `#import "tags/${tag.replaceAll('/', '.')}.typ": *;`;
+    for (const tag of tags)
+      this.preamble += `#import "${this.plugin.settings.importPath}/tags/${tag.replaceAll('/', '.')}.typ": *;`;
     // Frontmatter variable definitions
     for (const def of defs) this.preamble += `#let ${def};`;
 
@@ -417,3 +435,8 @@ export const extarctCMMath = (settings: Settings, code: string, display: boolean
 
   return { eqStart, eqEnd, processor };
 };
+
+export function ctxToNDir(s: string): string {
+  const i = s.lastIndexOf('/');
+  return i === -1 ? '/' : `/${s.slice(0, i + 1)}`;
+}

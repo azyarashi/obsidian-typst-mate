@@ -128,7 +128,7 @@ export class SnippetView {
               content = `${id}\n${content}\n`;
               break;
           }
-          this.plugin.typstManager.render(content, preview, kind);
+          this.plugin.typstManager.render(content, preview, kind, '/');
         }
       };
 
