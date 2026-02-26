@@ -83,3 +83,18 @@ tasks:
     preconditions:
       - sh: "[ {{.TYPE}} != '' ]"
     desc: "e.g. task release TYPE=major | TYPE=minor | TYPE=patch | TYPE=mock"
+
+  re-release:
+    vars:
+      tag:
+        sh: "bun scripts/version.ts --type mock"
+    cmds:
+      - cmd: gh release delete "{{.tag}}" --yes --cleanup-tag
+        ignore_error: true
+      - cmd: git push origin --delete "{{.tag}}"
+        ignore_error: true
+      - cmd: git tag -d "{{.tag}}"
+        ignore_error: true
+      - git tag "{{.tag}}"
+      - git push origin "{{.tag}}"
+      - echo "Tag {{.tag}} re-pushed. Workflow will be triggered."
