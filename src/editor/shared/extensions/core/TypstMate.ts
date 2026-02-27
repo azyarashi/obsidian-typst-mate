@@ -12,7 +12,7 @@ export interface ParsedRegion {
   from: number; // ! skip 含まない
   to: number; // ! skipEnd 含む
   kind: ProcessorKind;
-  processor: Processor;
+  processor?: Processor;
 }
 
 const INLINE_MATH_BEGIN = 'formatting_formatting-math_formatting-math-begin_keyword_math';
@@ -285,14 +285,41 @@ export class TypstMateCorePluginValue implements PluginValue {
 
 export const typstMateCore = ViewPlugin.fromClass(TypstMateCorePluginValue);
 
-export function getActiveRegion(view: EditorView): ParsedRegion | null {
-  const pluginVal = view.plugin(typstMateCore);
-  if (!pluginVal) return null;
+export class TypstTextCorePluginValue implements PluginValue {
+  activeRegion: ParsedRegion = {
+    index: 0,
+    skip: 0,
+    skipEnd: 0,
+    from: 0,
+    to: 0,
+    kind: 'codeblock',
+  };
 
-  return pluginVal.activeRegion;
+  constructor(view: EditorView) {
+    this.activeRegion.to = view.state.doc.length;
+  }
+
+  update(update: ViewUpdate) {
+    if (update.docChanged) this.activeRegion.to = update.state.doc.length;
+  }
+}
+
+export const typstTextCore = ViewPlugin.fromClass(TypstTextCorePluginValue);
+
+export function getActiveRegion(view: EditorView): ParsedRegion | null {
+  const markdownPlugin = view.plugin(typstMateCore);
+  if (markdownPlugin) return markdownPlugin.activeRegion;
+
+  const typstTextPlugin = view.plugin(typstTextCore);
+  if (typstTextPlugin) return typstTextPlugin.activeRegion;
+
+  return null;
 }
 
 export function getRegionAt(view: EditorView, cursor: number): ParsedRegion | null {
+  const typstTextPlugin = view.plugin(typstTextCore);
+  if (typstTextPlugin) return typstTextPlugin.activeRegion;
+
   const helper = view.state.facet(editorHelperFacet);
   if (!helper) return null;
 

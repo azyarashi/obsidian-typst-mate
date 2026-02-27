@@ -1,7 +1,11 @@
 import { EditorState } from '@codemirror/state';
 import { EditorView } from '@codemirror/view';
+
 import { debounce, TextFileView, type TFile, type WorkspaceLeaf } from 'obsidian';
+import { updateDiagnosticEffect } from '@/editor/shared/extensions/decorations/Diagnostic';
 import type ObsidianTypstMate from '@/main';
+import { buildTypstTextExtensions } from '../../../editor/typst/extensions/build';
+import { TypstPDFView } from '../typst-pdf/typstPDF';
 
 export class TypstTextView extends TextFileView {
   static viewtype = 'typst-text';
@@ -9,6 +13,8 @@ export class TypstTextView extends TextFileView {
   plugin: ObsidianTypstMate;
 
   view!: EditorView;
+
+  linkedPDFLeaf: WorkspaceLeaf | null = null;
 
   override requestSave = debounce(this.save.bind(this), 1000);
 
@@ -25,13 +31,49 @@ export class TypstTextView extends TextFileView {
     return TypstTextView.viewtype;
   }
 
+  override async onload(): Promise<void> {
+    // 念の為 await
+    await super.onload();
+
+    this.addAction('eye', 'Open as PDF', async () => {
+      if (this.linkedPDFLeaf && this.linkedPDFLeaf.view instanceof TypstPDFView) {
+        this.app.workspace.revealLeaf(this.linkedPDFLeaf);
+        return;
+      }
+
+      const newLeaf = this.app.workspace.getLeaf('split', 'vertical');
+      await newLeaf.setViewState({
+        type: TypstPDFView.viewtype,
+        state: { file: this.file?.path },
+      });
+      this.linkedPDFLeaf = newLeaf;
+
+      const pdfView = newLeaf.view;
+      if (pdfView instanceof TypstPDFView) pdfView.parentTextView = this;
+
+      const detach = this.app.workspace.on('layout-change', () => {
+        if (
+          this.linkedPDFLeaf &&
+          !this.app.workspace.getLeavesOfType(TypstPDFView.viewtype).includes(this.linkedPDFLeaf)
+        ) {
+          const pdfView = this.linkedPDFLeaf.view;
+          if (pdfView instanceof TypstPDFView) pdfView.parentTextView = null;
+          this.linkedPDFLeaf = null;
+          this.app.workspace.offref(detach);
+        }
+      });
+      this.register(() => this.app.workspace.offref(detach));
+    });
+  }
+
   override async save(clear?: boolean): Promise<void> {
     await super.save(clear);
     if (!this.file) return;
 
-    // ファイルの保存
     const content = this.view.state.doc.toString();
     await this.plugin.app.vault.adapter.write(this.file.path, content);
+
+    await this.compileAndUpdate(content);
 
     // タグの更新
     const importPath = this.plugin.settings.importPath;
@@ -48,6 +90,32 @@ export class TypstTextView extends TextFileView {
     this.plugin.typstManager.tagFiles.add(tag);
   }
 
+  private async compileAndUpdate(content: string): Promise<void> {
+    if (!this.file) return;
+
+    try {
+      const result = await this.plugin.typst.pdf(this.file.basename, content);
+
+      updateDiagnosticEffect(this.view, {
+        // @ts-expect-error
+        diags: result.diags,
+        noDiag: false,
+      });
+      if (this.linkedPDFLeaf) {
+        const pdfView = this.linkedPDFLeaf.view;
+        if (pdfView instanceof TypstPDFView) {
+          await pdfView.updatePDF(result.pdf);
+        }
+      }
+    } catch (e: any) {
+      const diags = Array.isArray(e) ? e : [];
+      updateDiagnosticEffect(this.view, {
+        diags,
+        noDiag: false,
+      });
+    }
+  }
+
   override getDisplayText() {
     return this.file?.name ?? 'Typst Text';
   }
@@ -58,6 +126,15 @@ export class TypstTextView extends TextFileView {
 
   override setViewData() {}
 
+  private debouncedCompile = debounce(
+    () => {
+      const content = this.view.state.doc.toString();
+      this.compileAndUpdate(content);
+    },
+    100,
+    true,
+  );
+
   override async onLoadFile(file: TFile): Promise<void> {
     this.contentEl.empty();
 
@@ -65,7 +142,12 @@ export class TypstTextView extends TextFileView {
 
     const startState = EditorState.create({
       doc: fileContent,
-      extensions: [],
+      extensions: [
+        ...buildTypstTextExtensions(this.plugin.editorHelper),
+        EditorView.updateListener.of((update) => {
+          if (update.docChanged) this.debouncedCompile();
+        }),
+      ],
     });
 
     this.view = new EditorView({ parent: this.contentEl, state: startState });

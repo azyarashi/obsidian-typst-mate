@@ -10,7 +10,7 @@ import { debuggerExtension } from './core/Debugger';
 import { editorHelperFacet } from './core/Helper';
 import { typstMateCore } from './core/TypstMate';
 import { bracketHighlightExtension } from './decorations/BracketHighlight';
-import { diagnosticExtension, diagnosticsState } from './decorations/Diagnostic';
+import { diagnosticsState } from './decorations/Diagnostic';
 import { mathSymbolConcealExtension } from './decorations/MathSymbolConceal';
 import { snippetSuggestExtension } from './popup/SnippetSuggest';
 import { symbolSuggestExtension } from './popup/SymbolSuggest';
@@ -27,7 +27,6 @@ export function buildExtension(editorHelper: EditorHelper) {
 
     // Decorations
     diagnosticsState,
-    diagnosticExtension,
     bracketHighlightExtension(),
     mathSymbolConcealExtension,
 

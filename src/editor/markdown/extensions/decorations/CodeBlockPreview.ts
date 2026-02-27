@@ -124,7 +124,7 @@ class CodeblockPreviewPlugin implements PluginValue {
 
     const content = view.state.sliceDoc(region.from, region.to);
     const position = view.state.doc.lineAt(region.to + 1).to;
-    const newWidgetData: WidgetData = { code: content, id: region.processor.id, position };
+    const newWidgetData: WidgetData = { code: content, id: region.processor?.id ?? '', position };
     if (
       !this.widgetData ||
       this.widgetData.code !== newWidgetData.code ||

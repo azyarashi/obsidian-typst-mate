@@ -1,6 +1,8 @@
-import { loadPdfJs, type Menu, Notice, TextFileView, type TFile, type WorkspaceLeaf } from 'obsidian';
+import { loadPdfJs, type Menu, TextFileView, type TFile, type WorkspaceLeaf } from 'obsidian';
 
 import type ObsidianTypstMate from '@/main';
+
+import type { TypstTextView } from '../typst-text/typstText';
 
 import './typst-pdf.css';
 
@@ -13,6 +15,8 @@ interface PDFViewerState {
 export class TypstPDFView extends TextFileView {
   static viewtype = 'typst-pdf';
   plugin: ObsidianTypstMate;
+
+  parentTextView: TypstTextView | null = null;
 
   fileContent?: string;
   pdfBinary?: Uint8Array;
@@ -77,11 +81,14 @@ export class TypstPDFView extends TextFileView {
         this.plugin.app.vault.adapter.writeBinary(`${file.path.slice(0, -3)}pdf`, u8arr.buffer);
       });
     } catch {
-      new Notice('error');
+      // コンパイルエラー時は無視 (diagnostics は TypstTextView 側で処理)
     }
   }
 
   override async onModify(file: TFile): Promise<void> {
+    // 親の TypstTextView がある場合は, 親が更新
+    if (this.parentTextView) return;
+
     if (!window.pdfjsLib) await loadPdfJs();
 
     // 状態の保存
@@ -94,12 +101,15 @@ export class TypstPDFView extends TextFileView {
       const result = await this.plugin.typst.pdf(file.basename, this.fileContent);
       this.pdfBinary = result.pdf;
 
+      // ビューが未初期化の場合はレンダリングをスキップ
+      if (!this.pageContainerEl || !this.viewerAreaEl) return;
+
       // ドキュメントを読み込む
       const loadingTask = window.pdfjsLib!.getDocument(new Uint8Array(result.pdf));
       this.pdfDocument = await loadingTask.promise;
-      if (!this.pageContainerEl) throw new Error();
 
-      const newPageContainer = this.viewerAreaEl!.createDiv('typstmate-pdf-page-container');
+      const newPageContainer = document.createElement('div');
+      newPageContainer.className = 'typstmate-pdf-page-container';
       await this.renderAllPagesToContainer(newPageContainer);
 
       // 置き換え
@@ -115,10 +125,8 @@ export class TypstPDFView extends TextFileView {
       this.updateControls();
 
       // スクロール位置の復元
-      if (this.viewerAreaEl) this.viewerAreaEl.scrollTop = currentScrollTop;
-    } catch {
-      new Notice('error');
-    }
+      this.viewerAreaEl.scrollTop = currentScrollTop;
+    } catch {}
   }
 
   override async onClose(): Promise<void> {
@@ -430,6 +438,44 @@ export class TypstPDFView extends TextFileView {
       }
     } catch (error) {
       console.error('Failed to render all PDF pages:', error);
+    }
+  }
+
+  // TypstTextView から呼ばれる
+  async updatePDF(pdfData: Uint8Array, _diags?: any[]): Promise<void> {
+    if (!window.pdfjsLib) await loadPdfJs();
+
+    const currentScrollTop = this.viewerAreaEl?.scrollTop || 0;
+    const currentPage = this.calculateCurrentPageFromScroll();
+    const currentScale = this.viewerState.scale;
+
+    try {
+      this.pdfBinary = pdfData;
+
+      // ビューが未初期化の場合は初回レンダリング
+      if (!this.pageContainerEl || !this.viewerAreaEl) {
+        await this.renderPDF(pdfData, 'preview');
+        return;
+      }
+
+      const loadingTask = window.pdfjsLib!.getDocument(new Uint8Array(pdfData));
+      this.pdfDocument = await loadingTask.promise;
+
+      const newPageContainer = document.createElement('div');
+      newPageContainer.className = 'typstmate-pdf-page-container';
+      await this.renderAllPagesToContainer(newPageContainer);
+
+      this.pageContainerEl.replaceWith(newPageContainer);
+      this.pageContainerEl = newPageContainer;
+
+      this.viewerState.scale = currentScale;
+      this.viewerState.scrollTop = currentScrollTop;
+      this.viewerState.currentPage = currentPage;
+
+      this.updateControls();
+      this.viewerAreaEl.scrollTop = currentScrollTop;
+    } catch (e) {
+      console.error('[TypstMate] PDF updatePDF failed:', e);
     }
   }
 

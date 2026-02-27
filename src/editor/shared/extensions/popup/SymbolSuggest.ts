@@ -52,7 +52,7 @@ class SymbolSuggestPlugin implements PluginValue {
       this.hide();
       return;
     }
-    if (region.processor.disableSuggest) {
+    if (region.processor?.disableSuggest) {
       this.hide();
       return;
     }
@@ -214,7 +214,7 @@ class SymbolSuggestPlugin implements PluginValue {
     if (!region) return;
 
     let content: string;
-    if (region.processor.renderingEngine === 'mathjax') content = `\\${symbol.latexName}`;
+    if (region.processor?.renderingEngine === 'mathjax') content = `\\${symbol.latexName}`;
     else if (helper.plugin.settings.complementSymbolWithUnicode) content = symbol.sym;
     else content = symbol.name;
 

@@ -77,7 +77,8 @@ class MathSymbolConcealPlugin {
     if (!helper) return { decorations: Decoration.none, atomicRanges: new RangeSetBuilder<any>().finish() };
 
     const region = getActiveRegion(view);
-    if (!region || region.processor.renderingEngine !== RenderingEngine.MathJax)
+    if (!region) return { decorations: Decoration.none, atomicRanges: new RangeSetBuilder<any>().finish() };
+    if (region.processor && region.processor.renderingEngine !== RenderingEngine.MathJax)
       return { decorations: Decoration.none, atomicRanges: new RangeSetBuilder<any>().finish() };
 
     const decorationBuilder = new RangeSetBuilder<Decoration>();

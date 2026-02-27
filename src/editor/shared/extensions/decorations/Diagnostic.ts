@@ -1,4 +1,4 @@
-import { type Diagnostic, linter } from '@codemirror/lint';
+import { type Diagnostic, setDiagnostics } from '@codemirror/lint';
 import { StateEffect, StateField } from '@codemirror/state';
 import type { EditorView } from '@codemirror/view';
 import type { Processor } from '@/libs/processor';
@@ -13,35 +13,43 @@ interface TypstDiagnostic extends Diagnostic {
 
 interface TypstMateResult {
   diags: TypstDiagnostic[];
-  processor: Processor;
+  processor?: Processor;
   noDiag: boolean;
 }
 
-export const diagnosticExtension = linter(
-  (view) => {
-    const helper = view.state.facet(editorHelperFacet);
-    if (!helper) return [];
+function computeDiagnostics(view: EditorView, result: TypstMateResult): Diagnostic[] {
+  const helper = view.state.facet(editorHelperFacet);
+  if (!helper) return [];
 
-    const region = getActiveRegion(view);
-    if (!region) return [];
+  const region = getActiveRegion(view);
+  if (!region) return [];
 
-    const result = view.state.field(diagnosticsState);
-    if (!result) return [];
-    if (result.noDiag) return [];
+  if (result.noDiag) return [];
 
+  let offset: number;
+  if (result.processor) {
     const { noPreamble, format } = result.processor;
-    const diagnostics = result.diags.map((diag) => {
-      const offset =
-        region.from +
-        region.skip -
-        format.indexOf('{CODE}') -
-        (noPreamble ? 0 : helper.plugin.settings.preamble.length + 1) -
-        helper.plugin.typstManager.preamble.length -
-        1;
+    offset =
+      region.from +
+      region.skip -
+      format.indexOf('{CODE}') -
+      (noPreamble ? 0 : helper.plugin.settings.preamble.length + 1) -
+      helper.plugin.typstManager.preamble.length -
+      1;
+  } else {
+    offset = 0;
+  }
+
+  const docLength = view.state.doc.length;
+
+  return result.diags
+    .map((diag) => {
+      const from = Math.max(region.from, Math.min(diag.from + offset, docLength));
+      const to = Math.max(region.from, Math.min(diag.to + offset, docLength));
 
       return {
-        from: Math.max(region.from, diag.from + offset),
-        to: Math.max(region.from, diag.to + offset),
+        from,
+        to: Math.max(from, to),
         message: '',
         severity: diag.severity,
         renderMessage: () => {
@@ -64,15 +72,10 @@ export const diagnosticExtension = linter(
           }
           return container;
         },
-      };
-    });
-
-    return diagnostics;
-  },
-  {
-    delay: 10,
-  },
-);
+      } as Diagnostic;
+    })
+    .filter((d) => d.from <= d.to);
+}
 
 export const diagnosticsState = StateField.define<TypstMateResult | undefined>({
   create() {
@@ -88,13 +91,17 @@ export const diagnosticsState = StateField.define<TypstMateResult | undefined>({
 export const diagnosticsStateEffect = StateEffect.define<TypstMateResult | undefined>();
 
 export const updateDiagnosticEffect = (view: EditorView, diags: TypstMateResult) => {
-  return view.dispatch({
+  view.dispatch({
     effects: diagnosticsStateEffect.of(diags),
   });
+
+  const computed = computeDiagnostics(view, diags);
+  view.dispatch(setDiagnostics(view.state, computed));
 };
 
 export const clearDiagnosticEffect = (view: EditorView) => {
-  return view.dispatch({
+  view.dispatch({
     effects: diagnosticsStateEffect.of(undefined),
   });
+  view.dispatch(setDiagnostics(view.state, []));
 };
