@@ -155,5 +155,12 @@ export class TypstTextView extends TextFileView {
     this.view.dom.style.stroke = 'none';
   }
 
-  override clear() {}
+  override async onClose(): Promise<void> {
+    this.view?.destroy();
+    this.contentEl.empty();
+  }
+
+  override clear() {
+    this.view?.destroy();
+  }
 }
