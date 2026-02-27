@@ -1,4 +1,4 @@
-.cm-diagnostic:has(.typst-mate-diag) {
+.cm-diagnostic:has(.typstmate-diag) {
   background: none !important;
   border: none !important;
   padding: 0 !important;
