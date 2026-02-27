@@ -222,7 +222,7 @@ export default class TypstManager {
           DEFAULT_SETTINGS.processor.codeblock?.processors.at(-1)!;
 
         if (processor.styling === 'codeblock') {
-          containerEl.addClass('HyperMD-codeblock', 'HyperMD-codeblock-bg', 'cm-line');
+          containerEl.addClass('HyperMD-codeblock', 'HyperMD-codeblock-bg');
           containerEl = containerEl.createEl('code');
         }
 
