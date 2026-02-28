@@ -21,9 +21,7 @@ For details about the processor / snippet(script) / shortcut / tab jump, see [Pr
 
 I welcome [Discussions](https://github.com/azyarashi/obsidian-typst-mate/discussions/categories/show-and-tell) featuring your wonderful snippets!
 
-Are you an Obsidian LaTeX Suite user? Check out [this guide](docs/obsidian-latex-suite-migration.md).
-
-If you want to use only typst codeblock? Check out [this issue](https://github.com/azyarashi/obsidian-typst-mate/issues/8).
+Are you an Obsidian LaTeX Suite user? Check out [this guide](docs/obsidian-latex-suite-migration.md), or if you want to use only Typst codeblocks, check out [this issue](https://github.com/azyarashi/obsidian-typst-mate/issues/8).
 
 > [!NOTE]
 > For a smoother experience, some values are different from (or added to) standard Typst defaults. (e.g. `datetime`, `smallcaps`, `fontsize`, and `CURSOR`)
@@ -42,17 +40,17 @@ If you want to use only typst codeblock? Check out [this issue](https://github.c
 - **Snippets** / **Scripts**
 - **Bracket highlights**
 - **Symbol completion**
-  - type a leading backslash `\` to make the search look for LaTeX commands
+  - Type a leading backslash `\` to make the search look for LaTeX commands
 - **Inline math preview** / **Codeblock preview**
 - **Available on mobile app**
-- Offer **background rendering**
+- Support **background rendering**
 - Use **font size** from Obsidian settings
 - Inherit **text color** from Obsidian theme
 - **Additional styling customization**
   - e.g., an option `inline-middle` to vertically center *inline math* so it lines up naturally with the surrounding text
-- Use **custom fonts** and import system fonts (desktop app only for import)
-- Almost all[^1] **Typst packages** are supported (desktop app only for import local packages)
-- **Table and blockquotes support** with proper display math handling (`<br>` and `\n[\s\t]*>` will be automatically replaced with line breaks)
+- Use **custom fonts** and import system fonts (desktop app only for importing)
+- Almost all[^1] **Typst packages** are supported (desktop app only for importing local packages)
+- **Tables and blockquotes support** with proper display math handling (`<br>` and `\n[\s\t]*>` will be automatically replaced with line breaks)
 - [Excalidraw](https://www.obsidianstats.com/plugins/obsidian-excalidraw-plugin) integration
 - [Equation Citator](https://github.com/FRIEDparrot/obsidian-equation-citator) integration
 - [No more flickering inline math](https://www.obsidianstats.com/plugins/inline-math) compatibility
@@ -68,9 +66,9 @@ If you want to use only typst codeblock? Check out [this issue](https://github.c
   - Copy as SVG (Obsidian Theme / Typst Default)
   - Copy as PNG (Transparent / Opaque)
   - Copy as img tag (for embedding into Obsidian notes)
-- Support jump from click (experimental)
-  - click codeblock output
-  - click math output with <kbd>ctrl</kbd>
+- Support 'click to jump' (experimental)
+  - Click codeblock output
+  - Click math output with <kbd>ctrl</kbd>
 
 [^1]: [jlyfish](https://typst.app/universe/package/jlyfish/) probably won't work correctly.
 
@@ -82,8 +80,7 @@ Turned OFF               | Turned ON
 
 ## Installation
 
-Currently, it's under review for the official plugin list. This process may take several months.
-Until then, please install using the official plugin [BRAT](https://obsidian.md/plugins?id=obsidian42-brat).
+You can install this plugin via the Community Plugins tab within Obsidian. Search for "Typst Mate". Alternatively, you can also install using [BRAT](https://obsidian.md/plugins?id=obsidian42-brat).
 
 [![Screenshot](assets/install-with-brat.png)](#install-with-brat)
 
@@ -134,8 +131,8 @@ Depending on the three modes (`inline`, `display`, and `codeblock`), the styling
 
 Typst Mate leverages the following open-source projects:
 
-- [Typst](https://typst.app/) – a modern and powerful typesetting system
-- [TyLax](https://github.com/scipenai/tylax) – a fast and high compatibility LaTeX to Typst converter
+- [Typst](https://typst.app/) - a modern and powerful typesetting system
+- [TyLax](https://github.com/scipenai/tylax) - a fast and highly compatible LaTeX to Typst converter
 - [Detypify](https://github.com/QuarticCat/detypify) - a tool for recognizing handwritten math symbols
 - [Quiver](https://github.com/varkor/quiver) - a tool for creating commutative diagrams
 - [unicode-math](https://github.com/latex3/unicode-math) - distributed under the [LaTeX Project Public License (LPPL) 1.3c](https://ctan.org/license/lppl1.3c).
