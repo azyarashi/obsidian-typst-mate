@@ -210,12 +210,16 @@ impl Typst {
         let Warned { output, warnings } = typst::compile::<PagedDocument>(&mut self.world);
 
         match output {
-            Ok(document) => {
+            Ok(mut document) => {
                 if document.pages.is_empty() {
                     return Err(JsValue::from_str("document has no pages"));
                 }
 
-                let frame = &document.pages[0].frame;
+                let page = &mut document.pages[0];
+                if None == page.fill_or_transparent() {
+                    page.fill = typst::foundations::Smart::Custom(None);
+                };
+                let frame = &page.frame;
                 let descent = if kind == "inline" {
                     (match find_baseline(frame, Abs::zero()) {
                         Some(b) => (b - frame.height()).to_pt(),
@@ -225,8 +229,7 @@ impl Typst {
                     0.0
                 };
 
-                // ? typst_svg::svg は背景が透過しない
-                let svg = typst_svg::svg_frame(&frame)
+                let svg = typst_svg::svg(&page)
                     .replace("#000000", "var(--typst-base-color)")
                     .replacen(
                         "<svg class",
