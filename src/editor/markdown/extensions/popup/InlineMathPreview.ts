@@ -7,50 +7,56 @@ import { calculatePopupPosition } from '@/editor/shared/utils/position';
 
 class InlinePreviewPlugin implements PluginValue {
   container: HTMLElement;
+  lastContent: string = '';
 
   constructor(public view: EditorView) {
     this.container = document.createElement('div');
-    this.container.classList.add('typstmate-inlinemathpreview', 'typstmate-temporary');
+    this.container.addClasses(['typstmate-inlinemathpreview', 'typstmate-temporary']);
     this.container.hide();
 
     document.body.appendChild(this.container);
   }
 
   update(update: ViewUpdate) {
-    if (!update.docChanged && !update.selectionSet) {
-      if (!update.view.hasFocus || !update.state.selection.main.empty) this.hide();
-      return;
-    }
-
     const helper = update.state.facet(editorHelperFacet)!;
-    if (!helper.plugin.settings.enableInlinePreview) return;
-
-    const region = getActiveRegion(update.view);
-    if (!region || region.kind !== 'inline') return this.hide();
-
-    const content = update.state.sliceDoc(region.from, region.to);
-    if (content.startsWith('\\ref') || content.startsWith('{} \\ref')) {
+    if (!helper.plugin.settings.enableInlinePreview || !update.view.hasFocus) {
       this.hide();
       return;
     }
 
-    this.view.requestMeasure({
-      read: () => {
-        try {
-          return calculatePopupPosition(this.view, region.from, region.to);
-        } catch {
-          return null;
-        }
-      },
-      write: (pos) => {
-        if (pos) this.render(pos, content);
-        else this.hide();
-      },
-    });
+    if (update.docChanged || update.selectionSet) {
+      const region = getActiveRegion(update.view);
+      if (!region || region.kind !== 'inline') {
+        this.hide();
+        return;
+      }
+
+      const content = update.state.sliceDoc(region.from, region.to);
+      if (content.startsWith('\\ref') || content.startsWith('{} \\ref')) {
+        this.hide();
+        return;
+      }
+
+      this.view.requestMeasure({
+        read: () => {
+          try {
+            return calculatePopupPosition(this.view, region.from, region.to);
+          } catch {
+            return null;
+          }
+        },
+        write: (pos) => {
+          if (pos) this.render(pos, content);
+          else this.hide();
+        },
+      });
+    } else this.hide();
   }
 
   render(pos: { x: number; y: number }, content: string) {
     if (!window.MathJax) return;
+    if (this.lastContent === content) return;
+    this.lastContent = content;
 
     const html = window.MathJax.tex2chtml(content, { display: false });
     this.container.replaceChildren(html);
@@ -62,6 +68,7 @@ class InlinePreviewPlugin implements PluginValue {
 
   hide() {
     this.container.hide();
+    this.lastContent = '';
   }
 
   destroy() {

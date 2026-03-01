@@ -37,7 +37,7 @@ class CodeBlockPreviewWidget extends WidgetType {
 
   toDOM(_view: EditorView): HTMLElement {
     const container = document.createElement('div');
-    container.addClass('typstmate-codeblockpreview');
+    container.addClasses(['typstmate-codeblockpreview', 'typstmate-temporary']);
     container.dataset.regionFrom = this.regionFrom.toString();
 
     const file = this.helper.plugin.app.workspace.getActiveFile();
@@ -94,7 +94,9 @@ class CodeblockPreviewPlugin implements PluginValue {
   private updateTimeout: number | null = null;
 
   update(update: ViewUpdate) {
-    if (update.docChanged || update.selectionSet || update.focusChanged) {
+    if (!update.view.hasFocus) return;
+
+    if (update.docChanged || update.selectionSet) {
       if (this.updateTimeout !== null) window.cancelAnimationFrame(this.updateTimeout);
 
       this.updateTimeout = window.requestAnimationFrame(() => {
