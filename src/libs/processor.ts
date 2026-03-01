@@ -1,4 +1,4 @@
-import type { SyntaxMode } from '@/utils/crates/typst-syntax';
+import { SyntaxMode } from '@/utils/crates/typst-syntax';
 
 export enum RenderingEngine {
   TypstSVG = 'typst-svg',
@@ -44,6 +44,7 @@ export interface DisplayProcessor {
   noPreamble?: boolean;
   fitToParentWidth?: boolean;
   syntaxMode?: SyntaxMode | null;
+  useReplaceAll?: boolean;
 }
 export interface CodeblockProcessor {
   id: string;
@@ -54,6 +55,7 @@ export interface CodeblockProcessor {
   noPreamble?: boolean;
   fitToParentWidth?: boolean;
   syntaxMode?: SyntaxMode | null;
+  useReplaceAll?: boolean;
 }
 export interface ExcalidrawProcessor {
   id: string;
@@ -64,6 +66,7 @@ export interface ExcalidrawProcessor {
   noPreamble?: boolean;
   fitToParentWidth?: boolean;
   syntaxMode?: SyntaxMode | null;
+  useReplaceAll?: boolean;
 }
 export type Processor = InlineProcessor | DisplayProcessor | CodeblockProcessor | ExcalidrawProcessor;
 export type Processors = InlineProcessor[] | DisplayProcessor[] | CodeblockProcessor[] | ExcalidrawProcessor[];
@@ -79,6 +82,8 @@ export const DefaultNewInlineProcessor: InlineProcessor = {
   disableSuggest: false,
   noPreamble: false,
   fitToParentWidth: false,
+  syntaxMode: SyntaxMode.Math,
+  useReplaceAll: false,
 };
 export const DefaultNewDisplayProcessor: DisplayProcessor = {
   id: 'new',
@@ -88,6 +93,8 @@ export const DefaultNewDisplayProcessor: DisplayProcessor = {
   disableSuggest: false,
   noPreamble: false,
   fitToParentWidth: false,
+  syntaxMode: SyntaxMode.Math,
+  useReplaceAll: false,
 };
 export const DefaultNewCodeblockProcessor: CodeblockProcessor = {
   id: 'new',
@@ -97,6 +104,8 @@ export const DefaultNewCodeblockProcessor: CodeblockProcessor = {
   disableSuggest: false,
   noPreamble: false,
   fitToParentWidth: false,
+  syntaxMode: SyntaxMode.Markup,
+  useReplaceAll: false,
 };
 export const DefaultNewExcalidrawProcessor: ExcalidrawProcessor = {
   id: 'new',
@@ -106,6 +115,8 @@ export const DefaultNewExcalidrawProcessor: ExcalidrawProcessor = {
   disableSuggest: false,
   noPreamble: false,
   fitToParentWidth: false,
+  syntaxMode: SyntaxMode.Markup,
+  useReplaceAll: false,
 };
 
 export const DefaultNewProcessor: Record<ProcessorKind, Processor> = {

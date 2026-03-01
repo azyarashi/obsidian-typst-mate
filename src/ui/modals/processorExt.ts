@@ -83,5 +83,14 @@ export class ProcessorExtModal extends Modal {
           plugin.saveSettings();
         });
       });
+
+    new Setting(this.contentEl).setName('Use replace all').addToggle((toggle) => {
+      toggle.setValue(processor.useReplaceAll ?? false);
+
+      toggle.onChange(() => {
+        processor.useReplaceAll = !processor.useReplaceAll;
+        plugin.saveSettings();
+      });
+    });
   }
 }

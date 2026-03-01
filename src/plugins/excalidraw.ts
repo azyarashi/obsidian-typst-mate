@@ -26,7 +26,7 @@ export default class ExcalidrawPlugin {
     try {
       code = processor.noPreamble
         ? processor.format.replace('{CODE}', code)
-        : `${this.plugin.settings.preamble}\n${processor.format.replace('{CODE}', code)}`;
+        : `${this.plugin.settings.preamble}\n${processor.useReplaceAll ? processor.format.replaceAll('{CODE}', code) : processor.format.replace('{CODE}', code)}`;
 
       const svg = (await this.plugin.typst.svg(code, '/', 'excalidraw', processor.id)).svg;
 
