@@ -1,96 +1,85 @@
-import { type Extension, StateField } from '@codemirror/state';
+import type { Extension } from '@codemirror/state';
 import { type EditorView, type PluginValue, ViewPlugin, type ViewUpdate } from '@codemirror/view';
 
 import type { EditorHelper } from '@/editor';
 import { SyntaxKind, SyntaxMode } from '@/utils/crates/typst-syntax';
 import { editorHelperFacet } from './Helper';
-import { getActiveRegion, getModeAndKind, typstMateCore } from './TypstMate';
+import { getActiveRegion, getModeAndKind } from './TypstMate';
 
 import './Debugger.css';
 
-import { SYMBOL_MAP } from '../decorations/MathSymbolConceal';
-
-const debugStateField = StateField.define<string>({
-  create: () => '',
-  update: (value) => value,
-});
-
 class DebugPlugin implements PluginValue {
   dom: HTMLElement;
-  helper: EditorHelper | null;
+  helper: EditorHelper;
+  private lastText: string = '';
 
   constructor(readonly view: EditorView) {
-    this.helper = view.state.facet(editorHelperFacet);
     this.dom = document.createElement('div');
     this.dom.className = 'typstmate-debug-panel';
+
     view.dom.appendChild(this.dom);
 
-    if (!this.helper || !this.helper.plugin.settings.enableDebugger) this.dom.hide();
-    else this.render();
+    this.helper = view.state.facet(editorHelperFacet);
+    if (!this.helper.plugin.settings.enableDebugger) this.dom.hide();
+    this.render();
   }
 
   update(update: ViewUpdate) {
-    if (update.docChanged || update.selectionSet) this.render();
+    const enabled = this.helper.plugin.settings.enableDebugger;
+    if (enabled) this.dom.show();
+    else {
+      this.dom.hide();
+      return;
+    }
+
+    if (update.docChanged || update.selectionSet) window.requestAnimationFrame(() => this.render());
   }
 
   destroy() {
     this.dom.remove();
   }
 
-  render() {
-    if (!this.helper) return;
-
-    const parserData = this.view.plugin(typstMateCore);
-    if (!parserData) return;
+  private render() {
+    if (!this.view.dom.contains(this.dom)) return;
 
     const cursor = this.view.state.selection.main.head;
     const region = getActiveRegion(this.view);
 
-    let data: Array<{ title: string; description: string }> = [];
+    const data: Array<{ title: string; description: string }> = [];
 
     if (region) {
       const relativePos = cursor - region.from;
+      let typstPos: string = 'N/A';
 
-      let typstPos: number | null = null;
       if (region.processor) {
         const { id, noPreamble, format } = region.processor;
-        typstPos =
-          relativePos +
-          id.length +
-          (noPreamble ? 0 : this.helper.plugin.settings.preamble.length + 1) +
-          format.indexOf('{CODE}');
+        const offset =
+          id.length + (noPreamble ? 0 : this.helper.plugin.settings.preamble.length + 1) + format.indexOf('{CODE}');
+        typstPos = (relativePos + offset).toString();
       }
 
       const { syntaxMode, syntaxKind } = getModeAndKind(region, cursor);
 
-      data = [
-        {
-          title: 'Processor',
-          description: `${region.kind}${region.processor?.id ? `(${region.processor.id})` : ''}`,
-        },
+      data.push(
+        { title: 'Processor', description: `${region.kind}${region.processor?.id ? `(${region.processor.id})` : ''}` },
         { title: 'Mode', description: syntaxMode ? SyntaxMode[syntaxMode] : 'Opaque' },
-        { title: 'KindCursor', description: syntaxKind ? SyntaxKind[syntaxKind] : 'End' },
+        { title: 'Kind', description: syntaxKind ? SyntaxKind[syntaxKind] : 'End' },
         { title: 'GlobalPos', description: cursor.toString() },
-        { title: 'LocalPos', description: `${relativePos.toString()} (+${region.skip.toString()})` },
-        { title: 'Symbols', description: SYMBOL_MAP.size.toString() },
-      ];
+        { title: 'LocalPos', description: `${relativePos} (+${region.skip})` },
+        { title: 'TypstPos', description: typstPos },
+        { title: 'Length', description: (region.to - region.from).toString() },
+      );
+    } else
+      data.push({ title: 'Mode', description: 'Markdown' }, { title: 'Pos(Global)', description: cursor.toString() });
 
-      if (typstPos !== null) {
-        data.push({ title: 'TypstPos', description: typstPos.toString() });
-      }
-      data.push({ title: 'Length', description: (region.to - region.from).toString() });
-    } else {
-      data = [
-        { title: 'Mode', description: 'Markdown' },
-        { title: 'Pos (Global)', description: cursor.toString() },
-      ];
+    const maxTitle = Math.max(...data.map((d) => d.title.length));
+    const newText = `[DEBUG]\n${data.map((d) => `${d.title.padEnd(maxTitle)} : ${d.description}`).join('\n')}`;
+
+    if (this.lastText !== newText) {
+      this.dom.textContent = newText;
+      this.lastText = newText;
     }
-
-    const maxTitleLength = Math.max(...data.map((d) => d.title.length));
-    const text = `[DEBUG]\n${data.map((d) => `${d.title.padEnd(maxTitleLength)} : ${d.description}`).join('\n')}`;
-
-    this.dom.textContent = text;
   }
 }
 
-export const debuggerExtension: Extension = [debugStateField, ViewPlugin.fromClass(DebugPlugin)];
+export const debuggerExtension: Extension = ViewPlugin.fromClass(DebugPlugin);
