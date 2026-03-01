@@ -115,7 +115,7 @@ class CodeblockPreviewPlugin implements PluginValue {
 
   private performUpdate(view: EditorView) {
     const region = getActiveRegion(view);
-    const shouldShow = view.hasFocus && view.state.selection.main.empty && region?.kind === 'codeblock';
+    const shouldShow = view.hasFocus && region?.kind === 'codeblock';
 
     if (!shouldShow) {
       if (this.widgetData) {
