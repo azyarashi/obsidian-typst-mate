@@ -42,7 +42,6 @@ export default defineConfig(async ({ mode }) => {
       },
       emptyOutDir: prod,
       minify: 'oxc',
-      sourcemap: !prod,
       rollupOptions: {
         output: {
           entryFileNames: 'main.js',
@@ -60,6 +59,7 @@ export default defineConfig(async ({ mode }) => {
           '@codemirror/search',
           '@codemirror/state',
           '@codemirror/view',
+          '@codemirror/fold',
           '@lezer/common',
           '@lezer/highlight',
           '@lezer/lr',
