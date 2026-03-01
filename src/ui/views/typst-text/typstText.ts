@@ -158,6 +158,7 @@ export class TypstTextView extends TextFileView {
   override async onClose(): Promise<void> {
     this.view?.destroy();
     this.contentEl.empty();
+    this.save();
   }
 
   override clear() {

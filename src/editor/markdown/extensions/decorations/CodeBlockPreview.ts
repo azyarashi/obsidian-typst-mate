@@ -20,6 +20,7 @@ interface WidgetData {
   code: string;
   id: string;
   position: number;
+  regionFrom: number;
 }
 
 const setPreviewEffect = StateEffect.define<WidgetData | null>();
@@ -29,6 +30,7 @@ class CodeBlockPreviewWidget extends WidgetType {
     readonly code: string,
     readonly helper: EditorHelper,
     readonly id: string,
+    readonly regionFrom: number,
   ) {
     super();
   }
@@ -36,6 +38,7 @@ class CodeBlockPreviewWidget extends WidgetType {
   toDOM(_view: EditorView): HTMLElement {
     const container = document.createElement('div');
     container.addClass('typstmate-codeblockpreview');
+    container.dataset.regionFrom = this.regionFrom.toString();
 
     const file = this.helper.plugin.app.workspace.getActiveFile();
     const ndir = file?.parent ? ctxToNDir(file.path) : '/';
@@ -46,7 +49,12 @@ class CodeBlockPreviewWidget extends WidgetType {
   }
 
   override eq(other: WidgetType): boolean {
-    return other instanceof CodeBlockPreviewWidget && this.code === other.code && this.id === other.id;
+    return (
+      other instanceof CodeBlockPreviewWidget &&
+      this.code === other.code &&
+      this.id === other.id &&
+      this.regionFrom === other.regionFrom
+    );
   }
 
   override updateDOM(dom: HTMLElement, _view: EditorView): boolean {
@@ -73,11 +81,9 @@ const codeblockPreviewState = StateField.define<DecorationSet>({
       if (effect.is(setPreviewEffect)) {
         const info = effect.value;
         if (!info) return Decoration.none;
-
         const helper = tr.state.facet(editorHelperFacet);
-        if (!helper) return Decoration.none;
 
-        const widget = new CodeBlockPreviewWidget(info.code, helper, info.id);
+        const widget = new CodeBlockPreviewWidget(info.code, helper, info.id, info.regionFrom);
         const deco = Decoration.widget({ widget, side: 1, block: true });
         return Decoration.set([deco.range(info.position)]);
       }
@@ -108,9 +114,6 @@ class CodeblockPreviewPlugin implements PluginValue {
   }
 
   private performUpdate(view: EditorView) {
-    const helper = view.state.facet(editorHelperFacet);
-    if (!helper) return;
-
     const region = getActiveRegion(view);
     const shouldShow = view.hasFocus && view.state.selection.main.empty && region?.kind === 'codeblock';
 
@@ -124,12 +127,18 @@ class CodeblockPreviewPlugin implements PluginValue {
 
     const content = view.state.sliceDoc(region.from, region.to);
     const position = view.state.doc.lineAt(region.to + 1).to;
-    const newWidgetData: WidgetData = { code: content, id: region.processor?.id ?? '', position };
+    const newWidgetData: WidgetData = {
+      code: content,
+      id: region.processor?.id ?? '',
+      position,
+      regionFrom: region.from,
+    };
     if (
       !this.widgetData ||
       this.widgetData.code !== newWidgetData.code ||
       this.widgetData.id !== newWidgetData.id ||
-      this.widgetData.position !== newWidgetData.position
+      this.widgetData.position !== newWidgetData.position ||
+      this.widgetData.regionFrom !== newWidgetData.regionFrom
     ) {
       this.widgetData = newWidgetData;
       view.dispatch({ effects: setPreviewEffect.of(newWidgetData) });

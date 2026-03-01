@@ -9,16 +9,19 @@ class JumpFromClickPluginValue {
   constructor(public view: EditorView) {}
 
   jumpTo(jump: Jump, context: TypstElement) {
-    const helper = this.view.state.facet(editorHelperFacet);
-    if (!helper) return;
-
     if (jump.type === 'url') return window.open(jump.url);
     if (jump.type !== 'file') return;
     if (jump.pos === undefined) return;
 
     const domPos = this.view.posAtDOM(context);
-    const region = getRegionAt(this.view, domPos);
+    const previewContainer = context.closest('.typstmate-codeblockpreview') as HTMLElement | null;
+    let actualPos = domPos;
+    if (previewContainer?.dataset.regionFrom) actualPos = parseInt(previewContainer.dataset.regionFrom, 10);
+
+    const region = getRegionAt(this.view, actualPos);
     if (!region) return;
+
+    const helper = this.view.state.facet(editorHelperFacet);
 
     const { noPreamble, format } = context.processor;
     const offset =

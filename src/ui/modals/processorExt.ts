@@ -2,6 +2,7 @@ import { type App, Modal, Setting } from 'obsidian';
 
 import type { ProcessorKind } from '@/libs/processor';
 import type ObsidianTypstMate from '@/main';
+import { SyntaxMode } from '@/utils/crates/typst-syntax';
 import { CustomFragment } from '@/utils/customFragment';
 
 export class ProcessorExtModal extends Modal {
@@ -53,6 +54,32 @@ export class ProcessorExtModal extends Modal {
 
         toggle.onChange(() => {
           processor.fitToParentWidth = !processor.fitToParentWidth;
+          plugin.saveSettings();
+        });
+      });
+
+    new Setting(this.contentEl)
+      .setName('Syntax mode')
+      .setDesc(
+        'Specifies the syntax tree parsing mode. Select None to completely bypass AST parsing and syntax highlighting.',
+      )
+      .addDropdown((dropdown) => {
+        dropdown
+          .addOption('null', 'None')
+          .addOption(SyntaxMode.Markup.toString(), 'Markup')
+          .addOption(SyntaxMode.Math.toString(), 'Math')
+          .addOption(SyntaxMode.Code.toString(), 'Code');
+
+        let defaultModeValue = 'null';
+        if (processor.syntaxMode !== null) {
+          defaultModeValue =
+            processor.syntaxMode?.toString() ??
+            (kind === 'codeblock' ? SyntaxMode.Markup.toString() : SyntaxMode.Math.toString());
+        }
+
+        dropdown.setValue(defaultModeValue);
+        dropdown.onChange((value) => {
+          processor.syntaxMode = value === 'null' ? null : parseInt(value, 10);
           plugin.saveSettings();
         });
       });

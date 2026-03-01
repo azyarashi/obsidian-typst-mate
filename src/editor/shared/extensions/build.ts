@@ -8,10 +8,11 @@ import { shortcutExtension } from './actions/Shortcut';
 import { tabJumpExtension } from './actions/TabJump';
 import { debuggerExtension } from './core/Debugger';
 import { editorHelperFacet } from './core/Helper';
-import { typstMateCore } from './core/TypstMate';
-import { bracketHighlightExtension } from './decorations/BracketHighlight';
+import { typstMateCore, typstSyntaxHighlighting } from './core/TypstMate';
+import { bracketHighlightExtension } from './decorations/BracketPairHighlight';
 import { diagnosticsState } from './decorations/Diagnostic';
 import { mathSymbolConcealExtension } from './decorations/MathSymbolConceal';
+import { typstTheme } from './decorations/Theme';
 import { snippetSuggestExtension } from './popup/SnippetSuggest';
 import { symbolSuggestExtension } from './popup/SymbolSuggest';
 
@@ -29,6 +30,10 @@ export function buildExtension(editorHelper: EditorHelper) {
     diagnosticsState,
     bracketHighlightExtension(),
     mathSymbolConcealExtension,
+
+    // Syntax Highlighting
+    typstSyntaxHighlighting(),
+    typstTheme,
 
     // Actions
     jumpFromClickExtension,

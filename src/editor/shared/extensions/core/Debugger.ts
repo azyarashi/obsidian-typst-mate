@@ -2,11 +2,13 @@ import { type Extension, StateField } from '@codemirror/state';
 import { type EditorView, type PluginValue, ViewPlugin, type ViewUpdate } from '@codemirror/view';
 
 import type { EditorHelper } from '@/editor';
-
+import { SyntaxKind, SyntaxMode } from '@/utils/crates/typst-syntax';
 import { editorHelperFacet } from './Helper';
-import { getActiveRegion, typstMateCore } from './TypstMate';
+import { getActiveRegion, getModeAndKind, typstMateCore } from './TypstMate';
 
 import './Debugger.css';
+
+import { SYMBOL_MAP } from '../decorations/MathSymbolConceal';
 
 const debugStateField = StateField.define<string>({
   create: () => '',
@@ -47,24 +49,36 @@ class DebugPlugin implements PluginValue {
     let data: Array<{ title: string; description: string }> = [];
 
     if (region) {
-      if (!region.processor) return;
-      const { id, noPreamble, format } = region.processor;
-
       const relativePos = cursor - region.from;
-      const typstPos =
-        relativePos +
-        id.length +
-        (noPreamble ? 0 : this.helper.plugin.settings.preamble.length + 1) +
-        format.indexOf('{CODE}');
+
+      let typstPos: number | null = null;
+      if (region.processor) {
+        const { id, noPreamble, format } = region.processor;
+        typstPos =
+          relativePos +
+          id.length +
+          (noPreamble ? 0 : this.helper.plugin.settings.preamble.length + 1) +
+          format.indexOf('{CODE}');
+      }
+
+      const { syntaxMode, syntaxKind } = getModeAndKind(region, cursor);
 
       data = [
-        { title: 'Processor', description: `${region.kind}${id ? `(${id})` : ''}` },
-        { title: 'Mode', description: 'Equation' },
+        {
+          title: 'Processor',
+          description: `${region.kind}${region.processor?.id ? `(${region.processor.id})` : ''}`,
+        },
+        { title: 'Mode', description: syntaxMode ? SyntaxMode[syntaxMode] : 'Opaque' },
+        { title: 'KindCursor', description: syntaxKind ? SyntaxKind[syntaxKind] : 'End' },
         { title: 'GlobalPos', description: cursor.toString() },
         { title: 'LocalPos', description: `${relativePos.toString()} (+${region.skip.toString()})` },
-        { title: 'TypstPos', description: typstPos.toString() },
-        { title: 'Length', description: (region.to - region.from).toString() },
+        { title: 'Symbols', description: SYMBOL_MAP.size.toString() },
       ];
+
+      if (typstPos !== null) {
+        data.push({ title: 'TypstPos', description: typstPos.toString() });
+      }
+      data.push({ title: 'Length', description: (region.to - region.from).toString() });
     } else {
       data = [
         { title: 'Mode', description: 'Markdown' },

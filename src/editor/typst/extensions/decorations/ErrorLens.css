@@ -1,0 +1,39 @@
+.cm-error-lens-line {
+  position: relative; /* ensure tooltip positioning if needed, though we use native attr now */
+}
+
+/* Base styles for the line pseudo-element error lens */
+.cm-error-lens-line::after {
+  content: attr(data-error-message);
+  display: inline-block;
+  margin-left: 2ch;
+  font-size: 0.9em;
+  font-style: italic;
+  padding: 0 6px;
+  border-radius: 4px;
+  opacity: 0.8;
+  white-space: nowrap;
+  user-select: none;
+  pointer-events: auto; /* Allow hovering to see the native title tooltip */
+}
+
+/* Re-enable pointer events exactly on the text to allow hover tooltip */
+.cm-error-lens-has-hints {
+  pointer-events: auto;
+}
+
+.cm-error-lens-line-error {
+  background-color: color-mix(in srgb, var(--typstmate-critical) 20%, transparent) !important;
+}
+
+.cm-error-lens-line-warning {
+  background-color: color-mix(in srgb, var(--typstmate-warning) 20%, transparent) !important;
+}
+
+.cm-error-lens-line-error::after {
+  color: var(--typstmate-critical);
+}
+
+.cm-error-lens-line-warning::after {
+  color: var(--typstmate-warning);
+}

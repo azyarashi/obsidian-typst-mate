@@ -13,19 +13,42 @@ export const tabJumpExtension = Prec.high(
       if (e.key !== 'Tab') return false;
 
       const helper = view.state.facet(editorHelperFacet);
-      if (!helper || helper.plugin.settings.revertTabToDefault) return false;
+      if (helper.plugin.settings.revertTabToDefault) return false;
 
       const region = getActiveRegion(view);
       if (!region) return false;
 
       e.preventDefault();
-      jumpCursor(view, helper, region, e.shiftKey ? -1 : 1);
+      return jumpCursor(view, helper, region, e.shiftKey ? -1 : 1);
+    },
+  }),
+);
+
+export const tabJumpExtensionForTypstText = Prec.high(
+  EditorView.domEventHandlers({
+    keydown: (e, view) => {
+      if (e.key !== 'Tab') return false;
+
+      const helper = view.state.facet(editorHelperFacet);
+      if (helper.plugin.settings.revertTabToDefault) return false;
+
+      const region = getActiveRegion(view);
+      if (!region) return false;
+
+      e.preventDefault();
+      jumpCursor(view, helper, region, e.shiftKey ? -1 : 1, true);
       return true;
     },
   }),
 );
 
-function jumpCursor(view: EditorView, helper: EditorHelper, region: ParsedRegion, direction: -1 | 1) {
+function jumpCursor(
+  view: EditorView,
+  helper: EditorHelper,
+  region: ParsedRegion,
+  direction: -1 | 1,
+  onlyJumpToCursor: boolean = false,
+): boolean {
   const contentStart = region.from + region.skip;
   const contentEnd = region.to;
   const cursor = view.state.selection.main.head;
@@ -34,15 +57,16 @@ function jumpCursor(view: EditorView, helper: EditorHelper, region: ParsedRegion
   const content = view.state.sliceDoc(contentStart, contentEnd);
   const targetContent = direction === -1 ? content.slice(0, offset) : content.slice(offset);
 
-  if (jumpToCursor(view, contentStart, offset, targetContent, direction)) return;
+  if (jumpToCursor(view, contentStart, offset, targetContent, direction)) return true;
+  if (onlyJumpToCursor) return false;
   if (
     helper.plugin.settings.jumpOutsideBracket &&
     jumpOutsideBracket(view, contentStart, offset, targetContent, direction)
   )
-    return;
-  if (jumpOutsideTypstMath(view, contentStart, offset, targetContent, direction)) return;
+    return true;
+  if (jumpOutsideTypstMath(view, contentStart, offset, targetContent, direction)) return true;
 
-  jumpOutsideRegion(view, helper, region, cursor, targetContent, direction);
+  return jumpOutsideRegion(view, helper, region, cursor, targetContent, direction);
 }
 
 function jumpToCursor(
@@ -130,8 +154,27 @@ function jumpOutsideRegion(
   cursor: number,
   content: string,
   direction: -1 | 1,
-) {
-  const delimiterLength = region.kind === 'inline' ? 1 : region.kind === 'display' ? 2 : 3;
+): boolean {
+  if (region.kind === 'codeblock') {
+    const insideTarget = direction === -1 ? region.from : region.to;
+    if (
+      helper.plugin.settings.moveToEndOfMathBlockBeforeExiting &&
+      (direction === -1 ? insideTarget < cursor : cursor < insideTarget)
+    )
+      view.dispatch({ selection: { anchor: insideTarget } });
+    else {
+      if (direction === -1) {
+        const topOfBlock = view.state.doc.lineAt(region.from - 1).from;
+        view.dispatch({ selection: { anchor: topOfBlock } });
+      } else {
+        const bottomOfBlock = view.state.doc.lineAt(region.to + 1).to;
+        view.dispatch({ selection: { anchor: bottomOfBlock } });
+      }
+    }
+    return true;
+  }
+
+  const delimiterLength = region.kind === 'inline' ? 1 : 2;
   const inside = direction === -1 ? region.from : region.to + region.skipEnd;
 
   if (
@@ -146,13 +189,13 @@ function jumpOutsideRegion(
       },
     });
 
-    if (region.kind === 'inline') return;
+    if (region.kind === 'inline') return true;
     if (
       helper.plugin.settings.preferInlineExitForSingleLineDisplayMath &&
       region.kind === 'display' &&
       !content.includes('\n')
     )
-      return;
+      return true;
 
     view.dispatch({
       changes: {
@@ -163,4 +206,6 @@ function jumpOutsideRegion(
       selection: { anchor: region.to + region.skipEnd + delimiterLength + 1 },
     });
   }
+
+  return true;
 }

@@ -1,0 +1,61 @@
+body.theme-light {
+  --typstmate-primary: rgba(25, 24, 31, 1);
+  --typstmate-nav: rgba(59, 58, 72, 1);
+  --typstmate-secondary: rgba(86, 85, 101, 1);
+  --typstmate-brand-secondary: rgba(10, 54, 73, 1);
+  --typstmate-brand: rgba(17, 86, 108, 1);
+  --typstmate-inverted: rgba(253, 253, 253, 1);
+  --typstmate-disabled: rgba(25, 24, 31, 0.5);
+  --typstmate-link: rgba(0, 122, 255, 1);
+  --typstmate-drop: rgba(0, 41, 140, 1);
+  --typstmate-critical: rgba(185, 49, 45, 1);
+  --typstmate-warning: #b14c00;
+  --typstmate-gutter: rgba(189, 191, 204, 1);
+  --typstmate-gutter-active: rgb(176, 179, 194);
+  --typstmate-c-comment: #74747c;
+  --typstmate-c-monospace: #6b6b6f;
+  --typstmate-c-math-delim: #198810;
+  --typstmate-c-math-op: #1d6c76;
+  --typstmate-c-list-marker: #8b41b1;
+  --typstmate-c-escape: #1d6c76;
+  --typstmate-c-keyword: #d73948;
+  --typstmate-c-null: #d73948;
+  --typstmate-c-atom: #d73948;
+  --typstmate-c-bool: #d73948;
+  --typstmate-c-number: #b60157;
+  --typstmate-c-string: #198810;
+  --typstmate-c-func: #4b69c6;
+  --typstmate-c-interpolated: #8b41b1;
+  --typstmate-success: #1e7c61;
+}
+
+body.theme-dark {
+  --typstmate-primary: rgba(253, 253, 253, 1);
+  --typstmate-nav: rgba(239, 240, 243, 1);
+  --typstmate-secondary: rgba(163, 167, 183, 1);
+  --typstmate-brand-secondary: rgb(175, 209, 209);
+  --typstmate-brand: rgba(217, 248, 244, 1);
+  --typstmate-inverted: rgba(17, 16, 21, 1);
+  --typstmate-disabled: rgba(253, 253, 253, 0.5);
+  --typstmate-link: #3da8ff;
+  --typstmate-drop: #e8f9ff;
+  --typstmate-critical: rgba(247, 90, 91, 1);
+  --typstmate-warning: rgb(255, 149, 84, 1);
+  --typstmate-gutter: rgba(59, 58, 72, 1);
+  --typstmate-gutter-active: rgb(176, 179, 194);
+  --typstmate-c-comment: #b0b3c2;
+  --typstmate-c-monospace: #caccd6;
+  --typstmate-c-math-delim: #80f4b6;
+  --typstmate-c-math-op: #d9f8f4;
+  --typstmate-c-list-marker: #caa8ff;
+  --typstmate-c-escape: #d9f8f4;
+  --typstmate-c-keyword: #ffa49d;
+  --typstmate-c-null: #ffa49d;
+  --typstmate-c-atom: #ffa49d;
+  --typstmate-c-bool: #ffa49d;
+  --typstmate-c-number: #ff7d79;
+  --typstmate-c-string: #80f4b6;
+  --typstmate-c-func: #7cd5ff;
+  --typstmate-c-interpolated: #caa8ff;
+  --typstmate-success: #5de8a4;
+}

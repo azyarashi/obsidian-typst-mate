@@ -10,6 +10,7 @@ import {
   RenderingEngine,
 } from '@/libs/processor';
 import type { Snippet } from '@/libs/snippet';
+import { SyntaxMode } from '@/utils/crates/typst-syntax';
 
 /**
  * プラグイン設定
@@ -133,6 +134,7 @@ export const DEFAULT_SETTINGS: Settings = {
           styling: InlineStyling.Inline,
           noPreamble: false,
           fitToParentWidth: false,
+          syntaxMode: SyntaxMode.Markup,
         },
         {
           id: 'tex',

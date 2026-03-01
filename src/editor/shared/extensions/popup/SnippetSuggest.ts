@@ -77,14 +77,12 @@ class SnippetSuggestPlugin implements PluginValue {
 
     if (!update.docChanged && !update.selectionSet) return;
 
-    const helper = update.state.facet(editorHelperFacet);
-    if (!helper) return;
-
     const region = getActiveRegion(update.view);
     if (!region) {
       this.hide();
       return;
     }
+    const helper = update.state.facet(editorHelperFacet);
 
     const cursor = update.state.selection.main.head;
     const line = update.state.doc.lineAt(cursor);

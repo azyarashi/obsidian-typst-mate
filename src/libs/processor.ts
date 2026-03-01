@@ -1,3 +1,5 @@
+import type { SyntaxMode } from '@/utils/crates/typst-syntax';
+
 export enum RenderingEngine {
   TypstSVG = 'typst-svg',
   MathJax = 'mathjax',
@@ -29,7 +31,10 @@ export interface InlineProcessor {
   disableSuggest?: boolean;
   noPreamble?: boolean;
   fitToParentWidth?: boolean;
+  syntaxMode?: SyntaxMode | null;
+  useReplaceAll?: boolean;
 }
+
 export interface DisplayProcessor {
   id: string;
   renderingEngine: RenderingEngine;
@@ -38,6 +43,7 @@ export interface DisplayProcessor {
   disableSuggest?: boolean;
   noPreamble?: boolean;
   fitToParentWidth?: boolean;
+  syntaxMode?: SyntaxMode | null;
 }
 export interface CodeblockProcessor {
   id: string;
@@ -47,6 +53,7 @@ export interface CodeblockProcessor {
   disableSuggest?: boolean;
   noPreamble?: boolean;
   fitToParentWidth?: boolean;
+  syntaxMode?: SyntaxMode | null;
 }
 export interface ExcalidrawProcessor {
   id: string;
@@ -56,6 +63,7 @@ export interface ExcalidrawProcessor {
   disableSuggest?: boolean;
   noPreamble?: boolean;
   fitToParentWidth?: boolean;
+  syntaxMode?: SyntaxMode | null;
 }
 export type Processor = InlineProcessor | DisplayProcessor | CodeblockProcessor | ExcalidrawProcessor;
 export type Processors = InlineProcessor[] | DisplayProcessor[] | CodeblockProcessor[] | ExcalidrawProcessor[];

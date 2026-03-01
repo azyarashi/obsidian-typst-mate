@@ -3,15 +3,216 @@
 name: Typst Mate
 id: typst-mate
 settings:
-  - id: math-rendering
-    title: Math Rendering
-    type: heading
-    level: 1
-    collapsed: false
-  - id: match-mathjax-spacing
-    title: Match MathJax Spacing
-    description: "Add vertical spacing to display and codeblock equations to match MathJax rendering. You can also use `Empty Line Around Math Blocks` in Linter plugin instead."
-    type: class-toggle
+- id: math-rendering
+  title: Math Rendering
+  type: heading
+  level: 1
+  collapsed: false
+- id: match-mathjax-spacing
+  title: Match MathJax Spacing
+  description: "Add vertical spacing to display and codeblock equations to match MathJax rendering. You can also use `Empty Line Around Math Blocks` in Linter plugin instead."
+  type: class-toggle
+- id: typstmate-theme
+  title: Theme
+  type: heading
+  level: 1
+  collapsed: true
+- id: typstmate-primary
+  title: Primary Color
+  type: variable-themed-color
+  format: hex
+  opacity: true
+  default-light: "rgba(25, 24, 31, 1)"
+  default-dark: "rgba(253, 253, 253, 1)"
+- id: typstmate-nav
+  title: Nav Color
+  type: variable-themed-color
+  format: hex
+  opacity: true
+  default-light: "rgba(59, 58, 72, 1)"
+  default-dark: "rgba(239, 240, 243, 1)"
+- id: typstmate-secondary
+  title: Secondary Color
+  type: variable-themed-color
+  format: hex
+  opacity: true
+  default-light: "rgba(86, 85, 101, 1)"
+  default-dark: "rgba(163, 167, 183, 1)"
+- id: typstmate-brand-secondary
+  title: Brand Secondary Color
+  type: variable-themed-color
+  format: hex
+  opacity: true
+  default-light: "rgba(10, 54, 73, 1)"
+  default-dark: "rgb(175, 209, 209)"
+- id: typstmate-brand
+  title: Brand Color
+  type: variable-themed-color
+  format: hex
+  opacity: true
+  default-light: "rgba(17, 86, 108, 1)"
+  default-dark: "rgba(217, 248, 244, 1)"
+- id: typstmate-inverted
+  title: Inverted Color
+  type: variable-themed-color
+  format: hex
+  opacity: true
+  default-light: "rgba(253, 253, 253, 1)"
+  default-dark: "rgba(17, 16, 21, 1)"
+- id: typstmate-disabled
+  title: Disabled Color
+  type: variable-themed-color
+  format: hex
+  opacity: true
+  default-light: "rgba(25, 24, 31, 0.5)"
+  default-dark: "rgba(253, 253, 253, 0.5)"
+- id: typstmate-link
+  title: Link Color
+  type: variable-themed-color
+  format: hex
+  opacity: true
+  default-light: "rgba(0, 122, 255, 1)"
+  default-dark: "#3da8ff"
+- id: typstmate-drop
+  title: Drop Color
+  type: variable-themed-color
+  format: hex
+  opacity: true
+  default-light: "rgba(0, 41, 140, 1)"
+  default-dark: "#e8f9ff"
+- id: typstmate-critical
+  title: Critical Color
+  type: variable-themed-color
+  format: hex
+  opacity: true
+  default-light: "rgba(185, 49, 45, 1)"
+  default-dark: "rgba(247, 90, 91, 1)"
+- id: typstmate-warning
+  title: Warning Color
+  type: variable-themed-color
+  format: hex
+  opacity: true
+  default-light: "#b14c00"
+  default-dark: "rgb(255, 149, 84, 1)"
+- id: typstmate-gutter
+  title: Gutter Color
+  type: variable-themed-color
+  format: hex
+  opacity: true
+  default-light: "rgba(189, 191, 204, 1)"
+  default-dark: "rgba(59, 58, 72, 1)"
+- id: typstmate-gutter-active
+  title: Gutter Active Color
+  type: variable-themed-color
+  format: hex
+  opacity: true
+  default-light: "rgb(176, 179, 194)"
+  default-dark: "rgb(176, 179, 194)"
+- id: typstmate-c-comment
+  title: C Comment Color
+  type: variable-themed-color
+  format: hex
+  opacity: true
+  default-light: "#74747c"
+  default-dark: "#b0b3c2"
+- id: typstmate-c-monospace
+  title: C Monospace Color
+  type: variable-themed-color
+  format: hex
+  opacity: true
+  default-light: "#6b6b6f"
+  default-dark: "#caccd6"
+- id: typstmate-c-math-delim
+  title: C Math Delim Color
+  type: variable-themed-color
+  format: hex
+  opacity: true
+  default-light: "#198810"
+  default-dark: "#80f4b6"
+- id: typstmate-c-math-op
+  title: C Math Op Color
+  type: variable-themed-color
+  format: hex
+  opacity: true
+  default-light: "#1d6c76"
+  default-dark: "#d9f8f4"
+- id: typstmate-c-list-marker
+  title: C List Marker Color
+  type: variable-themed-color
+  format: hex
+  opacity: true
+  default-light: "#8b41b1"
+  default-dark: "#caa8ff"
+- id: typstmate-c-escape
+  title: C Escape Color
+  type: variable-themed-color
+  format: hex
+  opacity: true
+  default-light: "#1d6c76"
+  default-dark: "#d9f8f4"
+- id: typstmate-c-keyword
+  title: C Keyword Color
+  type: variable-themed-color
+  format: hex
+  opacity: true
+  default-light: "#d73948"
+  default-dark: "#ffa49d"
+- id: typstmate-c-null
+  title: C Null Color
+  type: variable-themed-color
+  format: hex
+  opacity: true
+  default-light: "#d73948"
+  default-dark: "#ffa49d"
+- id: typstmate-c-atom
+  title: C Atom Color
+  type: variable-themed-color
+  format: hex
+  opacity: true
+  default-light: "#d73948"
+  default-dark: "#ffa49d"
+- id: typstmate-c-bool
+  title: C Bool Color
+  type: variable-themed-color
+  format: hex
+  opacity: true
+  default-light: "#d73948"
+  default-dark: "#ffa49d"
+- id: typstmate-c-number
+  title: C Number Color
+  type: variable-themed-color
+  format: hex
+  opacity: true
+  default-light: "#b60157"
+  default-dark: "#ff7d79"
+- id: typstmate-c-string
+  title: C String Color
+  type: variable-themed-color
+  format: hex
+  opacity: true
+  default-light: "#198810"
+  default-dark: "#80f4b6"
+- id: typstmate-c-func
+  title: C Func Color
+  type: variable-themed-color
+  format: hex
+  opacity: true
+  default-light: "#4b69c6"
+  default-dark: "#7cd5ff"
+- id: typstmate-c-interpolated
+  title: C Interpolated Color
+  type: variable-themed-color
+  format: hex
+  opacity: true
+  default-light: "#8b41b1"
+  default-dark: "#caa8ff"
+- id: typstmate-success
+  title: Success Color
+  type: variable-themed-color
+  format: hex
+  opacity: true
+  default-light: "#1e7c61"
+  default-dark: "#5de8a4"
 */
 
 .match-mathjax-spacing .typstmate-display {

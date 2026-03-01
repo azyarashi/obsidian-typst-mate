@@ -1,5 +1,5 @@
 import { type EditorView, type PluginValue, ViewPlugin, type ViewUpdate } from '@codemirror/view';
-
+import { SyntaxMode } from '@/utils/crates/typst-syntax';
 import { calculatePopupPosition } from '../../utils/position';
 import { editorHelperFacet } from '../core/Helper';
 import { getActiveRegion } from '../core/TypstMate';
@@ -44,8 +44,15 @@ class SymbolSuggestPlugin implements PluginValue {
       return;
     }
 
-    const helper = update.state.facet(editorHelperFacet);
-    if (!helper) return;
+    let isDeletion = false;
+    update.changes.iterChanges((fromA, toA, fromB, toB) => {
+      if (toA - fromA > toB - fromB) isDeletion = true;
+    });
+
+    if (isDeletion) {
+      this.hide();
+      return;
+    }
 
     const region = getActiveRegion(update.view);
     if (!region) {
@@ -58,6 +65,11 @@ class SymbolSuggestPlugin implements PluginValue {
     }
 
     const cursor = update.state.selection.main.head;
+    if (region.mode !== SyntaxMode.Math) {
+      this.hide();
+      return;
+    }
+
     const line = update.state.doc.lineAt(cursor);
     const textBefore = update.state.sliceDoc(line.from, cursor);
     const match = textBefore.match(symbolRegex);
@@ -190,6 +202,11 @@ class SymbolSuggestPlugin implements PluginValue {
         this.hide();
         return true;
       }
+      case 'Backspace': {
+        this.hide();
+        this.prevEl?.focus();
+        return false;
+      }
     }
 
     return false;
@@ -198,8 +215,7 @@ class SymbolSuggestPlugin implements PluginValue {
   private complete(symbol: SymbolData) {
     if (symbol.name === this.query) return this.execute(symbol);
 
-    const helper = this.view.state.facet(editorHelperFacet);
-    if (!helper || this.queryFrom === undefined || this.queryTo === undefined) return;
+    if (this.queryFrom === undefined || this.queryTo === undefined) return;
 
     this.view.dispatch({
       changes: { from: this.queryFrom, to: this.queryTo, insert: symbol.name },
@@ -208,7 +224,7 @@ class SymbolSuggestPlugin implements PluginValue {
 
   private execute(symbol: SymbolData) {
     const helper = this.view.state.facet(editorHelperFacet);
-    if (!helper || this.queryFrom === undefined || this.queryTo === undefined) return;
+    if (this.queryFrom === undefined || this.queryTo === undefined) return;
 
     const region = getActiveRegion(this.view);
     if (!region) return;

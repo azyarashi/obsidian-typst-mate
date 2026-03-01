@@ -1,0 +1,37 @@
+.cm-typstmate-status-bar {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 4px 10px;
+  font-size: var(--font-ui-smaller);
+  font-family: var(--font-monospace-theme);
+  color: var(--text-muted);
+  background-color: var(--background-secondary-alt);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--radius-s);
+  z-index: 10;
+  user-select: none;
+  pointer-events: none;
+  box-shadow: var(--shadow-s);
+  opacity: 0.85;
+  transition: opacity 0.2s ease-in-out;
+}
+
+.cm-typstmate-status-bar:hover {
+  opacity: 1;
+}
+
+.cm-typstmate-status-bar-item {
+  display: flex;
+  align-items: center;
+}
+
+.cm-typstmate-status-bar-divider {
+  width: 1px;
+  height: 12px;
+  background-color: var(--background-modifier-border);
+}
