@@ -29,21 +29,8 @@ function computeDiagnostics(view: EditorView, result: TypstMateResult): Diagnost
 
   const mapped = result.diagnostics
     .map((diag) => {
-      let from = Math.max(region.from, Math.min(diag.from + offset, docLength));
-      let to = Math.max(region.from, Math.min(diag.to + offset, docLength));
-
-      if (from > to) {
-        const temp = from;
-        from = to;
-        to = temp;
-      }
-
-      if (from === to) {
-        const line = view.state.doc.lineAt(from);
-        if (from < line.to) to++;
-        else if (from > line.from) from--;
-        else return null;
-      }
+      const from = Math.max(region.from, Math.min(diag.from + offset, docLength));
+      const to = Math.max(region.from, Math.min(diag.to + offset, docLength));
 
       return {
         from,
