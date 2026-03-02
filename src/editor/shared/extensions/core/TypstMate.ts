@@ -196,7 +196,12 @@ function findRegionContaining(view: EditorView, cursor: number): TypstRegion | n
   return result;
 }
 
-const parseRegion = (view: EditorView, helper: EditorHelper, region: TypstRegion): ParsedRegion | null => {
+const parseRegion = (
+  view: EditorView,
+  helper: EditorHelper,
+  region: TypstRegion,
+  skipParse = false,
+): ParsedRegion | null => {
   if (region.kind === 'codeblock') {
     const beginLine = view.state.doc.lineAt(region.from - 1);
     const lang = beginLine.text.slice(3).trim();
@@ -207,7 +212,7 @@ const parseRegion = (view: EditorView, helper: EditorHelper, region: TypstRegion
 
     let tree: SyntaxNode | undefined;
     if (processor.renderingEngine === RenderingEngine.MathJax || processor.syntaxMode === null) tree = undefined;
-    else {
+    else if (!skipParse) {
       const mode = processor.syntaxMode ?? SyntaxMode.Markup;
       const text = view.state.sliceDoc(region.from, region.to);
       tree = mode === SyntaxMode.Code ? parseCode(text) : mode === SyntaxMode.Math ? parseMath(text) : parse(text);
@@ -240,7 +245,7 @@ const parseRegion = (view: EditorView, helper: EditorHelper, region: TypstRegion
 
   let tree: SyntaxNode | undefined;
   if (processor.renderingEngine === RenderingEngine.MathJax || processor.syntaxMode === null) tree = undefined;
-  else {
+  else if (!skipParse) {
     const mode = processor.syntaxMode ?? SyntaxMode.Math;
     tree =
       mode === SyntaxMode.Code
@@ -286,39 +291,63 @@ export class TypstMateCorePluginValue implements PluginValue {
         if (newFrom <= cursor && cursor <= newRawTo) {
           const helper = update.view.state.facet(editorHelperFacet);
 
-          const newRegion = parseRegion(update.view, helper, {
-            index: this.activeRegion.index,
-            from: newFrom,
-            to: newRawTo,
-            kind: this.activeRegion.kind,
-          });
+          const newRegion = parseRegion(
+            update.view,
+            helper,
+            {
+              index: this.activeRegion.index,
+              from: newFrom,
+              to: newRawTo,
+              kind: this.activeRegion.kind,
+            },
+            true,
+          );
 
-          if (newRegion && this.activeRegion.tree) {
-            let changesCount = 0;
-            let lastChange: any = null;
-            update.changes.iterChanges((fromA, toA, fromB, toB, inserted) => {
-              changesCount++;
-              lastChange = { fromA, toA, fromB, toB, inserted: inserted.toString() };
-            });
+          if (newRegion) {
+            let reparsed = true;
+            if (this.activeRegion.tree) {
+              let changesCount = 0;
+              let lastChange: any = null;
+              update.changes.iterChanges((fromA, toA, fromB, toB, inserted) => {
+                changesCount++;
+                lastChange = { fromA, toA, fromB, toB, inserted: inserted.toString() };
+              });
 
-            if (changesCount === 1) {
-              const innerFromA = this.activeRegion.from + this.activeRegion.skip;
-              const innerToA = this.activeRegion.to;
-              if (lastChange.fromA >= innerFromA && lastChange.toA <= innerToA) {
-                const localStart = lastChange.fromA - innerFromA;
-                const localEnd = lastChange.toA - innerFromA;
-                const innerNewText = update.view.state.sliceDoc(newRegion.from + newRegion.skip, newRegion.to);
-                try {
-                  newRegion.tree = reparse(
-                    this.activeRegion.tree,
-                    innerNewText,
-                    { start: localStart, end: localEnd },
-                    lastChange.inserted.length,
-                  );
-                } catch (e) {
-                  new Notice(String(e));
+              if (changesCount === 1) {
+                const innerFromA = this.activeRegion.from + this.activeRegion.skip;
+                const innerToA = this.activeRegion.to;
+                if (lastChange.fromA >= innerFromA && lastChange.toA <= innerToA) {
+                  const localStart = lastChange.fromA - innerFromA;
+                  const localEnd = lastChange.toA - innerFromA;
+                  const innerNewText = update.view.state.sliceDoc(newRegion.from + newRegion.skip, newRegion.to);
+                  try {
+                    newRegion.tree = reparse(
+                      this.activeRegion.tree,
+                      innerNewText,
+                      { start: localStart, end: localEnd },
+                      lastChange.inserted.length,
+                    );
+                    reparsed = true;
+                  } catch (e) {
+                    new Notice(String(e));
+                  }
                 }
               }
+            }
+
+            if (
+              !reparsed &&
+              newRegion.processor?.renderingEngine !== RenderingEngine.MathJax &&
+              newRegion.processor?.syntaxMode !== null
+            ) {
+              const mode = newRegion.defaultMode;
+              const innerText = update.view.state.sliceDoc(newRegion.from + newRegion.skip, newRegion.to);
+              newRegion.tree =
+                mode === SyntaxMode.Code
+                  ? parseCode(innerText)
+                  : mode === SyntaxMode.Math
+                    ? parseMath(innerText)
+                    : parse(innerText);
             }
           }
 
