@@ -73,6 +73,14 @@ export function addAdvancedTab(plugin: ObsidianTypstMate, containerEl: HTMLEleme
       });
     });
 
+  new Setting(containerEl).setName('Apply Processor to MathJax').addToggle((toggle) => {
+    toggle.setValue(plugin.settings.applyProcessorToMathJax);
+    toggle.onChange((value) => {
+      plugin.settings.applyProcessorToMathJax = value;
+      plugin.saveSettings();
+    });
+  });
+
   new Setting(containerEl).setName('Reload Plugin').addButton((button) => {
     button.setButtonText('Reload Plugin');
     button.onClick(async () => {

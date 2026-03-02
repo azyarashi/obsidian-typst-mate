@@ -49,6 +49,7 @@ export interface Settings {
   /* 高度な設定 */
   openTypstToolsOnStartup: boolean;
   enableMathjaxFallback: boolean;
+  applyProcessorToMathJax: boolean;
   importPath: string;
   enableDebugger: boolean;
 
@@ -116,6 +117,7 @@ export const DEFAULT_SETTINGS: Settings = {
   /* 高度な設定 */
   openTypstToolsOnStartup: true,
   enableMathjaxFallback: false,
+  applyProcessorToMathJax: false,
   importPath: '.typst',
   enableDebugger: false,
 

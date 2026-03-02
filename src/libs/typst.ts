@@ -228,10 +228,12 @@ export default class TypstManager {
         kind = 'codeblock';
     }
     this.beforeProcessor = processor;
-    if (processor.renderingEngine === 'mathjax')
+    if (processor.renderingEngine === 'mathjax') {
+      if (this.plugin.settings.applyProcessorToMathJax) code = processor.format.replace('{CODE}', code);
       return this.plugin.originalTex2chtml(code, {
         display: kind !== 'inline',
       });
+    }
     containerEl.addClass(`typstmate-${kind}`, `typstmate-style-${processor.styling}`, `typstmate-id-${processor.id}`);
 
     // レンダリング
