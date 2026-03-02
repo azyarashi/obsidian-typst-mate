@@ -67,21 +67,10 @@ export default abstract class TypstElement extends HTMLElement {
       1;
 
     if (this.processor.fitToNoteWidth) {
-      const view = this.plugin.app.workspace.getActiveViewOfType(MarkdownView);
-      const divElP = view?.contentEl.find('div.el-p');
-      const cmLine = view?.editor.editorComponent?.editorEl.find('.cm-line');
-      const cmContent = view?.editor.editorComponent?.editorEl.find('.cm-content');
-
-      const pWidth = divElP?.clientWidth ? divElP.clientWidth : Infinity;
-      const lineWidth = cmLine?.clientWidth ? cmLine.clientWidth : Infinity;
-      const contentWidth = cmContent?.clientWidth ? cmContent?.clientWidth : Infinity;
-      const fileLineWidth = parseInt(getComputedStyle(document.body).getPropertyValue('--file-line-width'), 10);
-
-      const width = Math.min(pWidth, lineWidth, contentWidth, Number.isNaN(fileLineWidth) ? Infinity : fileLineWidth);
-      const noteWidth = ((width === Infinity ? 700 : width) / 4) * 3;
-
-      formatted = `#let WIDTH = ${noteWidth}pt\n${formatted}`;
-      this.offset -= 16 + String(noteWidth).length;
+      const width = getNoteWidth(this.plugin);
+      formatted = `#let WIDTH = ${width}pt\n${formatted}`;
+      this.offset -= 16 + String(width).length;
+      this.dataset.fitToNoteWidth = 'true';
     }
 
     return formatted;
@@ -132,4 +121,21 @@ export default abstract class TypstElement extends HTMLElement {
       this.menu.showAtPosition({ x: event.pageX, y: event.pageY });
     });
   }
+}
+
+function getNoteWidth(plugin: ObsidianTypstMate) {
+  const view = plugin.app.workspace.getActiveViewOfType(MarkdownView);
+  const divElP = view?.contentEl.find('div.el-p p');
+  const cmLine = view?.editor.editorComponent?.sizerEl.find('.cm-line');
+  const cmContent = view?.editor.editorComponent?.sizerEl.find('.cm-content');
+
+  const pWidth = divElP?.clientWidth ? divElP.clientWidth : Infinity;
+  const lineWidth = cmLine?.clientWidth ? cmLine.clientWidth : Infinity;
+  const contentWidth = cmContent?.clientWidth ? cmContent?.clientWidth : Infinity;
+  const fileLineWidth = parseInt(getComputedStyle(document.body).getPropertyValue('--file-line-width'), 10);
+
+  const width = Math.min(pWidth, lineWidth, contentWidth, Number.isNaN(fileLineWidth) ? Infinity : fileLineWidth);
+  const noteWidth = ((width === Infinity ? 700 : width) / 4) * 3;
+
+  return noteWidth;
 }
