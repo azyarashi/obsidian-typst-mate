@@ -68,7 +68,7 @@ class SnippetSuggestPlugin implements PluginValue {
     this.items.className = 'items';
     this.container.appendChild(this.items);
 
-    view.dom.appendChild(this.container);
+    document.body.appendChild(this.container);
   }
 
   update(update: ViewUpdate) {
@@ -403,9 +403,7 @@ export const snippetSuggestExtension = [
   EditorView.domEventHandlers({
     keydown(e, view) {
       const plugin = view.plugin(snippetSuggestPlugin);
-      if (plugin?.isActive) {
-        return plugin.handleTyping(e);
-      }
+      if (plugin?.isActive) return plugin.handleTyping(e);
       return false;
     },
   }),

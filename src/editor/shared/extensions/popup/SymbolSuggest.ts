@@ -36,7 +36,7 @@ class SymbolSuggestPlugin implements PluginValue {
     this.items.className = 'items';
     this.container.appendChild(this.items);
 
-    view.dom.appendChild(this.container);
+    document.body.appendChild(this.container);
   }
 
   update(update: ViewUpdate) {
