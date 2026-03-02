@@ -52,16 +52,6 @@ class SymbolSuggestPlugin implements PluginValue {
       return;
     }
 
-    let isDeletion = false;
-    update.changes.iterChanges((fromA, toA, fromB, toB) => {
-      if (toA - fromA > toB - fromB) isDeletion = true;
-    });
-
-    if (isDeletion) {
-      this.hide();
-      return;
-    }
-
     const region = getActiveRegion(update.view);
     if (!region || region.processor?.disableSuggest || region.syntaxMode !== SyntaxMode.Math) {
       this.hide();

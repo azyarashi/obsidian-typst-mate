@@ -21,16 +21,15 @@ export function buildExtension(editorHelper: EditorHelper) {
     // Core
     editorHelperFacet.of(editorHelper),
     typstMateCore,
-    debuggerExtension,
 
     // Decorations
     diagnosticsState,
     PairHighlightExtension(),
     mathSymbolConcealExtension,
 
-    // Syntax Highlighting
-    typstTheme,
-    typstSyntaxHighlighting(),
+    // Popups
+    symbolSuggestExtension,
+    snippetSuggestExtension,
 
     // Actions
     jumpFromClickExtension,
@@ -38,13 +37,15 @@ export function buildExtension(editorHelper: EditorHelper) {
     shortcutExtension,
     tabJumpExtension,
 
-    // Popups
-    symbolSuggestExtension,
-    snippetSuggestExtension,
-
     // Decorations
     codeblockPreviewExtension,
     inlinePreviewExtension,
+
+    // Syntax Highlighting
+    typstSyntaxHighlighting(),
+
+    typstTheme,
+    debuggerExtension,
   ];
 
   return extensions.filter((ext) => !Array.isArray(ext) || (Array.isArray(ext) && ext.length !== 0));

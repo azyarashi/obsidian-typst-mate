@@ -31,8 +31,6 @@ export function buildTypstTextExtensions(editorHelper: EditorHelper) {
     EditorState.tabSize.of(2),
     EditorView.lineWrapping,
 
-    typstSyntaxHighlighting(),
-
     symbolSuggestExtension,
     snippetSuggestExtension,
     shortcutExtension,
@@ -61,6 +59,8 @@ export function buildTypstTextExtensions(editorHelper: EditorHelper) {
 
     mathSymbolConcealExtension,
     PairHighlightExtension(),
+
+    typstSyntaxHighlighting(),
 
     lineNumbers(),
     highlightActiveLineGutter(),
