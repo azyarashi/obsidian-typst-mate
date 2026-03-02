@@ -13,39 +13,33 @@ class JumpFromClickPluginValue {
     if (jump.type !== 'file') return;
     if (jump.pos === undefined) return;
 
-    const domPos = this.view.posAtDOM(context);
     const previewContainer = context.closest('.typstmate-codeblockpreview') as HTMLElement | null;
-    let actualPos = domPos;
-    if (previewContainer?.dataset.regionFrom) actualPos = parseInt(previewContainer.dataset.regionFrom, 10);
+    const regionFrom = previewContainer?.dataset.regionFrom
+      ? parseInt(previewContainer.dataset.regionFrom, 10)
+      : this.view.posAtDOM(context);
 
-    const region = getRegionAt(this.view, actualPos);
+    const region = getRegionAt(this.view, regionFrom);
     if (!region) return;
 
-    const helper = this.view.state.facet(editorHelperFacet);
-
-    const { noPreamble, format } = context.processor;
-    const offset =
-      region.from -
-      format.indexOf('{CODE}') -
-      (noPreamble ? 0 : helper.plugin.settings.preamble.length + 1) -
-      helper.plugin.typstManager.preamble.length -
-      1;
+    const offset = region.from + context.offset;
 
     const expectedPosition = jump.pos + offset;
     const clampedOffset =
       expectedPosition <= region.from ? region.from : region.to <= expectedPosition ? region.to : expectedPosition;
 
+    this.view.focus(); // ? コードブロックプレビューが正しく表示される
     this.view.dispatch({
       selection: { anchor: clampedOffset, head: clampedOffset },
       scrollIntoView: true,
     });
-    this.view.focus();
 
+    const helper = this.view.state.facet(editorHelperFacet);
     if (region.from <= expectedPosition && expectedPosition <= region.to)
-      setTimeout(() => helper.triggerRippleEffect(this.view, clampedOffset), 30);
+      requestAnimationFrame(() => {
+        helper.triggerRippleEffect(this.view, clampedOffset);
+      });
   }
 }
 
 export const jumpFromClickPlugin = ViewPlugin.fromClass(JumpFromClickPluginValue);
-
 export const jumpFromClickExtension = jumpFromClickPlugin;

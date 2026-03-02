@@ -9,6 +9,7 @@
   padding: 4px 10px;
   font-size: var(--font-ui-smaller);
   font-family: var(--font-monospace-theme);
+  font-variant-numeric: tabular-nums;
   color: var(--text-muted);
   background-color: var(--background-secondary-alt);
   border: 1px solid var(--background-modifier-border);

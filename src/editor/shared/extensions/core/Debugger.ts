@@ -62,8 +62,8 @@ class DebugPlugin implements PluginValue {
 
       data.push(
         { title: 'Processor', description: `${region.kind}${region.processor?.id ? `(${region.processor.id})` : ''}` },
-        { title: 'Mode', description: syntaxMode ? SyntaxMode[syntaxMode] : 'Opaque' },
-        { title: 'Kind', description: syntaxKind ? SyntaxKind[syntaxKind] : 'End' },
+        { title: 'Mode', description: syntaxMode !== null ? SyntaxMode[syntaxMode] : 'Opaque' },
+        { title: 'Kind', description: syntaxKind !== null ? SyntaxKind[syntaxKind] : 'End' },
         { title: 'GlobalPos', description: cursor.toString() },
         { title: 'LocalPos', description: `${relativePos} (+${region.skip})` },
         { title: 'TypstPos', description: typstPos },

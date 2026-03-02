@@ -1,4 +1,4 @@
-import { RangeSet, RangeSetBuilder, StateEffect } from '@codemirror/state';
+import { RangeSet, StateEffect } from '@codemirror/state';
 import { Decoration, type DecorationSet, EditorView, ViewPlugin, type ViewUpdate, WidgetType } from '@codemirror/view';
 
 import symbolData from '@/data/symbols.json';
@@ -7,8 +7,9 @@ import { editorHelperFacet } from '../core/Helper';
 import { getActiveRegion } from '../core/TypstMate';
 
 export const SYMBOL_MAP = new Map<string, string>();
-for (const [key, val] of Object.entries(symbolData as Record<string, { sym?: string }>))
+for (const [key, val] of Object.entries(symbolData as Record<string, { sym?: string }>)) {
   if (val.sym) SYMBOL_MAP.set(key, val.sym);
+}
 
 const widgetCache = new Map<string, SymbolWidget>();
 
@@ -41,149 +42,149 @@ function getSymbolWidget(text: string): SymbolWidget {
 const forceRevealEffect = StateEffect.define<void>();
 
 class MathSymbolConcealPlugin {
-  decorations: DecorationSet;
+  decorations: DecorationSet = Decoration.none;
 
   forceRevealPos: number = -1;
   hoveredSymbolPos: number = -1;
   revealTimer: number | undefined;
-  forceRebuild: boolean = false;
 
   constructor(public view: EditorView) {
-    this.decorations = this.buildDecorations(view, Decoration.none, false, false);
+    this.updateDecorations(view, false, false);
   }
 
   update(u: ViewUpdate) {
-    let prevDecos = this.decorations;
-    if (u.docChanged) prevDecos = prevDecos.map(u.changes);
-
-    let cursorMoved = false;
-    if (u.selectionSet) cursorMoved = true;
-
-    let hasRevealEffect = false;
-    for (const tr of u.transactions) {
-      if (tr.effects.some((e) => e.is(forceRevealEffect))) {
-        hasRevealEffect = true;
-      }
+    if (u.docChanged) {
+      if (this.forceRevealPos !== -1) this.forceRevealPos = u.changes.mapPos(this.forceRevealPos);
+      if (this.hoveredSymbolPos !== -1) this.hoveredSymbolPos = u.changes.mapPos(this.hoveredSymbolPos);
     }
 
-    if (u.docChanged || u.selectionSet || u.viewportChanged || this.forceRebuild || hasRevealEffect) {
-      if (this.forceRebuild) this.forceRebuild = false;
-      this.decorations = this.buildDecorations(u.view, prevDecos, cursorMoved, u.docChanged);
-    }
+    const hasRevealEffect = u.transactions.some((tr) => tr.effects.some((e) => e.is(forceRevealEffect)));
+
+    if (u.docChanged || u.selectionSet || u.viewportChanged || hasRevealEffect)
+      this.updateDecorations(u.view, u.docChanged, u.selectionSet);
   }
 
   destroy() {
+    this.clearTimer();
+  }
+
+  private clearTimer() {
     if (this.revealTimer !== undefined) {
       window.clearTimeout(this.revealTimer);
+      this.revealTimer = undefined;
     }
   }
 
-  buildDecorations(
-    view: EditorView,
-    prevDecos: DecorationSet,
-    cursorMoved: boolean,
-    isDocChange: boolean,
-  ): DecorationSet {
+  private updateDecorations(view: EditorView, isDocChange: boolean, isCursorMove: boolean) {
     const region = getActiveRegion(view);
-    if (!region || !region.tree) return Decoration.none;
-
     const helper = view.state.facet(editorHelperFacet);
-
-    const decorationBuilder = new RangeSetBuilder<Decoration>();
-    const state = view.state;
-    const cursor = state.selection.main.head;
-
-    const offset = region.kind === 'codeblock' ? region.from : region.from + region.skip;
-    let newHoveredPos = -1;
-
     const conceal = helper.plugin.settings.concealMathSymbols;
-    if (conceal) {
-      const traverse = (node: LinkedNode) => {
-        const kind = node.kind();
-        const isMatchable =
-          kind === SyntaxKind.MathIdent || kind === SyntaxKind.FieldAccess || kind === SyntaxKind.MathText;
 
-        if (isMatchable) {
-          const fullText = node.node.intoText();
-          const text = fullText.trim();
-          const sym = SYMBOL_MAP.get(text);
-          if (sym) {
-            const startWhitespace = fullText.length - fullText.trimStart().length;
-            const absStart = offset + node.offset + startWhitespace;
-            const absEnd = absStart + text.length;
-            const isNearby = absStart <= cursor && cursor <= absEnd;
-
-            // 1. Symbolは普通、Concealされる。
-            let isConcealed = true;
-            if (isNearby) {
-              let wasConcealed = false;
-              // 打つ, または削除してSymbolが完成した場合は Conceal しない
-              if (prevDecos !== Decoration.none) {
-                prevDecos.between(absStart, absEnd, (from, to) => {
-                  if (from === absStart && to === absEnd) wasConcealed = true;
-                });
-              }
-
-              // カーソルがSymbol箇所に一定の時間留まっている場合はRevealが起きる
-              if (this.forceRevealPos === absStart) isConcealed = false;
-              else if (wasConcealed) {
-                isConcealed = true;
-                newHoveredPos = absStart;
-              } else isConcealed = false; // 打つ, または削除してSymbolが完成した場合は Conceal しない
-            }
-
-            if (isConcealed) {
-              const deco = Decoration.replace({ widget: getSymbolWidget(sym) });
-              decorationBuilder.add(absStart, absEnd, deco);
-            }
-            return;
-          }
-        }
-
-        for (const child of node.children()) traverse(child);
-      };
-
-      traverse(LinkedNode.new(region.tree));
+    if (!region || !region.tree || !conceal) {
+      this.decorations = Decoration.none;
+      this.clearTimer();
+      this.hoveredSymbolPos = -1;
+      this.forceRevealPos = -1;
+      return;
     }
 
-    let delay = helper.plugin.settings.mathSymbolRevealDelay;
-    if (typeof delay !== 'number' || Number.isNaN(delay)) delay = 1000;
+    const cursor = view.state.selection.main.head;
+    const offset = region.kind === 'codeblock' ? region.from : region.from + region.skip;
+
+    const marks: ReturnType<Decoration['range']>[] = [];
+    let newHoveredPos = -1;
+    let isNewlyTyped = false;
+
+    const traverse = (node: LinkedNode) => {
+      const kind = node.kind();
+      const isMatchable =
+        kind === SyntaxKind.MathIdent || kind === SyntaxKind.FieldAccess || kind === SyntaxKind.MathText;
+
+      if (isMatchable) {
+        const fullText = node.node.intoText();
+        const text = fullText.trim();
+        const sym = SYMBOL_MAP.get(text);
+
+        if (sym) {
+          const startWhitespace = fullText.length - fullText.trimStart().length;
+          const absStart = offset + node.offset + startWhitespace;
+          const absEnd = absStart + text.length;
+          const isNearby = absStart <= cursor && cursor <= absEnd;
+
+          let isConcealed = true;
+
+          if (isNearby) {
+            let wasConcealed = false;
+            if (this.decorations !== Decoration.none) {
+              this.decorations.between(absStart, absEnd, (from, to) => {
+                if (from === absStart && to === absEnd) wasConcealed = true;
+              });
+            }
+
+            if (this.forceRevealPos === absStart) {
+              // タイマーによってRevealが指示されている場合
+              isConcealed = false;
+            } else if (wasConcealed) {
+              // 前回Concealされており、今回カーソルが乗った場合
+              isConcealed = true;
+              newHoveredPos = absStart;
+            } else {
+              // 文字入力などによって新たにSymbolが完成した場合
+              isConcealed = false;
+              newHoveredPos = absStart;
+              isNewlyTyped = true;
+            }
+          }
+
+          if (isConcealed) {
+            const deco = Decoration.replace({ widget: getSymbolWidget(sym) });
+            marks.push(deco.range(absStart, absEnd));
+          }
+          return;
+        }
+      }
+      for (const child of node.children()) traverse(child);
+    };
+
+    traverse(LinkedNode.new(region.tree));
+
+    this.decorations = Decoration.set(marks, true);
+
+    const delay = Number(helper.plugin.settings.mathSymbolRevealDelay) || 1000;
 
     if (newHoveredPos !== -1) {
-      const changedHover = this.hoveredSymbolPos !== newHoveredPos;
-      // 一定の時間は以下の場合に初期化される:
-      // - Symbol箇所内でカーソルが移動した場合 (changedHover || cursorMoved || isDocChange)
-      if (changedHover || cursorMoved || isDocChange) {
-        if (this.revealTimer !== undefined) clearTimeout(this.revealTimer);
-        this.hoveredSymbolPos = newHoveredPos;
-        this.revealTimer = window.setTimeout(() => {
-          this.forceRevealPos = this.hoveredSymbolPos;
-          this.forceRebuild = true;
-          view.dispatch({ effects: forceRevealEffect.of() });
-        }, delay);
-      }
-    } else {
-      if (this.hoveredSymbolPos !== -1 || this.forceRevealPos !== -1) {
-        this.hoveredSymbolPos = -1;
-        this.forceRevealPos = -1;
-        if (this.revealTimer !== undefined) {
-          clearTimeout(this.revealTimer);
-          this.revealTimer = undefined;
+      if (isNewlyTyped) {
+        // 入力時は Reveal
+        this.forceRevealPos = newHoveredPos;
+        this.clearTimer();
+      } else {
+        const changedHover = this.hoveredSymbolPos !== newHoveredPos;
+        // ホバー対象の変更, カーソルの移動
+        if (changedHover || isCursorMove || isDocChange) {
+          this.clearTimer();
+          this.hoveredSymbolPos = newHoveredPos;
+
+          this.revealTimer = window.setTimeout(() => {
+            this.forceRevealPos = newHoveredPos;
+            view.dispatch({ effects: forceRevealEffect.of() });
+          }, delay);
         }
       }
+    } else {
+      // シンボル外にカーソルが移動
+      this.clearTimer();
+      this.hoveredSymbolPos = -1;
+      this.forceRevealPos = -1;
     }
-
-    return decorationBuilder.finish();
   }
 }
 
-const mathSymbolConcealPlugin = ViewPlugin.fromClass(MathSymbolConcealPlugin, {
+export const mathSymbolConcealPlugin = ViewPlugin.fromClass(MathSymbolConcealPlugin, {
   decorations: (v) => v.decorations,
 });
 
 export const mathSymbolConcealExtension = [
   mathSymbolConcealPlugin,
-  // Concealされている間、その右隣のカーソルから削除された場合、そのSymbolごと削除したり、左矢印を押した場合Symbolをスキップできる
   EditorView.atomicRanges.of((view) => {
     return view.plugin(mathSymbolConcealPlugin)?.decorations ?? RangeSet.empty;
   }),

@@ -1,4 +1,3 @@
-import { RangeSetBuilder } from '@codemirror/state';
 import { Decoration, type DecorationSet, type EditorView, ViewPlugin, type ViewUpdate } from '@codemirror/view';
 
 import { LinkedNode, Side, SyntaxKind } from '@/utils/crates/typst-syntax';
@@ -23,19 +22,19 @@ const ENCLOSING_KINDS = new Set([
   SyntaxKind.ContentBlock,
   SyntaxKind.MathDelimited,
   SyntaxKind.Equation,
+  SyntaxKind.Args,
+  SyntaxKind.Params,
+  SyntaxKind.Destructuring,
 ]);
 
 const OPEN_KINDS = new Set([SyntaxKind.LeftParen, SyntaxKind.LeftBracket, SyntaxKind.LeftBrace]);
-
 const CLOSE_KINDS = new Set([SyntaxKind.RightParen, SyntaxKind.RightBracket, SyntaxKind.RightBrace]);
-
 const SYMMETRIC_DELIMS = new Set([SyntaxKind.Dollar]);
 
-export const bracketHighlightExtension = () => {
+export const PairHighlightExtension = () => {
   return ViewPlugin.fromClass(
     class {
       decorations: DecorationSet = Decoration.none;
-      private lastEnclosing: { open: number; close: number; openLen?: number; closeLen?: number } | null = null;
       private lastCursor: number = -1;
 
       constructor(view: EditorView) {
@@ -85,7 +84,8 @@ export const bracketHighlightExtension = () => {
 
               for (const child of children) {
                 const kind = child.kind();
-                if (OPEN_KINDS.has(kind)) open = child;
+
+                if (OPEN_KINDS.has(kind) && !open) open = child;
                 if (CLOSE_KINDS.has(kind)) close = child;
 
                 if (SYMMETRIC_DELIMS.has(kind)) {
@@ -119,33 +119,20 @@ export const bracketHighlightExtension = () => {
           enclosing = findEnclosingBrackets(leafBefore);
         else enclosing = findEnclosingBrackets(leafAfter || leafBefore);
 
-        if (!enclosing) {
-          this.lastEnclosing = null;
-          return Decoration.none;
-        }
+        if (!enclosing) return Decoration.none;
 
         const openLen = enclosing.openLen || 1;
         const closeLen = enclosing.closeLen || 1;
 
-        if (
-          !this.lastEnclosing ||
-          this.lastEnclosing.open !== enclosing.open ||
-          this.lastEnclosing.close !== enclosing.close ||
-          this.lastEnclosing.openLen !== openLen ||
-          this.lastEnclosing.closeLen !== closeLen
-        ) {
-          const builder = new RangeSetBuilder<Decoration>();
-          const openDeco = getMarkDeco('typstmate-bracket-pair typstmate-bracket-pair-open');
-          const closeDeco = getMarkDeco('typstmate-bracket-pair typstmate-bracket-pair-close');
+        const openDeco = getMarkDeco('typstmate-bracket-pair typstmate-bracket-pair-open');
+        const closeDeco = getMarkDeco('typstmate-bracket-pair typstmate-bracket-pair-close');
 
-          builder.add(offset + enclosing.open, offset + enclosing.open + openLen, openDeco);
-          builder.add(offset + enclosing.close, offset + enclosing.close + closeLen, closeDeco);
+        const fromA = offset + enclosing.open;
+        const toA = fromA + openLen;
+        const fromB = offset + enclosing.close;
+        const toB = fromB + closeLen;
 
-          this.lastEnclosing = { ...enclosing, openLen, closeLen };
-          return builder.finish();
-        }
-
-        return this.decorations;
+        return Decoration.set([openDeco.range(fromA, toA), closeDeco.range(fromB, toB)], true);
       }
     },
     { decorations: (v) => v.decorations },

@@ -228,17 +228,10 @@ export interface PackageSpec {
 }
 
 export interface Diagnostic {
-  severity: string;
+  severity: 'error' | 'warning';
   from: number;
   to: number;
   message: string;
-  trace: {
-    span: {
-      start: number;
-      end: number;
-    };
-    point: string;
-  }[];
   hints: string[];
 }
 

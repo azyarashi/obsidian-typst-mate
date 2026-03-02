@@ -1,8 +1,9 @@
-import { StateField } from '@codemirror/state';
+import { Prec, StateField } from '@codemirror/state';
 import {
   Decoration,
   type DecorationSet,
   EditorView,
+  keymap,
   type PluginValue,
   ViewPlugin,
   type ViewUpdate,
@@ -35,11 +36,8 @@ const atHighlightField = StateField.define<DecorationSet>({
         const atPos = cursor - 1;
         const deco = Decoration.mark({ class: 'typstmate-atmode' }).range(atPos, cursor);
         decorations = Decoration.set([deco]);
-      } else {
-        decorations = Decoration.none;
-      }
+      } else decorations = Decoration.none;
     }
-
     return decorations;
   },
   provide: (field) => EditorView.decorations.from(field),
@@ -50,11 +48,13 @@ class SnippetSuggestPlugin implements PluginValue {
   items: HTMLElement;
   candidates: Snippet[] = [];
   selectedIndex: number = -1;
+
   query?: string;
   argument?: string;
   queryFrom?: number;
   queryTo?: number;
-  prevEl?: HTMLElement;
+
+  isActive: boolean = false;
 
   private mouseMoveListener = (e: MouseEvent) => this.onMouseMove(e);
   private mouseDownListener = (e: MouseEvent) => this.onMouseDown(e);
@@ -62,11 +62,13 @@ class SnippetSuggestPlugin implements PluginValue {
   constructor(public view: EditorView) {
     this.container = document.createElement('div');
     this.container.classList.add('typstmate-snippets', 'typstmate-temporary');
-    this.container.hide();
+    this.container.style.display = 'none';
+
     this.items = document.createElement('div');
     this.items.className = 'items';
     this.container.appendChild(this.items);
-    document.body.appendChild(this.container);
+
+    view.dom.appendChild(this.container);
   }
 
   update(update: ViewUpdate) {
@@ -135,7 +137,7 @@ class SnippetSuggestPlugin implements PluginValue {
     this.container.style.setProperty('--preview-left', `${position.x}px`);
     this.container.style.setProperty('--preview-top', `${position.y}px`);
 
-    if (this.container.style.display === 'none') this.renderFirst();
+    if (!this.isActive) this.show();
 
     this.items.replaceChildren();
     this.selectedIndex = -1;
@@ -166,184 +168,216 @@ class SnippetSuggestPlugin implements PluginValue {
         item.appendChild(contentEl);
       }
 
-      if (this.query === snippet.name) this.updateSelection(index);
       this.items.appendChild(item);
     });
+
+    if (this.candidates.length > 0) {
+      this.updateSelection(0);
+    }
   }
 
-  private renderFirst() {
-    this.prevEl = document.activeElement as HTMLElement;
-    this.container.show();
+  private show() {
+    this.isActive = true;
+    this.container.style.display = 'block';
     document.body.classList.add('typstmate-snippet-suggesting');
-    document.addEventListener('mousemove', this.mouseMoveListener);
-    document.addEventListener('mousedown', this.mouseDownListener);
+    document.addEventListener('mousemove', this.mouseMoveListener, true);
+    document.addEventListener('mousedown', this.mouseDownListener, true);
   }
 
   hide() {
-    this.container.hide();
+    if (!this.isActive) return;
+    this.isActive = false;
+    this.container.style.display = 'none';
     document.body.classList.remove('typstmate-snippet-suggesting');
-    document.removeEventListener('mousemove', this.mouseMoveListener);
-    document.removeEventListener('mousedown', this.mouseDownListener);
+    document.removeEventListener('mousemove', this.mouseMoveListener, true);
+    document.removeEventListener('mousedown', this.mouseDownListener, true);
   }
 
   onMouseMove(e: MouseEvent) {
+    if (!this.isActive) return;
     const item = (e.target as HTMLElement).closest('.item') as HTMLElement | null;
     if (!item) return;
-    this.updateSelection(Number(item.dataset.index!));
+    const index = Number(item.dataset.index);
+    if (!Number.isNaN(index)) this.updateSelection(index);
   }
 
   onMouseDown(e: MouseEvent) {
+    if (!this.isActive) return;
     const item = (e.target as HTMLElement).closest('.item') as HTMLElement | null;
-    if (!item) return;
-    this.execute(this.candidates[Number(item.dataset.index)] ?? this.candidates[0]!);
-    this.hide();
-    e.preventDefault();
+    if (item) {
+      e.preventDefault();
+      e.stopPropagation();
+      const index = Number(item.dataset.index);
+      if (!Number.isNaN(index) && this.candidates[index]) {
+        this.execute(this.candidates[index]);
+        this.hide();
+        this.view.focus();
+      }
+    }
   }
 
-  onKeyDown(e: KeyboardEvent): boolean {
-    if (this.container.style.display === 'none' || this.candidates.length === 0) return false;
+  handleKeyAction(key: string): boolean {
+    if (!this.isActive || this.candidates.length === 0) return false;
 
-    switch (e.key) {
-      case 'ArrowDown':
-      case 'ArrowUp': {
-        e.preventDefault();
-        const candidatesLength = this.candidates.length;
-        if (e.key === 'ArrowUp') {
-          if (this.selectedIndex === -1) this.updateSelection(candidatesLength - 1);
-          else this.updateSelection((this.selectedIndex - 1 + candidatesLength) % candidatesLength);
+    switch (key) {
+      case 'ArrowUp':
+      case 'ArrowDown': {
+        const len = this.candidates.length;
+        if (key === 'ArrowUp') {
+          this.updateSelection(this.selectedIndex <= 0 ? len - 1 : this.selectedIndex - 1);
         } else {
-          if (this.selectedIndex === -1) this.updateSelection(0);
-          else this.updateSelection((this.selectedIndex + 1) % candidatesLength);
+          this.updateSelection(
+            this.selectedIndex === -1 || this.selectedIndex === len - 1 ? 0 : this.selectedIndex + 1,
+          );
         }
         this.scrollSelectedIntoView();
         return true;
       }
-
       case 'Tab': {
-        e.preventDefault();
-        this.prevEl?.focus();
-        if (this.selectedIndex >= 0) this.complete(this.candidates[this.selectedIndex]! ?? this.candidates[0]!);
-        else this.complete(this.candidates[0]!);
+        const target = this.selectedIndex >= 0 ? this.candidates[this.selectedIndex] : this.candidates[0];
+        if (target) this.complete(target);
         return true;
       }
-
       case 'Enter': {
-        e.preventDefault();
-        this.prevEl?.focus();
-        let snippet: Snippet;
-        if (this.selectedIndex >= 0) snippet = this.candidates[this.selectedIndex]! ?? this.candidates[0]!;
-        else snippet = this.candidates[0]!;
-
-        if (snippet.script && this.argument === undefined) this.complete(snippet);
-        else this.execute(snippet);
-        return true;
-      }
-
-      case 'Shift': {
-        e.preventDefault();
-        return true;
-      }
-
-      default: {
-        if (e.key === '(' && !e.ctrlKey && !e.metaKey && !e.altKey) {
-          e.preventDefault();
-          const cursor = this.view.state.selection.main.head;
-          this.view.dispatch({
-            changes: {
-              from: cursor - (this.argument ? 2 : 1),
-              insert: '()',
-            },
-          });
-          return true;
-        } else if (e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {
-          if (e.key === ' ' && this.argument === undefined) {
-            this.prevEl?.focus();
-            this.hide();
-            return false;
+        const target = this.selectedIndex >= 0 ? this.candidates[this.selectedIndex] : this.candidates[0];
+        if (target) {
+          // スクリプト型かつ引数未入力の場合は補完して待機
+          if (target.script && this.argument === undefined) {
+            this.complete(target);
+            return true;
+          } else {
+            this.execute(target);
           }
-          e.preventDefault();
-          const cursor = this.view.state.selection.main.head;
-          this.view.dispatch({
-            changes: {
-              from: cursor - (this.argument ? 2 : 1),
-              insert: e.key,
-            },
-          });
-          return true;
-        } else if (e.key === 'Backspace') {
-          if (this.query === undefined) break;
-
-          e.preventDefault();
-          const cursor = this.view.state.selection.main.head;
-          this.view.dispatch({
-            changes: {
-              from: cursor - (this.argument ? 3 : 2),
-              to: cursor - (this.argument && this.argument === '()' ? 1 : 0),
-            },
-          });
-          return true;
-        } else if (e.key === 'Shift') {
-          e.preventDefault();
-          return true;
         }
+        this.hide();
+        this.view.focus();
+        return true;
+      }
+      case 'Escape': {
+        this.hide();
+        this.view.focus();
+        return true;
       }
     }
+    return false;
+  }
 
-    this.prevEl?.focus();
-    this.hide();
+  handleTyping(e: KeyboardEvent): boolean {
+    if (e.ctrlKey || e.metaKey || e.altKey) return false;
+    if (['ArrowUp', 'ArrowDown', 'Enter', 'Tab', 'Escape', 'Shift'].includes(e.key)) return false;
+
+    const cursor = this.view.state.selection.main.head;
+
+    if (e.key === '(') {
+      e.preventDefault();
+      this.view.dispatch({
+        changes: { from: cursor - (this.argument ? 2 : 1), insert: '()' },
+      });
+      return true;
+    }
+
+    if (e.key === 'Backspace') {
+      if (!this.query) return false;
+      e.preventDefault();
+      let fromPos: number, toPos: number;
+
+      if (this.argument) {
+        if (this.argument === '()') {
+          fromPos = cursor - 3; // '(' の前
+          toPos = cursor - 1; // '@' の前
+        } else {
+          fromPos = cursor - 3; // 引数内の最後の文字の前
+          toPos = cursor - 2; // 引数内の最後の文字の後
+        }
+      } else {
+        fromPos = cursor - 2; // queryの最後の文字の前
+        toPos = cursor - 1; // '@' の前
+      }
+
+      if (fromPos >= 0) {
+        this.view.dispatch({ changes: { from: fromPos, to: toPos } });
+      }
+      return true;
+    }
+
+    if (e.key.length === 1) {
+      if (e.key === ' ' && !this.argument) {
+        this.hide();
+        return false;
+      }
+      e.preventDefault();
+      this.view.dispatch({
+        changes: { from: cursor - (this.argument ? 2 : 1), insert: e.key },
+      });
+      return true;
+    }
+
     return false;
   }
 
   private complete(snippet: Snippet) {
-    if (!(snippet.script && !this.argument) && snippet.name === this.query) return this.execute(snippet);
+    if (!(snippet.script && !this.argument) && snippet.name === this.query) {
+      return this.execute(snippet);
+    }
 
     if (this.queryFrom === undefined || this.queryTo === undefined) return;
+
+    const suffix = snippet.script ? (this.argument ? this.argument : '()') : '';
+    const insertText = `${snippet.name}${suffix}@`;
 
     this.view.dispatch({
       changes: {
         from: this.queryFrom,
         to: this.queryTo,
-        insert: `${snippet.name + (snippet.script ? (this.argument ? this.argument : '()') : '')}@`,
+        insert: insertText,
       },
     });
   }
 
   private execute(snippet: Snippet) {
+    if (this.queryFrom === undefined || this.queryTo === undefined) return;
+
     let content = snippet.content;
 
     if (snippet.script) {
       try {
-        content = new Function('input', 'window', content)(this.argument?.slice(1, -1), window);
+        const argValue = this.argument ? this.argument.slice(1, -1) : undefined;
+        content = new Function('input', 'window', content)(argValue, window);
       } catch (e) {
-        new Notice(String(e));
+        new Notice(`Snippet execution failed: ${String(e)}`);
         return;
       }
     }
 
     const cursorIndex = content.indexOf('#CURSOR');
     content = content.replace('#CURSOR', '');
-    if (cursorIndex === -1) content = `${content} `;
-
-    if (this.queryFrom === undefined || this.queryTo === undefined) return;
+    if (cursorIndex === -1) {
+      content = `${content} `;
+    }
 
     const newCursorPos = this.queryFrom + (cursorIndex === -1 ? content.length : cursorIndex);
 
     this.view.dispatch({
       changes: { from: this.queryFrom, to: this.queryTo, insert: content },
       selection: { anchor: newCursorPos },
+      userEvent: 'input.complete',
     });
   }
 
   private updateSelection(newIndex: number) {
-    if (newIndex === this.selectedIndex) return;
-    this.items.children[this.selectedIndex]?.classList.remove('selected');
-    this.items.children[newIndex]?.classList.add('selected');
-    this.selectedIndex = newIndex;
+    const children = this.items.children;
+    if (this.selectedIndex >= 0 && children[this.selectedIndex]) {
+      children[this.selectedIndex]!.classList.remove('selected');
+    }
+    if (newIndex >= 0 && children[newIndex]) {
+      children[newIndex].classList.add('selected');
+      this.selectedIndex = newIndex;
+    }
   }
 
   private scrollSelectedIntoView() {
-    const el = this.items.children[this.selectedIndex];
-    if (el) el.scrollIntoView({ block: 'nearest', behavior: 'auto' });
+    const el = this.items.children[this.selectedIndex] as HTMLElement | undefined;
+    if (el) el.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
   }
 
   destroy() {
@@ -352,8 +386,27 @@ class SnippetSuggestPlugin implements PluginValue {
   }
 }
 
-export { SnippetSuggestPlugin };
+export const snippetSuggestPlugin = ViewPlugin.fromClass(SnippetSuggestPlugin);
 
-const snippetSuggestPlugin = ViewPlugin.fromClass(SnippetSuggestPlugin);
-
-export const snippetSuggestExtension = [atHighlightField, snippetSuggestPlugin];
+export const snippetSuggestExtension = [
+  atHighlightField,
+  snippetSuggestPlugin,
+  Prec.highest(
+    keymap.of([
+      { key: 'ArrowUp', run: (view) => view.plugin(snippetSuggestPlugin)?.handleKeyAction('ArrowUp') ?? false },
+      { key: 'ArrowDown', run: (view) => view.plugin(snippetSuggestPlugin)?.handleKeyAction('ArrowDown') ?? false },
+      { key: 'Enter', run: (view) => view.plugin(snippetSuggestPlugin)?.handleKeyAction('Enter') ?? false },
+      { key: 'Tab', run: (view) => view.plugin(snippetSuggestPlugin)?.handleKeyAction('Tab') ?? false },
+      { key: 'Escape', run: (view) => view.plugin(snippetSuggestPlugin)?.handleKeyAction('Escape') ?? false },
+    ]),
+  ),
+  EditorView.domEventHandlers({
+    keydown(e, view) {
+      const plugin = view.plugin(snippetSuggestPlugin);
+      if (plugin?.isActive) {
+        return plugin.handleTyping(e);
+      }
+      return false;
+    },
+  }),
+];

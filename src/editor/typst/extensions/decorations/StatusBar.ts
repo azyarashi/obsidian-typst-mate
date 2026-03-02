@@ -61,7 +61,7 @@ class StatusBarPlugin implements PluginValue {
 
     this.kindEl.textContent = syntaxKind !== null ? SyntaxKind[syntaxKind] : 'End';
     this.modeEl.textContent = syntaxMode !== null ? SyntaxMode[syntaxMode] : 'Opaque';
-    this.posEl.textContent = `Ln ${line.number}, Col ${col}`;
+    this.posEl.textContent = `${line.number}:${col}`;
   }
 }
 

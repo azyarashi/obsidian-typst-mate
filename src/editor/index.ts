@@ -3,8 +3,7 @@ import type { EditorView } from '@codemirror/view';
 import { Notice } from 'obsidian';
 
 import type ObsidianTypstMate from '@/main';
-import { buildExtension as buildMarkdownExtensions } from './markdown/extensions/build';
-import { buildExtension as buildSharedExtensions } from './shared/extensions/build';
+import { buildExtension as buildSharedExtensions } from './markdown/build';
 import { getActiveRegion } from './shared/extensions/core/TypstMate';
 
 import './shared/css';
@@ -21,7 +20,7 @@ export class EditorHelper {
     );
 
     // 拡張機能をセット
-    this.plugin.registerEditorExtension([Prec.high([[...buildSharedExtensions(this), ...buildMarkdownExtensions()]])]);
+    this.plugin.registerEditorExtension([Prec.high([...buildSharedExtensions(this)])]);
   }
 
   /* utils

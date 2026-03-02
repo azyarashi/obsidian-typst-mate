@@ -435,6 +435,10 @@ export const extarctCMMath = (settings: Settings, code: string, display: boolean
   return { eqStart, eqEnd, processor };
 };
 
+export function getNdirAndNPath(file: TFile | null): { ndir: string; npath?: string } {
+  return { ndir: file?.parent ? ctxToNDir(file.path) : '/', npath: file?.path };
+}
+
 export function ctxToNDir(s: string): string {
   const i = s.lastIndexOf('/');
   return i === -1 ? '/' : `/${s.slice(0, i + 1)}`;

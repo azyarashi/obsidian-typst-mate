@@ -16,6 +16,7 @@ export default abstract class TypstElement extends HTMLElement {
   processor!: Processor;
 
   noDiag!: boolean;
+  offset: number = 0;
 
   plugin!: ObsidianTypstMate;
 
@@ -42,10 +43,10 @@ export default abstract class TypstElement extends HTMLElement {
     if (view instanceof MarkdownView)
       setTimeout(() => {
         updateDiagnosticEffect(view.editor.cm, {
-          // @ts-expect-error
-          diags: result.diags,
+          diagnostics: result.diags,
           processor: this.processor,
           noDiag: this.noDiag,
+          offset: this.offset,
         });
       }, 0);
 
@@ -59,6 +60,12 @@ export default abstract class TypstElement extends HTMLElement {
     formatted = `${this.plugin.typstManager.preamble}\n${formatted}${this.kind === 'inline' ? '#text(size:0pt)[TypstMate]' : ''}`;
     formatted = this.processor.noPreamble ? formatted : `${this.plugin.settings.preamble}\n${formatted}`;
 
+    this.offset =
+      -this.processor.format.indexOf('{CODE}') -
+      (this.processor.noPreamble ? 0 : this.plugin.settings.preamble.length + 1) -
+      this.plugin.typstManager.preamble.length -
+      1;
+
     return formatted;
   }
 
@@ -69,10 +76,10 @@ export default abstract class TypstElement extends HTMLElement {
     const view = this.plugin.app.workspace.getActiveFileView();
     if (view instanceof MarkdownView)
       updateDiagnosticEffect(view.editor.cm, {
-        // @ts-expect-error
-        diags: err,
+        diagnostics: err,
         processor: this.processor,
         noDiag: this.noDiag,
+        offset: this.offset,
       });
 
     if (this.plugin.settings.enableMathjaxFallback) {

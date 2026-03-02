@@ -1,7 +1,6 @@
 import { RangeSetBuilder } from '@codemirror/state';
 import { Decoration, type DecorationSet, type EditorView, ViewPlugin, type ViewUpdate } from '@codemirror/view';
 
-import { editorHelperFacet } from '@/editor/shared/extensions/core/Helper';
 import { getActiveRegion } from '@/editor/shared/extensions/core/TypstMate';
 import { diagnosticsState } from '@/editor/shared/extensions/decorations/Diagnostic';
 
@@ -10,38 +9,21 @@ import './ErrorLens.css';
 function computeErrorLens(view: EditorView): DecorationSet {
   const builder = new RangeSetBuilder<Decoration>();
 
-  const diagResult = view.state.field(diagnosticsState, false);
-  if (!diagResult || diagResult.noDiag || !diagResult.diags || diagResult.diags.length === 0) {
-    return builder.finish();
-  }
+  const result = view.state.field(diagnosticsState, false);
+  if (!result || result.noDiag || !result.diagnostics || result.diagnostics.length === 0) return builder.finish();
 
   const region = getActiveRegion(view);
   if (!region) return builder.finish();
 
-  const helper = view.state.facet(editorHelperFacet);
-  let offset: number;
-  if (diagResult.processor) {
-    const { noPreamble, format } = diagResult.processor;
-    offset =
-      region.from +
-      region.skip -
-      format.indexOf('{CODE}') -
-      (noPreamble ? 0 : helper.plugin.settings.preamble.length + 1) -
-      helper.plugin.typstManager.preamble.length -
-      1;
-  } else {
-    offset = 0;
-  }
-
   const lineDiagnostics = new Map<
     number,
-    { message: string; severity: 'error' | 'warning' | 'info' | 'hint'; from: number; hints: string[] }
+    { message: string; severity: 'error' | 'warning'; from: number; hints: string[] }
   >();
   const docLength = view.state.doc.length;
 
-  for (const diag of diagResult.diags) {
+  for (const diag of result.diagnostics) {
     try {
-      const from = Math.max(region.from, Math.min(diag.from + offset, docLength));
+      const from = Math.max(region.from, Math.min(diag.from, docLength));
       const line = view.state.doc.lineAt(from);
 
       if (!lineDiagnostics.has(line.number)) {
@@ -60,9 +42,7 @@ function computeErrorLens(view: EditorView): DecorationSet {
             from: line.from,
             hints: diag.hints || [],
           });
-        } else if (existing?.severity === diag.severity && diag.hints?.length) {
-          existing.hints.push(...diag.hints);
-        }
+        } else if (existing?.severity === diag.severity && diag.hints?.length) existing.hints.push(...diag.hints);
       }
     } catch {}
   }
@@ -100,14 +80,15 @@ export const errorLensExtension = ViewPlugin.fromClass(
     }
 
     update(update: ViewUpdate) {
-      let run = update.docChanged || update.viewportChanged;
-      if (!run) {
+      let shouldUpdate = update.docChanged || update.viewportChanged || update.selectionSet;
+
+      if (!shouldUpdate) {
         const oldState = update.startState.field(diagnosticsState, false);
         const newState = update.state.field(diagnosticsState, false);
-        if (oldState !== newState) {
-          run = true;
-        }
-      } else this.decorations = computeErrorLens(update.view);
+        if (oldState !== newState) shouldUpdate = true;
+      }
+
+      if (shouldUpdate) this.decorations = computeErrorLens(update.view);
     }
   },
   {

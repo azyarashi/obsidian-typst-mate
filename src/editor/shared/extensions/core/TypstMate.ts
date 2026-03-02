@@ -8,6 +8,7 @@ import {
   type ViewUpdate,
 } from '@codemirror/view';
 import { Notice } from 'obsidian';
+
 import type { EditorHelper } from '@/editor/index';
 import { type Processor, type ProcessorKind, RenderingEngine } from '@/libs/processor';
 import { extarctCMMath } from '@/libs/typst';
@@ -23,6 +24,7 @@ import {
   SyntaxMode,
   type SyntaxNode,
 } from '@/utils/crates/typst-syntax';
+
 import { editorHelperFacet } from './Helper';
 
 export interface ParsedRegion {
@@ -34,8 +36,9 @@ export interface ParsedRegion {
   kind: ProcessorKind;
   processor?: Processor;
   tree?: SyntaxNode;
-  syntaxMode?: SyntaxMode | null; // null: Shebang, LineComment, BlockComment, Str, Raw, Link, Label
+  syntaxMode?: SyntaxMode | null;
   syntaxKind?: SyntaxKind | null;
+  defaultMode: SyntaxMode;
 }
 
 const INLINE_MATH_BEGIN = 'formatting_formatting-math_formatting-math-begin_keyword_math';
@@ -121,9 +124,7 @@ export const collectRegions = (view: EditorView, from?: number, to?: number): Ty
   return rawRegions;
 };
 
-const FOUND = Symbol('found');
-
-const findRegionContaining = (view: EditorView, cursor: number): TypstRegion | null => {
+function findRegionContaining(view: EditorView, cursor: number): TypstRegion | null {
   const tree = syntaxTree(view.state);
   const { from, to } = view.viewport;
 
@@ -134,68 +135,66 @@ const findRegionContaining = (view: EditorView, cursor: number): TypstRegion | n
   let result: TypstRegion | null = null;
   let index = 0;
 
-  try {
-    tree.iterate({
-      from,
-      to,
-      enter: (node) => {
-        switch (node.name) {
-          case INLINE_MATH_BEGIN:
-            mathStart = node.to;
-            isDisplayMath = false;
-            break;
-          case DISPLAY_MATH_BEGIN:
-            mathStart = node.to;
-            isDisplayMath = true;
-            break;
-          case MATH_END: {
-            if (mathStart === null) break;
-            const innerFrom = mathStart;
-            const innerTo = node.from;
-            const kind: ProcessorKind = !isDisplayMath ? 'inline' : 'display';
+  tree.iterate({
+    from,
+    to,
+    enter: (node) => {
+      if (result !== null) return false;
 
-            if (innerFrom <= innerTo) {
-              if (innerFrom <= cursor && cursor <= innerTo) {
-                result = { from: innerFrom, to: innerTo, kind, index };
-                throw FOUND;
-              }
-              if (innerFrom > cursor) throw FOUND;
-              index++;
-            }
-            mathStart = null;
-            break;
-          }
-          case CODEBLOCK_BEGIN: {
-            codeBlockStart = node.to;
-            codeBlockLang = view.state.sliceDoc(node.from + 3, codeBlockStart).trim();
-            break;
-          }
-          case CODEBLOCK_END: {
-            if (codeBlockStart === null) break;
-            const codeBlockEnd = node.from - 1;
+      switch (node.name) {
+        case INLINE_MATH_BEGIN:
+          mathStart = node.to;
+          isDisplayMath = false;
+          break;
+        case DISPLAY_MATH_BEGIN:
+          mathStart = node.to;
+          isDisplayMath = true;
+          break;
+        case MATH_END: {
+          if (mathStart === null) break;
+          const innerFrom = mathStart;
+          const innerTo = node.from;
+          const kind: ProcessorKind = !isDisplayMath ? 'inline' : 'display';
 
-            if (codeBlockStart < codeBlockEnd) {
-              const regionFrom = codeBlockStart + 1;
-              if (regionFrom <= cursor && cursor <= codeBlockEnd) {
-                result = { index, from: regionFrom, to: codeBlockEnd, kind: 'codeblock', lang: codeBlockLang };
-                throw FOUND;
-              }
-              if (regionFrom > cursor) throw FOUND;
-              index++;
+          if (innerFrom <= innerTo) {
+            if (innerFrom <= cursor && cursor <= innerTo) {
+              result = { from: innerFrom, to: innerTo, kind, index };
+              return false;
             }
-            codeBlockStart = null;
-            break;
+            if (innerFrom > cursor) return false;
+            index++;
           }
+          mathStart = null;
+          break;
         }
-        return true;
-      },
-    });
-  } catch (e) {
-    if (e !== FOUND) throw e;
-  }
+        case CODEBLOCK_BEGIN: {
+          codeBlockStart = node.to;
+          codeBlockLang = view.state.sliceDoc(node.from + 3, codeBlockStart).trim();
+          break;
+        }
+        case CODEBLOCK_END: {
+          if (codeBlockStart === null) break;
+          const codeBlockEnd = node.from - 1;
+
+          if (codeBlockStart < codeBlockEnd) {
+            const regionFrom = codeBlockStart + 1;
+            if (regionFrom <= cursor && cursor <= codeBlockEnd) {
+              result = { index, from: regionFrom, to: codeBlockEnd, kind: 'codeblock', lang: codeBlockLang };
+              return false;
+            }
+            if (regionFrom > cursor) return false;
+            index++;
+          }
+          codeBlockStart = null;
+          break;
+        }
+      }
+      return true;
+    },
+  });
 
   return result;
-};
+}
 
 const parseRegion = (view: EditorView, helper: EditorHelper, region: TypstRegion): ParsedRegion | null => {
   if (region.kind === 'codeblock') {
@@ -225,6 +224,7 @@ const parseRegion = (view: EditorView, helper: EditorHelper, region: TypstRegion
       tree,
       syntaxMode: undefined,
       syntaxKind: undefined,
+      defaultMode: processor.syntaxMode ?? SyntaxMode.Markup,
     };
   }
 
@@ -235,7 +235,7 @@ const parseRegion = (view: EditorView, helper: EditorHelper, region: TypstRegion
 
   if (region.from + eqStart > region.to) return null;
 
-  const skipEnd = isDisplay ? eqEnd : eqEnd; // adjust if needed
+  const skipEnd = isDisplay ? eqEnd : eqEnd;
   const innerText = view.state.sliceDoc(region.from + eqStart, region.to - skipEnd);
 
   let tree: SyntaxNode | undefined;
@@ -261,6 +261,7 @@ const parseRegion = (view: EditorView, helper: EditorHelper, region: TypstRegion
     tree,
     syntaxMode: undefined,
     syntaxKind: undefined,
+    defaultMode: processor.syntaxMode ?? SyntaxMode.Math,
   };
 };
 
@@ -370,6 +371,7 @@ export class TypstTextCorePluginValue implements PluginValue {
     kind: 'codeblock',
     syntaxMode: undefined,
     syntaxKind: undefined,
+    defaultMode: SyntaxMode.Markup,
   };
 
   constructor(view: EditorView) {
@@ -378,36 +380,40 @@ export class TypstTextCorePluginValue implements PluginValue {
   }
 
   update(update: ViewUpdate) {
-    if (update.docChanged) {
-      this.activeRegion.to = update.state.doc.length;
+    if (!update.docChanged) return;
 
-      let changesCount = 0;
-      let lastChange: any = null;
-      update.changes.iterChanges((fromA, toA, fromB, toB, inserted) => {
-        changesCount++;
-        lastChange = { fromA, toA, fromB, toB, inserted: inserted.toString() };
-      });
+    this.activeRegion.to = update.state.doc.length;
 
-      if (changesCount === 1 && this.activeRegion.tree) {
-        try {
-          this.activeRegion.tree = reparse(
-            this.activeRegion.tree,
-            update.state.doc.toString(),
-            { start: lastChange.fromA, end: lastChange.toA },
-            lastChange.inserted.length,
-          );
-        } catch (e) {
-          new Notice(String(e));
-          this.activeRegion.tree = parse(update.state.doc.toString());
-        }
-      } else {
+    let changesCount = 0;
+    let changeFromA = 0;
+    let changeToA = 0;
+    let changeInsertedLen = 0;
+
+    update.changes.iterChanges((fromA, toA, _fromB, _toB, inserted) => {
+      changesCount++;
+      changeFromA = fromA;
+      changeToA = toA;
+      changeInsertedLen = inserted.length;
+    });
+
+    if (changesCount === 1 && this.activeRegion.tree) {
+      try {
+        this.activeRegion.tree = reparse(
+          this.activeRegion.tree,
+          update.state.doc.toString(),
+          { start: changeFromA, end: changeToA },
+          changeInsertedLen,
+        );
+      } catch (e) {
+        console.warn('TypstMate: Reparse failed, falling back to full parse.', e);
         this.activeRegion.tree = parse(update.state.doc.toString());
       }
-      const cursor = update.state.selection.main.head;
-      const { syntaxMode, syntaxKind } = getModeAndKind(this.activeRegion, cursor);
-      this.activeRegion.syntaxMode = syntaxMode;
-      this.activeRegion.syntaxKind = syntaxKind;
-    }
+    } else this.activeRegion.tree = parse(update.state.doc.toString());
+
+    const cursor = update.state.selection.main.head;
+    const { syntaxMode, syntaxKind } = getModeAndKind(this.activeRegion, cursor);
+    this.activeRegion.syntaxMode = syntaxMode;
+    this.activeRegion.syntaxKind = syntaxKind;
   }
 }
 
@@ -445,23 +451,28 @@ export function typstSyntaxHighlighting() {
   return ViewPlugin.fromClass(
     class {
       decorations: DecorationSet;
+      private lastRegionIndex: number | null = null;
 
       constructor(view: EditorView) {
         this.decorations = this.buildDecorations(view);
       }
 
       update(update: ViewUpdate) {
-        if (update.docChanged || update.selectionSet || update.viewportChanged) {
-          this.decorations = this.buildDecorations(update.view);
+        const region = getActiveRegion(update.view);
+        const regionChanged = region?.index !== this.lastRegionIndex;
+
+        if (update.docChanged || update.viewportChanged || regionChanged) {
+          this.decorations = this.buildDecorations(update.view, region);
+          this.lastRegionIndex = region?.index ?? null;
         }
       }
 
-      buildDecorations(view: EditorView): DecorationSet {
-        const region = getActiveRegion(view);
-        if (!region || !region.tree) return Decoration.none;
+      buildDecorations(view: EditorView, region?: ParsedRegion | null): DecorationSet {
+        const targetRegion = region ?? getActiveRegion(view);
+        if (!targetRegion || !targetRegion.tree) return Decoration.none;
 
-        const tree = region.tree;
-        const offset = region.kind === 'codeblock' ? region.from : region.from + region.skip;
+        const tree = targetRegion.tree;
+        const offset = targetRegion.kind === 'codeblock' ? targetRegion.from : targetRegion.from + targetRegion.skip;
 
         const marks: { from: number; to: number; class: string }[] = [];
         const traverse = (node: LinkedNode) => {
@@ -492,9 +503,10 @@ export function getModeAndKind(
   region: ParsedRegion | null,
   pos: number,
 ): { syntaxMode: SyntaxMode | null; syntaxKind: SyntaxKind | null } {
-  let syntaxMode: SyntaxMode | null = SyntaxMode.Markup;
-  let syntaxKind: SyntaxKind | null = SyntaxKind.None;
-  if (!region || !region.tree) return { syntaxMode, syntaxKind };
+  if (!region || !region.tree) return { syntaxMode: null, syntaxKind: null };
+
+  let syntaxMode: SyntaxMode | null = region.defaultMode;
+  console.log(SyntaxMode[syntaxMode]);
 
   const offset = region.kind === 'codeblock' ? region.from : region.from + region.skip;
   const relativePos = pos - offset;
@@ -502,47 +514,55 @@ export function getModeAndKind(
   const linkedNode = LinkedNode.new(region.tree);
   const leftNode = linkedNode.leafAt(relativePos, Side.Before);
   const rightNode = linkedNode.leafAt(relativePos, Side.After);
-  syntaxKind = rightNode?.kind() ?? SyntaxKind.End;
+  const syntaxKindLeft = leftNode?.kind() ?? SyntaxKind.None;
+  const syntaxKindRight = rightNode?.kind() ?? SyntaxKind.End;
 
-  const leftMode = getMode(leftNode);
-  const rightMode = getMode(rightNode);
+  const leftMode = getMode(leftNode) ?? region.defaultMode;
+  const rightMode = getMode(rightNode) ?? region.defaultMode;
 
   // 両側が同じ
   if (leftMode === rightMode) syntaxMode = leftMode;
-  // 右側が改行
-  else if ((syntaxKind === SyntaxKind.Space || syntaxKind === SyntaxKind.Parbreak) && leftMode !== SyntaxMode.Math)
-    syntaxMode = leftMode;
-  // 右側がCode
-  else if (leftMode !== SyntaxMode.Code && rightMode === SyntaxMode.Code) syntaxMode = SyntaxMode.Code;
-  // 左側がMath
-  else if (leftMode === SyntaxMode.Math) syntaxMode = rightMode;
+  // 左側が 行コメント または エスケープ
+  else if (syntaxKindLeft === SyntaxKind.LineComment || syntaxKindLeft === SyntaxKind.Escape)
+    syntaxMode = SyntaxMode.Opaque;
+  // 右側が コードモード
+  else if (rightMode === SyntaxMode.Code) syntaxMode = SyntaxMode.Code;
+  // 左側が閉じられている
+  else if (SyntaxKind.isTerminator(syntaxKindLeft) || syntaxKindLeft === SyntaxKind.Dollar) syntaxMode = rightMode;
   else syntaxMode = leftMode;
 
-  return { syntaxMode, syntaxKind };
+  return { syntaxMode, syntaxKind: syntaxKindRight };
 }
 
 function getMode(node?: LinkedNode): SyntaxMode | null {
   while (node) {
     const k = node.kind();
 
-    if (isOpaqueKind(k)) return null;
+    if (isOpaqueKind(k)) return SyntaxMode.Opaque;
     if (k === SyntaxKind.Equation || k === SyntaxKind.Math) return SyntaxMode.Math;
-    if (SyntaxKind.Code <= k) return SyntaxMode.Code;
     if (k === SyntaxKind.ContentBlock || k === SyntaxKind.Markup) return SyntaxMode.Markup;
+    if (
+      (SyntaxKind.Code <= k && k <= SyntaxKind.Numeric) ||
+      (SyntaxKind.Parenthesized <= k && k <= SyntaxKind.Binary) ||
+      SyntaxKind.LetBinding <= k
+    )
+      return SyntaxMode.Code;
 
     node = node.parent;
   }
 
-  return null;
+  return null; // デフォルト
 }
 
 function isOpaqueKind(k: SyntaxKind) {
   return (
-    k === SyntaxKind.Shebang ||
-    k === SyntaxKind.LineComment ||
-    k === SyntaxKind.BlockComment ||
-    k === SyntaxKind.Str ||
-    k === SyntaxKind.Raw ||
-    k === SyntaxKind.Label
+    k === SyntaxKind.Shebang || // #! ...
+    k === SyntaxKind.LineComment || // // ...
+    k === SyntaxKind.BlockComment || // /* ... */
+    k === SyntaxKind.Raw || // raw
+    k === SyntaxKind.Link || // [url](url)
+    k === SyntaxKind.Ref || // @target
+    k === SyntaxKind.Label || // <label></label>
+    k === SyntaxKind.Str // "..."
   );
 }

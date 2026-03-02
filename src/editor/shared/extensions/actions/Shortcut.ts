@@ -1,18 +1,22 @@
-import { EditorView, ViewPlugin, type ViewUpdate } from '@codemirror/view';
+import { type EditorView, ViewPlugin, type ViewUpdate } from '@codemirror/view';
+
 import SHORTCUTS_DATA from '@/data/shortcuts.json';
+// import { editorHelperFacet } from '../core/Helper';
 import { getActiveRegion } from '../core/TypstMate';
 
 const SHORTCUTS_KEYS = Object.keys(SHORTCUTS_DATA);
 const SHORTCUT_DELAY = 250;
 
 class ShortcutPluginValue {
-  timeoutId?: number;
-  pendingKey?: string;
-  savedSelection?: { anchor: number; head: number; content: string };
+  private timeoutId?: number;
+  private pendingKey?: string;
+  private savedSelection?: { anchor: number; head: number; content: string };
 
   constructor(public view: EditorView) {}
 
-  update(_update: ViewUpdate) {}
+  update(update: ViewUpdate) {
+    if (update.docChanged && this.timeoutId) this.clearTimeout();
+  }
 
   destroy() {
     this.clearTimeout();
@@ -28,22 +32,21 @@ class ShortcutPluginValue {
   }
 
   handleKeyDown(e: KeyboardEvent): boolean {
-    const region = getActiveRegion(this.view);
-    if (!region) return false;
-
     const { key, repeat, ctrlKey, metaKey, altKey } = e;
-    const selection = this.view.state.selection.main;
 
+    const selection = this.view.state.selection.main;
     if (!SHORTCUTS_KEYS.includes(key) || ctrlKey || metaKey || altKey || selection.empty) {
       this.clearTimeout();
       return false;
     }
 
-    e.preventDefault();
+    const region = getActiveRegion(this.view);
+    if (!region) return false;
 
     if (repeat && this.timeoutId) return true;
 
     this.startShortcutTimeout(key, selection);
+    e.preventDefault();
     return true;
   }
 
@@ -57,12 +60,13 @@ class ShortcutPluginValue {
       return;
     }
 
-    const start = Math.min(this.savedSelection.anchor, this.savedSelection.head);
-    const end = Math.max(this.savedSelection.anchor, this.savedSelection.head);
+    const { anchor, head } = this.savedSelection;
+    const from = Math.min(anchor, head);
+    const to = Math.max(anchor, head);
 
     this.view.dispatch({
-      changes: { from: start, to: end, insert: this.pendingKey },
-      selection: { anchor: start + this.pendingKey.length },
+      changes: { from, to, insert: this.pendingKey },
+      selection: { anchor: from + this.pendingKey.length },
     });
 
     this.clearTimeout();
@@ -78,6 +82,7 @@ class ShortcutPluginValue {
       content: this.view.state.sliceDoc(selection.from, selection.to),
     };
 
+    // TODO: const helper = this.view.state.facet(editorHelperFacet);
     this.timeoutId = window.setTimeout(() => {
       this.executeShortcut(key);
       this.clearTimeout();
@@ -91,24 +96,30 @@ class ShortcutPluginValue {
     if (!data) return;
 
     const insertContent = data.content.replaceAll('$1', this.savedSelection.content);
-    const insertStart = Math.min(this.savedSelection.anchor, this.savedSelection.head);
-    const insertEnd = Math.max(this.savedSelection.anchor, this.savedSelection.head);
-    const newPosition = insertStart + insertContent.length;
+    const from = Math.min(this.savedSelection.anchor, this.savedSelection.head);
+    const to = Math.max(this.savedSelection.anchor, this.savedSelection.head);
 
     this.view.dispatch({
-      changes: { from: insertStart, to: insertEnd, insert: insertContent },
-      selection: { anchor: data.offset ? newPosition + data.offset : newPosition },
+      changes: { from, to, insert: insertContent },
+      selection: {
+        anchor: data.offset !== undefined ? from + data.offset : from + insertContent.length,
+      },
+      userEvent: 'input.shortcut',
+      scrollIntoView: true,
     });
   }
 }
 
-export const shortcutPlugin = ViewPlugin.fromClass(ShortcutPluginValue);
-
-export const shortcutExtension = [
-  shortcutPlugin,
-  EditorView.domEventHandlers({
-    keydown: (e, view) => view.plugin(shortcutPlugin)?.handleKeyDown(e) ?? false,
-    keyup: (e, view) => view.plugin(shortcutPlugin)?.handleKeyUp(e),
-    mousedown: (_e, view) => view.plugin(shortcutPlugin)?.clearTimeout(),
-  }),
-];
+export const shortcutExtension = ViewPlugin.fromClass(ShortcutPluginValue, {
+  eventHandlers: {
+    keydown(e) {
+      return this.handleKeyDown(e);
+    },
+    keyup(e) {
+      this.handleKeyUp(e);
+    },
+    mousedown() {
+      this.clearTimeout();
+    },
+  },
+});

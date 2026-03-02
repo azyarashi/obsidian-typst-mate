@@ -3,8 +3,8 @@ import { EditorView } from '@codemirror/view';
 
 import { debounce, TextFileView, type TFile, type WorkspaceLeaf } from 'obsidian';
 import { updateDiagnosticEffect } from '@/editor/shared/extensions/decorations/Diagnostic';
+import { buildTypstTextExtensions } from '@/editor/typst/build';
 import type ObsidianTypstMate from '@/main';
-import { buildTypstTextExtensions } from '../../../editor/typst/extensions/build';
 import { TypstPDFView } from '../typst-pdf/typstPDF';
 
 export class TypstTextView extends TextFileView {
@@ -97,21 +97,20 @@ export class TypstTextView extends TextFileView {
       const result = await this.plugin.typst.pdf(this.file.basename, content);
 
       updateDiagnosticEffect(this.view, {
-        // @ts-expect-error
-        diags: result.diags,
+        diagnostics: result.diags,
         noDiag: false,
+        offset: 0,
       });
       if (this.linkedPDFLeaf) {
         const pdfView = this.linkedPDFLeaf.view;
-        if (pdfView instanceof TypstPDFView) {
-          await pdfView.updatePDF(result.pdf);
-        }
+        if (pdfView instanceof TypstPDFView) await pdfView.updatePDF(result.pdf);
       }
     } catch (e: any) {
       const diags = Array.isArray(e) ? e : [];
       updateDiagnosticEffect(this.view, {
-        diags,
+        diagnostics: diags,
         noDiag: false,
+        offset: 0,
       });
     }
   }

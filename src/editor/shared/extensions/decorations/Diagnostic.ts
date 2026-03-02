@@ -3,41 +3,31 @@ import { StateEffect, StateField } from '@codemirror/state';
 import type { EditorView } from '@codemirror/view';
 import type { Processor } from '@/libs/processor';
 import { renderDiagnosticMessage } from '@/ui/elements/diagnostics';
-import { editorHelperFacet } from '../core/Helper';
 import { getActiveRegion } from '../core/TypstMate';
 
 interface TypstDiagnostic extends Diagnostic {
+  severity: 'error' | 'warning';
   hints: string[];
 }
 
 interface TypstMateResult {
-  diags: TypstDiagnostic[];
+  diagnostics: TypstDiagnostic[];
   processor?: Processor;
+  offset: number;
   noDiag: boolean;
 }
 
 function computeDiagnostics(view: EditorView, result: TypstMateResult): Diagnostic[] {
+  if (result.noDiag) return [];
+
   const region = getActiveRegion(view);
   if (!region) return [];
 
-  if (result.noDiag) return [];
-
-  const helper = view.state.facet(editorHelperFacet);
-  let offset: number;
-  if (result.processor) {
-    const { noPreamble, format } = result.processor;
-    offset =
-      region.from +
-      region.skip -
-      format.indexOf('{CODE}') -
-      (noPreamble ? 0 : helper.plugin.settings.preamble.length + 1) -
-      helper.plugin.typstManager.preamble.length -
-      1;
-  } else offset = 0;
+  const offset = region.from + region.skip + result.offset;
 
   const docLength = view.state.doc.length;
 
-  const mapped = result.diags
+  const mapped = result.diagnostics
     .map((diag) => {
       let from = Math.max(region.from, Math.min(diag.from + offset, docLength));
       let to = Math.max(region.from, Math.min(diag.to + offset, docLength));
@@ -62,7 +52,7 @@ function computeDiagnostics(view: EditorView, result: TypstMateResult): Diagnost
         severity: diag.severity,
         renderMessage: () =>
           renderDiagnosticMessage({
-            severity: diag.severity as 'error' | 'warning' | 'info' | 'hint',
+            severity: diag.severity,
             message: diag.message,
             hints: diag.hints,
           }),
