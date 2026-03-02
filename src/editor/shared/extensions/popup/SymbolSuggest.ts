@@ -64,7 +64,6 @@ class SymbolSuggestPlugin implements PluginValue {
     const match = textBefore.match(symbolRegex);
 
     if (!match || !match.groups?.symbol) {
-      console.log(4);
       this.hide();
       return;
     }
