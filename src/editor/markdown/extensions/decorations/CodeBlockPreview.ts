@@ -94,9 +94,7 @@ class CodeblockPreviewPlugin implements PluginValue {
   private updateTimeout: number | null = null;
 
   update(update: ViewUpdate) {
-    if (!update.view.hasFocus) return;
-
-    if (update.docChanged || update.selectionSet) {
+    if (update.docChanged || update.selectionSet || update.focusChanged) {
       if (this.updateTimeout !== null) window.cancelAnimationFrame(this.updateTimeout);
 
       this.updateTimeout = window.requestAnimationFrame(() => {
