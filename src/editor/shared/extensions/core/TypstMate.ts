@@ -363,10 +363,20 @@ export class TypstMateCorePluginValue implements PluginValue {
         this.recompute(update.view);
       } else {
         let hasDelimiter = false;
-        update.changes.iterChanges((_fA, _tA, _fB, _tB, inserted) => {
+        update.changes.iterChanges((_fA, _tA, _fB, tB, inserted) => {
           if (hasDelimiter) return;
           const text = inserted.toString();
-          if (text.includes('$') || text.includes('`') || text.includes('~') || text.includes('\\'))
+          const textNext = update.view.state.sliceDoc(tB, tB + 1);
+          if (
+            text.includes('$') ||
+            text.includes('`') ||
+            text.includes('~') ||
+            text.includes('\\') ||
+            textNext.includes('$') ||
+            textNext.includes('`') ||
+            textNext.includes('~') ||
+            textNext.includes('\\')
+          )
             hasDelimiter = true;
         });
         if (hasDelimiter) this.recompute(update.view);
