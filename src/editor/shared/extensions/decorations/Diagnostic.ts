@@ -27,25 +27,23 @@ function computeDiagnostics(view: EditorView, result: TypstMateResult): Diagnost
 
   const docLength = view.state.doc.length;
 
-  const mapped = result.diagnostics
-    .map((diag) => {
-      const from = Math.max(region.from, Math.min(diag.from + offset, docLength));
-      const to = Math.max(region.from, Math.min(diag.to + offset, docLength));
+  const mapped = result.diagnostics.map((diag) => {
+    const from = Math.max(region.from, Math.min(diag.from + offset, docLength));
+    const to = Math.max(region.from, Math.min(diag.to + offset, docLength));
 
-      return {
-        from,
-        to,
-        message: diag.message || 'Error',
-        severity: diag.severity,
-        renderMessage: () =>
-          renderDiagnosticMessage({
-            severity: diag.severity,
-            message: diag.message,
-            hints: diag.hints,
-          }),
-      } as Diagnostic;
-    })
-    .filter((x) => x !== null) as Diagnostic[];
+    return {
+      from,
+      to,
+      message: diag.message || 'Error',
+      severity: diag.severity,
+      renderMessage: () =>
+        renderDiagnosticMessage({
+          severity: diag.severity,
+          message: diag.message,
+          hints: diag.hints,
+        }),
+    } as Diagnostic;
+  });
 
   const uniqueDiags: Diagnostic[] = [];
   const seenStr = new Set<string>();
