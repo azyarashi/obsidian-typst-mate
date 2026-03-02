@@ -49,15 +49,7 @@ export class ProcessorExtModal extends Modal {
             .appendCodeText('width: WIDTH')
             .appendText('. This can only be used when background rendering is enabled, and ')
             .appendBoldText('it may not work correctly with some plugin/export functions'),
-        )
-        .addToggle((toggle) => {
-          toggle.setValue(processor.fitToParentWidth ?? false);
-
-          toggle.onChange(() => {
-            processor.fitToParentWidth = !processor.fitToParentWidth;
-            plugin.saveSettings();
-          });
-        });
+        );
 
       new Setting(this.contentEl).setName('Fit to note width').addToggle((toggle) => {
         toggle.setValue(processor.fitToNoteWidth ?? false);
