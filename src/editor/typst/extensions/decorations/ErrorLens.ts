@@ -1,75 +1,92 @@
-import { RangeSetBuilder } from '@codemirror/state';
-import { Decoration, type DecorationSet, type EditorView, ViewPlugin, type ViewUpdate } from '@codemirror/view';
-
+import {
+  Decoration,
+  type DecorationSet,
+  type EditorView,
+  ViewPlugin,
+  type ViewUpdate,
+  WidgetType,
+} from '@codemirror/view';
 import { getActiveRegion } from '@/editor/shared/extensions/core/TypstMate';
 import { diagnosticsState } from '@/editor/shared/extensions/decorations/Diagnostic';
 
 import './ErrorLens.css';
 
-function computeErrorLens(view: EditorView): DecorationSet {
-  const builder = new RangeSetBuilder<Decoration>();
+class ErrorLensWidget extends WidgetType {
+  constructor(readonly diag: { message: string; severity: 'error' | 'warning'; hints: string[] }) {
+    super();
+  }
 
+  override eq(other: ErrorLensWidget) {
+    return this.diag.message === other.diag.message && this.diag.severity === other.diag.severity;
+  }
+
+  toDOM() {
+    const span = document.createElement('span');
+    span.className = `cm-error-lens-widget cm-error-lens-widget-${this.diag.severity}`;
+    span.textContent = this.diag.message;
+
+    let title = this.diag.message;
+    if (this.diag.hints?.length) title += `\n\nHints:\n${this.diag.hints.join('\n')}`;
+    span.title = title;
+
+    return span;
+  }
+}
+
+function computeErrorLens(view: EditorView): DecorationSet {
   const result = view.state.field(diagnosticsState, false);
-  if (!result || result.noDiag || !result.diagnostics || result.diagnostics.length === 0) return builder.finish();
+  if (!result || result.noDiag || !result.diagnostics || result.diagnostics.length === 0) {
+    return Decoration.none;
+  }
 
   const region = getActiveRegion(view);
-  if (!region) return builder.finish();
+  if (!region) return Decoration.none;
 
+  const docLength = view.state.doc.length;
   const lineDiagnostics = new Map<
     number,
-    { message: string; severity: 'error' | 'warning'; from: number; hints: string[] }
+    { message: string; severity: 'error' | 'warning'; hints: string[]; from: number; to: number }
   >();
-  const docLength = view.state.doc.length;
 
   for (const diag of result.diagnostics) {
     try {
       const from = Math.max(region.from, Math.min(diag.from, docLength));
       const line = view.state.doc.lineAt(from);
+
       if (line.text.trim() === '') continue;
 
-      if (!lineDiagnostics.has(line.number)) {
+      const existing = lineDiagnostics.get(line.number);
+      if (!existing) {
         lineDiagnostics.set(line.number, {
           message: diag.message,
           severity: diag.severity,
-          from: line.from,
           hints: diag.hints || [],
+          from: line.from,
+          to: line.to,
         });
-      } else {
-        const existing = lineDiagnostics.get(line.number);
-        if (existing?.severity !== 'error' && diag.severity === 'error') {
-          lineDiagnostics.set(line.number, {
-            message: diag.message,
-            severity: diag.severity,
-            from: line.from,
-            hints: diag.hints || [],
-          });
-        } else if (existing?.severity === diag.severity && diag.hints?.length) existing.hints.push(...diag.hints);
+      } else if (existing.severity !== 'error' && diag.severity === 'error') {
+        lineDiagnostics.set(line.number, { ...existing, message: diag.message, severity: diag.severity });
       }
     } catch {}
   }
 
-  const sortedLines = Array.from(lineDiagnostics.keys()).sort((a, b) => a - b);
-
-  for (const lineNo of sortedLines) {
-    const diag = lineDiagnostics.get(lineNo)!;
-    const line = view.state.doc.line(lineNo);
-    let title = diag.message;
-    if (diag.hints?.length) title += `\n\nHints:\n${diag.hints.join('\n')}`;
-
-    builder.add(
-      line.from,
-      line.from,
+  const decorations = [];
+  for (const diag of lineDiagnostics.values()) {
+    decorations.push(
       Decoration.line({
         class: `cm-error-lens-line cm-error-lens-line-${diag.severity}`,
-        attributes: {
-          'data-error-message': diag.message,
-          title: title,
-        },
-      }),
+      }).range(diag.from),
+    );
+
+    decorations.push(
+      Decoration.widget({
+        widget: new ErrorLensWidget(diag),
+        side: 1,
+      }).range(diag.to),
     );
   }
 
-  return builder.finish();
+  return Decoration.set(decorations, true);
 }
 
 export const errorLensExtension = ViewPlugin.fromClass(
@@ -83,9 +100,8 @@ export const errorLensExtension = ViewPlugin.fromClass(
     update(update: ViewUpdate) {
       const oldState = update.startState.field(diagnosticsState, false);
       const newState = update.state.field(diagnosticsState, false);
-      const diagnosticsChanged = oldState !== newState;
 
-      if (diagnosticsChanged) this.decorations = computeErrorLens(update.view);
+      if (oldState !== newState) this.decorations = computeErrorLens(update.view);
       else if (update.docChanged) this.decorations = this.decorations.map(update.changes);
       else if (update.viewportChanged || update.selectionSet) this.decorations = computeErrorLens(update.view);
     }
