@@ -12,7 +12,7 @@ import { typstMateCore, typstSyntaxHighlighting } from '../shared/extensions/cor
 import { diagnosticsState } from '../shared/extensions/decorations/Diagnostic';
 import { mathSymbolConcealExtension } from '../shared/extensions/decorations/MathSymbolConceal';
 import { PairHighlightExtension } from '../shared/extensions/decorations/PairHighlight';
-import { typstTheme } from '../shared/extensions/decorations/Theme';
+import { obsidianTheme, typstTheme } from '../shared/extensions/decorations/Theme';
 import { snippetSuggestExtension } from '../shared/extensions/popup/SnippetSuggest';
 import { symbolSuggestExtension } from '../shared/extensions/popup/SymbolSuggest';
 
@@ -44,7 +44,7 @@ export function buildExtension(editorHelper: EditorHelper) {
     // Syntax Highlighting
     typstSyntaxHighlighting(),
 
-    typstTheme,
+    editorHelper.plugin.settings.useObsidianTheme ? obsidianTheme : typstTheme,
     debuggerExtension,
   ];
 

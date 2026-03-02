@@ -120,6 +120,18 @@ function addMathDecorationSettings(plugin: ObsidianTypstMate, containerEl: HTMLE
         plugin.reload(true);
       });
     });
+
+  new Setting(containerEl)
+    .setName('Use Obsidian Theme')
+    .setDesc('Use Obsidian theme instead of Typst theme. Reload required.')
+    .addToggle((toggle) => {
+      toggle.setValue(plugin.settings.useObsidianTheme ?? DEFAULT_SETTINGS.useObsidianTheme!);
+      toggle.onChange((value) => {
+        plugin.settings.useObsidianTheme = value;
+        plugin.saveSettings();
+        plugin.reload(true);
+      });
+    });
 }
 
 function addPopupSettings(plugin: ObsidianTypstMate, containerEl: HTMLElement) {

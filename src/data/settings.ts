@@ -23,6 +23,7 @@ export interface Settings {
   mathSymbolRevealDelay: number;
   complementSymbolWithUnicode: boolean;
   disableBracketHighlight: boolean;
+  useObsidianTheme: boolean;
 
   // 表示
   enableInlinePreview: boolean;
@@ -81,6 +82,7 @@ export const DEFAULT_SETTINGS: Settings = {
   mathSymbolRevealDelay: 1000,
   complementSymbolWithUnicode: false,
   disableBracketHighlight: false,
+  useObsidianTheme: false,
 
   // 表示
   enableInlinePreview: true,

@@ -14,7 +14,7 @@ import { typstSyntaxHighlighting, typstTextCore } from '@/editor/shared/extensio
 import { diagnosticsState } from '@/editor/shared/extensions/decorations/Diagnostic';
 import { mathSymbolConcealExtension } from '@/editor/shared/extensions/decorations/MathSymbolConceal';
 import { PairHighlightExtension } from '@/editor/shared/extensions/decorations/PairHighlight';
-import { typstTheme } from '@/editor/shared/extensions/decorations/Theme';
+import { obsidianTheme, typstTheme } from '@/editor/shared/extensions/decorations/Theme';
 import { snippetSuggestExtension } from '@/editor/shared/extensions/popup/SnippetSuggest';
 import { symbolSuggestExtension } from '@/editor/shared/extensions/popup/SymbolSuggest';
 import { errorLensExtension } from '@/editor/typst/extensions/decorations/ErrorLens';
@@ -65,7 +65,7 @@ export function buildTypstTextExtensions(editorHelper: EditorHelper) {
     lineNumbers(),
     highlightActiveLineGutter(),
     highlightActiveLine(),
-    typstTheme,
+    editorHelper.plugin.settings.useObsidianTheme ? obsidianTheme : typstTheme,
     typstTextViewTheme,
     statusBarExtension,
   ];
