@@ -167,6 +167,8 @@ export class TypstTextView extends TextFileView {
     this.view = new EditorView({ parent: this.contentEl, state: startState });
     this.view.dom.style.height = '100%';
     this.view.dom.style.stroke = 'none';
+
+    this.compileAndUpdate(fileContent);
   }
 
   override async onClose(): Promise<void> {
