@@ -12,5 +12,7 @@ export const typstTextViewTheme = EditorView.theme({
     fontVariant: 'tabular-nums',
   },
   '.cm-lineNumbers .cm-gutterElement': { color: 'var(--text-faint) !important' },
-  '': { caretColor: 'var(--text-normal) !important' },
+  '.cm-content': {
+    caretColor: 'var(--text-normal) !important',
+  },
 });
