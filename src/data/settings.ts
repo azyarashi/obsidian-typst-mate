@@ -9,6 +9,7 @@ import {
   InlineStyling,
   RenderingEngine,
 } from '@/libs/processor';
+import type { WidthProfile } from '@/libs/profile';
 import type { Snippet } from '@/libs/snippet';
 import { SyntaxMode } from '@/utils/crates/typst-syntax';
 
@@ -41,6 +42,8 @@ export interface Settings {
   autoBaseColor: boolean;
   baseColor: string;
   offset: number;
+  fitToNoteWidthProfile: string;
+  fitToNoteWidthProfiles: WidthProfile[];
 
   /* コンパイラ */
   skipPreparationWaiting: boolean;
@@ -100,6 +103,15 @@ export const DEFAULT_SETTINGS: Settings = {
   autoBaseColor: true,
   baseColor: '#000000',
   offset: 0.0,
+  fitToNoteWidthProfile: 'Live',
+  fitToNoteWidthProfiles: [
+    { name: 'A3', width: '700pt' },
+    { name: 'A4', width: '500pt' },
+    { name: 'A5', width: '350pt' },
+    { name: 'Legal', width: '516pt' },
+    { name: 'Letter', width: '516pt' },
+    { name: 'Tabloid', width: '690pt' },
+  ],
 
   /* コンパイラ */
   skipPreparationWaiting: false,

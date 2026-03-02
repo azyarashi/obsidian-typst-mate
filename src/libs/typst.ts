@@ -26,6 +26,7 @@ export default class TypstManager {
 
   preamble: string = '';
   tagFiles: Set<string> = new Set();
+  currentNoteWidth?: string;
 
   constructor(plugin: ObsidianTypstMate) {
     this.plugin = plugin;
@@ -34,6 +35,7 @@ export default class TypstManager {
   async init() {
     this.ready = false;
     this.plugin.updateCrashStatus(true);
+    this.updateNoteWidth();
 
     await this.plugin.typst.init(
       await this.plugin.app.vault.adapter.readBinary(this.plugin.wasmPath),
@@ -398,6 +400,18 @@ export default class TypstManager {
 
     if (view.getMode() === 'preview') view.previewMode.rerender(true);
     else view.leaf.rebuildView();
+  }
+
+  updateNoteWidth() {
+    const profileName = this.plugin.settings.fitToNoteWidthProfile;
+    if (profileName !== 'Live') {
+      const profile = this.plugin.settings.fitToNoteWidthProfiles.find((p) => p.name === profileName);
+      if (profile) {
+        this.currentNoteWidth = profile.width;
+        return;
+      }
+    }
+    this.currentNoteWidth = undefined;
   }
 }
 
