@@ -1,7 +1,7 @@
 import { EditorState } from '@codemirror/state';
 import { EditorView } from '@codemirror/view';
 
-import { debounce, TextFileView, type TFile, type WorkspaceLeaf } from 'obsidian';
+import { debounce, type Menu, type MenuItem, TextFileView, type TFile, type WorkspaceLeaf } from 'obsidian';
 import { updateDiagnosticEffect } from '@/editor/shared/extensions/decorations/Diagnostic';
 import { buildTypstTextExtensions } from '@/editor/typst/build';
 import type ObsidianTypstMate from '@/main';
@@ -64,6 +64,21 @@ export class TypstTextView extends TextFileView {
       });
       this.register(() => this.app.workspace.offref(detach));
     });
+  }
+
+  override onPaneMenu(menu: Menu, source: string) {
+    menu.addItem((item) => {
+      item.setTitle('Open with default app').onClick(async () => {
+        try {
+          if (!this.file) return;
+          this.app.openWithDefaultApp(this.file.path);
+        } catch (e) {
+          console.error('Open with default app failed:', e);
+        }
+      });
+    });
+
+    super.onPaneMenu(menu, source);
   }
 
   override async save(clear?: boolean): Promise<void> {

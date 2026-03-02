@@ -15,6 +15,7 @@ import {
   Plugin,
   renderMath,
   requestUrl,
+  type TFile,
   TFolder,
   type WorkspaceLeaf,
 } from 'obsidian';
@@ -442,14 +443,16 @@ export default class ObsidianTypstMate extends Plugin {
         menu.addItem((item) => {
           item.setTitle('New typst file').onClick(async () => {
             let i = 0;
+            let tfile: TFile;
             while (true) {
               const filename = `Untitled${i === 0 ? '' : ` ${i}`}.typ`;
               if (!(await this.app.vault.exists(`${file.path}/${filename}`))) {
-                this.app.vault.create(`${file.path}/${filename}`, '');
+                tfile = await this.app.vault.create(`${file.path}/${filename}`, '');
                 break;
               }
               i++;
             }
+            if (tfile) this.app.workspace.getLeaf(true).openFile(tfile);
           });
           // TODO: New typst file with template
           // TODO: 再起動時に削除
