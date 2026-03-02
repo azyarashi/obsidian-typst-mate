@@ -129,7 +129,6 @@ function addMathDecorationSettings(plugin: ObsidianTypstMate, containerEl: HTMLE
       toggle.onChange((value) => {
         plugin.settings.useObsidianTheme = value;
         plugin.saveSettings();
-        plugin.reload(true);
       });
     });
 }
