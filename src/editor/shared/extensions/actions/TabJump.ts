@@ -1,5 +1,5 @@
 import { Prec } from '@codemirror/state';
-import { EditorView } from '@codemirror/view';
+import { type EditorView, keymap } from '@codemirror/view';
 
 import type { EditorHelper } from '@/editor';
 import { editorHelperFacet } from '../core/Helper';
@@ -8,38 +8,55 @@ import { getActiveRegion, type ParsedRegion } from '../core/TypstMate';
 const cursorStr = '#CURSOR';
 
 export const tabJumpExtension = Prec.high(
-  EditorView.domEventHandlers({
-    keydown: (e, view) => {
-      if (e.key !== 'Tab') return false;
-
-      const helper = view.state.facet(editorHelperFacet);
-      if (helper.plugin.settings.revertTabToDefault) return false;
-
-      const region = getActiveRegion(view);
-      if (!region) return false;
-
-      e.preventDefault();
-      return jumpCursor(view, helper, region, e.shiftKey ? -1 : 1);
+  keymap.of([
+    {
+      key: 'Tab',
+      run: (view) => {
+        const helper = view.state.facet(editorHelperFacet);
+        if (helper.plugin.settings.revertTabToDefault) return false;
+        const region = getActiveRegion(view);
+        if (!region) return false;
+        return jumpCursor(view, helper, region, 1);
+      },
     },
-  }),
+    {
+      key: 'Shift-Tab',
+      run: (view) => {
+        const helper = view.state.facet(editorHelperFacet);
+        if (helper.plugin.settings.revertTabToDefault) return false;
+        const region = getActiveRegion(view);
+        if (!region) return false;
+        return jumpCursor(view, helper, region, -1);
+      },
+    },
+  ]),
 );
 
 export const tabJumpExtensionForTypstText = Prec.high(
-  EditorView.domEventHandlers({
-    keydown: (e, view) => {
-      if (e.key !== 'Tab') return false;
-
-      const helper = view.state.facet(editorHelperFacet);
-      if (helper.plugin.settings.revertTabToDefault) return false;
-
-      const region = getActiveRegion(view);
-      if (!region) return false;
-
-      e.preventDefault();
-      jumpCursor(view, helper, region, e.shiftKey ? -1 : 1, true);
-      return true;
+  keymap.of([
+    {
+      key: 'Tab',
+      run: (view) => {
+        const helper = view.state.facet(editorHelperFacet);
+        if (helper.plugin.settings.revertTabToDefault) return false;
+        const region = getActiveRegion(view);
+        if (!region) return false;
+        jumpCursor(view, helper, region, 1, true);
+        return true;
+      },
     },
-  }),
+    {
+      key: 'Shift-Tab',
+      run: (view) => {
+        const helper = view.state.facet(editorHelperFacet);
+        if (helper.plugin.settings.revertTabToDefault) return false;
+        const region = getActiveRegion(view);
+        if (!region) return false;
+        jumpCursor(view, helper, region, -1, true);
+        return true;
+      },
+    },
+  ]),
 );
 
 function jumpCursor(
@@ -58,12 +75,13 @@ function jumpCursor(
   const targetContent = direction === -1 ? content.slice(0, offset) : content.slice(offset);
 
   if (jumpToCursor(view, contentStart, offset, targetContent, direction)) return true;
-  if (onlyJumpToCursor) return false;
   if (
     helper.plugin.settings.jumpOutsideBracket &&
+    view.state.selection.ranges.length === 1 &&
     jumpOutsideBracket(view, contentStart, offset, targetContent, direction)
   )
     return true;
+  if (onlyJumpToCursor) return false;
   if (jumpOutsideTypstMath(view, contentStart, offset, targetContent, direction)) return true;
 
   return jumpOutsideRegion(view, helper, region, cursor, targetContent, direction);
