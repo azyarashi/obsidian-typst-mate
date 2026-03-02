@@ -267,6 +267,7 @@ const parseRegion = (view: EditorView, helper: EditorHelper, region: TypstRegion
 
 export class TypstMateCorePluginValue implements PluginValue {
   activeRegion: ParsedRegion | null = null;
+  prevCursor: number = 0;
 
   constructor(view: EditorView) {
     this.recompute(view);
@@ -341,10 +342,11 @@ export class TypstMateCorePluginValue implements PluginValue {
         });
         if (hasDelimiter) this.recompute(update.view);
       }
-    }
-
-    if (update.selectionSet) {
+    } else if (update.selectionSet) {
       const cursor = update.state.selection.main.head;
+      if (cursor === this.prevCursor) return;
+      this.prevCursor = cursor;
+
       if (this.activeRegion && this.activeRegion.from <= cursor && cursor <= this.activeRegion.to) {
         const { syntaxMode, syntaxKind } = getModeAndKind(this.activeRegion, cursor);
         this.activeRegion.syntaxMode = syntaxMode;
@@ -550,7 +552,7 @@ function getModeAndKind(
     syntaxMode = SyntaxMode.Opaque;
   // 右側が コードモード
   else if (rightMode === SyntaxMode.Code) syntaxMode = SyntaxMode.Code;
-  // 左側が閉じられている
+  // Code の後
   else if (SyntaxKind.isTerminator(syntaxKindLeft) || syntaxKindLeft === SyntaxKind.Dollar) syntaxMode = rightMode;
   else syntaxMode = leftMode;
 
