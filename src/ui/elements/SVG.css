@@ -1,13 +1,16 @@
-typstmate-svg g *:not([stroke]):not(:has(g)) {
-  stroke: transparent;
+typstmate-svg {
+  contain: content;
 }
 
-typstmate-svg g *:not([stroke-width]):not(:has(g)) {
-  stroke-width: 0.15em;
+.typst-text {
+  pointer-events: bounding-box;
+  cursor: pointer;
 }
 
-/* 各文字: typstmate-svg g *:not(:has(g)):hover { */
-
-typstmate-svg g:not(:has(g)):hover * {
+.typst-text:hover path,
+.typst-text:hover use,
+.typst-text:hover rect,
+.typst-text:hover polygon,
+.typst-text:hover circle {
   fill: var(--interactive-accent) !important;
 }
