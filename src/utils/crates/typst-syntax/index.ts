@@ -1,5 +1,4 @@
 /** biome-ignore-all assist/source/organizeImports: match original */
-/** biome-ignore-all lint/correctness/noUnusedImports: in development */
 
 export { FileId } from './file';
 export { CSSClass, highlight } from './highlight';
@@ -25,4 +24,5 @@ export enum SyntaxMode {
   Markup,
   Math,
   Code,
+  Opaque,
 }
