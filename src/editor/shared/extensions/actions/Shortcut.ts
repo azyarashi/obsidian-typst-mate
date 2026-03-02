@@ -1,6 +1,7 @@
 import { type EditorView, ViewPlugin, type ViewUpdate } from '@codemirror/view';
 
 import SHORTCUTS_DATA from '@/data/shortcuts.json';
+import { RenderingEngine } from '@/libs/processor';
 // import { editorHelperFacet } from '../core/Helper';
 import { getActiveRegion } from '../core/TypstMate';
 
@@ -42,6 +43,7 @@ class ShortcutPluginValue {
 
     const region = getActiveRegion(this.view);
     if (!region) return false;
+    if (region.processor && region.processor.renderingEngine === RenderingEngine.MathJax) return false;
 
     if (repeat && this.timeoutId) return true;
 

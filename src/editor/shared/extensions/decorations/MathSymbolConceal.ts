@@ -2,6 +2,7 @@ import { RangeSet, StateEffect } from '@codemirror/state';
 import { Decoration, type DecorationSet, EditorView, ViewPlugin, type ViewUpdate, WidgetType } from '@codemirror/view';
 
 import symbolData from '@/data/symbols.json';
+import { RenderingEngine } from '@/libs/processor';
 import { LinkedNode, SyntaxKind } from '@/utils/crates/typst-syntax';
 import { editorHelperFacet } from '../core/Helper';
 import { getActiveRegion } from '../core/TypstMate';
@@ -81,6 +82,13 @@ class MathSymbolConcealPlugin {
     const conceal = helper.plugin.settings.concealMathSymbols;
 
     if (!region || !region.tree || !conceal) {
+      this.decorations = Decoration.none;
+      this.clearTimer();
+      this.hoveredSymbolPos = -1;
+      this.forceRevealPos = -1;
+      return;
+    }
+    if (region.processor && region.processor.renderingEngine === RenderingEngine.MathJax) {
       this.decorations = Decoration.none;
       this.clearTimer();
       this.hoveredSymbolPos = -1;
