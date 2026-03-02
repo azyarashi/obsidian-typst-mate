@@ -322,6 +322,12 @@ export class TypstMateCorePluginValue implements PluginValue {
           }
 
           this.activeRegion = newRegion;
+
+          if (this.activeRegion) {
+            const { syntaxMode, syntaxKind } = getModeAndKind(this.activeRegion, cursor);
+            this.activeRegion.syntaxMode = syntaxMode;
+            this.activeRegion.syntaxKind = syntaxKind;
+          }
           return;
         }
         this.recompute(update.view);
@@ -330,9 +336,8 @@ export class TypstMateCorePluginValue implements PluginValue {
         update.changes.iterChanges((_fA, _tA, _fB, _tB, inserted) => {
           if (hasDelimiter) return;
           const text = inserted.toString();
-          if (text.includes('$') || text.includes('`') || text.includes('~') || text.includes('\\')) {
+          if (text.includes('$') || text.includes('`') || text.includes('~') || text.includes('\\'))
             hasDelimiter = true;
-          }
         });
         if (hasDelimiter) this.recompute(update.view);
       }
@@ -340,7 +345,12 @@ export class TypstMateCorePluginValue implements PluginValue {
 
     if (update.selectionSet) {
       const cursor = update.state.selection.main.head;
-      if (this.activeRegion && this.activeRegion.from <= cursor && cursor <= this.activeRegion.to) return;
+      if (this.activeRegion && this.activeRegion.from <= cursor && cursor <= this.activeRegion.to) {
+        const { syntaxMode, syntaxKind } = getModeAndKind(this.activeRegion, cursor);
+        this.activeRegion.syntaxMode = syntaxMode;
+        this.activeRegion.syntaxKind = syntaxKind;
+        return;
+      }
       this.recompute(update.view);
     }
   }
@@ -356,6 +366,12 @@ export class TypstMateCorePluginValue implements PluginValue {
       return;
     }
     this.activeRegion = parseRegion(view, helper, region);
+
+    if (this.activeRegion) {
+      const { syntaxMode, syntaxKind } = getModeAndKind(this.activeRegion, cursor);
+      this.activeRegion.syntaxMode = syntaxMode;
+      this.activeRegion.syntaxKind = syntaxKind;
+    }
   }
 }
 
@@ -380,7 +396,15 @@ export class TypstTextCorePluginValue implements PluginValue {
   }
 
   update(update: ViewUpdate) {
-    if (!update.docChanged) return;
+    if (!update.docChanged) {
+      if (update.selectionSet) {
+        const cursor = update.state.selection.main.head;
+        const { syntaxMode, syntaxKind } = getModeAndKind(this.activeRegion, cursor);
+        this.activeRegion.syntaxMode = syntaxMode;
+        this.activeRegion.syntaxKind = syntaxKind;
+      }
+      return;
+    }
 
     this.activeRegion.to = update.state.doc.length;
 
@@ -499,7 +523,7 @@ export function typstSyntaxHighlighting() {
   );
 }
 
-export function getModeAndKind(
+function getModeAndKind(
   region: ParsedRegion | null,
   pos: number,
 ): { syntaxMode: SyntaxMode | null; syntaxKind: SyntaxKind | null } {

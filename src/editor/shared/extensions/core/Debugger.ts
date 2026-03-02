@@ -4,7 +4,7 @@ import { type EditorView, type PluginValue, ViewPlugin, type ViewUpdate } from '
 import type { EditorHelper } from '@/editor';
 import { SyntaxKind, SyntaxMode } from '@/utils/crates/typst-syntax';
 import { editorHelperFacet } from './Helper';
-import { getActiveRegion, getModeAndKind } from './TypstMate';
+import { getActiveRegion } from './TypstMate';
 
 import './Debugger.css';
 
@@ -58,12 +58,12 @@ class DebugPlugin implements PluginValue {
         typstPos = (relativePos + offset).toString();
       }
 
-      const { syntaxMode, syntaxKind } = getModeAndKind(region, cursor);
+      const { syntaxMode, syntaxKind } = region;
 
       data.push(
         { title: 'Processor', description: `${region.kind}${region.processor?.id ? `(${region.processor.id})` : ''}` },
-        { title: 'Mode', description: syntaxMode !== null ? SyntaxMode[syntaxMode] : 'Opaque' },
-        { title: 'Kind', description: syntaxKind !== null ? SyntaxKind[syntaxKind] : 'End' },
+        { title: 'Mode', description: syntaxMode !== null ? SyntaxMode[syntaxMode!] : 'Opaque' },
+        { title: 'Kind', description: syntaxKind !== null ? SyntaxKind[syntaxKind!] : 'End' },
         { title: 'GlobalPos', description: cursor.toString() },
         { title: 'LocalPos', description: `${relativePos} (+${region.skip})` },
         { title: 'TypstPos', description: typstPos },
