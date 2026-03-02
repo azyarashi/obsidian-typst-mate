@@ -30,7 +30,7 @@ export interface InlineProcessor {
   styling: InlineStyling;
   disableSuggest?: boolean;
   noPreamble?: boolean;
-  fitToParentWidth?: boolean;
+  fitToNoteWidth?: boolean;
   syntaxMode?: SyntaxMode | null;
   useReplaceAll?: boolean;
 }
@@ -42,7 +42,7 @@ export interface DisplayProcessor {
   styling: DisplayStyling;
   disableSuggest?: boolean;
   noPreamble?: boolean;
-  fitToParentWidth?: boolean;
+  fitToNoteWidth?: boolean;
   syntaxMode?: SyntaxMode | null;
   useReplaceAll?: boolean;
 }
@@ -53,7 +53,7 @@ export interface CodeblockProcessor {
   styling: CodeblockStyling;
   disableSuggest?: boolean;
   noPreamble?: boolean;
-  fitToParentWidth?: boolean;
+  fitToNoteWidth?: boolean;
   syntaxMode?: SyntaxMode | null;
   useReplaceAll?: boolean;
 }
@@ -64,7 +64,7 @@ export interface ExcalidrawProcessor {
   styling: ExcalidrawStyling;
   disableSuggest?: boolean;
   noPreamble?: boolean;
-  fitToParentWidth?: boolean;
+  fitToNoteWidth?: boolean;
   syntaxMode?: SyntaxMode | null;
   useReplaceAll?: boolean;
 }
@@ -81,7 +81,7 @@ export const DefaultNewInlineProcessor: InlineProcessor = {
   styling: InlineStyling.Inline,
   disableSuggest: false,
   noPreamble: false,
-  fitToParentWidth: false,
+  fitToNoteWidth: false,
   syntaxMode: SyntaxMode.Math,
   useReplaceAll: false,
 };
@@ -92,7 +92,7 @@ export const DefaultNewDisplayProcessor: DisplayProcessor = {
   styling: DisplayStyling.BlockCenter,
   disableSuggest: false,
   noPreamble: false,
-  fitToParentWidth: false,
+  fitToNoteWidth: false,
   syntaxMode: SyntaxMode.Math,
   useReplaceAll: false,
 };
@@ -103,7 +103,7 @@ export const DefaultNewCodeblockProcessor: CodeblockProcessor = {
   styling: CodeblockStyling.BlockCenter,
   disableSuggest: false,
   noPreamble: false,
-  fitToParentWidth: false,
+  fitToNoteWidth: false,
   syntaxMode: SyntaxMode.Markup,
   useReplaceAll: false,
 };
@@ -114,7 +114,7 @@ export const DefaultNewExcalidrawProcessor: ExcalidrawProcessor = {
   styling: ExcalidrawStyling.Default,
   disableSuggest: false,
   noPreamble: false,
-  fitToParentWidth: false,
+  fitToNoteWidth: false,
   syntaxMode: SyntaxMode.Markup,
   useReplaceAll: false,
 };

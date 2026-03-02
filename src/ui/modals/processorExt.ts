@@ -33,30 +33,41 @@ export class ProcessorExtModal extends Modal {
       });
     });
 
-    // Width 自動調整
-    new Setting(this.contentEl)
-      .setName('Fit to parent width')
-      .setDesc(
-        new CustomFragment()
-          .appendText(
-            "Monitors changes in the parent element's size, adds a line at the beginning of the code declaring length: ",
-          )
-          .appendCodeText('WIDTH')
-          .appendText('and replaces ')
-          .appendCodeText('width: auto')
-          .appendText('with ')
-          .appendCodeText('width: WIDTH')
-          .appendText('. This can only be used when background rendering is enabled, and ')
-          .appendBoldText('it may not work correctly with some plugin/export functions'),
-      )
-      .addToggle((toggle) => {
-        toggle.setValue(processor.fitToParentWidth ?? false);
+    if (kind !== 'excalidraw') {
+      // Width 自動調整
+      new Setting(this.contentEl)
+        .setName('Fit to parent width')
+        .setDesc(
+          new CustomFragment()
+            .appendText(
+              "Monitors changes in the parent element's size, adds a line at the beginning of the code declaring length: ",
+            )
+            .appendCodeText('WIDTH')
+            .appendText('and replaces ')
+            .appendCodeText('width: auto')
+            .appendText('with ')
+            .appendCodeText('width: WIDTH')
+            .appendText('. This can only be used when background rendering is enabled, and ')
+            .appendBoldText('it may not work correctly with some plugin/export functions'),
+        )
+        .addToggle((toggle) => {
+          toggle.setValue(processor.fitToParentWidth ?? false);
+
+          toggle.onChange(() => {
+            processor.fitToParentWidth = !processor.fitToParentWidth;
+            plugin.saveSettings();
+          });
+        });
+
+      new Setting(this.contentEl).setName('Fit to note width').addToggle((toggle) => {
+        toggle.setValue(processor.fitToNoteWidth ?? false);
 
         toggle.onChange(() => {
-          processor.fitToParentWidth = !processor.fitToParentWidth;
+          processor.fitToNoteWidth = !processor.fitToNoteWidth;
           plugin.saveSettings();
         });
       });
+    }
 
     new Setting(this.contentEl)
       .setName('Syntax mode')

@@ -33,7 +33,6 @@ import { SettingTab } from './ui/settingstab';
 import { TypstPDFView } from './ui/views/typst-pdf/typstPDF';
 import { TypstTextView } from './ui/views/typst-text/typstText';
 import { TypstToolsView } from './ui/views/typst-tools/typstTools';
-import { Observer } from './utils/observer';
 import { zip } from './utils/packageCompressor';
 
 import './main.css';
@@ -54,7 +53,6 @@ export default class ObsidianTypstMate extends Plugin {
   typst!: $ | Remote<$>;
   worker?: Worker;
   typstManager!: TypstManager;
-  observer!: Observer;
 
   listeners: EventRef[] = [];
 
@@ -190,7 +188,6 @@ export default class ObsidianTypstMate extends Plugin {
   }
 
   private async prepareTypst() {
-    this.observer = new Observer();
     this.typstManager = new TypstManager(this);
     this.typstManager.registerOnce();
     await this.init().catch((err) => {
@@ -557,7 +554,6 @@ export default class ObsidianTypstMate extends Plugin {
     for (const temporaryEl of temporaryEls) temporaryEl.remove();
 
     // 監視を終了
-    this.observer.stopAll();
     this.listeners.forEach(this.app.workspace.offref.bind(this.app.workspace));
     // this.editorHelper.close();
 

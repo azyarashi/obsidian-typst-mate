@@ -66,6 +66,19 @@ export default abstract class TypstElement extends HTMLElement {
       this.plugin.typstManager.preamble.length -
       1;
 
+    if (this.processor.fitToNoteWidth) {
+      const view = this.plugin.app.workspace.getActiveViewOfType(MarkdownView);
+      const noteWidth =
+        ((view?.editor.editorComponent?.editorEl.find('.cm-content')?.clientWidth ??
+          parseInt(getComputedStyle(document.body).getPropertyValue('--line-width'), 10) ??
+          700) /
+          4) *
+        3;
+
+      formatted = `#let WIDTH = ${noteWidth}pt\n${formatted}`;
+      this.offset -= 16 + String(noteWidth).length;
+    }
+
     return formatted;
   }
 

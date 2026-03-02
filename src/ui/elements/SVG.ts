@@ -18,22 +18,7 @@ export default class TypstSVGElement extends TypstElement {
     });
 
     this.addEventListener('click', async (event) => {
-      if (this.kind !== 'codeblock') return; // TODO: 不安定
-
-      const svg = this.querySelector('svg');
-      if (!svg) return;
-
-      const rect = svg.getBoundingClientRect();
-      const x = (event.clientX - rect.left) / (rect.width / svg.viewBox.baseVal.width);
-      const y = (event.clientY - rect.top) / (rect.height / svg.viewBox.baseVal.height);
-
-      await this.plugin.typst.svg(this.format(), this.ndir, this.kind, this.id); // フレーム生成のための副作用
-      const result = await this.plugin.typst.jumpFromClick(x, y);
-      if (result) {
-        const view = this.plugin.app.workspace.getActiveFileView();
-        if (!(view instanceof MarkdownView)) return;
-        view.editor.cm.plugin(jumpFromClickPlugin)?.jumpTo(result, this);
-      }
+      await this.jump(event);
     });
   }
 
@@ -121,32 +106,11 @@ export default class TypstSVGElement extends TypstElement {
     try {
       const result = this.plugin.typst.svg(input, this.ndir, this.kind, this.id);
 
-      if (result instanceof Promise) {
-        if (this.kind !== 'inline' && this.processor.fitToParentWidth && !this.source.includes('<br>')) {
-          this.noDiag = true;
-          this.plugin.observer.register(
-            this,
-            (entry: ResizeObserverEntry) => {
-              const input =
-                `#let WIDTH = ${(entry.contentRect.width * 3) / 4}pt\n` +
-                this.format().replace('width: auto', 'width: WIDTH');
-
-              const result = this.plugin.typst.svg(input, this.ndir, this.kind, this.id) as Promise<SVGResult>;
-
-              result
-                .then((result: SVGResult) => this.postProcess(result))
-                .catch((err: Diagnostic[]) => {
-                  this.handleError(err);
-                });
-            },
-            300,
-          );
-        }
-
+      if (result instanceof Promise)
         result
           .then((result: SVGResult) => this.postProcess(result))
           .catch((err: Diagnostic[]) => this.handleError(err));
-      } else this.postProcess(result);
+      else this.postProcess(result);
     } catch (err) {
       this.handleError(err as Diagnostic[]);
     }
@@ -157,6 +121,25 @@ export default class TypstSVGElement extends TypstElement {
   override postProcess(result: SVGResult) {
     super.postProcess(result);
     this.innerHTML = result.svg;
+  }
+
+  async jump(event: MouseEvent) {
+    if (this.kind !== 'codeblock') return; // TODO: 不安定
+
+    const svg = this.querySelector('svg');
+    if (!svg) return;
+
+    const rect = svg.getBoundingClientRect();
+    const x = (event.clientX - rect.left) / (rect.width / svg.viewBox.baseVal.width);
+    const y = (event.clientY - rect.top) / (rect.height / svg.viewBox.baseVal.height);
+
+    await this.plugin.typst.svg(this.format(), this.ndir, this.kind, this.id); // フレーム生成のための副作用
+    const result = await this.plugin.typst.jumpFromClick(x, y);
+    if (result) {
+      const view = this.plugin.app.workspace.getActiveFileView();
+      if (!(view instanceof MarkdownView)) return;
+      view.editor.cm.plugin(jumpFromClickPlugin)?.jumpTo(result, this);
+    }
   }
 }
 

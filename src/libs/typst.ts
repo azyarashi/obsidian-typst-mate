@@ -1,4 +1,4 @@
-import { type CachedMetadata, getAllTags, MarkdownView, Notice } from 'obsidian';
+import { type CachedMetadata, getAllTags, MarkdownView, Notice, type TFile } from 'obsidian';
 
 import { DEFAULT_FONT_SIZE } from '@/constants';
 import { DEFAULT_SETTINGS, type Settings } from '@/data/settings';
@@ -6,12 +6,12 @@ import type ObsidianTypstMate from '@/main';
 import TypstSVGElement from '@/ui/elements/SVG';
 import { overwriteCustomElements } from '@/utils/custromElementRegistry';
 import { unzip, zip } from '@/utils/packageCompressor';
+import { expandHierarchicalTags } from '@/utils/tags';
 
 import type { Processor, ProcessorKind } from './processor';
 import type { PackageSpec } from './worker';
 
 import './typst.css';
-import { expandHierarchicalTags } from '@/utils/tags';
 
 const re = /\n([ \t]*> )/g;
 
@@ -25,7 +25,6 @@ export default class TypstManager {
   lastStateHash?: string;
 
   preamble: string = '';
-
   tagFiles: Set<string> = new Set();
 
   constructor(plugin: ObsidianTypstMate) {
