@@ -25,6 +25,7 @@ function computeErrorLens(view: EditorView): DecorationSet {
     try {
       const from = Math.max(region.from, Math.min(diag.from, docLength));
       const line = view.state.doc.lineAt(from);
+      if (line.text.trim() === '') continue;
 
       if (!lineDiagnostics.has(line.number)) {
         lineDiagnostics.set(line.number, {
@@ -80,15 +81,13 @@ export const errorLensExtension = ViewPlugin.fromClass(
     }
 
     update(update: ViewUpdate) {
-      let shouldUpdate = update.docChanged || update.viewportChanged || update.selectionSet;
+      const oldState = update.startState.field(diagnosticsState, false);
+      const newState = update.state.field(diagnosticsState, false);
+      const diagnosticsChanged = oldState !== newState;
 
-      if (!shouldUpdate) {
-        const oldState = update.startState.field(diagnosticsState, false);
-        const newState = update.state.field(diagnosticsState, false);
-        if (oldState !== newState) shouldUpdate = true;
-      }
-
-      if (shouldUpdate) this.decorations = computeErrorLens(update.view);
+      if (diagnosticsChanged) this.decorations = computeErrorLens(update.view);
+      else if (update.docChanged) this.decorations = this.decorations.map(update.changes);
+      else if (update.viewportChanged || update.selectionSet) this.decorations = computeErrorLens(update.view);
     }
   },
   {
