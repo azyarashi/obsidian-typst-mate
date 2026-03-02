@@ -1,7 +1,7 @@
 import { EditorState } from '@codemirror/state';
 import { EditorView } from '@codemirror/view';
 
-import { debounce, type Menu, type MenuItem, TextFileView, type TFile, type WorkspaceLeaf } from 'obsidian';
+import { debounce, type Menu, TextFileView, type TFile, type WorkspaceLeaf } from 'obsidian';
 import { updateDiagnosticEffect } from '@/editor/shared/extensions/decorations/Diagnostic';
 import { buildTypstTextExtensions } from '@/editor/typst/build';
 import type ObsidianTypstMate from '@/main';
