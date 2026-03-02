@@ -50,7 +50,7 @@ class InlinePreviewPlugin implements PluginValue {
           else this.hide();
         },
       });
-    } else this.hide();
+    }
   }
 
   render(pos: { x: number; y: number }, content: string) {
