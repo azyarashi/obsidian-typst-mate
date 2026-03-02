@@ -506,7 +506,6 @@ export function getModeAndKind(
   if (!region || !region.tree) return { syntaxMode: null, syntaxKind: null };
 
   let syntaxMode: SyntaxMode | null = region.defaultMode;
-  console.log(SyntaxMode[syntaxMode]);
 
   const offset = region.kind === 'codeblock' ? region.from : region.from + region.skip;
   const relativePos = pos - offset;
