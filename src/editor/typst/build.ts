@@ -3,7 +3,14 @@ import { history, historyKeymap, indentLess, indentMore, standardKeymap } from '
 import { lintGutter } from '@codemirror/lint';
 import { highlightSelectionMatches, search, searchKeymap } from '@codemirror/search';
 import { EditorState, type Extension } from '@codemirror/state';
-import { EditorView, highlightActiveLine, highlightActiveLineGutter, keymap, lineNumbers } from '@codemirror/view';
+import {
+  EditorView,
+  highlightActiveLine,
+  highlightActiveLineGutter,
+  highlightTrailingWhitespace,
+  keymap,
+  lineNumbers,
+} from '@codemirror/view';
 
 import type { EditorHelper } from '@/editor';
 import { jumpFromClickExtension } from '@/editor/shared/extensions/actions/JumpFromClick';
@@ -18,6 +25,7 @@ import { obsidianTheme, typstTheme } from '@/editor/shared/extensions/decoration
 import { snippetSuggestExtension } from '@/editor/shared/extensions/popup/SnippetSuggest';
 import { symbolSuggestExtension } from '@/editor/shared/extensions/popup/SymbolSuggest';
 import { errorLensExtension } from '@/editor/typst/extensions/decorations/ErrorLens';
+import { indentRainbowExtension } from '@/editor/typst/extensions/decorations/IndentRainbow';
 import { statusBarExtension } from '@/editor/typst/extensions/decorations/StatusBar';
 import { typstTextViewTheme } from '@/editor/typst/extensions/decorations/Theme';
 
@@ -61,6 +69,8 @@ export function buildTypstTextExtensions(editorHelper: EditorHelper) {
     PairHighlightExtension(),
 
     typstSyntaxHighlighting(),
+    highlightTrailingWhitespace(),
+    indentRainbowExtension,
 
     lineNumbers(),
     highlightActiveLineGutter(),

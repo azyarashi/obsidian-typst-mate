@@ -1,0 +1,57 @@
+.cm-indent-rainbow {
+  display: inline-block;
+  vertical-align: top;
+  position: relative;
+
+  padding-top: 0.5em;
+  margin-top: -0.5em;
+  padding-bottom: 0.5em;
+  margin-bottom: -0.5em;
+
+  padding-left: 0.25em;
+  margin-left: -0.25em;
+  padding-right: 0.25em;
+  margin-right: -0.25em;
+
+  clip-path: inset(0.5em 0.25em 0.5em 0.25em);
+
+  box-sizing: border-box;
+}
+
+.cm-indent-rainbow-0 {
+  background-color: hsla(0, 100%, 60%, 0.15);
+}
+.cm-indent-rainbow-1 {
+  background-color: hsla(45, 100%, 60%, 0.15);
+}
+.cm-indent-rainbow-2 {
+  background-color: hsla(90, 100%, 60%, 0.15);
+}
+.cm-indent-rainbow-3 {
+  background-color: hsla(135, 100%, 60%, 0.15);
+}
+.cm-indent-rainbow-4 {
+  background-color: hsla(180, 100%, 60%, 0.15);
+}
+.cm-indent-rainbow-5 {
+  background-color: hsla(225, 100%, 60%, 0.15);
+}
+
+.theme-dark .cm-indent-rainbow-0 {
+  background-color: hsla(0, 100%, 60%, 0.1);
+}
+.theme-dark .cm-indent-rainbow-1 {
+  background-color: hsla(45, 100%, 60%, 0.1);
+}
+.theme-dark .cm-indent-rainbow-2 {
+  background-color: hsla(90, 100%, 60%, 0.1);
+}
+.theme-dark .cm-indent-rainbow-3 {
+  background-color: hsla(135, 100%, 60%, 0.1);
+}
+.theme-dark .cm-indent-rainbow-4 {
+  background-color: hsla(180, 100%, 60%, 0.1);
+}
+.theme-dark .cm-indent-rainbow-5 {
+  background-color: hsla(225, 100%, 60%, 0.1);
+}
