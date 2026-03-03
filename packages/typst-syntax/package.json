@@ -1,7 +1,16 @@
 {
   "name": "@typstmate/typst-syntax",
-  "version": "0.14.2-0",
+  "version": "0.14.2-1",
   "description": "Typst syntax definitions and parser",
+  "keywords": [
+    "typst",
+    "typst-syntax",
+    "parser",
+    "syntax-highlighting",
+    "codemirror",
+    "codemirror-6",
+    "typescript"
+  ],
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
