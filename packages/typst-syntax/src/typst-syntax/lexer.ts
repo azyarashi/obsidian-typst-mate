@@ -1,12 +1,12 @@
 import { isAsciiAlphanumeric, isNumeric, isWhiteSpace } from '../std/char';
-import { isXidContinue, isXidStart } from '../unicode_ident';
+import { isXidContinue, isXidStart } from '../unicode-ident';
 import {
   isAlphaNumericRegexMatched,
   isHangulRegexMatched,
   isHanRegexMatched,
   isHiraganaRegexMatched,
   isKatakanaRegexMatched,
-} from '../unicode_script';
+} from '../unicode-script';
 import { Scanner } from '../unscanny';
 import { SyntaxMode } from '.';
 import { SyntaxKind } from './kind';
