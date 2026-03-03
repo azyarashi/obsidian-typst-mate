@@ -1,4 +1,4 @@
-import { MarkdownView } from 'obsidian';
+import { MarkdownPreviewView, MarkdownView } from 'obsidian';
 
 import type ObsidianTypstMate from '@/main';
 
@@ -15,16 +15,23 @@ export function getNoteWidth(plugin: ObsidianTypstMate): string {
 
   if (view) {
     const sizer = view?.editor.editorComponent?.sizerEl;
-    const divElP = view?.contentEl.find('div.el-p p');
-    const cmLine = sizer?.find('.cm-line');
-    const cmContent = sizer?.find('.cm-content');
-
     const sizerWidth = sizer?.clientWidth ? sizer.clientWidth : Infinity;
-    const pWidth = divElP?.clientWidth ? divElP.clientWidth : Infinity;
-    const lineWidth = cmLine?.clientWidth ? cmLine.clientWidth : Infinity;
-    const contentWidth = cmContent?.clientWidth ? cmContent?.clientWidth : Infinity;
 
-    width = Math.min(sizerWidth, pWidth, lineWidth, contentWidth);
+    const preview = view.previewMode;
+    if (preview) {
+      const divElP = view?.contentEl.find('div.el-p p');
+      const pWidth = divElP?.clientWidth ? divElP.clientWidth : Infinity;
+
+      width = Math.min(sizerWidth, pWidth);
+    } else {
+      const cmLine = sizer?.find('.cm-line');
+      const cmContent = sizer?.find('.cm-content');
+
+      const lineWidth = cmLine?.clientWidth ? cmLine.clientWidth : Infinity;
+      const contentWidth = cmContent?.clientWidth ? cmContent?.clientWidth : Infinity;
+
+      width = Math.min(sizerWidth, lineWidth, contentWidth);
+    }
   } else {
     // キャンバス とか Kanban とか
   }
