@@ -1,5 +1,5 @@
 // https://github.com/typst/unscanny/blob/v0.1/src/lib.rs
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it } from 'bun:test';
 import { Scanner } from './index';
 
 describe('Scanner', () => {

@@ -71,8 +71,5 @@ export default defineConfig(async ({ mode }) => {
         ],
       },
     },
-    test: {
-      include: ['src/**/*.test.ts'],
-    },
   } as UserConfig;
 });

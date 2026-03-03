@@ -1,7 +1,7 @@
 // https://github.com/typst/unicode-math-class/blob/main/src/lib.rs
 // Tests are based on the examples in the documentation of the original crate.
 
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it } from 'bun:test';
 import { MathClass } from './classes';
 import { class_ } from './index';
 

@@ -1,5 +1,5 @@
 // https://github.com/typst/typst/blob/main/crates/typst-syntax/src/set.rs
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it } from 'bun:test';
 import { SyntaxKind } from './kind';
 import { SyntaxSet } from './set';
 

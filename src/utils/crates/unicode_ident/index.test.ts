@@ -1,5 +1,5 @@
 // https://github.com/dtolnay/unicode-ident/blob/1.0.24/tests/compare.rs
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it } from 'bun:test';
 import { isXidContinue, isXidStart } from './index';
 
 describe('unicode_ident', () => {

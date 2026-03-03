@@ -1,5 +1,5 @@
 // https://github.com/typst/typst/blob/main/crates/typst-syntax/src/lines.rs
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it } from 'bun:test';
 import { Lines } from './lines';
 
 // "ä\tcde\nf💛g\r\nhi\rjkl"

@@ -1,5 +1,5 @@
 // https://doc.rust-lang.org/std/primitive.str.html#method.parse
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it } from 'bun:test';
 import { parseU64IsOk } from './str';
 
 describe('str', () => {
