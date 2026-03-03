@@ -19,7 +19,6 @@ import {
   SyntaxMode,
   type SyntaxNode,
 } from '@typstmate/typst-syntax';
-import { Notice } from 'obsidian';
 import type { EditorHelper } from '@/editor/index';
 import { type Processor, type ProcessorKind, RenderingEngine } from '@/libs/processor';
 import { extarctCMMath } from '@/libs/typst';
@@ -328,7 +327,7 @@ export class TypstMateCorePluginValue implements PluginValue {
                     );
                     reparsed = true;
                   } catch (e) {
-                    new Notice(String(e));
+                    console.error('TypstMate: Incremental reparse failed', e);
                   }
                 }
               }
@@ -351,6 +350,7 @@ export class TypstMateCorePluginValue implements PluginValue {
           }
 
           this.activeRegion = newRegion;
+          this.prevCursor = cursor;
 
           if (this.activeRegion) {
             const { syntaxMode, syntaxKind } = getModeAndKind(this.activeRegion, cursor);

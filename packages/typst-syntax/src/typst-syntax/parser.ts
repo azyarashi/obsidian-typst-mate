@@ -1766,24 +1766,6 @@ function unOpPrecedence(kind: SyntaxKind): number {
   }
 }
 
-export function reparseCode(text: string, rangeStart: number, rangeEnd: number): SyntaxNode[] | null {
-  const p = new Parser(text, rangeStart, SyntaxMode.Code);
-  p.codeExprs(SyntaxSet.create(SyntaxKind.End));
-  if (p.balanced && p.currentStart() === rangeEnd) {
-    return p.finish();
-  }
-  return null;
-}
-
-export function reparseMath(text: string, rangeStart: number, rangeEnd: number): SyntaxNode[] | null {
-  const p = new Parser(text, rangeStart, SyntaxMode.Math);
-  p.mathExprs(SyntaxSet.create(SyntaxKind.End));
-  if (p.balanced && p.currentStart() === rangeEnd) {
-    return p.finish();
-  }
-  return null;
-}
-
 export function reparseBlock(text: string, rangeStart: number, rangeEnd: number): SyntaxNode | null {
   const p = new Parser(text, rangeStart, SyntaxMode.Code);
   if (p.current() !== SyntaxKind.LeftBracket && p.current() !== SyntaxKind.LeftBrace) {

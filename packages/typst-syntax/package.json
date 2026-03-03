@@ -1,6 +1,6 @@
 {
   "name": "@typstmate/typst-syntax",
-  "version": "0.14.2-2",
+  "version": "0.14.2-3",
   "description": "Typst syntax definitions and parser",
   "keywords": [
     "typst",

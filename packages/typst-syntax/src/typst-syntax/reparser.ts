@@ -1,6 +1,6 @@
 import { SyntaxKind } from './kind';
 import { NumberingError, type SyntaxNode } from './node';
-import { parse, parseCode, parseMath, reparseBlock, reparseCode, reparseMarkup, reparseMath } from './parser';
+import { parse, parseCode, parseMath, reparseBlock, reparseMarkup } from './parser';
 import { Span } from './span';
 
 export function reparse(
@@ -43,7 +43,8 @@ function tryReparse(
   node: SyntaxNode,
   offset: number,
 ): { start: number; end: number } | null {
-  const overlap = { start: Number.MAX_SAFE_INTEGER, end: 0 };
+  let overlapStart = Number.MAX_SAFE_INTEGER;
+  let overlapEnd = 0;
   let cursor = offset;
   const nodeKind = node.kind();
 
@@ -79,8 +80,8 @@ function tryReparse(
     }
 
     if (overlaps(prevRange, replaced)) {
-      overlap.start = Math.min(overlap.start, i);
-      overlap.end = i + 1;
+      overlapStart = Math.min(overlapStart, i);
+      overlapEnd = i + 1;
     }
 
     if (replaced.end < cursor) {
@@ -90,98 +91,63 @@ function tryReparse(
     cursor += prevLen;
   }
 
-  if (overlap.start >= overlap.end) {
+  if (
+    overlapStart >= overlapEnd ||
+    node.kind() !== SyntaxKind.Markup ||
+    !(parentKind === null || parentKind === SyntaxKind.ContentBlock)
+  ) {
     return null;
   }
 
-  if (node.kind() === SyntaxKind.Markup && (parentKind === null || parentKind === SyntaxKind.ContentBlock)) {
-    let expansion = 1;
-    while (true) {
-      let start = Math.max(0, overlap.start - Math.max(expansion, 2));
-      let end = Math.min(overlap.end + expansion, children.length);
+  let expansion = 1;
+  while (true) {
+    let start = Math.max(0, overlapStart - Math.max(expansion, 2));
+    let end = Math.min(overlapEnd + expansion, children.length);
 
-      while (start > 0 && expand(children[start]!)) {
-        start--;
-      }
-
-      while (end < children.length && expand(children[end]!)) {
-        end++;
-      }
-
-      if (start > 0 && children[start - 1]!.kind() === SyntaxKind.Hash) {
-        start--;
-      }
-
-      let prefixLen = 0;
-      let nesting = 0;
-      let atStart = true;
-      for (let i = 0; i < start; i++) {
-        prefixLen += children[i]!.len();
-        atStart = nextAtStart(children[i]!, atStart);
-        nesting = nextNesting(children[i]!, nesting);
-      }
-
-      let prevLen = 0;
-      let prevAtStartAfter = atStart;
-      let prevNestingAfter = nesting;
-      for (let i = start; i < end; i++) {
-        prevLen += children[i]!.len();
-        prevAtStartAfter = nextAtStart(children[i]!, prevAtStartAfter);
-        prevNestingAfter = nextNesting(children[i]!, prevNestingAfter);
-      }
-
-      const shifted = offset + prefixLen;
-      const newLen = prevLen + replacementLen - (replaced.end - replaced.start);
-      const newRange = { start: shifted, end: shifted + newLen };
-      const atEnd = end === children.length;
-
-      const atStartObj = { val: atStart };
-      const nestingObj = { val: nesting };
-      const reparsed = reparseMarkup(text, newRange.start, newRange.end, atStartObj, nestingObj, parentKind === null);
-
-      if (reparsed) {
-        if (
-          (atEnd || atStartObj.val === prevAtStartAfter) &&
-          ((atEnd && parentKind === null) || nestingObj.val === prevNestingAfter)
-        ) {
-          try {
-            node.replaceChildren({ start, end }, reparsed);
-            return newRange;
-          } catch (e) {
-            if (!(e instanceof NumberingError)) throw e;
-          }
-        }
-      }
-
-      if (start === 0 && atEnd) break;
-      expansion *= 2;
+    while (start > 0 && expand(children[start]!)) {
+      start--;
     }
-  } else if ((node.kind() === SyntaxKind.Code || node.kind() === SyntaxKind.Math) && parentKind === null) {
-    let expansion = 1;
-    while (true) {
-      const start = Math.max(0, overlap.start - expansion);
-      const end = Math.min(overlap.end + expansion, children.length);
 
-      let prefixLen = 0;
-      for (let i = 0; i < start; i++) {
-        prefixLen += children[i]!.len();
-      }
+    while (end < children.length && expand(children[end]!)) {
+      end++;
+    }
 
-      let prevLen = 0;
-      for (let i = start; i < end; i++) {
-        prevLen += children[i]!.len();
-      }
+    if (start > 0 && children[start - 1]!.kind() === SyntaxKind.Hash) {
+      start--;
+    }
 
-      const shifted = offset + prefixLen;
-      const newLen = prevLen + replacementLen - (replaced.end - replaced.start);
-      const newRange = { start: shifted, end: shifted + newLen };
+    let prefixLen = 0;
+    let nesting = 0;
+    let atStart = true;
+    for (let i = 0; i < start; i++) {
+      prefixLen += children[i]!.len();
+      atStart = nextAtStart(children[i]!, atStart);
+      nesting = nextNesting(children[i]!, nesting);
+    }
 
-      const reparsed =
-        node.kind() === SyntaxKind.Code
-          ? reparseCode(text, newRange.start, newRange.end)
-          : reparseMath(text, newRange.start, newRange.end);
+    let prevLen = 0;
+    let prevAtStartAfter = atStart;
+    let prevNestingAfter = nesting;
+    for (let i = start; i < end; i++) {
+      prevLen += children[i]!.len();
+      prevAtStartAfter = nextAtStart(children[i]!, prevAtStartAfter);
+      prevNestingAfter = nextNesting(children[i]!, prevNestingAfter);
+    }
 
-      if (reparsed) {
+    const shifted = offset + prefixLen;
+    const newLen = prevLen + replacementLen - (replaced.end - replaced.start);
+    const newRange = { start: shifted, end: shifted + newLen };
+    const atEnd = end === children.length;
+
+    const atStartObj = { val: atStart };
+    const nestingObj = { val: nesting };
+    const reparsed = reparseMarkup(text, newRange.start, newRange.end, atStartObj, nestingObj, parentKind === null);
+
+    if (reparsed) {
+      if (
+        (atEnd || atStartObj.val === prevAtStartAfter) &&
+        ((atEnd && parentKind === null) || nestingObj.val === prevNestingAfter)
+      ) {
         try {
           node.replaceChildren({ start, end }, reparsed);
           return newRange;
@@ -189,24 +155,24 @@ function tryReparse(
           if (!(e instanceof NumberingError)) throw e;
         }
       }
-
-      if (start === 0 && end === children.length) break;
-      expansion *= 2;
     }
+
+    if (start === 0 && atEnd) break;
+    expansion *= 2;
   }
 
   return null;
 }
 
 function includes(outer: { start: number; end: number }, inner: { start: number; end: number }) {
-  if (inner.start === inner.end) {
-    return outer.start <= inner.start && inner.start <= outer.end;
-  }
-  return outer.start <= inner.start && outer.end >= inner.end;
+  return outer.start < inner.start && outer.end > inner.end;
 }
 
 function overlaps(first: { start: number; end: number }, second: { start: number; end: number }) {
-  return first.start <= second.end && second.start <= first.end;
+  return (
+    (first.start <= second.start && second.start <= first.end) ||
+    (second.start <= first.start && first.start <= second.end)
+  );
 }
 
 function checkCharIsNewline(str: string): boolean {

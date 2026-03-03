@@ -321,7 +321,9 @@ export class InnerNode extends SyntaxNode {
       superseded.map((x) => x.len()).reduce((a, b) => a + b, 0);
     this._descendants =
       this._descendants +
+      actualReplacement.length +
       actualReplacement.map((x) => x.descendants()).reduce((a, b) => a + b, 0) -
+      (rangeEnd - rangeStart) -
       superseded.map((x) => x.descendants()).reduce((a, b) => a + b, 0);
 
     this._erroneous =
