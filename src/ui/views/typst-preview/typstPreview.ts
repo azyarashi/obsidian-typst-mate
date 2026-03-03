@@ -1,26 +1,26 @@
-import { loadPdfJs, type Menu, TextFileView, type TFile, type WorkspaceLeaf } from 'obsidian';
+import { type Menu, TextFileView, type TFile, type WorkspaceLeaf } from 'obsidian';
 
+import { jumpFromClickExtension } from '@/editor/typst/extensions/actions/JumpFromClick';
 import type ObsidianTypstMate from '@/main';
 import type { TypstTextView } from '../typst-text/typstText';
 
-import './typst-pdf.css';
+import './typst-preview.css';
 
-interface PDFViewerState {
+interface PreviewViewerState {
   currentPage: number;
   scrollTop: number;
   scale: number;
 }
 
-export class TypstPDFView extends TextFileView {
-  static viewtype = 'typst-pdf';
+export class TypstPreviewView extends TextFileView {
+  static viewtype = 'typst-preview';
   plugin: ObsidianTypstMate;
 
   parentTextView: TypstTextView | null = null;
 
   fileContent?: string;
-  pdfBinary?: Uint8Array;
-  pdfDocument: any;
-  viewerState: PDFViewerState = {
+  svgPages: string[] = [];
+  viewerState: PreviewViewerState = {
     currentPage: 1,
     scrollTop: 0,
     scale: 1.0,
@@ -38,11 +38,10 @@ export class TypstPDFView extends TextFileView {
   }
 
   getViewType(): string {
-    return TypstPDFView.viewtype;
+    return TypstPreviewView.viewtype;
   }
 
   override onPaneMenu(menu: Menu, source: string) {
-    // TODO: 毎回増える
     menu.addItem((item) => {
       item.setTitle('Open as text').onClick(async () => {
         try {
@@ -53,7 +52,7 @@ export class TypstPDFView extends TextFileView {
             state: { file: this.file.path },
           });
         } catch (e) {
-          console.error('Open as Markdown failed:', e);
+          console.error('Open as text failed:', e);
         }
       });
     });
@@ -63,74 +62,52 @@ export class TypstPDFView extends TextFileView {
 
   override async onLoadFile(file: TFile): Promise<void> {
     this.contentEl.empty();
-    this.contentEl.addClass('typstmate-pdf-viewer-container');
+    this.contentEl.addClass('typstmate-preview-viewer-container');
     this.clearViewerReferences();
 
     try {
       this.fileContent = await this.app.vault.read(file);
-      const result = await this.plugin.typst.pdf(file.basename, this.fileContent);
-      this.pdfBinary = result.pdf;
+      const result = await this.plugin.typst.svgp('/', file.name, this.fileContent);
+      this.svgPages = result.svgp;
 
-      await this.renderPDF(result.pdf, file.basename);
-
-      this.addAction('file-image', 'Export PDF', async (_eventType) => {
-        const arrBuffer = new ArrayBuffer(result.pdf.length);
-        const u8arr = new Uint8Array(arrBuffer);
-        u8arr.set(result.pdf);
-        this.plugin.app.vault.adapter.writeBinary(`${file.path.slice(0, -3)}pdf`, u8arr.buffer);
-      });
-    } catch {
-      // コンパイルエラー時は無視 (diagnostics は TypstTextView 側で処理)
+      await this.renderPreview();
+    } catch (e) {
+      console.error('Initial SVG generation failed', e);
     }
   }
 
   override async onModify(file: TFile): Promise<void> {
-    // 親の TypstTextView がある場合は, 親が更新
     if (this.parentTextView) return;
 
-    if (!window.pdfjsLib) await loadPdfJs();
-
-    // 状態の保存
     const currentScrollTop = this.viewerAreaEl?.scrollTop || 0;
     const currentPage = this.calculateCurrentPageFromScroll();
     const currentScale = this.viewerState.scale;
 
     try {
       this.fileContent = await this.app.vault.read(file);
-      const result = await this.plugin.typst.pdf(file.basename, this.fileContent);
-      this.pdfBinary = result.pdf;
+      const result = await this.plugin.typst.svgp('/', file.name, this.fileContent);
+      this.svgPages = result.svgp;
 
-      // ビューが未初期化の場合はレンダリングをスキップ
       if (!this.pageContainerEl || !this.viewerAreaEl) return;
 
-      // ドキュメントを読み込む
-      const loadingTask = window.pdfjsLib!.getDocument(new Uint8Array(result.pdf));
-      this.pdfDocument = await loadingTask.promise;
-
       const newPageContainer = document.createElement('div');
-      newPageContainer.className = 'typstmate-pdf-page-container';
+      newPageContainer.className = 'typstmate-preview-page-container';
       await this.renderAllPagesToContainer(newPageContainer);
 
-      // 置き換え
       this.pageContainerEl.replaceWith(newPageContainer);
       this.pageContainerEl = newPageContainer;
 
-      // 状態を設定
       this.viewerState.scale = currentScale;
       this.viewerState.scrollTop = currentScrollTop;
       this.viewerState.currentPage = currentPage;
 
-      // コントロール情報を更新
       this.updateControls();
-
-      // スクロール位置の復元
       this.viewerAreaEl.scrollTop = currentScrollTop;
     } catch {}
   }
 
   override async onClose(): Promise<void> {
     this.clearViewerReferences();
-    this.pdfDocument = null;
   }
 
   override getViewData(): string {
@@ -148,7 +125,6 @@ export class TypstPDFView extends TextFileView {
         scale: parsedState.scale || 1.0,
       };
 
-      // 状態を復元
       this.restoreViewerState();
     } catch (e) {
       console.error('Failed to parse viewer state:', e);
@@ -161,35 +137,27 @@ export class TypstPDFView extends TextFileView {
 
   override requestSave = () => {};
 
-  private async renderPDF(pdfData: Uint8Array, filename: string): Promise<void> {
-    if (!window.pdfjsLib) await loadPdfJs();
-
+  private async renderPreview(): Promise<void> {
     try {
-      const loadingTask = window.pdfjsLib!.getDocument(new Uint8Array(pdfData));
-      this.pdfDocument = await loadingTask.promise;
-      this.createPDFViewer();
+      this.createViewer();
       this.restoreViewerState();
     } catch (error) {
-      console.error('PDF.js rendering failed:', error);
-      this.fallbackToObjectElement(pdfData, filename);
+      console.error('Preview rendering failed:', error);
     }
   }
 
-  private createPDFViewer(): void {
-    // コントロールバー
-    this.controlsEl = this.contentEl.createDiv('typstmate-pdf-controls');
+  private createViewer(): void {
+    this.controlsEl = this.contentEl.createDiv('typstmate-preview-controls');
 
-    // ページナビゲーション
     const prevButton = this.controlsEl.createEl('button', { text: '←' });
     prevButton.addEventListener('click', () => this.goToPreviousPage());
 
     this.pageInfoEl = this.controlsEl.createEl('span');
-    this.pageInfoEl.textContent = `Page ${this.viewerState.currentPage} of ${this.pdfDocument.numPages}`;
+    this.pageInfoEl.textContent = `Page ${this.viewerState.currentPage} of ${this.svgPages.length}`;
 
     const nextButton = this.controlsEl.createEl('button', { text: '→' });
     nextButton.addEventListener('click', () => this.goToNextPage());
 
-    // ズームコントロール
     const zoomOutButton = this.controlsEl.createEl('button', { text: '-' });
     zoomOutButton.addEventListener('click', () => this.zoomOut());
 
@@ -199,85 +167,15 @@ export class TypstPDFView extends TextFileView {
     const zoomInButton = this.controlsEl.createEl('button', { text: '+' });
     zoomInButton.addEventListener('click', () => this.zoomIn());
 
-    // ビューワーエリア
-    this.viewerAreaEl = this.contentEl.createDiv('typstmate-pdf-viewer-area');
+    this.viewerAreaEl = this.contentEl.createDiv('typstmate-preview-viewer-area');
+    this.pageContainerEl = this.viewerAreaEl.createDiv('typstmate-preview-page-container');
 
-    // ページコンテナ
-    this.pageContainerEl = this.viewerAreaEl.createDiv('typstmate-pdf-page-container');
+    this.renderAllPagesToContainer(this.pageContainerEl);
 
-    // レンダリング
-    this.renderAllPages();
-
-    // スクロール位置の監視
     this.viewerAreaEl.addEventListener('scroll', () => {
       this.viewerState.scrollTop = this.viewerAreaEl!.scrollTop;
       this.updateCurrentPageFromScroll();
     });
-  }
-
-  private async renderAllPages(): Promise<void> {
-    if (!this.pageContainerEl) return;
-
-    try {
-      this.pageContainerEl.empty();
-
-      for (let pageNumber = 1; pageNumber <= this.pdfDocument.numPages; pageNumber++) {
-        const pageDiv = this.pageContainerEl.createDiv('typstmate-pdf-page');
-        pageDiv.id = `pdf-page-${pageNumber}`;
-
-        const page = await this.pdfDocument.getPage(pageNumber);
-        const viewport = page.getViewport({ scale: this.viewerState.scale });
-
-        // キャンバスを作成
-        const canvas = pageDiv.createEl('canvas');
-        const context = canvas.getContext('2d', { alpha: false });
-        if (!context) continue;
-
-        // 画質の設定
-        const dpr = window.devicePixelRatio || 1;
-        canvas.width = viewport.width * dpr;
-        canvas.height = viewport.height * dpr;
-        canvas.style.width = `${viewport.width}px`;
-        canvas.style.height = `${viewport.height}px`;
-
-        context.scale(dpr, dpr);
-
-        const renderContext = {
-          canvasContext: context,
-          viewport: viewport,
-        };
-
-        await page.render(renderContext).promise;
-
-        // テキストレイヤーを作成
-        await this.renderTextLayer(page, pageDiv, viewport);
-      }
-
-      this.updateControls();
-    } catch (error) {
-      console.error('Failed to render all PDF pages:', error);
-    }
-  }
-
-  private async renderTextLayer(page: any, container: HTMLElement, viewport: any): Promise<void> {
-    try {
-      const textContent = await page.getTextContent();
-      const textLayerDiv = container.createDiv('typstmate-pdf-text-layer');
-      textLayerDiv.style.width = `${viewport.width}px`;
-      textLayerDiv.style.height = `${viewport.height}px`;
-
-      textContent.items.forEach((item: any) => {
-        const textSpan = textLayerDiv.createEl('span');
-        textSpan.textContent = item.str;
-        textSpan.style.left = `${item.transform[4] * this.viewerState.scale}px`;
-        textSpan.style.top = `${viewport.height - (item.transform[5] + 8) * this.viewerState.scale}px`;
-
-        textSpan.style.setProperty('--typst-pdf-text-font-size', `${item.height * this.viewerState.scale}px`);
-        textSpan.style.setProperty('--typst-pdf-text-font-family', item.fontName);
-      });
-    } catch (error) {
-      console.error('Failed to render text layer:', error);
-    }
   }
 
   private async goToPreviousPage(): Promise<void> {
@@ -289,7 +187,7 @@ export class TypstPDFView extends TextFileView {
   }
 
   private async goToNextPage(): Promise<void> {
-    if (this.viewerState.currentPage >= this.pdfDocument.numPages) return;
+    if (this.viewerState.currentPage >= this.svgPages.length) return;
 
     this.viewerState.currentPage++;
     await this.scrollToPage(this.viewerState.currentPage);
@@ -299,26 +197,28 @@ export class TypstPDFView extends TextFileView {
   private async scrollToPage(pageNumber: number): Promise<void> {
     if (!this.viewerAreaEl) return;
 
-    const pageElement = this.viewerAreaEl.querySelector(`#pdf-page-${pageNumber}`);
+    const pageElement = this.viewerAreaEl.querySelector(`#preview-page-${pageNumber}`);
     if (pageElement) pageElement.scrollIntoView({ behavior: 'smooth' });
     this.updateControls();
   }
 
   private async zoomOut(): Promise<void> {
     this.viewerState.scale = Math.max(0.25, this.viewerState.scale - 0.25);
-    await this.renderAllPages();
+    this.updatePagesScale();
     this.saveViewerState();
+    this.updateControls();
   }
 
   private async zoomIn(): Promise<void> {
     this.viewerState.scale = Math.min(3.0, this.viewerState.scale + 0.25);
-    await this.renderAllPages();
+    this.updatePagesScale();
     this.saveViewerState();
+    this.updateControls();
   }
 
   private updateControls(): void {
     if (this.pageInfoEl)
-      this.pageInfoEl.textContent = `Page ${this.viewerState.currentPage} of ${this.pdfDocument.numPages}`;
+      this.pageInfoEl.textContent = `Page ${this.viewerState.currentPage} of ${this.svgPages.length}`;
     if (this.zoomInfoEl) this.zoomInfoEl.textContent = `${Math.round(this.viewerState.scale * 100)}%`;
   }
 
@@ -335,7 +235,7 @@ export class TypstPDFView extends TextFileView {
     if (!this.viewerAreaEl || !this.pageInfoEl) return;
 
     const scrollTop = this.viewerAreaEl.scrollTop;
-    const pageElements = this.viewerAreaEl.querySelectorAll('.typstmate-pdf-page');
+    const pageElements = this.viewerAreaEl.querySelectorAll('.typstmate-preview-page');
 
     let currentPage = 1;
     let minDistance = Infinity;
@@ -361,24 +261,11 @@ export class TypstPDFView extends TextFileView {
     }
   }
 
-  private fallbackToObjectElement(pdfData: Uint8Array, filename: string): void {
-    const base64 = Buffer.from(pdfData).toString('base64');
-    this.contentEl.createEl('object', {
-      attr: {
-        data: `data:application/pdf;base64,${base64}`,
-        name: filename,
-        type: 'application/pdf',
-        width: '100%',
-        height: '100%',
-      },
-    });
-  }
-
   private calculateCurrentPageFromScroll(): number {
     if (!this.viewerAreaEl) return 1;
 
     const scrollTop = this.viewerAreaEl.scrollTop;
-    const pageElements = this.viewerAreaEl.querySelectorAll('.typstmate-pdf-page');
+    const pageElements = this.viewerAreaEl.querySelectorAll('.typstmate-preview-page');
 
     let currentPage = 1;
     let minDistance = Infinity;
@@ -401,67 +288,95 @@ export class TypstPDFView extends TextFileView {
   }
 
   private async renderAllPagesToContainer(container: HTMLElement): Promise<void> {
-    try {
-      container.empty();
+    container.empty();
 
-      for (let pageNumber = 1; pageNumber <= this.pdfDocument.numPages; pageNumber++) {
-        const pageDiv = container.createDiv('typstmate-pdf-page');
-        pageDiv.id = `pdf-page-${pageNumber}`;
+    for (let i = 0; i < this.svgPages.length; i++) {
+      const pageNumber = i + 1;
+      const svgContent = this.svgPages[i];
 
-        const page = await this.pdfDocument.getPage(pageNumber);
-        const viewport = page.getViewport({ scale: this.viewerState.scale });
-
-        // キャンバスを作成
-        const canvas = pageDiv.createEl('canvas');
-        const context = canvas.getContext('2d', { alpha: false });
-        if (!context) continue;
-
-        // 画質を設定
-        const dpr = window.devicePixelRatio || 1;
-        canvas.width = viewport.width * dpr;
-        canvas.height = viewport.height * dpr;
-        canvas.style.width = `${viewport.width}px`;
-        canvas.style.height = `${viewport.height}px`;
-
-        context.scale(dpr, dpr);
-
-        const renderContext = {
-          canvasContext: context,
-          viewport: viewport,
-        };
-
-        await page.render(renderContext).promise;
-
-        // テキストレイヤーを作成
-        await this.renderTextLayer(page, pageDiv, viewport);
+      const pageDiv = container.createDiv('typstmate-preview-page');
+      pageDiv.id = `preview-page-${pageNumber}`;
+      if (svgContent) {
+        pageDiv.innerHTML = svgContent;
       }
-    } catch (error) {
-      console.error('Failed to render all PDF pages:', error);
+
+      const svgEl = pageDiv.querySelector('svg');
+      if (svgEl) {
+        const widthMatches = svgEl.getAttribute('width')?.match(/([\d.]+)pt/);
+        const heightMatches = svgEl.getAttribute('height')?.match(/([\d.]+)pt/);
+
+        if (widthMatches?.[1] && heightMatches && heightMatches[1]) {
+          const w = parseFloat(widthMatches[1]);
+          const h = parseFloat(heightMatches[1]);
+          pageDiv.dataset.width = w.toString();
+          pageDiv.dataset.height = h.toString();
+        }
+      }
+
+      pageDiv.addEventListener('click', async (event) => {
+        await this.jump(event, pageNumber - 1, pageDiv);
+      });
     }
+    this.updatePagesScale(container);
+  }
+
+  private async jump(event: MouseEvent, pageIndex: number, pageDiv: HTMLElement) {
+    const svg = pageDiv.querySelector('svg');
+    if (!svg) return;
+
+    const rect = svg.getBoundingClientRect();
+    const x = (event.clientX - rect.left) / (rect.width / svg.viewBox.baseVal.width);
+    const y = (event.clientY - rect.top) / (rect.height / svg.viewBox.baseVal.height);
+
+    await this.plugin.typst.svgp('/', this.fileContent ? this.file!.name : 'preview.typ', this.fileContent || '');
+    const result = await this.plugin.typst.jumpFromClickP(pageIndex, x, y);
+
+    if (!result || !this.parentTextView) return;
+
+    this.app.workspace.revealLeaf(this.parentTextView.leaf);
+    const plugin = this.parentTextView.view.plugin(jumpFromClickExtension);
+    plugin?.jumpTo(result, event);
+  }
+
+  private updatePagesScale(container: HTMLElement | undefined = this.pageContainerEl) {
+    if (!container) return;
+    const pageElements = container.querySelectorAll('.typstmate-preview-page');
+    pageElements.forEach((pageElement) => {
+      const htmlElement = pageElement as HTMLElement;
+      const svgEl = htmlElement.querySelector('svg');
+      if (svgEl && htmlElement.dataset.width && htmlElement.dataset.height) {
+        const w = parseFloat(htmlElement.dataset.width);
+        const h = parseFloat(htmlElement.dataset.height);
+
+        const scaledWidth = w * this.viewerState.scale;
+        const scaledHeight = h * this.viewerState.scale;
+
+        svgEl.style.width = `${scaledWidth}pt`;
+        svgEl.style.height = `${scaledHeight}pt`;
+        svgEl.style.display = 'block';
+      } else if (svgEl) {
+        svgEl.style.transform = `scale(${this.viewerState.scale})`;
+        svgEl.style.transformOrigin = `top left`;
+      }
+    });
   }
 
   // TypstTextView から呼ばれる
-  async updatePDF(pdfData: Uint8Array, _diags?: any[]): Promise<void> {
-    if (!window.pdfjsLib) await loadPdfJs();
-
+  async updatePreview(svgPages: string[], _diags?: any[]): Promise<void> {
     const currentScrollTop = this.viewerAreaEl?.scrollTop || 0;
     const currentPage = this.calculateCurrentPageFromScroll();
     const currentScale = this.viewerState.scale;
 
     try {
-      this.pdfBinary = pdfData;
+      this.svgPages = svgPages;
 
-      // ビューが未初期化の場合は初回レンダリング
       if (!this.pageContainerEl || !this.viewerAreaEl) {
-        await this.renderPDF(pdfData, 'preview');
+        await this.renderPreview();
         return;
       }
 
-      const loadingTask = window.pdfjsLib!.getDocument(new Uint8Array(pdfData));
-      this.pdfDocument = await loadingTask.promise;
-
       const newPageContainer = document.createElement('div');
-      newPageContainer.className = 'typstmate-pdf-page-container';
+      newPageContainer.className = 'typstmate-preview-page-container';
       await this.renderAllPagesToContainer(newPageContainer);
 
       this.pageContainerEl.replaceWith(newPageContainer);
@@ -474,7 +389,7 @@ export class TypstPDFView extends TextFileView {
       this.updateControls();
       this.viewerAreaEl.scrollTop = currentScrollTop;
     } catch (e) {
-      console.error('[TypstMate] PDF updatePDF failed:', e);
+      console.error('[TypstMate] PDF updatePreview failed:', e);
     }
   }
 

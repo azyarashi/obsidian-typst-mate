@@ -25,7 +25,7 @@ mod serde;
 mod vfs;
 mod world;
 
-use crate::serde::{diagnostic, font, jump, package, pdf, svg};
+use crate::serde::{diagnostic, font, jump, package, pdf, svg, svgp};
 use crate::world::WasmWorld;
 
 #[wasm_bindgen]
@@ -288,10 +288,58 @@ impl Typst {
         }
     }
 
+    pub fn svgp(&mut self, ndir: &str, filename: &str, code: &str) -> Result<JsValue, JsValue> {
+        self.update_source(
+            VirtualPath::new(format!("{}{}{}", self.basepath, ndir, filename)),
+            code,
+        );
+        let Warned { output, warnings } = typst::compile::<PagedDocument>(&mut self.world);
+
+        match output {
+            Ok(mut document) => {
+                let mut svgs = Vec::new();
+                for page in &mut document.pages {
+                    let svg = typst_svg::svg(page);
+                    svgs.push(svg);
+                }
+                self.last_document = Some(document);
+                svgp::svgp(svgs, warnings, &self.world)
+            }
+            Err(errs) => {
+                let diags: Vec<diagnostic::SourceDiagnosticSer> = errs
+                    .iter()
+                    .map(|d| diagnostic::SourceDiagnosticSer::from_diag(d, &self.world))
+                    .collect();
+                Err(to_value(&diags).unwrap())
+            }
+        }
+    }
+
     pub fn jump_from_click(&self, x: f64, y: f64) -> JsValue {
         match &self.last_document {
             Some(document) => {
                 let frame = &document.pages[0].frame;
+                let point = Point::new(Abs::pt(x), Abs::pt(y));
+                let point = typst_ide::jump_from_click(&self.world, document, frame, point);
+                match point {
+                    Some(point) => {
+                        let jump_ser = jump::JumpSer::from_jump(&point, &self.world);
+                        to_value(&jump_ser).unwrap()
+                    }
+                    None => JsValue::NULL,
+                }
+            }
+            None => JsValue::NULL,
+        }
+    }
+
+    pub fn jump_from_click_p(&self, page: usize, x: f64, y: f64) -> JsValue {
+        match &self.last_document {
+            Some(document) => {
+                if document.pages.len() <= page {
+                    return JsValue::NULL;
+                }
+                let frame = &document.pages[page].frame;
                 let point = Point::new(Abs::pt(x), Abs::pt(y));
                 let point = typst_ide::jump_from_click(&self.world, document, frame, point);
                 match point {

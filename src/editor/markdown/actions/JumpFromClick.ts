@@ -2,8 +2,8 @@ import { type EditorView, ViewPlugin } from '@codemirror/view';
 
 import type { Jump } from '@/libs/worker';
 import type TypstElement from '@/ui/elements/Typst';
-import { editorHelperFacet } from '../core/Helper';
-import { getRegionAt } from '../core/TypstMate';
+import { editorHelperFacet } from '../../shared/extensions/core/Helper';
+import { getRegionAt } from '../../shared/extensions/core/TypstMate';
 
 class JumpFromClickPluginValue {
   constructor(public view: EditorView) {}

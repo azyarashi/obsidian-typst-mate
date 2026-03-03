@@ -13,7 +13,6 @@ import {
 } from '@codemirror/view';
 
 import type { EditorHelper } from '@/editor';
-import { jumpFromClickExtension } from '@/editor/shared/extensions/actions/JumpFromClick';
 import { shortcutExtension } from '@/editor/shared/extensions/actions/Shortcut';
 import { tabJumpExtensionForTypstText } from '@/editor/shared/extensions/actions/TabJump';
 import { editorHelperFacet } from '@/editor/shared/extensions/core/Helper';
@@ -24,10 +23,11 @@ import { PairHighlightExtension } from '@/editor/shared/extensions/decorations/P
 import { obsidianTheme, typstTheme } from '@/editor/shared/extensions/decorations/Theme';
 import { snippetSuggestExtension } from '@/editor/shared/extensions/popup/SnippetSuggest';
 import { symbolSuggestExtension } from '@/editor/shared/extensions/popup/SymbolSuggest';
-import { errorLensExtension } from '@/editor/typst/extensions/decorations/ErrorLens';
-import { indentRainbowExtension } from '@/editor/typst/extensions/decorations/IndentRainbow';
-import { statusBarExtension } from '@/editor/typst/extensions/decorations/StatusBar';
-import { typstTextViewTheme } from '@/editor/typst/extensions/decorations/Theme';
+import { jumpFromClickExtension } from './extensions/actions/JumpFromClick';
+import { errorLensExtension } from './extensions/decorations/ErrorLens';
+import { indentRainbowExtension } from './extensions/decorations/IndentRainbow';
+import { statusBarExtension } from './extensions/decorations/StatusBar';
+import { typstTextViewTheme } from './extensions/decorations/Theme';
 
 import '@/editor/shared/css';
 

@@ -3,7 +3,6 @@ import type { Extension } from '@codemirror/state';
 import type { EditorHelper } from '@/editor';
 import { codeblockPreviewExtension } from '@/editor/markdown/extensions/decorations/CodeBlockPreview';
 import { inlinePreviewExtension } from '@/editor/markdown/extensions/popup/InlineMathPreview';
-import { jumpFromClickExtension } from '../shared/extensions/actions/JumpFromClick';
 import { mathMacroExtension } from '../shared/extensions/actions/MathMacro';
 import { shortcutExtension } from '../shared/extensions/actions/Shortcut';
 import { tabJumpExtension } from '../shared/extensions/actions/TabJump';
@@ -16,6 +15,7 @@ import { PairHighlightExtension } from '../shared/extensions/decorations/PairHig
 import { obsidianTheme, typstTheme } from '../shared/extensions/decorations/Theme';
 import { snippetSuggestExtension } from '../shared/extensions/popup/SnippetSuggest';
 import { symbolSuggestExtension } from '../shared/extensions/popup/SymbolSuggest';
+import { jumpFromClickExtension } from './actions/JumpFromClick';
 
 export function buildExtension(editorHelper: EditorHelper) {
   const extensions: Extension[] = [

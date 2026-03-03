@@ -5,7 +5,7 @@ import { debounce, type Menu, TextFileView, type TFile, type WorkspaceLeaf } fro
 import { updateDiagnosticEffect } from '@/editor/shared/extensions/decorations/Diagnostic';
 import { buildTypstTextExtensions } from '@/editor/typst/build';
 import type ObsidianTypstMate from '@/main';
-import { TypstPDFView } from '../typst-pdf/typstPDF';
+import { TypstPreviewView } from '../typst-preview/typstPreview';
 
 export class TypstTextView extends TextFileView {
   static viewtype = 'typst-text';
@@ -14,7 +14,7 @@ export class TypstTextView extends TextFileView {
 
   view!: EditorView;
 
-  linkedPDFLeaf: WorkspaceLeaf | null = null;
+  linkedPreviewLeaf: WorkspaceLeaf | null = null;
 
   override requestSave = debounce(this.save.bind(this), 1000);
 
@@ -35,30 +35,30 @@ export class TypstTextView extends TextFileView {
     // 念の為 await
     await super.onload();
 
-    this.addAction('eye', 'Open as PDF', async () => {
-      if (this.linkedPDFLeaf && this.linkedPDFLeaf.view instanceof TypstPDFView) {
-        this.app.workspace.revealLeaf(this.linkedPDFLeaf);
+    this.addAction('eye', 'Open as Preview', async () => {
+      if (this.linkedPreviewLeaf && this.linkedPreviewLeaf.view instanceof TypstPreviewView) {
+        this.app.workspace.revealLeaf(this.linkedPreviewLeaf);
         return;
       }
 
       const newLeaf = this.app.workspace.getLeaf('split', 'vertical');
       await newLeaf.setViewState({
-        type: TypstPDFView.viewtype,
+        type: TypstPreviewView.viewtype,
         state: { file: this.file?.path },
       });
-      this.linkedPDFLeaf = newLeaf;
+      this.linkedPreviewLeaf = newLeaf;
 
-      const pdfView = newLeaf.view;
-      if (pdfView instanceof TypstPDFView) pdfView.parentTextView = this;
+      const previewView = newLeaf.view;
+      if (previewView instanceof TypstPreviewView) previewView.parentTextView = this;
 
       const detach = this.app.workspace.on('layout-change', () => {
         if (
-          this.linkedPDFLeaf &&
-          !this.app.workspace.getLeavesOfType(TypstPDFView.viewtype).includes(this.linkedPDFLeaf)
+          this.linkedPreviewLeaf &&
+          !this.app.workspace.getLeavesOfType(TypstPreviewView.viewtype).includes(this.linkedPreviewLeaf)
         ) {
-          const pdfView = this.linkedPDFLeaf.view;
-          if (pdfView instanceof TypstPDFView) pdfView.parentTextView = null;
-          this.linkedPDFLeaf = null;
+          const previewView = this.linkedPreviewLeaf.view;
+          if (previewView instanceof TypstPreviewView) previewView.parentTextView = null;
+          this.linkedPreviewLeaf = null;
           this.app.workspace.offref(detach);
         }
       });
@@ -109,16 +109,16 @@ export class TypstTextView extends TextFileView {
     if (!this.file) return;
 
     try {
-      const result = await this.plugin.typst.pdf(this.file.basename, content);
+      const result = await this.plugin.typst.svgp('/', this.file.name, content);
 
       updateDiagnosticEffect(this.view, {
         diagnostics: result.diags,
         noDiag: false,
         offset: 0,
       });
-      if (this.linkedPDFLeaf) {
-        const pdfView = this.linkedPDFLeaf.view;
-        if (pdfView instanceof TypstPDFView) await pdfView.updatePDF(result.pdf);
+      if (this.linkedPreviewLeaf) {
+        const previewView = this.linkedPreviewLeaf.view;
+        if (previewView instanceof TypstPreviewView) await previewView.updatePreview(result.svgp);
       }
     } catch (e: any) {
       const diags = Array.isArray(e) ? e : [];

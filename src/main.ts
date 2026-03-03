@@ -32,7 +32,7 @@ import ExcalidrawPlugin from './plugins/excalidraw';
 import type TypstSVGElement from './ui/elements/SVG';
 import { ExcalidrawModal } from './ui/modals/excalidraw';
 import { SettingTab } from './ui/settingsTab';
-import { TypstPDFView } from './ui/views/typst-pdf/typstPDF';
+import { TypstPreviewView } from './ui/views/typst-preview/typstPreview';
 import { TypstTextView } from './ui/views/typst-text/typstText';
 import { TypstToolsView } from './ui/views/typst-tools/typstTools';
 import { zip } from './utils/packageCompressor';
@@ -111,7 +111,7 @@ export default class ObsidianTypstMate extends Plugin {
 
     this.registerView(TypstToolsView.viewtype, (leaf) => new TypstToolsView(leaf, this));
     this.registerView(TypstTextView.viewtype, (leaf) => new TypstTextView(leaf, this));
-    this.registerView(TypstPDFView.viewtype, (leaf) => new TypstPDFView(leaf, this));
+    this.registerView(TypstPreviewView.viewtype, (leaf) => new TypstPreviewView(leaf, this));
 
     // ? Obsidian の起動時間を短縮するため onLayoutReady を使用
     this.app.workspace.onLayoutReady(() => {
@@ -444,9 +444,9 @@ export default class ObsidianTypstMate extends Plugin {
 
         if (leaf.view.getViewType() !== TypstTextView.viewtype) return;
         menu.addItem(async (item) => {
-          item.setTitle('Open as PDF').onClick(async () => {
+          item.setTitle('Open as Preview').onClick(async () => {
             await leaf.setViewState({
-              type: TypstPDFView.viewtype,
+              type: TypstPreviewView.viewtype,
               state: { file: (leaf.view as TypstTextView).file },
             });
           });

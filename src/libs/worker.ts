@@ -58,6 +58,10 @@ export default class $ {
     return this.typst.pdf(filename, code);
   }
 
+  svgp(ndir: string, filename: string, code: string): SVGPResult {
+    return this.typst.svgp(ndir, filename, code);
+  }
+
   listFonts(): FontInfo[] {
     return this.typst.list_fonts();
   }
@@ -96,6 +100,10 @@ export default class $ {
 
   jumpFromClick(x: number, y: number): Jump | null {
     return this.typst.jump_from_click(x, y);
+  }
+
+  jumpFromClickP(page: number, x: number, y: number): Jump | null {
+    return this.typst.jump_from_click_p(page, x, y);
   }
 
   fetch(path: string) {
@@ -242,6 +250,11 @@ export interface SVGResult {
 
 export interface PDFResult {
   pdf: Uint8Array;
+  diags: Diagnostic[];
+}
+
+export interface SVGPResult {
+  svgp: string[];
   diags: Diagnostic[];
 }
 

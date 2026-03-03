@@ -1,7 +1,7 @@
 import { MarkdownView, Notice } from 'obsidian';
 
 import { BASE_COLOR_VAR } from '@/constants';
-import { jumpFromClickPlugin } from '@/editor/shared/extensions/actions/JumpFromClick';
+import { jumpFromClickPlugin } from '@/editor/markdown/actions/JumpFromClick';
 import type { Diagnostic, SVGResult } from '@/libs/worker';
 import TypstElement from './Typst';
 
