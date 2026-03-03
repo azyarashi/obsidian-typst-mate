@@ -17,6 +17,7 @@ This document is a guide to help make your contribution easier and more effectiv
 #### Windows only
 
 These are required because the Taskfile uses GNU OS commands (e.g. `cp`, `mv`, `rm`, `touch`).
+
 1. [MSYS2](https://www.msys2.org/)
 2. [coreutils](https://packages.msys2.org/packages/coreutils) (install with `pacman -S coreutils`)
 3. add `C:\msys64\usr\bin` to your `PATH`
@@ -31,13 +32,13 @@ cd obsidian-typst-mate
 bun install
 ```
 
-2. Add your `.env` file
+1. Add your `.env` file
 
 ```
 CONFIG_DIR='/path/to/your_vault/.obsidian'
 ```
 
-3. Place static files(`manifest.json`, `.hotreload`) into your vault
+1. Place static files(`manifest.json`, `.hotreload`) into your vault
 
 ```
 task placestatic
@@ -63,8 +64,9 @@ The main scripts used during development are:
 - `src/core/settings/`, `src/ui/modals/`: settings tab UI
 - `wasm/`, `src/libs/typst.ts`, `src/libs/worker.ts`, `src/ui/elements/Typst.ts`: typst core logic
 
+Also you can refer to [deepwiki](https://deepwiki.com/azyarashi/obsidian-typst-mate).
+
 ## How to Contribute
 
 Please open an Issue before submitting a Pull Request.
 If you are planning to submit a PR, mention it in the Issue.
-

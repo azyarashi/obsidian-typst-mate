@@ -6,6 +6,9 @@
 <a href="https://typst.app/docs/changelog/">
   <img alt="Typst Version" src="https://img.shields.io/badge/v0.14.2-239dad?logo=typst&logoColor=white" />
 </a>
+<a href="https://deepwiki.com/azyarashi/obsidian-typst-mate">
+  <img src="https://deepwiki.com/badge.svg" alt="Ask DeepWiki">
+</a>
 
 Render math expressions in [Obsidian](https://obsidian.md) using [Typst](https://typst.app/) instead of MathJax.
 
