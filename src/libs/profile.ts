@@ -1,4 +1,4 @@
-import { MarkdownPreviewView, MarkdownView } from 'obsidian';
+import { MarkdownView } from 'obsidian';
 
 import type ObsidianTypstMate from '@/main';
 
