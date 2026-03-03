@@ -11,6 +11,18 @@
     "codemirror-6",
     "typescript"
   ],
+  "scripts": {
+    "build": "bun tsup src/typst-syntax/index.ts --format cjs,esm --dts --clean",
+    "prepublishOnly": "bun run build",
+    "release": "npm publish --access public --tag latest",
+    "typecheck": "bun tsc --noEmit",
+    "test": "bun test",
+    "test:watch": "bun test --watch"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/azyarashi/obsidian-typst-mate.git"
+  },
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -28,14 +40,6 @@
     "LICENSE",
     "NOTICE"
   ],
-  "scripts": {
-    "build": "bun tsup src/typst-syntax/index.ts --format cjs,esm --dts --clean",
-    "prepublishOnly": "bun run build",
-    "publish": "npm publish --access public --tag latest",
-    "typecheck": "bun tsc --noEmit",
-    "test": "bun test",
-    "test:watch": "bun test --watch"
-  },
   "devDependencies": {
     "tsup": "^8.5.1",
     "typescript": "^5.9.3"
