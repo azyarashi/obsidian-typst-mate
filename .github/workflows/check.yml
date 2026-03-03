@@ -14,6 +14,6 @@ jobs:
       - name: Install dependencies
         run: bun install
       - name: Lint
-        run: bun biome check
+        run: bun biome ci
       - name: Test
         run: bun run test
