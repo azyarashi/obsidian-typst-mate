@@ -31,7 +31,7 @@ import TypstWorker from './libs/worker?worker&inline';
 import ExcalidrawPlugin from './plugins/excalidraw';
 import type TypstSVGElement from './ui/elements/SVG';
 import { ExcalidrawModal } from './ui/modals/excalidraw';
-import { SettingTab } from './ui/settingstab';
+import { SettingTab } from './ui/settingsTab';
 import { TypstPDFView } from './ui/views/typst-pdf/typstPDF';
 import { TypstTextView } from './ui/views/typst-text/typstText';
 import { TypstToolsView } from './ui/views/typst-tools/typstTools';
