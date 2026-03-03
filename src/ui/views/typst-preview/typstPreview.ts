@@ -393,6 +393,49 @@ export class TypstPreviewView extends TextFileView {
     }
   }
 
+  async jumpToPosition(position: { page: number; x: number; y: number }): Promise<void> {
+    if (!this.viewerAreaEl) return;
+
+    const pageElement = this.viewerAreaEl.querySelector(`#preview-page-${position.page}`) as HTMLElement;
+    if (pageElement) {
+      pageElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      this.viewerState.currentPage = position.page;
+      this.updateControls();
+
+      setTimeout(() => {
+        this.triggerRipple(position);
+      }, 100);
+    }
+  }
+
+  triggerRipple(position: { page: number; x: number; y: number }): void {
+    if (!this.viewerAreaEl) return;
+    const pageElement = this.viewerAreaEl.querySelector(`#preview-page-${position.page}`) as HTMLElement;
+    if (!pageElement) return;
+
+    const svg = pageElement.querySelector('svg');
+    if (!svg) return;
+
+    const svgRect = svg.getBoundingClientRect();
+    const pageRect = pageElement.getBoundingClientRect();
+    const viewBox = svg.viewBox.baseVal;
+
+    const scaleX = svgRect.width / (viewBox.width || 1);
+    const scaleY = svgRect.height / (viewBox.height || 1);
+
+    const xInPage = svgRect.left - pageRect.left + position.x * scaleX;
+    const yInPage = svgRect.top - pageRect.top + position.y * scaleY;
+
+    const ripple = document.createElement('div');
+    ripple.className = 'typstmate-jump-ripple';
+    ripple.style.position = 'absolute';
+    ripple.style.left = `${xInPage}px`;
+    ripple.style.top = `${yInPage}px`;
+    pageElement.appendChild(ripple);
+
+    setTimeout(() => ripple.remove(), 1000);
+  }
+
   private clearViewerReferences(): void {
     this.controlsEl = undefined;
     this.viewerAreaEl = undefined;

@@ -1,4 +1,4 @@
-import type { Extension } from '@codemirror/state';
+import { Compartment, type Extension } from '@codemirror/state';
 
 import type { EditorHelper } from '@/editor';
 import { codeblockPreviewExtension } from '@/editor/markdown/extensions/decorations/CodeBlockPreview';

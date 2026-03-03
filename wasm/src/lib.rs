@@ -130,7 +130,7 @@ impl Typst {
         let packages = self.world.list_packages();
         let packages_ser: Vec<package::PackageSpecSer> = packages.iter().map(Into::into).collect();
 
-        to_value(&packages_ser).unwrap()
+        to_value(&packages_ser).unwrap_or(JsValue::NULL)
     }
 
     pub fn list_fonts(&self) -> JsValue {
@@ -139,7 +139,7 @@ impl Typst {
             .flat_map(|(_, infos)| infos.map(Into::into))
             .collect();
 
-        to_value(&infos_ser).unwrap()
+        to_value(&infos_ser).unwrap_or(JsValue::NULL)
     }
 
     pub fn get_font_info(&self, buffer: JsValue) -> JsValue {
@@ -149,7 +149,7 @@ impl Typst {
         let infos: Vec<font::FontInfoSer> =
             FontInfo::iter(&bytes).map(|info| (&info).into()).collect();
 
-        to_value(&infos).unwrap()
+        to_value(&infos).unwrap_or(JsValue::NULL)
     }
 
     pub fn latex_to_typst(&self, code: &str) -> String {
@@ -250,7 +250,7 @@ impl Typst {
                     .iter()
                     .map(|d| diagnostic::SourceDiagnosticSer::from_diag(d, &self.world))
                     .collect();
-                Err(to_value(&diags).unwrap())
+                Err(to_value(&diags).unwrap_or(JsValue::NULL))
             }
         }
     }
@@ -274,7 +274,7 @@ impl Typst {
                             .iter()
                             .map(|d| diagnostic::SourceDiagnosticSer::from_diag(d, &self.world))
                             .collect();
-                        Err(to_value(&diags).unwrap())
+                        Err(to_value(&diags).unwrap_or(JsValue::NULL))
                     }
                 }
             }
@@ -283,7 +283,7 @@ impl Typst {
                     .iter()
                     .map(|d| diagnostic::SourceDiagnosticSer::from_diag(d, &self.world))
                     .collect();
-                Err(to_value(&diags).unwrap())
+                Err(to_value(&diags).unwrap_or(JsValue::NULL))
             }
         }
     }
@@ -310,7 +310,7 @@ impl Typst {
                     .iter()
                     .map(|d| diagnostic::SourceDiagnosticSer::from_diag(d, &self.world))
                     .collect();
-                Err(to_value(&diags).unwrap())
+                Err(to_value(&diags).unwrap_or(JsValue::NULL))
             }
         }
     }
@@ -324,7 +324,7 @@ impl Typst {
                 match point {
                     Some(point) => {
                         let jump_ser = jump::JumpSer::from_jump(&point, &self.world);
-                        to_value(&jump_ser).unwrap()
+                        to_value(&jump_ser).unwrap_or(JsValue::NULL)
                     }
                     None => JsValue::NULL,
                 }
@@ -345,10 +345,28 @@ impl Typst {
                 match point {
                     Some(point) => {
                         let jump_ser = jump::JumpSer::from_jump(&point, &self.world);
-                        to_value(&jump_ser).unwrap()
+                        to_value(&jump_ser).unwrap_or(JsValue::NULL)
                     }
                     None => JsValue::NULL,
                 }
+            }
+            None => JsValue::NULL,
+        }
+    }
+
+    pub fn jump_from_cursor_p(&self, cursor: usize) -> JsValue {
+        match &self.last_document {
+            Some(document) => {
+                let result = self.world.source(self.world.main());
+                if let Ok(source) = result {
+                    let positions = typst_ide::jump_from_cursor(document, &source, cursor);
+                    let positions_ser: Vec<jump::JumpSer> = positions
+                        .into_iter()
+                        .map(jump::JumpSer::from_position)
+                        .collect();
+                    return to_value(&positions_ser).unwrap_or(JsValue::NULL);
+                }
+                JsValue::NULL
             }
             None => JsValue::NULL,
         }

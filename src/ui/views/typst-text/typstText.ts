@@ -4,6 +4,7 @@ import { debounce, type Menu, TextFileView, type TFile, type WorkspaceLeaf } fro
 
 import { updateDiagnosticEffect } from '@/editor/shared/extensions/decorations/Diagnostic';
 import { buildTypstTextExtensions } from '@/editor/typst/build';
+import { jumpToPreviewTargetFacet } from '@/editor/typst/extensions/actions/JumpToPreview';
 import type ObsidianTypstMate from '@/main';
 import { TypstPreviewView } from '../typst-preview/typstPreview';
 
@@ -158,6 +159,19 @@ export class TypstTextView extends TextFileView {
       doc: fileContent,
       extensions: [
         ...buildTypstTextExtensions(this.plugin.editorHelper),
+        jumpToPreviewTargetFacet.of({
+          jumpToPosition: async (position) => {
+            if (!this.linkedPreviewLeaf) return;
+
+            const previewView = this.linkedPreviewLeaf.view;
+            if (previewView instanceof TypstPreviewView) await previewView.jumpToPosition(position);
+          },
+          reveal: () => {
+            if (!this.linkedPreviewLeaf) return;
+
+            this.app.workspace.revealLeaf(this.linkedPreviewLeaf);
+          },
+        }),
         EditorView.updateListener.of((update) => {
           if (update.docChanged) this.debouncedCompile();
         }),

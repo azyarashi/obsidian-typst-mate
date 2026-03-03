@@ -106,6 +106,10 @@ export default class $ {
     return this.typst.jump_from_click_p(page, x, y);
   }
 
+  jumpFromCursorP(cursor: number): Jump[] {
+    return this.typst.jump_from_cursor_p(cursor);
+  }
+
   fetch(path: string) {
     if (map.has(path)) {
       const v = map.get(path);

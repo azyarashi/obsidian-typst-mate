@@ -24,6 +24,7 @@ import { obsidianTheme, typstTheme } from '@/editor/shared/extensions/decoration
 import { snippetSuggestExtension } from '@/editor/shared/extensions/popup/SnippetSuggest';
 import { symbolSuggestExtension } from '@/editor/shared/extensions/popup/SymbolSuggest';
 import { jumpFromClickExtension } from './extensions/actions/JumpFromClick';
+import { jumpToPreviewExtension } from './extensions/actions/JumpToPreview';
 import { errorLensExtension } from './extensions/decorations/ErrorLens';
 import { indentRainbowExtension } from './extensions/decorations/IndentRainbow';
 import { statusBarExtension } from './extensions/decorations/StatusBar';
@@ -44,6 +45,7 @@ export function buildTypstTextExtensions(editorHelper: EditorHelper) {
     shortcutExtension,
     tabJumpExtensionForTypstText,
     jumpFromClickExtension,
+    jumpToPreviewExtension,
 
     history(),
     search(),

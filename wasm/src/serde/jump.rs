@@ -43,11 +43,15 @@ impl JumpSer {
             Jump::Url(url) => JumpSer::Url {
                 url: url.to_string(),
             },
-            Jump::Position(pos) => JumpSer::Position {
-                page: pos.page.into(),
-                x: pos.point.x.to_pt(),
-                y: pos.point.y.to_pt(),
-            },
+            Jump::Position(pos) => Self::from_position(*pos),
+        }
+    }
+
+    pub fn from_position(pos: typst::layout::Position) -> Self {
+        JumpSer::Position {
+            page: pos.page.get(),
+            x: pos.point.x.to_pt(),
+            y: pos.point.y.to_pt(),
         }
     }
 }
