@@ -1,6 +1,6 @@
 {
   "name": "@typstmate/typst-syntax",
-  "version": "1.0.0",
+  "version": "0.14.2-0",
   "description": "Typst syntax definitions and parser",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
