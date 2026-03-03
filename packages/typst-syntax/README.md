@@ -10,10 +10,10 @@ bun install @typstmate/typst-syntax
 
 ## Usage
 
-```typescript
+```ts
 import { parse, type SyntaxNode } from '@typstmate/typst-syntax';
 
-const code = `\
+const code = `
 #set page(width: auto, height: auto, margin: 1em)
 
 #let vb(x) = math.bold(math.italic(x))
@@ -23,8 +23,7 @@ $
   nabla times vb(E) & = - (partial vb(B)) / (partial t) \
     nabla dot vb(B) & = 0 \
   nabla times vb(B) & = mu_0 vb(J) + mu_0 epsilon_0 (partial vb(E)) / (partial t)
-$\
-`;
+$`.trim();
 const ast: SyntaxNode = parse(code);
 
 console.log(ast)
