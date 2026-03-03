@@ -24,4 +24,5 @@ export enum SyntaxMode {
   Markup,
   Math,
   Code,
+  Opaque
 }

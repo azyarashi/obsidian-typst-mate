@@ -2,14 +2,31 @@
   "name": "@typstmate/typst-syntax",
   "version": "1.0.0",
   "description": "Typst syntax definitions and parser",
-  "main": "src/typst-syntax",
-  "module": "src/typst-syntax",
-  "types": "src/typst-syntax",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "NOTICE"
+  ],
   "scripts": {
-    "typecheck": "tsc --noEmit"
+    "build": "bun tsup src/typst-syntax/index.ts --format cjs,esm --dts --clean",
+    "typecheck": "bun tsc --noEmit",
+    "test": "bun test",
+    "test:watch": "bun test --watch"
   },
   "devDependencies": {
-    "typescript": "^5.0.0"
+    "tsup": "^8.5.1",
+    "typescript": "^5.9.3"
   }
 }
