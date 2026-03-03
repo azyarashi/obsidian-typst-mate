@@ -1,12 +1,12 @@
+import { Prec } from '@codemirror/state';
 import { type EditorView, keymap, type PluginValue, ViewPlugin, type ViewUpdate } from '@codemirror/view';
-import { SyntaxMode } from '@/utils/crates/typst-syntax';
+import { SyntaxMode } from '@typstmate/typst-syntax';
 import { calculatePopupPosition } from '../../utils/position';
 import { editorHelperFacet } from '../core/Helper';
 import { getActiveRegion } from '../core/TypstMate';
 import { type SymbolData, searchSymbols } from './symbolSearcher';
 
 import './SymbolSuggest.css';
-import { Prec } from '@codemirror/state';
 
 export const symbolRegex =
   /(?:^| |\$|\(|\)|\[|\]|\{|\}|<|>|\+|-|\/|\*|=|!|\?|#|%|&|'|:|;|,|\d)(?<symbol>\\?([a-zA-Z.][a-zA-Z.]+|[-<>|=[\]~:-][-<>|=[\]~:-]+))$/;

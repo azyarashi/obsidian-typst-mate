@@ -6,6 +6,7 @@ import {
   type ViewUpdate,
   WidgetType,
 } from '@codemirror/view';
+
 import { getActiveRegion } from '@/editor/shared/extensions/core/TypstMate';
 import { diagnosticsState } from '@/editor/shared/extensions/decorations/Diagnostic';
 

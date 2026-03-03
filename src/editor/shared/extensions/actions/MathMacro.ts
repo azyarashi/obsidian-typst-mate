@@ -1,4 +1,5 @@
 import { EditorView, ViewPlugin, type ViewUpdate } from '@codemirror/view';
+
 import { editorHelperFacet } from '../core/Helper';
 
 const MACRO_DELAY = 500;

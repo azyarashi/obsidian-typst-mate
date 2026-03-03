@@ -1,3 +1,4 @@
+import { SyntaxMode } from '@typstmate/typst-syntax';
 import {
   type CodeblockProcessor,
   CodeblockStyling,
@@ -11,7 +12,6 @@ import {
 } from '@/libs/processor';
 import type { WidthProfile } from '@/libs/profile';
 import type { Snippet } from '@/libs/snippet';
-import { SyntaxMode } from '@/utils/crates/typst-syntax';
 
 /**
  * プラグイン設定

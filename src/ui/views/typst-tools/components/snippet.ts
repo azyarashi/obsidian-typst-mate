@@ -2,7 +2,6 @@ import { ButtonComponent, DropdownComponent, Setting } from 'obsidian';
 
 import { DefaultNewSnippet } from '@/libs/snippet';
 import type ObsidianTypstMate from '@/main';
-
 import { CategoryRenameModal } from '../modals/categoryRename';
 import { SnippetEditModal } from '../modals/snippetEdit';
 import { SnippetExtModal } from '../modals/snippetExt';

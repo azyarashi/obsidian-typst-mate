@@ -1,6 +1,6 @@
 // https://github.com/typst/unscanny/blob/v0.1/src/lib.rs
 import { describe, expect, it } from 'bun:test';
-import { Scanner } from '@/utils/crates/unscanny/index';
+import { Scanner } from '@/unscanny/index';
 
 describe('Scanner', () => {
   // fmt is implemented as toString in TypeScript.

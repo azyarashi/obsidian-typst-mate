@@ -1,0 +1,15 @@
+{
+  "name": "@typstmate/typst-syntax",
+  "version": "1.0.0",
+  "description": "Typst syntax definitions and parser",
+  "main": "src/typst-syntax",
+  "module": "src/typst-syntax",
+  "types": "src/typst-syntax",
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0"
+  }
+}

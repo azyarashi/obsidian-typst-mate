@@ -1,7 +1,8 @@
 import type { Extension } from '@codemirror/state';
 import { type EditorView, type PluginValue, ViewPlugin, type ViewUpdate } from '@codemirror/view';
+
+import { SyntaxKind, SyntaxMode } from '@typstmate/typst-syntax';
 import { getActiveRegion } from '@/editor/shared/extensions/core/TypstMate';
-import { SyntaxKind, SyntaxMode } from '@/utils/crates/typst-syntax';
 
 import './StatusBar.css';
 

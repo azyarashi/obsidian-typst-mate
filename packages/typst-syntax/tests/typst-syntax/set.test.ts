@@ -1,7 +1,7 @@
 // https://github.com/typst/typst/blob/main/crates/typst-syntax/src/set.rs
 import { describe, expect, it } from 'bun:test';
-import { SyntaxKind } from '@/utils/crates/typst-syntax/kind';
-import { SyntaxSet } from '@/utils/crates/typst-syntax/set';
+import { SyntaxKind } from '@/typst-syntax/kind';
+import { SyntaxSet } from '@/typst-syntax/set';
 
 describe('SyntaxSet', () => {
   it('add and contains', () => {

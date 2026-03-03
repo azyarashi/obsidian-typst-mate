@@ -1,6 +1,6 @@
 // https://github.com/typst/typst/blob/main/crates/typst-syntax/src/package.rs
 import { describe, expect, it } from 'bun:test';
-import { PackageSpec, PackageVersion } from '@/utils/crates/typst-syntax/package';
+import { PackageSpec, PackageVersion } from '@/typst-syntax/package';
 
 describe('PackageVersion', () => {
   it('equals', () => {

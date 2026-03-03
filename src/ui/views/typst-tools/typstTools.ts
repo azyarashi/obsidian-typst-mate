@@ -1,7 +1,6 @@
 import { ButtonComponent, DropdownComponent, ItemView, Platform, type WorkspaceLeaf } from 'obsidian';
 
 import type ObsidianTypstMate from '@/main';
-
 import { SnippetView } from './components/snippet';
 
 import './typst-tools.css';

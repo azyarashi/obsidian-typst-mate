@@ -1,8 +1,8 @@
 import type { Extension } from '@codemirror/state';
 import { type EditorView, type PluginValue, ViewPlugin, type ViewUpdate } from '@codemirror/view';
 
+import { SyntaxKind, SyntaxMode } from '@typstmate/typst-syntax';
 import type { EditorHelper } from '@/editor';
-import { SyntaxKind, SyntaxMode } from '@/utils/crates/typst-syntax';
 import { editorHelperFacet } from './Helper';
 import { getActiveRegion } from './TypstMate';
 

@@ -1,6 +1,6 @@
 // https://doc.rust-lang.org/std/string/struct.String.html
 import { describe, expect, it } from 'bun:test';
-import { countGraphemes } from '@/utils/crates/std/unicode';
+import { countGraphemes } from '@/std/unicode';
 
 describe('unicode', () => {
   it('countGraphemes', () => {

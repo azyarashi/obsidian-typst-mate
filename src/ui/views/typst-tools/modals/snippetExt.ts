@@ -1,7 +1,6 @@
 import { type App, Modal, Setting } from 'obsidian';
 
 import type ObsidianTypstMate from '@/main';
-
 import type { SnippetView } from '../components/snippet';
 import { CategoryNewModal } from './categoryNew';
 

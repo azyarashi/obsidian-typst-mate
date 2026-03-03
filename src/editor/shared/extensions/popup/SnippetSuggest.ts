@@ -9,6 +9,7 @@ import {
   type ViewUpdate,
 } from '@codemirror/view';
 import { Notice } from 'obsidian';
+
 import type { Snippet } from '@/libs/snippet';
 import { calculatePopupPosition } from '../../utils/position';
 import { editorHelperFacet } from '../core/Helper';

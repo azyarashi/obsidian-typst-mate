@@ -1,6 +1,6 @@
 import { Decoration, type DecorationSet, type EditorView, ViewPlugin, type ViewUpdate } from '@codemirror/view';
 
-import { LinkedNode, Side, SyntaxKind } from '@/utils/crates/typst-syntax';
+import { LinkedNode, Side, SyntaxKind } from '@typstmate/typst-syntax';
 import { editorHelperFacet } from '../core/Helper';
 import { getActiveRegion } from '../core/TypstMate';
 

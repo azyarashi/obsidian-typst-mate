@@ -1,7 +1,6 @@
 import { type App, Platform, PluginSettingTab } from 'obsidian';
 
 import type ObsidianTypstMate from '@/main';
-
 import { addAdvancedTab, addCompilerTab, addEditorTab, addProcessorTab, addRendererTab } from './tabs';
 
 import './shared.css';

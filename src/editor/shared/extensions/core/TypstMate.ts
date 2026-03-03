@@ -7,11 +7,6 @@ import {
   ViewPlugin,
   type ViewUpdate,
 } from '@codemirror/view';
-import { Notice } from 'obsidian';
-
-import type { EditorHelper } from '@/editor/index';
-import { type Processor, type ProcessorKind, RenderingEngine } from '@/libs/processor';
-import { extarctCMMath } from '@/libs/typst';
 import {
   highlight,
   LinkedNode,
@@ -23,7 +18,11 @@ import {
   SyntaxKind,
   SyntaxMode,
   type SyntaxNode,
-} from '@/utils/crates/typst-syntax';
+} from '@typstmate/typst-syntax';
+import { Notice } from 'obsidian';
+import type { EditorHelper } from '@/editor/index';
+import { type Processor, type ProcessorKind, RenderingEngine } from '@/libs/processor';
+import { extarctCMMath } from '@/libs/typst';
 
 import { editorHelperFacet } from './Helper';
 

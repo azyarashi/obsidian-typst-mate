@@ -1,4 +1,5 @@
 import type { Extension } from '@codemirror/state';
+
 import type { EditorHelper } from '@/editor';
 import { codeblockPreviewExtension } from '@/editor/markdown/extensions/decorations/CodeBlockPreview';
 import { inlinePreviewExtension } from '@/editor/markdown/extensions/popup/InlineMathPreview';

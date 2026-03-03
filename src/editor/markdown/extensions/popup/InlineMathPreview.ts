@@ -1,9 +1,10 @@
 import { type EditorView, type PluginValue, ViewPlugin, type ViewUpdate } from '@codemirror/view';
+
 import { editorHelperFacet } from '@/editor/shared/extensions/core/Helper';
 import { getActiveRegion } from '@/editor/shared/extensions/core/TypstMate';
+import { calculatePopupPosition } from '@/editor/shared/utils/position';
 
 import './InlineMathPreview.css';
-import { calculatePopupPosition } from '@/editor/shared/utils/position';
 
 class InlinePreviewPlugin implements PluginValue {
   container: HTMLElement;

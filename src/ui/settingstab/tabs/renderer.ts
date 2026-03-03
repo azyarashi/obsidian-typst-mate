@@ -1,4 +1,5 @@
 import { Setting } from 'obsidian';
+
 import { DEFAULT_SETTINGS } from '@/data/settings';
 import type ObsidianTypstMate from '@/main';
 import { CustomFragment } from '@/utils/customFragment';

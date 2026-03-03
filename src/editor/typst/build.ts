@@ -50,7 +50,6 @@ export function buildTypstTextExtensions(editorHelper: EditorHelper) {
     closeBrackets(),
     highlightSelectionMatches({ minSelectionLength: 2 }),
 
-    // @ts-expect-error
     keymap.of([
       ...closeBracketsKeymap,
       ...searchKeymap,

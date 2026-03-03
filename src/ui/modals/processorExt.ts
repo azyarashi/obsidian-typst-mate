@@ -1,8 +1,8 @@
+import { SyntaxMode } from '@typstmate/typst-syntax';
 import { type App, Modal, Setting } from 'obsidian';
 
 import type { ProcessorKind } from '@/libs/processor';
 import type ObsidianTypstMate from '@/main';
-import { SyntaxMode } from '@/utils/crates/typst-syntax';
 import { CustomFragment } from '@/utils/customFragment';
 
 export class ProcessorExtModal extends Modal {

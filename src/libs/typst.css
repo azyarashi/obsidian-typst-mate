@@ -44,6 +44,7 @@
   contain: none !important;
 }
 
+/* biome-ignore lint/style/noDescendingSpecificity: readability */
 .typstmate-codeblock.typstmate-style-codeblock svg {
   margin-top: 1em;
   margin-bottom: 1em;

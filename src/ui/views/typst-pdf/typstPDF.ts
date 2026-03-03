@@ -1,7 +1,6 @@
 import { loadPdfJs, type Menu, TextFileView, type TFile, type WorkspaceLeaf } from 'obsidian';
 
 import type ObsidianTypstMate from '@/main';
-
 import type { TypstTextView } from '../typst-text/typstText';
 
 import './typst-pdf.css';

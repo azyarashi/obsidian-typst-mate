@@ -2,7 +2,6 @@ import { type EditorView, ViewPlugin, type ViewUpdate } from '@codemirror/view';
 
 import SHORTCUTS_DATA from '@/data/shortcuts.json';
 import { RenderingEngine } from '@/libs/processor';
-// import { editorHelperFacet } from '../core/Helper';
 import { getActiveRegion } from '../core/TypstMate';
 
 const SHORTCUTS_KEYS = Object.keys(SHORTCUTS_DATA);

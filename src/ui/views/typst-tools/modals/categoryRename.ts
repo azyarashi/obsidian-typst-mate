@@ -1,7 +1,6 @@
 import { type App, Modal, Setting } from 'obsidian';
 
 import type ObsidianTypstMate from '@/main';
-
 import type { SnippetView } from '../components/snippet';
 
 export class CategoryRenameModal extends Modal {

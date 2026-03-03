@@ -1,4 +1,4 @@
-import { SyntaxMode } from '@/utils/crates/typst-syntax';
+import { SyntaxMode } from '@typstmate/typst-syntax';
 
 export enum RenderingEngine {
   TypstSVG = 'typst-svg',

@@ -1,7 +1,7 @@
 import { debounce, Setting } from 'obsidian';
+
 import type ObsidianTypstMate from '@/main';
 import { CustomFragment } from '@/utils/customFragment';
-
 import { ProcessorList } from '../components/processor';
 
 import './processor.css';

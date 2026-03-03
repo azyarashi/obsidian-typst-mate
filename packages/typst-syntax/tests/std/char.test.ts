@@ -1,6 +1,6 @@
 // https://doc.rust-lang.org/std/primitive.char.html
 import { describe, expect, it } from 'bun:test';
-import { isAsciiAlphanumeric, isNumeric, isWhiteSpace } from '@/utils/crates/std/char';
+import { isAsciiAlphanumeric, isNumeric, isWhiteSpace } from '@/std/char';
 
 describe('char', () => {
   it('isWhiteSpace', () => {

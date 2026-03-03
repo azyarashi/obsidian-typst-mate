@@ -29,6 +29,7 @@ import type $ from './libs/worker';
 import Typst from './libs/worker';
 import TypstWorker from './libs/worker?worker&inline';
 import ExcalidrawPlugin from './plugins/excalidraw';
+import type TypstSVGElement from './ui/elements/SVG';
 import { ExcalidrawModal } from './ui/modals/excalidraw';
 import { SettingTab } from './ui/settingstab';
 import { TypstPDFView } from './ui/views/typst-pdf/typstPDF';
@@ -37,7 +38,6 @@ import { TypstToolsView } from './ui/views/typst-tools/typstTools';
 import { zip } from './utils/packageCompressor';
 
 import './main.css';
-import type TypstSVGElement from './ui/elements/SVG';
 
 export default class ObsidianTypstMate extends Plugin {
   pluginId = 'typst-mate';
