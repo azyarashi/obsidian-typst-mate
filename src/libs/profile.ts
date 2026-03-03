@@ -17,9 +17,9 @@ export function getNoteWidth(plugin: ObsidianTypstMate): string {
     const sizer = view?.editor.editorComponent?.sizerEl;
     const sizerWidth = sizer?.clientWidth ? sizer.clientWidth : Infinity;
 
-    const preview = view.previewMode;
-    if (preview) {
+    if (view.getMode() === 'preview') {
       const divElP = view?.contentEl.find('div.el-p p');
+
       const pWidth = divElP?.clientWidth ? divElP.clientWidth : Infinity;
 
       width = Math.min(sizerWidth, pWidth);
