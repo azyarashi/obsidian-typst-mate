@@ -38,11 +38,57 @@
   background-color: var(--background-modifier-hover);
 }
 
-.typstmate-preview-controls span {
+.typstmate-preview-page-info {
+  display: flex;
+  align-items: center;
+  gap: 4px;
   font-size: 12px;
   color: var(--text-muted);
-  min-width: 80px;
+}
+
+.typstmate-preview-page-input {
+  width: 45px !important;
+  height: 24px !important;
+  padding: 0 4px !important;
   text-align: center;
+  font-size: 12px !important;
+  background-color: var(--background-primary) !important;
+  border: 1px solid var(--background-modifier-border) !important;
+  border-radius: 4px;
+}
+
+/* Chrome, Safari, Edge, Opera */
+.typstmate-preview-page-input::-webkit-outer-spin-button,
+.typstmate-preview-page-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  appearance: none;
+  margin: 0;
+}
+
+/* Firefox */
+.typstmate-preview-page-input[type="number"] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+.typstmate-preview-zoom-slider {
+  width: 120px;
+  height: 4px;
+  background: var(--background-modifier-border);
+  border-radius: 2px;
+  outline: none;
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.typstmate-preview-zoom-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 12px;
+  height: 12px;
+  background: var(--interactive-accent);
+  border-radius: 50%;
+  cursor: pointer;
 }
 
 .typstmate-preview-viewer-area {
@@ -50,22 +96,31 @@
   overflow: auto;
   position: relative;
   background-color: var(--background-primary);
+  cursor: grab;
+}
+
+.typstmate-preview-viewer-area.is-grabbing {
+  cursor: grabbing;
 }
 
 .typstmate-preview-page-container {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  padding: 20px 20px;
+  padding: 20px;
   gap: 20px;
+  width: fit-content;
+  min-width: 100%;
 }
 
 .typstmate-preview-page {
+  margin-left: auto;
+  margin-right: auto;
   margin-bottom: 20px;
   position: relative;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   border: 1px solid var(--background-modifier-border);
   background-color: white;
+  flex-shrink: 0;
 }
 
 .typstmate-preview-page svg {

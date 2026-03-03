@@ -29,8 +29,16 @@ export class TypstPreviewView extends TextFileView {
   private controlsEl?: HTMLElement;
   private viewerAreaEl?: HTMLElement;
   private pageContainerEl?: HTMLElement;
-  private pageInfoEl?: HTMLElement;
+  private pageInputEl?: HTMLInputElement;
+  private totalPagesLabelEl?: HTMLElement;
   private zoomInfoEl?: HTMLElement;
+  private zoomSliderEl?: HTMLInputElement;
+
+  private isPanning = false;
+  private startX = 0;
+  private startY = 0;
+  private scrollStartX = 0;
+  private scrollStartY = 0;
 
   constructor(leaf: WorkspaceLeaf, plugin: ObsidianTypstMate) {
     super(leaf);
@@ -140,6 +148,7 @@ export class TypstPreviewView extends TextFileView {
   private async renderPreview(): Promise<void> {
     try {
       this.createViewer();
+      this.fitToWidth();
       this.restoreViewerState();
     } catch (error) {
       console.error('Preview rendering failed:', error);
@@ -152,20 +161,49 @@ export class TypstPreviewView extends TextFileView {
     const prevButton = this.controlsEl.createEl('button', { text: '←' });
     prevButton.addEventListener('click', () => this.goToPreviousPage());
 
-    this.pageInfoEl = this.controlsEl.createEl('span');
-    this.pageInfoEl.textContent = `Page ${this.viewerState.currentPage} of ${this.svgPages.length}`;
+    const pageInfoContainer = this.controlsEl.createDiv('typstmate-preview-page-info');
+    this.pageInputEl = pageInfoContainer.createEl('input', {
+      type: 'number',
+      cls: 'typstmate-preview-page-input',
+    });
+    this.pageInputEl.min = '1';
+    this.pageInputEl.max = this.svgPages.length.toString();
+    this.pageInputEl.value = this.viewerState.currentPage.toString();
+    this.pageInputEl.addEventListener('change', () => {
+      const pageNum = parseInt(this.pageInputEl!.value, 10);
+      if (pageNum >= 1 && pageNum <= this.svgPages.length) {
+        this.scrollToPage(pageNum);
+      } else {
+        this.pageInputEl!.value = this.viewerState.currentPage.toString();
+      }
+    });
+
+    this.totalPagesLabelEl = pageInfoContainer.createEl('span');
+    this.totalPagesLabelEl.textContent = ` / ${this.svgPages.length}`;
 
     const nextButton = this.controlsEl.createEl('button', { text: '→' });
     nextButton.addEventListener('click', () => this.goToNextPage());
 
-    const zoomOutButton = this.controlsEl.createEl('button', { text: '-' });
-    zoomOutButton.addEventListener('click', () => this.zoomOut());
+    const resetButton = this.controlsEl.createEl('button', { text: 'Reset' });
+    resetButton.title = 'Fit to Width';
+    resetButton.addEventListener('click', () => this.fitToWidth());
+
+    this.zoomSliderEl = this.controlsEl.createEl('input', {
+      type: 'range',
+      cls: 'typstmate-preview-zoom-slider',
+    });
+    this.zoomSliderEl.min = '20';
+    this.zoomSliderEl.max = '1000';
+    this.zoomSliderEl.value = Math.round(this.viewerState.scale * 100).toString();
+    this.zoomSliderEl.addEventListener('input', () => {
+      this.viewerState.scale = parseInt(this.zoomSliderEl!.value, 10) / 100;
+      this.updatePagesScale();
+      this.updateControls();
+      this.saveViewerState();
+    });
 
     this.zoomInfoEl = this.controlsEl.createEl('span');
     this.zoomInfoEl.textContent = `${Math.round(this.viewerState.scale * 100)}%`;
-
-    const zoomInButton = this.controlsEl.createEl('button', { text: '+' });
-    zoomInButton.addEventListener('click', () => this.zoomIn());
 
     this.viewerAreaEl = this.contentEl.createDiv('typstmate-preview-viewer-area');
     this.pageContainerEl = this.viewerAreaEl.createDiv('typstmate-preview-page-container');
@@ -176,6 +214,82 @@ export class TypstPreviewView extends TextFileView {
       this.viewerState.scrollTop = this.viewerAreaEl!.scrollTop;
       this.updateCurrentPageFromScroll();
     });
+
+    this.viewerAreaEl.addEventListener(
+      'wheel',
+      (e: WheelEvent) => {
+        if (e.ctrlKey || e.metaKey) {
+          e.preventDefault();
+          this.handleZoomWheel(e);
+        }
+      },
+      { passive: false },
+    );
+
+    this.viewerAreaEl.addEventListener('mousedown', (e) => this.handleMouseDown(e));
+    window.addEventListener('mousemove', (e) => this.handleMouseMove(e));
+    window.addEventListener('mouseup', () => this.handleMouseUp());
+  }
+
+  private handleMouseDown(e: MouseEvent): void {
+    if (e.button !== 0 && e.button !== 1) return;
+    if (!this.viewerAreaEl) return;
+
+    this.isPanning = true;
+    this.viewerAreaEl.addClass('is-grabbing');
+    this.startX = e.clientX;
+    this.startY = e.clientY;
+    this.scrollStartX = this.viewerAreaEl.scrollLeft;
+    this.scrollStartY = this.viewerAreaEl.scrollTop;
+  }
+
+  private handleMouseMove(e: MouseEvent): void {
+    if (!this.isPanning || !this.viewerAreaEl) return;
+
+    const dx = e.clientX - this.startX;
+    const dy = e.clientY - this.startY;
+
+    this.viewerAreaEl.scrollLeft = this.scrollStartX - dx;
+    this.viewerAreaEl.scrollTop = this.scrollStartY - dy;
+  }
+
+  private handleMouseUp(): void {
+    if (!this.isPanning) return;
+    this.isPanning = false;
+    this.viewerAreaEl?.removeClass('is-grabbing');
+  }
+
+  private handleZoomWheel(e: WheelEvent): void {
+    if (!this.viewerAreaEl) return;
+
+    const zoomStep = 0.05;
+    const delta = -e.deltaY;
+    const factor = delta > 0 ? 1 + zoomStep : 1 - zoomStep;
+
+    const oldScale = this.viewerState.scale;
+    let newScale = oldScale * factor;
+    newScale = Math.min(10.0, Math.max(0.2, newScale));
+
+    if (oldScale === newScale) return;
+
+    const rect = this.viewerAreaEl.getBoundingClientRect();
+    const mouseX = e.clientX - rect.left;
+    const mouseY = e.clientY - rect.top;
+
+    const scrollLeft = this.viewerAreaEl.scrollLeft;
+    const scrollTop = this.viewerAreaEl.scrollTop;
+
+    const contentX = (scrollLeft + mouseX) / oldScale;
+    const contentY = (scrollTop + mouseY) / oldScale;
+
+    this.viewerState.scale = newScale;
+    this.updatePagesScale();
+    this.updateControls();
+
+    this.viewerAreaEl.scrollLeft = contentX * newScale - mouseX;
+    this.viewerAreaEl.scrollTop = contentY * newScale - mouseY;
+
+    this.saveViewerState();
   }
 
   private async goToPreviousPage(): Promise<void> {
@@ -202,24 +316,47 @@ export class TypstPreviewView extends TextFileView {
     this.updateControls();
   }
 
-  private async zoomOut(): Promise<void> {
-    this.viewerState.scale = Math.max(0.25, this.viewerState.scale - 0.25);
-    this.updatePagesScale();
-    this.saveViewerState();
-    this.updateControls();
-  }
-
-  private async zoomIn(): Promise<void> {
-    this.viewerState.scale = Math.min(3.0, this.viewerState.scale + 0.25);
-    this.updatePagesScale();
-    this.saveViewerState();
-    this.updateControls();
-  }
-
   private updateControls(): void {
-    if (this.pageInfoEl)
-      this.pageInfoEl.textContent = `Page ${this.viewerState.currentPage} of ${this.svgPages.length}`;
+    if (this.pageInputEl) {
+      this.pageInputEl.value = this.viewerState.currentPage.toString();
+      this.pageInputEl.max = this.svgPages.length.toString();
+    }
+    if (this.totalPagesLabelEl) {
+      this.totalPagesLabelEl.textContent = ` / ${this.svgPages.length}`;
+    }
     if (this.zoomInfoEl) this.zoomInfoEl.textContent = `${Math.round(this.viewerState.scale * 100)}%`;
+    if (this.zoomSliderEl) this.zoomSliderEl.value = Math.round(this.viewerState.scale * 100).toString();
+  }
+
+  private fitToWidth(): void {
+    if (!this.viewerAreaEl || this.svgPages.length === 0) return;
+
+    let maxWidthPt = 0;
+    for (const svgContent of this.svgPages) {
+      const match = svgContent.match(/width="([\d.]+)pt"/);
+      const widthStr = match?.[1];
+      if (widthStr) {
+        const w = parseFloat(widthStr);
+        if (w > maxWidthPt) maxWidthPt = w;
+      }
+    }
+
+    if (maxWidthPt === 0) return;
+
+    const viewerWidth = this.viewerAreaEl.clientWidth;
+    if (viewerWidth === 0) {
+      setTimeout(() => this.fitToWidth(), 50);
+      return;
+    }
+
+    const maxWidthPx = maxWidthPt * (96 / 72);
+
+    if (viewerWidth > 0 && maxWidthPx > 0) {
+      this.viewerState.scale = viewerWidth / maxWidthPx;
+      this.viewerState.scale = Math.min(10.0, Math.max(0.2, this.viewerState.scale));
+      this.updatePagesScale();
+      this.updateControls();
+    }
   }
 
   private saveViewerState(): void {
@@ -232,7 +369,7 @@ export class TypstPreviewView extends TextFileView {
   }
 
   private updateCurrentPageFromScroll(): void {
-    if (!this.viewerAreaEl || !this.pageInfoEl) return;
+    if (!this.viewerAreaEl || !this.pageInputEl) return;
 
     const scrollTop = this.viewerAreaEl.scrollTop;
     const pageElements = this.viewerAreaEl.querySelectorAll('.typstmate-preview-page');
@@ -321,6 +458,13 @@ export class TypstPreviewView extends TextFileView {
   }
 
   private async jump(event: MouseEvent, pageIndex: number, pageDiv: HTMLElement) {
+    if (this.isPanning || event.detail === 0) return; // Don't jump if panning or not a real click
+
+    // If the mouse moved significantly, don't jump
+    const dx = Math.abs(event.clientX - this.startX);
+    const dy = Math.abs(event.clientY - this.startY);
+    if (dx > 5 || dy > 5) return;
+
     const svg = pageDiv.querySelector('svg');
     if (!svg) return;
 
@@ -440,7 +584,8 @@ export class TypstPreviewView extends TextFileView {
     this.controlsEl = undefined;
     this.viewerAreaEl = undefined;
     this.pageContainerEl = undefined;
-    this.pageInfoEl = undefined;
+    this.pageInputEl = undefined;
+    this.totalPagesLabelEl = undefined;
     this.zoomInfoEl = undefined;
   }
 }
