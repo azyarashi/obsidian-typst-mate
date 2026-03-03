@@ -377,7 +377,8 @@ export default class ObsidianTypstMate extends Plugin {
         const view = this.app.workspace.getActiveViewOfType(MarkdownView);
         if (view && view.getMode() !== 'preview') return;
 
-        const svgs = view?.contentEl.querySelectorAll('typstmate-svg') as NodeListOf<TypstSVGElement>;
+        const svgs = view?.contentEl.querySelectorAll('typstmate-svg') as NodeListOf<TypstSVGElement> | undefined;
+        if (!svgs) return;
         for (const svg of svgs) if (svg.dataset.fitToNoteWidth) svg.render();
       },
       100,
