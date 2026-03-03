@@ -8,7 +8,7 @@ import {
   debounce,
   type EventRef,
   loadMathJax,
-  type MarkdownView,
+  MarkdownView,
   MenuItem,
   Notice,
   Platform,
@@ -374,7 +374,10 @@ export default class ObsidianTypstMate extends Plugin {
 
     const refresh = debounce(
       () => {
-        const svgs = document.body.querySelectorAll('typstmate-svg') as NodeListOf<TypstSVGElement>;
+        const view = this.app.workspace.getActiveViewOfType(MarkdownView);
+        if (view && view.getMode() !== 'preview') return;
+
+        const svgs = view?.contentEl.querySelectorAll('typstmate-svg') as NodeListOf<TypstSVGElement>;
         for (const svg of svgs) if (svg.dataset.fitToNoteWidth) svg.render();
       },
       100,
