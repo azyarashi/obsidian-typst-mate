@@ -37,6 +37,7 @@ import { TypstToolsView } from './ui/views/typst-tools/typstTools';
 import { zip } from './utils/packageCompressor';
 
 import './main.css';
+import type TypstSVGElement from './ui/elements/SVG';
 
 export default class ObsidianTypstMate extends Plugin {
   pluginId = 'typst-mate';
@@ -371,6 +372,15 @@ export default class ObsidianTypstMate extends Plugin {
       },
     });
 
+    const refresh = debounce(
+      () => {
+        const svgs = document.body.querySelectorAll('typstmate-svg') as NodeListOf<TypstSVGElement>;
+        for (const svg of svgs) if (svg.dataset.fitToNoteWidth) svg.render();
+      },
+      100,
+      true,
+    );
+
     this.listeners.push(
       // ? css-change が意図しない値を渡すので arrow function で包む
       this.app.workspace.on('css-change', () => this.applyBaseColor.bind(this)),
@@ -470,6 +480,7 @@ export default class ObsidianTypstMate extends Plugin {
         const cache = this.app.metadataCache.getCache(path);
         if (cache) this.typstManager.syncFileCache(cache);
       }),
+      this.app.workspace.on('resize', refresh),
     );
   }
 
