@@ -158,6 +158,7 @@ and contributors:
 - [BridgeSenseDev](https://github.com/BridgeSenseDev)
 - [Batres3](https://github.com/Batres3)
 - [phxinyang](https://github.com/phxinyang)
+- [paq](https://github.com/paq)
 
 I'm grateful to the developers for making this plugin possible!
 
