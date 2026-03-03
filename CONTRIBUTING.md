@@ -24,23 +24,23 @@ These are required because the Taskfile uses GNU OS commands (e.g. `cp`, `mv`, `
 
 ### Installation
 
-1. Clone the repository, move to the directory and install dependencies
+Clone the repository, move to the directory and install dependencies
 
-```bash
+```sh
 git clone https://github.com/azyarashi/obsidian-typst-mate.git
 cd obsidian-typst-mate
 bun install
 ```
 
-1. Add your `.env` file
+Add your `.env` file
 
-```
+```toml
 CONFIG_DIR='/path/to/your_vault/.obsidian'
 ```
 
-1. Place static files(`manifest.json`, `.hotreload`) into your vault
+Place static files(`manifest.json`, `.hotreload`) into your vault
 
-```
+```sh
 task placestatic
 ```
 
@@ -50,19 +50,40 @@ task placestatic
 
 The main scripts used during development are:
 
-- `task wasm`: Build the wasm file in development mode and copy it to the plugin directory
+- `task wasm-release`: Build the wasm file and copy it to the plugin directory
 - `task dev`:  Build the plugin files in development mode, copy them to plugin directory, and watch for changes
 - `bun check`: Run formatter and linter
 
-### Important
+### Structure
 
-- The `3.0.0` branch is under active development and may not work correctly. It contains large-scale changes to the code logic. Please use the `main` branch.
+(AI generated)
 
-### Structure (before 3.0.0)
-
-- `src/core/editor/`: inline preview and autocomplete(snippet/symbol)
-- `src/core/settings/`, `src/ui/modals/`: settings tab UI
-- `wasm/`, `src/libs/typst.ts`, `src/libs/worker.ts`, `src/ui/elements/Typst.ts`: typst core logic
+- `src/`
+  - `main.ts`: Entry point of the plugin, managing lifecycle and registering commands/views.
+  - `editor/`: CodeMirror 6 extensions and editor logic.
+    - `typst/`: Typst-specific editor features.
+      - `extensions/decorations/`: Specialized visual features like `ErrorLens` (inline errors), `IndentRainbow`, and `StatusBar` integration.
+    - `shared/`: Generic editor enhancements shared between modes.
+      - `actions/`: Editor commands like toggling font styles.
+      - `decorations/`: General visual decorations.
+      - `popup/`: Management for tooltips and contextual popups.
+  - `ui/`
+    - `views/`
+      - `typst-pdf/, typst-text/`: Typst Editor and Previewer.
+      - `typst-tools/`: Sidebar tools for Typst-related actions.
+    - `settingsTab/`: The plugin's configuration interface.
+    - `modals/`: User interaction dialogs and modals.
+  - `libs/`: Core logic and bridge to Typst.
+    - `typst.ts`: Manager orchestrating Typst initialization, font loading, and rendering.
+    - `worker.ts`: Web Worker implementation that hosts the WASM module for non-blocking compilation.
+    - `processor.ts`: Logic for handling different Typst rendering kinds (inline, display, and codeblock).
+- `wasm/`
+  - `world.rs`: Implementation of the Typst `World` trait, providing access to fonts and files.
+  - `vfs.rs`: Virtual File System to bridge Typst's file requests with Obsidian's vault.
+  - `lib.rs`: Main entry point for `wasm-bindgen` exports to JavaScript.
+  - `serde/`: Custom serialization logic for communicating complex data between Rust and JS.
+- `packages/`
+  - `typst-syntax/`: Pure TypeScript implementation of typst-syntax crate.
 
 Also you can refer to [deepwiki](https://deepwiki.com/azyarashi/obsidian-typst-mate).
 
