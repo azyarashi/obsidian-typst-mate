@@ -1,12 +1,14 @@
 import { EditorState } from '@codemirror/state';
 import { EditorView } from '@codemirror/view';
-import { debounce, type Menu, TextFileView, type TFile, type WorkspaceLeaf } from 'obsidian';
+import { debounce, type Menu, TextFileView, TFile, type WorkspaceLeaf } from 'obsidian';
 
 import { updateDiagnosticEffect } from '@/editor/shared/extensions/decorations/Diagnostic';
 import { buildTypstTextExtensions } from '@/editor/typst/build';
 import { jumpToPreviewTargetFacet } from '@/editor/typst/extensions/actions/JumpToPreview';
 import type ObsidianTypstMate from '@/main';
+import { exportToPdf } from '@/utils/export';
 import { TypstPreviewView } from '../typst-preview/typstPreview';
+import { ExportToolModal } from './exportTool';
 
 export class TypstTextView extends TextFileView {
   static viewtype = 'typst-text';
@@ -35,6 +37,26 @@ export class TypstTextView extends TextFileView {
   override async onload(): Promise<void> {
     // 念の為 await
     await super.onload();
+
+    this.addAction('upload', 'Export', () => {
+      if (!this.file) return;
+      new ExportToolModal(this.app, this.plugin, this.file, this.view.state.doc.toString()).open();
+    });
+
+    this.addAction('file-image', 'Export as PDF', async () => {
+      if (!this.file) return;
+      const path = await exportToPdf(this.plugin, this.file, this.view.state.doc.toString(), {
+        tagged: true,
+        standards: [],
+      });
+      if (path) {
+        const pdfFile = this.app.vault.getAbstractFileByPath(path);
+        if (pdfFile instanceof TFile) {
+          const leaf = this.app.workspace.getLeaf('split', 'vertical');
+          await leaf.openFile(pdfFile);
+        }
+      }
+    });
 
     this.addAction('eye', 'Open as Preview', async () => {
       if (this.linkedPreviewLeaf && this.linkedPreviewLeaf.view instanceof TypstPreviewView) {

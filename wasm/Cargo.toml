@@ -9,12 +9,15 @@ crate-type = ["cdylib"]
 [dependencies]
 typst = "0.14.2"
 typst-ide = "0.14.2"
-typst-svg = "0.14.2"
-typst-pdf = "0.14.2"
 typst-library = "0.14.2"
 typst-macros = "0.14.2"
 typst-assets = { version = "0.14.2", features = ["fonts"] }
 typst-timing = "0.14.2"
+
+typst-pdf = "0.14.2"
+typst-svg = "0.14.2"
+typst-render = "0.14.2"
+
 comemo = "^0"
 unscanny = "^0.1"
 
@@ -46,6 +49,7 @@ typst-pdf = { path = "../typst/crates/typst-pdf" }
 typst-library = { path = "../typst/crates/typst-library" }
 typst-macros = { path = "../typst/crates/typst-macros" }
 typst-timing = { path = "../typst/crates/typst-timing" }
+typst-render = { path = "../typst/crates/typst-render" }
 
 [profile.release]
 lto = true

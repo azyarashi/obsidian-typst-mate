@@ -12,20 +12,20 @@ use typst::{
     World,
     diag::Warned,
     foundations::Bytes,
-    layout::{Abs, Frame, FrameItem, PagedDocument, Point},
+    layout::{Abs, PageRanges, PagedDocument, Point},
     syntax::{
         FileId, VirtualPath,
         package::{PackageSpec, PackageVersion},
     },
     text::FontInfo,
 };
-use typst_pdf::PdfOptions;
 
 mod serde;
+mod utils;
 mod vfs;
 mod world;
 
-use crate::serde::{diagnostic, font, jump, package, pdf, svg, svgp};
+use crate::serde::{diagnostic, font, jump, options, package, pdfr, pngr, svg, svgp, svgr};
 use crate::world::WasmWorld;
 
 #[wasm_bindgen]
@@ -151,28 +151,10 @@ impl Typst {
 
         to_value(&infos).unwrap_or(JsValue::NULL)
     }
+}
 
-    pub fn latex_to_typst(&self, code: &str) -> String {
-        latex_document_to_typst(code)
-    }
-    pub fn typst_to_latex(&self, code: &str) -> String {
-        typst_document_to_latex(code)
-    }
-
-    pub fn latexeq_to_typm(&self, code: &str) -> String {
-        latex_to_typst(code)
-    }
-    pub fn typm_to_latexeq(&self, code: &str) -> String {
-        typst_to_latex(code)
-    }
-
-    pub fn tikz_to_cetz(&self, code: &str) -> String {
-        convert_tikz_to_cetz(code)
-    }
-    pub fn cetz_to_tikz(&self, code: &str) -> String {
-        convert_cetz_to_tikz(code)
-    }
-
+#[wasm_bindgen]
+impl Typst {
     fn update_source(&mut self, vpath: VirtualPath, code: &str) {
         let file_id = FileId::new(None, vpath.clone());
         let result = self.world.source(file_id);
@@ -189,6 +171,7 @@ impl Typst {
         }
     }
 
+    // Markdown 用
     pub fn svg(
         &mut self,
         code: &str,
@@ -221,7 +204,7 @@ impl Typst {
                 };
                 let frame = &page.frame;
                 let descent = if kind == "inline" {
-                    (match find_baseline(frame, Abs::zero()) {
+                    (match utils::find_baseline(frame, Abs::zero()) {
                         Some(b) => (b - frame.height()).to_pt(),
                         None => -frame.height().to_pt(),
                     }) + self.offset
@@ -255,44 +238,13 @@ impl Typst {
         }
     }
 
-    pub fn pdf(&mut self, filename: &str, code: &str) -> Result<JsValue, JsValue> {
-        self.update_source(
-            VirtualPath::new(format!("{}/{}", self.basepath, filename)),
-            code,
-        );
-        let Warned { output, warnings } = typst::compile::<PagedDocument>(&mut self.world);
-
-        match output {
-            Ok(mut document) => {
-                document.info.title.get_or_insert_with(|| filename.into());
-                let options = PdfOptions::default();
-
-                match typst_pdf::pdf(&document, &options) {
-                    Ok(pdf_data) => pdf::pdf(pdf_data, warnings, &self.world),
-                    Err(errs) => {
-                        let diags: Vec<diagnostic::SourceDiagnosticSer> = errs
-                            .iter()
-                            .map(|d| diagnostic::SourceDiagnosticSer::from_diag(d, &self.world))
-                            .collect();
-                        Err(to_value(&diags).unwrap_or(JsValue::NULL))
-                    }
-                }
-            }
-            Err(errs) => {
-                let diags: Vec<diagnostic::SourceDiagnosticSer> = errs
-                    .iter()
-                    .map(|d| diagnostic::SourceDiagnosticSer::from_diag(d, &self.world))
-                    .collect();
-                Err(to_value(&diags).unwrap_or(JsValue::NULL))
-            }
-        }
-    }
-
+    // プレビュー用
     pub fn svgp(&mut self, ndir: &str, filename: &str, code: &str) -> Result<JsValue, JsValue> {
         self.update_source(
             VirtualPath::new(format!("{}{}{}", self.basepath, ndir, filename)),
             code,
         );
+        self.world.update_now();
         let Warned { output, warnings } = typst::compile::<PagedDocument>(&mut self.world);
 
         match output {
@@ -314,7 +266,10 @@ impl Typst {
             }
         }
     }
+}
 
+#[wasm_bindgen]
+impl Typst {
     pub fn jump_from_click(&self, x: f64, y: f64) -> JsValue {
         match &self.last_document {
             Some(document) => {
@@ -360,6 +315,7 @@ impl Typst {
                 let result = self.world.source(self.world.main());
                 if let Ok(source) = result {
                     let positions = typst_ide::jump_from_cursor(document, &source, cursor);
+
                     let positions_ser: Vec<jump::JumpSer> = positions
                         .into_iter()
                         .map(jump::JumpSer::from_position)
@@ -373,20 +329,208 @@ impl Typst {
     }
 }
 
-fn find_baseline(frame: &Frame, offset_y: Abs) -> Option<Abs> {
-    let mut stack: Vec<(&Frame, Abs)> = Vec::with_capacity(16);
-    stack.push((frame, offset_y));
+#[wasm_bindgen]
+impl Typst {
+    pub fn pdfr(
+        &mut self,
+        ndir: &str,
+        filename: &str,
+        code: &str,
+        options: JsValue,
+    ) -> Result<JsValue, JsValue> {
+        let options_ser: options::PdfOptionsSer = serde_wasm_bindgen::from_value(options)
+            .map_err(|e| JsValue::from_str(&format!("failed to deserialize options: {}", e)))?;
 
-    while let Some((cur, cur_offset)) = stack.pop() {
-        for (pos, item) in cur.items().rev() {
-            if let FrameItem::Text(text) = item {
-                if text.text.as_bytes() == b"TypstMate" {
-                    return Some(cur_offset + pos.y);
+        self.world.update_now();
+        self.update_source(
+            VirtualPath::new(format!("{}{}{}", self.basepath, ndir, filename)),
+            code,
+        );
+        let Warned { output, warnings } = typst::compile::<PagedDocument>(&mut self.world);
+
+        match output {
+            Ok(mut document) => {
+                document.info.title.get_or_insert_with(|| filename.into());
+
+                let mut options = typst_pdf::PdfOptions::default();
+                options.tagged = options_ser.tagged;
+                if let Some(ident) = &options_ser.ident {
+                    options.ident = typst::foundations::Smart::Custom(ident.as_str());
                 }
-            } else if let FrameItem::Group(group) = item {
-                stack.push((&group.frame, cur_offset + pos.y));
+
+                if !options_ser.standards.is_empty() {
+                    options.standards = typst_pdf::PdfStandards::new(&options_ser.standards)
+                        .map_err(|e| JsValue::from_str(&e))?;
+                }
+
+                if let Some(timestamp) = options_ser.timestamp {
+                    use chrono::{Datelike, FixedOffset, TimeZone, Timelike, Utc};
+                    let offset_min = options_ser.offset.unwrap_or(0);
+                    let tz = FixedOffset::east_opt(offset_min * 60)
+                        .unwrap_or(FixedOffset::east_opt(0).unwrap());
+                    if let Some(dt) = Utc.timestamp_opt(timestamp, 0).single() {
+                        let local_dt = dt.with_timezone(&tz);
+                        let datetime = typst::foundations::Datetime::from_ymd_hms(
+                            local_dt.year(),
+                            local_dt.month() as u8,
+                            local_dt.day() as u8,
+                            local_dt.hour() as u8,
+                            local_dt.minute() as u8,
+                            local_dt.second() as u8,
+                        );
+                        if let Some(datetime) = datetime {
+                            if options_ser.offset.is_some() {
+                                options.timestamp =
+                                    typst_pdf::Timestamp::new_local(datetime, offset_min);
+                            } else {
+                                options.timestamp = Some(typst_pdf::Timestamp::new_utc(datetime));
+                            }
+                        }
+                    }
+                }
+
+                if let Some(page_ranges) = &options_ser.page_ranges {
+                    if let Some(ranges) = utils::parse_page_ranges(page_ranges) {
+                        options.page_ranges = Some(ranges);
+                    }
+                }
+
+                match typst_pdf::pdf(&document, &options) {
+                    Ok(pdf_data) => pdfr::pdfr(pdf_data, warnings, &self.world),
+                    Err(errs) => {
+                        let diags: Vec<diagnostic::SourceDiagnosticSer> = errs
+                            .iter()
+                            .map(|d| diagnostic::SourceDiagnosticSer::from_diag(d, &self.world))
+                            .collect();
+                        Err(to_value(&diags).unwrap_or(JsValue::NULL))
+                    }
+                }
+            }
+            Err(errs) => {
+                let diags: Vec<diagnostic::SourceDiagnosticSer> = errs
+                    .iter()
+                    .map(|d| diagnostic::SourceDiagnosticSer::from_diag(d, &self.world))
+                    .collect();
+                Err(to_value(&diags).unwrap_or(JsValue::NULL))
             }
         }
     }
-    None
+
+    pub fn svgr(
+        &mut self,
+        ndir: &str,
+        filename: &str,
+        code: &str,
+        options: JsValue,
+    ) -> Result<JsValue, JsValue> {
+        let options_ser: options::SvgOptionsSer = serde_wasm_bindgen::from_value(options)
+            .map_err(|e| JsValue::from_str(&format!("failed to deserialize options: {}", e)))?;
+
+        self.world.update_now();
+        self.update_source(
+            VirtualPath::new(format!("{}{}{}", self.basepath, ndir, filename)),
+            code,
+        );
+        let Warned { output, warnings } = typst::compile::<PagedDocument>(&mut self.world);
+
+        match output {
+            Ok(document) => {
+                let page_ranges: Option<PageRanges> = options_ser
+                    .page_ranges
+                    .as_ref()
+                    .and_then(|s| utils::parse_page_ranges(s));
+                let mut svgs = Vec::new();
+                for (i, page) in document.pages.iter().enumerate() {
+                    if let Some(ranges) = &page_ranges {
+                        if !ranges.includes_page_index(i) {
+                            continue;
+                        }
+                    }
+                    let svg = typst_svg::svg(page);
+                    svgs.push(svg);
+                }
+                svgr::svgr(svgs, warnings, &self.world)
+            }
+            Err(errs) => {
+                let diags: Vec<diagnostic::SourceDiagnosticSer> = errs
+                    .iter()
+                    .map(|d| diagnostic::SourceDiagnosticSer::from_diag(d, &self.world))
+                    .collect();
+                Err(to_value(&diags).unwrap_or(JsValue::NULL))
+            }
+        }
+    }
+
+    pub fn pngr(
+        &mut self,
+        ndir: &str,
+        filename: &str,
+        code: &str,
+        options: JsValue,
+    ) -> Result<JsValue, JsValue> {
+        let options_ser: options::PngOptionsSer = serde_wasm_bindgen::from_value(options)
+            .map_err(|e| JsValue::from_str(&format!("failed to deserialize options: {}", e)))?;
+
+        self.world.update_now();
+        self.update_source(
+            VirtualPath::new(format!("{}{}{}", self.basepath, ndir, filename)),
+            code,
+        );
+        let Warned { output, warnings } = typst::compile::<PagedDocument>(&mut self.world);
+
+        match output {
+            Ok(document) => {
+                let ppi = options_ser.ppi;
+                let page_ranges: Option<PageRanges> = options_ser
+                    .page_ranges
+                    .as_ref()
+                    .and_then(|s| utils::parse_page_ranges(s));
+                let mut images = Vec::new();
+                for (i, page) in document.pages.iter().enumerate() {
+                    if let Some(ranges) = &page_ranges {
+                        if !ranges.includes_page_index(i) {
+                            continue;
+                        }
+                    }
+                    let pixmap = typst_render::render(page, ppi / 72.0);
+                    let png = pixmap
+                        .encode_png()
+                        .map_err(|e| JsValue::from_str(&e.to_string()))?;
+                    images.push(png);
+                }
+                pngr::pngr(images, warnings, &self.world)
+            }
+            Err(errs) => {
+                let diags: Vec<diagnostic::SourceDiagnosticSer> = errs
+                    .iter()
+                    .map(|d| diagnostic::SourceDiagnosticSer::from_diag(d, &self.world))
+                    .collect();
+                Err(to_value(&diags).unwrap_or(JsValue::NULL))
+            }
+        }
+    }
+}
+
+#[wasm_bindgen]
+impl Typst {
+    pub fn latex_to_typst(&self, code: &str) -> String {
+        latex_document_to_typst(code)
+    }
+    pub fn typst_to_latex(&self, code: &str) -> String {
+        typst_document_to_latex(code)
+    }
+
+    pub fn latexeq_to_typm(&self, code: &str) -> String {
+        latex_to_typst(code)
+    }
+    pub fn typm_to_latexeq(&self, code: &str) -> String {
+        typst_to_latex(code)
+    }
+
+    pub fn tikz_to_cetz(&self, code: &str) -> String {
+        convert_tikz_to_cetz(code)
+    }
+    pub fn cetz_to_tikz(&self, code: &str) -> String {
+        convert_cetz_to_tikz(code)
+    }
 }

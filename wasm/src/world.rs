@@ -1,6 +1,6 @@
 use std::{path::PathBuf, str::FromStr, sync::Mutex};
 
-use chrono::{DateTime, Datelike, FixedOffset, Local, Utc};
+use chrono::{DateTime, Datelike, FixedOffset, Local, Timelike, Utc};
 use rustc_hash::{FxHashMap, FxHashSet};
 use send_wrapper::SendWrapper;
 
@@ -236,6 +236,16 @@ impl WasmWorld {
 
         f(m.get_mut(&id).unwrap())
     }
+
+    pub fn update_now(&mut self) {
+        use chrono::TimeZone;
+        let now_ms = js_sys::Date::now();
+        let seconds = (now_ms / 1000.0) as i64;
+        let nanos = ((now_ms % 1000.0) * 1_000_000.0) as u32;
+        if let Some(dt) = Utc.timestamp_opt(seconds, nanos).single() {
+            self.now = dt;
+        }
+    }
 }
 
 #[comemo::track]
@@ -282,9 +292,11 @@ impl World for WasmWorld {
         let year = local_datetime.year();
         let month = local_datetime.month().try_into().ok()?;
         let day = local_datetime.day().try_into().ok()?;
+        let hour = local_datetime.hour().try_into().ok()?;
+        let minute = local_datetime.minute().try_into().ok()?;
+        let second = local_datetime.second().try_into().ok()?;
 
-        // ? 起動時の値に固定するので，hms は不要。
-        Datetime::from_ymd(year, month, day)
+        Datetime::from_ymd_hms(year, month, day, hour, minute, second)
     }
 }
 

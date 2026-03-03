@@ -1907,6 +1907,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3b3cff922bd51709b605d9ead9aa71031d81447142d828eb4a6eba76fe619f9b"
 
 [[package]]
+name = "pixglyph"
+version = "0.6.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3c1106193bc18a4b840eb075ff6664c8a0b0270f0531bb12a7e9c803e53b55c5"
+dependencies = [
+ "ttf-parser",
+]
+
+[[package]]
 name = "plist"
 version = "1.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3120,6 +3129,24 @@ dependencies = [
 ]
 
 [[package]]
+name = "typst-render"
+version = "0.14.2"
+dependencies = [
+ "bytemuck",
+ "comemo",
+ "hayro",
+ "image",
+ "pixglyph",
+ "resvg",
+ "tiny-skia",
+ "ttf-parser",
+ "typst-assets",
+ "typst-library",
+ "typst-macros",
+ "typst-timing",
+]
+
+[[package]]
 name = "typst-svg"
 version = "0.14.2"
 dependencies = [
@@ -3236,6 +3263,7 @@ dependencies = [
  "typst-library",
  "typst-macros",
  "typst-pdf",
+ "typst-render",
  "typst-svg",
  "typst-timing",
  "unicode-math-class",
@@ -4047,9 +4075,9 @@ dependencies = [
 
 [[package]]
 name = "zlib-rs"
-version = "0.6.2"
+version = "0.6.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c745c48e1007337ed136dc99df34128b9faa6ed542d80a1c673cf55a6d7236c8"
+checksum = "3be3d40e40a133f9c916ee3f9f4fa2d9d63435b5fbe1bfc6d9dae0aa0ada1513"
 
 [[package]]
 name = "zmij"

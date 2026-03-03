@@ -9,18 +9,18 @@ use crate::serde::diagnostic::SourceDiagnosticSer;
 use crate::world::WasmWorld;
 
 #[derive(Serialize)]
-struct PdfResultSer {
-    pdf: Vec<u8>,
+struct SvgrSer {
+    svgs: Vec<String>,
     diags: Vec<SourceDiagnosticSer>,
 }
 
-pub fn pdf(
-    pdf: Vec<u8>,
+pub fn svgr(
+    svgs: Vec<String>,
     diags: EcoVec<SourceDiagnostic>,
     world: &WasmWorld,
 ) -> Result<JsValue, JsValue> {
-    let result = PdfResultSer {
-        pdf,
+    let result = SvgrSer {
+        svgs,
         diags: diags
             .iter()
             .map(|d| SourceDiagnosticSer::from_diag(d, world))

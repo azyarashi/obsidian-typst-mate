@@ -54,8 +54,16 @@ export default class $ {
     return this.typst.svg(code, ndir, kind, id);
   }
 
-  pdf(filename: string, code: string): PDFResult {
-    return this.typst.pdf(filename, code);
+  pdfr(ndir: string, filename: string, code: string, options: any): PdfrResult {
+    return this.typst.pdfr(ndir, filename, code, options);
+  }
+
+  svgr(ndir: string, filename: string, code: string, options: any): SvgrResult {
+    return this.typst.svgr(ndir, filename, code, options);
+  }
+
+  pngr(ndir: string, filename: string, code: string, options: any): PngrResult {
+    return this.typst.pngr(ndir, filename, code, options);
   }
 
   svgp(ndir: string, filename: string, code: string): SVGPResult {
@@ -252,8 +260,18 @@ export interface SVGResult {
   diags: Diagnostic[];
 }
 
-export interface PDFResult {
+export interface PdfrResult {
   pdf: Uint8Array;
+  diags: Diagnostic[];
+}
+
+export interface SvgrResult {
+  svgs: string[];
+  diags: Diagnostic[];
+}
+
+export interface PngrResult {
+  images: Uint8Array[];
   diags: Diagnostic[];
 }
 
