@@ -1,4 +1,4 @@
-import { CLASSES, type MathClass } from './classes.ts';
+import { CLASSES, type MathClass } from './classes';
 
 export function class_(c: string): MathClass | undefined {
   let lo = 0;
