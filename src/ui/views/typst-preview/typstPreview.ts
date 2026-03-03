@@ -268,7 +268,7 @@ export class TypstPreviewView extends TextFileView {
 
     const oldScale = this.viewerState.scale;
     let newScale = oldScale * factor;
-    newScale = Math.min(10.0, Math.max(0.2, newScale));
+    newScale = Math.min(20.0, Math.max(0.2, newScale));
 
     if (oldScale === newScale) return;
 
@@ -331,17 +331,16 @@ export class TypstPreviewView extends TextFileView {
   private fitToWidth(): void {
     if (!this.viewerAreaEl || this.svgPages.length === 0) return;
 
-    let maxWidthPt = 0;
-    for (const svgContent of this.svgPages) {
-      const match = svgContent.match(/width="([\d.]+)pt"/);
-      const widthStr = match?.[1];
-      if (widthStr) {
-        const w = parseFloat(widthStr);
-        if (w > maxWidthPt) maxWidthPt = w;
-      }
-    }
+    const pageIdx = Math.max(0, this.viewerState.currentPage - 1);
+    const svgContent = this.svgPages[pageIdx];
+    if (!svgContent) return;
 
-    if (maxWidthPt === 0) return;
+    const match = svgContent.match(/width="([\d.]+)pt"/);
+    const widthStr = match?.[1];
+    if (!widthStr) return;
+
+    const pageWidthPt = parseFloat(widthStr);
+    if (pageWidthPt === 0) return;
 
     const viewerWidth = this.viewerAreaEl.clientWidth;
     if (viewerWidth === 0) {
@@ -349,11 +348,11 @@ export class TypstPreviewView extends TextFileView {
       return;
     }
 
-    const maxWidthPx = maxWidthPt * (96 / 72);
+    const pageWidthPx = pageWidthPt * (96 / 72);
 
-    if (viewerWidth > 0 && maxWidthPx > 0) {
-      this.viewerState.scale = viewerWidth / maxWidthPx;
-      this.viewerState.scale = Math.min(10.0, Math.max(0.2, this.viewerState.scale));
+    if (viewerWidth > 0 && pageWidthPx > 0) {
+      this.viewerState.scale = viewerWidth / pageWidthPx;
+      this.viewerState.scale = Math.min(20.0, Math.max(0.2, this.viewerState.scale));
       this.updatePagesScale();
       this.updateControls();
     }
@@ -458,9 +457,8 @@ export class TypstPreviewView extends TextFileView {
   }
 
   private async jump(event: MouseEvent, pageIndex: number, pageDiv: HTMLElement) {
-    if (this.isPanning || event.detail === 0) return; // Don't jump if panning or not a real click
+    if (this.isPanning || event.detail === 0) return;
 
-    // If the mouse moved significantly, don't jump
     const dx = Math.abs(event.clientX - this.startX);
     const dy = Math.abs(event.clientY - this.startY);
     if (dx > 5 || dy > 5) return;
