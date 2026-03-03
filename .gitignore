@@ -5,6 +5,7 @@ node_modules
 .idea
 
 .env
+.npmrc
 .DS_Store
 *.code-workspace
 
