@@ -17,7 +17,7 @@ Snippet                  | Script
 :-----------------------:|:------------------------:
 [![Snippet](assets/snippet.gif)](#snippet) | [![Script](assets/script-snippet.gif)](#script-snippet)
 
-For details about the processor / snippet(script) / shortcut / tab jump, see [Processor](docs/processor/) / [Snippet](docs/snippet/) / [Shortcut](docs/Shortcut.md) / [TabJump](docs/TabJump.md).
+For details, refer to the [Documentation](#documentation) section below.
 
 I welcome [Discussions](https://github.com/azyarashi/obsidian-typst-mate/discussions/categories/show-and-tell) featuring your wonderful snippets!
 
@@ -84,13 +84,23 @@ You can install this plugin via the Community Plugins tab within Obsidian. Searc
 
 [![Screenshot](assets/install-with-brat.png)](#install-with-brat)
 
+## Documentation
+
+- [**Processor**](docs/processor/README.md) - Customize rendering with preambles, templates, and styling
+- [**Snippets**](docs/snippets/README.md) - Auto-expanding shortcuts for math input
+  - [Cases](docs/snippets/Cases.md) / [Matrix](docs/snippets/Matrix.md)
+- [**Shortcuts**](docs/Shortcuts.md) - Wrap selected text in Typst functions (e.g. `sqrt`, `bold`)
+- [**Tab Jump**](docs/TabJump.md) - Navigate through math content with <kbd>Tab</kbd>
+- [**Commands**](docs/Commands.md) - Available commands and actions
+- [**Migrating from LaTeX Suite**](docs/obsidian-latex-suite-migration.md) - Guide for Obsidian LaTeX Suite users
+
 ## Compatibility
 
-### Obsidian App
+### Official Features
 
 - PDF Export
 
-### Other Plugins
+### Community Plugins
 
 - [Excalidraw](https://www.obsidianstats.com/plugins/obsidian-excalidraw-plugin) (use the `typst-render-to-excalidraw` command)
 - [Equation Citator](https://github.com/FRIEDparrot/obsidian-equation-citator) (`Advanced Settings` > `Enable Typst Mode` > reload the plugin)
@@ -101,6 +111,8 @@ You can install this plugin via the Community Plugins tab within Obsidian. Searc
 - [Webpage HTML Export](https://www.obsidianstats.com/plugins/webpage-html-export) (don't forget to include CSS from Style Options and disable background rendering)
 
 If the export doesn't work correctly, try disabling background rendering before exporting.
+
+## Customization
 
 ### Default Preamble
 
@@ -127,7 +139,7 @@ Depending on the three modes (`inline`, `display`, and `codeblock`), the styling
 - `typstmate-style-(style)`
 - `typstmate-id-(id)`
 
----
+## Acknowledgements
 
 Typst Mate leverages the following open-source projects:
 
