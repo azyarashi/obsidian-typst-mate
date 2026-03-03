@@ -11,7 +11,7 @@ bun install @typstmate/typst-syntax
 ## Usage
 
 ```typescript
-import { parse, type SyntaxNode } from "@typstmate/typst-syntax";
+import { parse, type SyntaxNode } from '@typstmate/typst-syntax';
 
 const code = `\
 #set page(width: auto, height: auto, margin: 1em)
@@ -94,7 +94,7 @@ export const typstSyntaxHighlightPlugin = ViewPlugin.fromClass(
         const start = node.offset;
         const end = node.offset + node.len();
 
-        if (end < vpFrom || start > vpTo) return;
+        if (end < vpFrom || vpTo < start) return;
 
         const cssClass = highlight(node);
         if (cssClass && start < end) marks.push({ from: start, to: end, class: cssClass });
