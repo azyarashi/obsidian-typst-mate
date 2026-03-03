@@ -22,7 +22,7 @@
   "scripts": {
     "build": "bun tsup src/typst-syntax/index.ts --format cjs,esm --dts --clean",
     "prepublishOnly": "bun run build",
-    "publish": "npm publish --tag latest",
+    "publish": "npm publish --access public --tag latest",
     "typecheck": "bun tsc --noEmit",
     "test": "bun test",
     "test:watch": "bun test --watch"
