@@ -55,10 +55,12 @@
     "includes": [
       "src/**",
       "scripts/*",
+      "packages/**",
       "vite.config.ts",
       "postcss.config.cjs",
       ".vscode/settings.json",
-      "!src/data/symbols.json"
+      "!src/data/symbols.json",
+      "!**/dist/*"
     ]
   }
 }

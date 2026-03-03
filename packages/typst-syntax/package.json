@@ -1,6 +1,6 @@
 {
   "name": "@typstmate/typst-syntax",
-  "version": "0.14.2-1",
+  "version": "0.14.2-2",
   "description": "Typst syntax definitions and parser",
   "keywords": [
     "typst",
@@ -23,6 +23,7 @@
     "type": "git",
     "url": "https://github.com/azyarashi/obsidian-typst-mate.git"
   },
+  "license": "Apache-2.0",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
