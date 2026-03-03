@@ -18,27 +18,11 @@ function utf16ToUtf8Offset(text: string, utf16Offset: number): number {
 }
 
 class JumpToPreviewPluginValue {
-  pressTimer?: ReturnType<typeof setTimeout>;
-
   constructor(public view: EditorView) {}
 
-  onMouseDown(event: MouseEvent) {
-    if (event.button !== 0) return;
-    clearTimeout(this.pressTimer);
-    this.pressTimer = setTimeout(() => {
-      this.handleLongPress(event);
-    }, 500);
-  }
+  async onMouseDown(event: MouseEvent) {
+    if (event.button !== 0 || event.detail !== 2) return;
 
-  onMouseUp() {
-    clearTimeout(this.pressTimer);
-  }
-
-  onMouseLeave() {
-    clearTimeout(this.pressTimer);
-  }
-
-  private async handleLongPress(event: MouseEvent) {
     const pos = this.view.posAtCoords({ x: event.clientX, y: event.clientY });
     if (pos === null) return;
 
@@ -60,9 +44,7 @@ class JumpToPreviewPluginValue {
     }
   }
 
-  destroy() {
-    clearTimeout(this.pressTimer);
-  }
+  destroy() {}
 }
 
 export const jumpToPreviewPlugin = ViewPlugin.fromClass(JumpToPreviewPluginValue);
@@ -72,12 +54,6 @@ export const jumpToPreviewExtension = [
   EditorView.domEventHandlers({
     mousedown(event, view) {
       view.plugin(jumpToPreviewPlugin)?.onMouseDown(event);
-    },
-    mouseup(_event, view) {
-      view.plugin(jumpToPreviewPlugin)?.onMouseUp();
-    },
-    mouseleave(_event, view) {
-      view.plugin(jumpToPreviewPlugin)?.onMouseLeave();
     },
   }),
 ];
