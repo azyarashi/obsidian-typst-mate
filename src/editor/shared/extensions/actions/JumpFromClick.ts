@@ -8,7 +8,7 @@ import { getRegionAt } from '../core/TypstMate';
 class JumpFromClickPluginValue {
   constructor(public view: EditorView) {}
 
-  jumpTo(jump: Jump, context: TypstElement) {
+  jumpTo(jump: Jump, context: TypstElement, event: MouseEvent) {
     if (jump.type === 'url') return window.open(jump.url);
     if (jump.type !== 'file') return;
     if (jump.pos === undefined) return;
@@ -26,6 +26,7 @@ class JumpFromClickPluginValue {
     const expectedPosition = jump.pos + offset;
     const clampedOffset =
       expectedPosition <= region.from ? region.from : region.to <= expectedPosition ? region.to : expectedPosition;
+    event.preventDefault();
 
     this.view.focus(); // ? コードブロックプレビューが正しく表示される
     this.view.dispatch({

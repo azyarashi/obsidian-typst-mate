@@ -124,8 +124,6 @@ export default class TypstSVGElement extends TypstElement {
   }
 
   async jump(event: MouseEvent) {
-    if (this.kind !== 'codeblock') return; // TODO: 不安定
-
     const svg = this.querySelector('svg');
     if (!svg) return;
 
@@ -138,7 +136,7 @@ export default class TypstSVGElement extends TypstElement {
     if (result) {
       const view = this.plugin.app.workspace.getActiveFileView();
       if (!(view instanceof MarkdownView)) return;
-      view.editor.cm.plugin(jumpFromClickPlugin)?.jumpTo(result, this);
+      view.editor.cm.plugin(jumpFromClickPlugin)?.jumpTo(result, this, event);
     }
   }
 }
