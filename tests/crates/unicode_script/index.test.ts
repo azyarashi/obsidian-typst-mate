@@ -5,7 +5,7 @@ import {
   isHanRegexMatched,
   isHiraganaRegexMatched,
   isKatakanaRegexMatched,
-} from './index';
+} from '@/utils/crates/unicode_script/index';
 
 describe('unicode_script', () => {
   it('isAlphaNumericRegexMatched', () => {

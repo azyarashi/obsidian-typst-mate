@@ -2,8 +2,8 @@
 // Tests are based on the examples in the documentation of the original crate.
 
 import { describe, expect, it } from 'bun:test';
-import { MathClass } from './classes';
-import { class_ } from './index';
+import { MathClass } from '@/utils/crates/unicode-math-class/classes';
+import { class_ } from '@/utils/crates/unicode-math-class/index';
 
 describe('unicode_math_class', () => {
   it('doc examples', () => {

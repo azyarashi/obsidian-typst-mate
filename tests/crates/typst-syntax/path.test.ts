@@ -1,6 +1,6 @@
 // https://github.com/typst/typst/blob/main/crates/typst-syntax/src/path.rs
 import { describe, expect, it } from 'bun:test';
-import { VirtualPath } from './path';
+import { VirtualPath } from '@/utils/crates/typst-syntax/path';
 
 describe('VirtualPath', () => {
   it('new', () => {

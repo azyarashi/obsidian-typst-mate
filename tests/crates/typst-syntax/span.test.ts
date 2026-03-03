@@ -1,7 +1,7 @@
 // https://github.com/typst/typst/blob/main/crates/typst-syntax/src/span.rs
 import { describe, expect, it } from 'bun:test';
-import { FileId } from './file';
-import { Span, Spanned } from './span';
+import { FileId } from '@/utils/crates/typst-syntax/file';
+import { Span, Spanned } from '@/utils/crates/typst-syntax/span';
 
 describe('Span', () => {
   it('detached', () => {
