@@ -21,7 +21,7 @@ class JumpFromClickPluginValue {
     const region = getRegionAt(this.view, regionFrom);
     if (!region) return;
 
-    const offset = region.from + context.offset;
+    const offset = region.from + region.skip + context.offset;
 
     const expectedPosition = jump.pos + offset;
     const clampedOffset =
