@@ -45,15 +45,15 @@ export class Scanner {
   }
 
   at(pattern: string | RegExp | ((char: string) => boolean) | string[]): boolean {
-    if (this.done()) return false;
-    const char = this.string[this.cursor] || '';
-
     if (typeof pattern === 'string') return this.string.startsWith(pattern, this.cursor);
-    else if (Array.isArray(pattern)) {
+    if (Array.isArray(pattern)) {
       for (const s of pattern) if (this.string.startsWith(s, this.cursor)) return true;
       return false;
-    } else if (pattern instanceof RegExp) return pattern.test(char);
-    else return pattern(char);
+    }
+    if (this.done()) return false;
+    const char = this.string[this.cursor] || '';
+    if (pattern instanceof RegExp) return pattern.test(char);
+    return pattern(char);
   }
 
   scout(n: number): string {
@@ -61,9 +61,7 @@ export class Scanner {
   }
 
   locate(n: number): number {
-    const target = this.cursor + n;
-    if (target > this.len) return this.len;
-    return target;
+    return Math.max(0, Math.min(this.cursor + n, this.len));
   }
 
   // --- Consuming ---
@@ -85,47 +83,34 @@ export class Scanner {
 
   // TODO
   eatIf(pattern: string | RegExp | ((char: string) => boolean)): boolean {
-    if (this.done()) return false;
-    const char = this.string[this.cursor] || '';
-    let matched = false;
-    let len = 0;
-
     if (typeof pattern === 'string') {
-      if (this.string.startsWith(pattern, this.cursor)) {
-        matched = true;
-        len = pattern.length;
-      }
-    } else if (pattern instanceof RegExp) {
-      if (pattern.test(char)) {
-        matched = true;
-        len = 1;
-      }
-    } else {
-      if (pattern(char)) {
-        matched = true;
-        len = 1;
-      }
-    }
-
-    if (matched) {
-      this.cursor += len;
+      if (!this.string.startsWith(pattern, this.cursor)) return false;
+      this.cursor += pattern.length;
       return true;
     }
-    return false;
+
+    if (this.done()) return false;
+    const char = this.string[this.cursor] || '';
+    const matched = pattern instanceof RegExp ? pattern.test(char) : pattern(char);
+    if (!matched) return false;
+    this.cursor++;
+    return true;
   }
 
   // TODO
   eatWhile(pattern: string | RegExp | ((char: string) => boolean)): string {
     const start = this.cursor;
-    while (!this.done()) {
-      const char = this.string[this.cursor] || '';
-      let matched = false;
-      if (typeof pattern === 'string') matched = char === pattern;
-      else if (pattern instanceof RegExp) matched = pattern.test(char);
-      else matched = pattern(char);
-
-      if (matched) this.cursor++;
-      else break;
+    if (typeof pattern === 'string') {
+      while (this.string.startsWith(pattern, this.cursor)) {
+        if (pattern.length === 0) break;
+        this.cursor += pattern.length;
+      }
+    } else {
+      while (!this.done()) {
+        const char = this.string[this.cursor] || '';
+        if (pattern instanceof RegExp ? pattern.test(char) : pattern(char)) this.cursor++;
+        else break;
+      }
     }
     return this.string.slice(start, this.cursor);
   }
@@ -133,15 +118,16 @@ export class Scanner {
   // TODO
   eatUntil(pattern: string | RegExp | ((char: string) => boolean)): string {
     const start = this.cursor;
-    while (!this.done()) {
-      const char = this.string[this.cursor] || '';
-      let matched = false;
-      if (typeof pattern === 'string') matched = char === pattern;
-      else if (pattern instanceof RegExp) matched = pattern.test(char);
-      else matched = pattern(char);
-
-      if (!matched) this.cursor++;
-      else break;
+    if (typeof pattern === 'string') {
+      while (!this.done() && !this.string.startsWith(pattern, this.cursor)) {
+        this.cursor++;
+      }
+    } else {
+      while (!this.done()) {
+        const char = this.string[this.cursor] || '';
+        if (pattern instanceof RegExp ? pattern.test(char) : pattern(char)) break;
+        else this.cursor++;
+      }
     }
     return this.string.slice(start, this.cursor);
   }
@@ -166,5 +152,17 @@ export class Scanner {
     const target = this.cursor + n;
     if (target > this.len) this.cursor = this.len;
     else this.cursor = target;
+  }
+
+  // --- Debug ---
+
+  toString(): string {
+    const [before, after] = this.parts();
+    let s = 'Scanner(';
+    if (before) s += `"${before}" `;
+    s += '|';
+    if (after) s += ` "${after}"`;
+    s += ')';
+    return s;
   }
 }

@@ -3,7 +3,9 @@
 	"scripts": {
 		"wasm": "wasm-pack build wasm --target web --release --out-dir ../pkg",
 		"build": "bunx --bun vite build",
-		"check": "bunx biome check --write"
+		"check": "bunx biome check --write",
+		"test": "bun test",
+		"test:watch": "bun test --watch"
 	},
 	"dependencies": {
 		"comlink": "^4.4.2",

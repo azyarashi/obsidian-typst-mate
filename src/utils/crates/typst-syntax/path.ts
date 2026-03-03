@@ -31,7 +31,7 @@ export class VirtualPath {
       parentParts.push(part);
     }
 
-    return new VirtualPath('/' + parentParts.join('/'));
+    return new VirtualPath(`/${parentParts.join('/')}`);
   }
 
   public withExtension(extension: string): VirtualPath {
@@ -39,9 +39,9 @@ export class VirtualPath {
     const lastDot = this._path.lastIndexOf('.');
 
     if (lastDot > lastSlash) {
-      return new VirtualPath(this._path.slice(0, lastDot) + '.' + extension);
+      return new VirtualPath(`${this._path.slice(0, lastDot)}.${extension}`);
     } else {
-      return new VirtualPath(this._path + '.' + extension);
+      return new VirtualPath(`${this._path}.${extension}`);
     }
   }
 
@@ -60,7 +60,7 @@ export class VirtualPath {
       }
     }
 
-    return new VirtualPath('/' + out.join('/'));
+    return new VirtualPath(`/${out.join('/')}`);
   }
 
   public toString(): string {

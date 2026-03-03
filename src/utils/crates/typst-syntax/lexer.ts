@@ -287,7 +287,7 @@ export class Lexer {
       let lastLine = lines[lines.length - 1]!;
       if (lastLine.endsWith('`')) {
         if (lastLine.endsWith(' `')) {
-          lastLine = lastLine.slice(0, -2) + '`';
+          lastLine = `${lastLine.slice(0, -2)}\``;
         }
         lines[lines.length - 1] = lastLine;
       }
