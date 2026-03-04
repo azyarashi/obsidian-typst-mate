@@ -52,6 +52,7 @@ export async function exportToPdf(
   file: TFile,
   content: string,
   options: PdfExportOptions,
+  notice: boolean = true,
 ): Promise<string | undefined> {
   const result = (await plugin.typst.pdfr('/', file.name, content, options)) as PdfrResult;
   if (!result?.pdf) return;
@@ -63,7 +64,7 @@ export async function exportToPdf(
   const exportPath = `${file.path.slice(0, -file.extension.length - 1)}.pdf`;
   await plugin.app.vault.adapter.writeBinary(exportPath, buffer);
 
-  new Notice(`Exported to ${exportPath}`);
+  if (notice) new Notice(`Exported to ${exportPath}`);
 
   return exportPath;
 }

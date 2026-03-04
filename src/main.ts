@@ -38,6 +38,9 @@ import { TypstToolsView } from './ui/views/typst-tools/typstTools';
 import { zip } from './utils/packageCompressor';
 
 import './main.css';
+import { TemplateSelectModal } from './ui/modals/templateSelect';
+import { exportToPdf } from './utils/export';
+import { createNewFile } from './utils/file';
 
 export default class ObsidianTypstMate extends Plugin {
   pluginId = 'typst-mate';
@@ -456,20 +459,14 @@ export default class ObsidianTypstMate extends Plugin {
         if (!(file instanceof TFolder)) return;
         menu.addItem((item) => {
           item.setTitle('New typst file').onClick(async () => {
-            let i = 0;
-            let tfile: TFile;
-            while (true) {
-              const filename = `Untitled${i === 0 ? '' : ` ${i}`}.typ`;
-              if (!(await this.app.vault.exists(`${file.path}/${filename}`))) {
-                tfile = await this.app.vault.create(`${file.path}/${filename}`, '');
-                break;
-              }
-              i++;
-            }
-            if (tfile) this.app.workspace.getLeaf(true).openFile(tfile);
+            const tfile = await createNewFile(this.app.vault, file);
+            this.app.workspace.getLeaf(true).openFile(tfile);
           });
-          // TODO: New typst file with template
-          // TODO: 再起動時に削除
+          menu.addItem((item) => {
+            item.setTitle('New typst file with template').onClick(() => {
+              new TemplateSelectModal(this, file).open();
+            });
+          });
         });
       }),
       this.app.metadataCache.on('changed', (file) => {
