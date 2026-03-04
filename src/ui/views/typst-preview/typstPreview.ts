@@ -40,6 +40,8 @@ export class TypstPreviewView extends TextFileView {
   private scrollStartX = 0;
   private scrollStartY = 0;
 
+  private isProgrammaticScroll = false;
+
   constructor(leaf: WorkspaceLeaf, plugin: ObsidianTypstMate) {
     super(leaf);
     this.plugin = plugin;
@@ -148,8 +150,10 @@ export class TypstPreviewView extends TextFileView {
   private async renderPreview(): Promise<void> {
     try {
       this.createViewer();
-      this.fitToWidth();
-      this.restoreViewerState();
+      this.fitToPage(false);
+
+      if (this.viewerState.scrollTop === 0) requestAnimationFrame(() => this.scrollToPage(1, 'auto'));
+      else this.restoreViewerState();
     } catch (error) {
       console.error('Preview rendering failed:', error);
     }
@@ -172,7 +176,8 @@ export class TypstPreviewView extends TextFileView {
     this.pageInputEl.addEventListener('change', () => {
       const pageNum = parseInt(this.pageInputEl!.value, 10);
       if (pageNum >= 1 && pageNum <= this.svgPages.length) {
-        this.scrollToPage(pageNum);
+        this.viewerState.currentPage = pageNum;
+        this.fitToPage(true);
       } else {
         this.pageInputEl!.value = this.viewerState.currentPage.toString();
       }
@@ -185,8 +190,8 @@ export class TypstPreviewView extends TextFileView {
     nextButton.addEventListener('click', () => this.goToNextPage());
 
     const resetButton = this.controlsEl.createEl('button', { text: 'Reset' });
-    resetButton.title = 'Fit to Width';
-    resetButton.addEventListener('click', () => this.fitToWidth());
+    resetButton.title = 'Fit to Page';
+    resetButton.addEventListener('click', () => this.fitToPage(true));
 
     this.zoomSliderEl = this.controlsEl.createEl('input', {
       type: 'range',
@@ -196,9 +201,25 @@ export class TypstPreviewView extends TextFileView {
     this.zoomSliderEl.max = '1000';
     this.zoomSliderEl.value = Math.round(this.viewerState.scale * 100).toString();
     this.zoomSliderEl.addEventListener('input', () => {
-      this.viewerState.scale = parseInt(this.zoomSliderEl!.value, 10) / 100;
+      if (!this.viewerAreaEl) return;
+
+      const oldScale = this.viewerState.scale;
+      const newScale = parseInt(this.zoomSliderEl!.value, 10) / 100;
+      if (oldScale === newScale) return;
+
+      const centerX = this.viewerAreaEl.clientWidth / 2;
+      const centerY = this.viewerAreaEl.clientHeight / 2;
+
+      const contentX = (this.viewerAreaEl.scrollLeft + centerX) / oldScale;
+      const contentY = (this.viewerAreaEl.scrollTop + centerY) / oldScale;
+
+      this.viewerState.scale = newScale;
       this.updatePagesScale();
       this.updateControls();
+
+      this.viewerAreaEl.scrollLeft = contentX * newScale - centerX;
+      this.viewerAreaEl.scrollTop = contentY * newScale - centerY;
+
       this.saveViewerState();
     });
 
@@ -296,7 +317,7 @@ export class TypstPreviewView extends TextFileView {
     if (this.viewerState.currentPage <= 1) return;
 
     this.viewerState.currentPage--;
-    await this.scrollToPage(this.viewerState.currentPage);
+    this.fitToPage(true);
     this.saveViewerState();
   }
 
@@ -304,15 +325,15 @@ export class TypstPreviewView extends TextFileView {
     if (this.viewerState.currentPage >= this.svgPages.length) return;
 
     this.viewerState.currentPage++;
-    await this.scrollToPage(this.viewerState.currentPage);
+    this.fitToPage(true);
     this.saveViewerState();
   }
 
-  private async scrollToPage(pageNumber: number): Promise<void> {
+  private async scrollToPage(pageNumber: number, behavior: ScrollBehavior = 'auto'): Promise<void> {
     if (!this.viewerAreaEl) return;
 
-    const pageElement = this.viewerAreaEl.querySelector(`#preview-page-${pageNumber}`);
-    if (pageElement) pageElement.scrollIntoView({ behavior: 'smooth' });
+    const pageElement = this.viewerAreaEl.querySelector(`#preview-page-${pageNumber}`) as HTMLElement;
+    if (pageElement) pageElement.scrollIntoView({ behavior, block: 'start', inline: 'center' });
     this.updateControls();
   }
 
@@ -328,33 +349,47 @@ export class TypstPreviewView extends TextFileView {
     if (this.zoomSliderEl) this.zoomSliderEl.value = Math.round(this.viewerState.scale * 100).toString();
   }
 
-  private fitToWidth(): void {
+  private fitToPage(forceScroll = false): void {
     if (!this.viewerAreaEl || this.svgPages.length === 0) return;
 
     const pageIdx = Math.max(0, this.viewerState.currentPage - 1);
     const svgContent = this.svgPages[pageIdx];
     if (!svgContent) return;
 
-    const match = svgContent.match(/width="([\d.]+)pt"/);
-    const widthStr = match?.[1];
-    if (!widthStr) return;
+    const widthMatch = svgContent.match(/width="([\d.]+)pt"/);
+    const heightMatch = svgContent.match(/height="([\d.]+)pt"/);
+    if (!widthMatch?.[1] || !heightMatch?.[1]) return;
 
-    const pageWidthPt = parseFloat(widthStr);
-    if (pageWidthPt === 0) return;
+    const pageWidthPt = parseFloat(widthMatch[1]);
+    const pageHeightPt = parseFloat(heightMatch[1]);
+    if (pageWidthPt === 0 || pageHeightPt === 0) return;
 
     const viewerWidth = this.viewerAreaEl.clientWidth;
-    if (viewerWidth === 0) {
-      setTimeout(() => this.fitToWidth(), 50);
+    const viewerHeight = this.viewerAreaEl.clientHeight;
+
+    if (viewerWidth === 0 || viewerHeight === 0) {
+      setTimeout(() => this.fitToPage(forceScroll), 50);
       return;
     }
 
-    const pageWidthPx = pageWidthPt * (96 / 72);
+    const ptToPx = 96 / 72;
+    const pageWidthPx = pageWidthPt * ptToPx;
+    const pageHeightPx = pageHeightPt * ptToPx;
 
-    if (viewerWidth > 0 && pageWidthPx > 0) {
-      this.viewerState.scale = viewerWidth / pageWidthPx;
-      this.viewerState.scale = Math.min(20.0, Math.max(0.2, this.viewerState.scale));
-      this.updatePagesScale();
-      this.updateControls();
+    const scaleX = viewerWidth / pageWidthPx;
+    const scaleY = viewerHeight / pageHeightPx;
+
+    this.viewerState.scale = Math.min(scaleX, scaleY);
+    this.viewerState.scale = Math.min(20.0, Math.max(0.2, this.viewerState.scale));
+
+    this.updatePagesScale();
+    this.updateControls();
+
+    if (forceScroll) {
+      void this.viewerAreaEl.offsetHeight;
+      this.scrollToPage(this.viewerState.currentPage, 'auto');
+    } else {
+      this.viewerAreaEl.scrollLeft = 0;
     }
   }
 
@@ -368,7 +403,7 @@ export class TypstPreviewView extends TextFileView {
   }
 
   private updateCurrentPageFromScroll(): void {
-    if (!this.viewerAreaEl || !this.pageInputEl) return;
+    if (!this.viewerAreaEl || !this.pageInputEl || this.isPanning || this.isProgrammaticScroll) return;
 
     const scrollTop = this.viewerAreaEl.scrollTop;
     const pageElements = this.viewerAreaEl.querySelectorAll('.typstmate-preview-page');
