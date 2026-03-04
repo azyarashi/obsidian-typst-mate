@@ -467,6 +467,15 @@ export class TypstPreviewView extends TextFileView {
     if (!svg) return;
 
     const rect = svg.getBoundingClientRect();
+
+    if (
+      event.clientX < rect.left ||
+      event.clientX > rect.right ||
+      event.clientY < rect.top ||
+      event.clientY > rect.bottom
+    )
+      return;
+
     const x = (event.clientX - rect.left) / (rect.width / svg.viewBox.baseVal.width);
     const y = (event.clientY - rect.top) / (rect.height / svg.viewBox.baseVal.height);
 
