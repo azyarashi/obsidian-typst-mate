@@ -483,6 +483,40 @@ export default class ObsidianTypstMate extends Plugin {
       }),
       this.app.workspace.on('resize', refresh),
     );
+
+    const embedRegistry = this.app.embedRegistry;
+    if (embedRegistry.isExtensionRegistered('typ')) embedRegistry.unregisterExtension('typ');
+    embedRegistry.registerExtension('typ', (context, file, subpath) => {
+      const component = embedRegistry.embedByExtension.pdf(context, file, subpath);
+      const originalLoadFile = component.loadFile.bind(component);
+
+      component.loadFile = async () => {
+        if (file.extension !== 'typ') return originalLoadFile();
+
+        const content = await this.app.vault.read(file);
+        const pdfPath = `${file.path.slice(0, -file.extension.length - 1)}.pdf`;
+        const isExist = await this.app.vault.exists(pdfPath);
+
+        if (isExist) {
+          const pdfFile = this.app.vault.getAbstractFileByPath(pdfPath);
+          // @ts-expect-error
+          if (pdfFile) component.file = pdfFile as TFile;
+        } else {
+          const result = await exportToPdf(this, file, content, { tagged: false, standards: [] }, false);
+          if (result) {
+            const pdfFile = this.app.vault.getAbstractFileByPath(result);
+            // @ts-expect-error
+            if (pdfFile) component.file = pdfFile as TFile;
+          }
+
+          setTimeout(() => this.app.vault.delete(this.app.vault.getAbstractFileByPath(pdfPath) as TFile), 1000);
+        }
+
+        originalLoadFile();
+      };
+
+      return component;
+    });
   }
 
   async init() {
