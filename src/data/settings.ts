@@ -132,7 +132,7 @@ export const DEFAULT_SETTINGS: Settings = {
   openTypstToolsOnStartup: true,
   enableMathjaxFallback: false,
   applyProcessorToMathJax: false,
-  importPath: '.typst',
+  importPath: 'typstmate',
   enableDebugger: false,
 
   /* その他の設定 */
