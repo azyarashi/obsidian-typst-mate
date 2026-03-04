@@ -19,7 +19,7 @@ export class FontList {
     if (Platform.isDesktopApp) {
       new Setting(containerEl)
         .setName('Import Font')
-        .setDesc('Desktop App only. Typst supports ttf/otf/ttc/otc.')
+        .setDesc('Desktop App only. Typst supports .ttf, .otf, .ttc, and .otc fonts.')
         .addSearch((search) => {
           search.setPlaceholder('Filter Font Name');
 
@@ -35,7 +35,7 @@ export class FontList {
         });
 
       this.fontDataCountEl = containerEl.createDiv();
-      this.fontDataCountEl.textContent = 'Click to get system font list';
+      this.fontDataCountEl.textContent = 'Click to load the system font list';
 
       this.fontDataTableEl = containerEl.createDiv('typstmate-settings-table typstmate-hidden');
     }
@@ -43,7 +43,7 @@ export class FontList {
     // 読み込み済みフォント
     const settings = new Setting(containerEl)
       .setName('Imported Fonts')
-      .setDesc('The string next to the font name is used to identify fonts that share the same PostScript name.');
+      .setDesc('The string next to each font name is used to identify fonts that share the same PostScript name.');
     if (Platform.isDesktopApp) {
       settings.addButton((button) => {
         button.setTooltip('Open Folder');

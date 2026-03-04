@@ -188,7 +188,7 @@ export class ExportToolModal extends Modal {
 
       new Setting(contentEl)
         .setName('PPI')
-        .setDesc('Pixels per inch. Higher values mean higher resolution (e.g. 72, 144, 300).')
+        .setDesc('Pixels per inch. Higher values produce higher resolution (e.g., 72, 144, 300).')
         .addText((text) => {
           text.inputEl.type = 'number';
           text
@@ -240,7 +240,7 @@ export class ExportToolModal extends Modal {
       }
     } catch (e) {
       console.error('Export failed:', e);
-      new Notice('Export failed. Check console for details.');
+      new Notice('Export failed. Check the console for details.');
     }
   }
 }

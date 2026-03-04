@@ -17,13 +17,13 @@ export function addProcessorTab(
     .setDesc(
       new CustomFragment()
         .appendText(
-          'In each mode, the first matching Processor ID from the top will be used. An empty Processor ID means the default and should be placed at the bottom. In the format, ',
+          'In each mode, the first matching Processor ID from the top is used. An empty Processor ID acts as the default and should be placed at the bottom. In the format, ',
         )
         .appendCodeText('{CODE}')
         .appendText(' can be used (only the first occurrence is replaced), and ')
         .appendCodeText('fontsize')
         .appendText(
-          ' can be used as an internal length value. In inline mode, separate the id and the code with a colon ',
+          ' can be used as an internal length value. In inline mode, separate the ID and the code with a colon ',
         )
         .appendCodeText(':')
         .appendText(

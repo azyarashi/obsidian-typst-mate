@@ -19,14 +19,14 @@ export class TemplateSelectModal extends Modal {
 
     const importPath = this.plugin.settings.importPath;
     if (!(await this.plugin.app.vault.adapter.exists(importPath))) {
-      new Notice('Typst directory does not exist. Please see advanced settings.');
+      new Notice('Typst directory does not exist. Check the Advanced settings.');
       this.close();
       return;
     }
 
     const templatePath = `${importPath}/templates`;
     if (!(await this.plugin.app.vault.adapter.exists(templatePath))) {
-      new Notice('Template directory does not exist. Please create `templates` directory in import path.');
+      new Notice('Template directory does not exist. Please create a `templates` directory in the import path.');
       this.close();
       return;
     }

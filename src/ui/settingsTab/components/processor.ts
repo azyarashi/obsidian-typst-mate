@@ -13,7 +13,7 @@ import { ProcessorExtModal } from '@/ui/modals/processorExt';
 
 const description = {
   inline:
-    'It expects only inline elements to be placed and no extra line breaks (including ; in Code mode) on the last line. If you use block elements, please convert them to inline elements using the box function. If you want to use the same typesetting as Typst, set the style to inline. If you want to use display math equations, setting $#math.equation($ {CODE} $, block: false)$ is recommended.',
+    'Use only inline elements, with no extra line breaks (including ; in Code mode) on the last line. If you use block elements, convert them to inline elements using the box function. To use the same typesetting as Typst, set the style to inline. For display math equations, using $#math.equation($ {CODE} $, block: false)$ is recommended.',
   display: '',
   codeblock: '',
   excalidraw: '',
@@ -256,7 +256,7 @@ export class ProcessorList {
             }
 
             const isDuplicate = processors.some((p, i) => i !== currentIndex && p.id === cleanId && cleanId !== '');
-            if (isDuplicate) return new Notice('ID is duplicate');
+            if (isDuplicate) return new Notice('This ID already exists.');
 
             this.plugin.settings.processor[this.kind].processors[Number(processorEl.id)]!.id = cleanId;
             this.updateDraggability();

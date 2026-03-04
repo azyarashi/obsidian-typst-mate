@@ -296,11 +296,11 @@ export default class ObsidianTypstMate extends Plugin {
 
     this.addCommand({
       id: 'tex2typ',
-      name: 'Replace tex in markdown content or selection to typst',
+      name: 'Replace TeX with Typst in markdown content or selection',
       editorCallback: async (editor) => {
         const view = editor.cm;
         if (!view) {
-          new Notice('Active view is not found.');
+          new Notice('No active view found.');
           return;
         }
 

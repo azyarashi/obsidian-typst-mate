@@ -27,7 +27,7 @@ export function addRendererTab(plugin: ObsidianTypstMate, containerEl: HTMLEleme
   new Setting(containerEl)
     .setName('Patch PDF Export')
     .setDesc(
-      'Temporarily disable AutoBaseColor and use BaseColor during PDF Export to fix white background issues in dark themes.',
+      'Temporarily disable AutoBaseColor and use BaseColor during PDF export to fix white background issues in dark themes.',
     )
     .addToggle((toggle) => {
       toggle.setValue(plugin.settings.patchPDFExport ?? DEFAULT_SETTINGS.patchPDFExport!);
@@ -39,7 +39,7 @@ export function addRendererTab(plugin: ObsidianTypstMate, containerEl: HTMLEleme
 
   new Setting(containerEl)
     .setName('Use Theme Text Color')
-    .setDesc("Uses Obsidian's text color as the base color automatically.")
+    .setDesc("Use Obsidian's text color as the base color.")
     .addToggle((toggle) => {
       toggle.setValue(plugin.settings.autoBaseColor);
       toggle.onChange((value) => {
@@ -70,7 +70,7 @@ export function addRendererTab(plugin: ObsidianTypstMate, containerEl: HTMLEleme
   new Setting(containerEl)
     .setName('Offset')
     .setDesc(
-      'Offset for inline math. The appearance may look unappealing depending on the font used in Obsidian. Please adjust it here if necessary.',
+      'Vertical offset for inline math. The appearance may vary depending on the font used in Obsidian. Adjust as needed.',
     )
     .addSlider((slider) => {
       slider.setLimits(-0.5, 0.5, 0.05);
