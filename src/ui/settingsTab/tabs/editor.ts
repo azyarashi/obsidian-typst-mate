@@ -44,7 +44,7 @@ function addMathDecorationSettings(plugin: ObsidianTypstMate, containerEl: HTMLE
 
   new Setting(containerEl)
     .setName('Conceal Math Symbols')
-    .setDesc('Conceal math symbols (e.g. integral to ∫) in the editor.')
+    .setDesc('Conceal math symbols (e.g., integral to ∫) in the editor.')
     .addToggle((toggle) => {
       toggle.setValue(plugin.settings.concealMathSymbols ?? DEFAULT_SETTINGS.concealMathSymbols);
 
@@ -60,7 +60,7 @@ function addMathDecorationSettings(plugin: ObsidianTypstMate, containerEl: HTMLE
   let revealDelayToggle: ToggleComponent | null = null;
   new Setting(containerEl)
     .setName('Enable Math Symbol Reveal Delay')
-    .setDesc('Enable delay before revealing concealed math symbols when cursor is nearby.')
+    .setDesc('Add a delay before revealing concealed math symbols when the cursor is nearby.')
     .addToggle((toggle) => {
       revealDelayToggle = toggle;
       toggle.setValue(
@@ -78,7 +78,7 @@ function addMathDecorationSettings(plugin: ObsidianTypstMate, containerEl: HTMLE
   let revealDelayText: TextComponent | null = null;
   new Setting(containerEl)
     .setName('Conceal Math Symbol Reveal Delay Duration (ms)')
-    .setDesc('Milliseconds to wait before revealing the symbol text.')
+    .setDesc('Time in milliseconds to wait before revealing symbol text.')
     .addText((text) => {
       revealDelayText = text;
       text.setValue(String(plugin.settings.mathSymbolRevealDelay ?? DEFAULT_SETTINGS.mathSymbolRevealDelay));
@@ -97,7 +97,7 @@ function addMathDecorationSettings(plugin: ObsidianTypstMate, containerEl: HTMLE
 
   new Setting(containerEl)
     .setName('Complement Symbol with Unicode')
-    .setDesc('Automatically replaces typed symbols with Unicode equivalents.')
+    .setDesc('Automatically replace typed symbols with their Unicode equivalents.')
     .addToggle((toggle) => {
       toggle.setValue(plugin.settings.complementSymbolWithUnicode ?? DEFAULT_SETTINGS.complementSymbolWithUnicode);
 
@@ -123,7 +123,7 @@ function addMathDecorationSettings(plugin: ObsidianTypstMate, containerEl: HTMLE
 
   new Setting(containerEl)
     .setName('Use Obsidian Theme')
-    .setDesc('Use Obsidian theme instead of Typst theme. Reload required.')
+    .setDesc('Use the Obsidian theme instead of the Typst theme. Requires reload.')
     .addToggle((toggle) => {
       toggle.setValue(plugin.settings.useObsidianTheme ?? DEFAULT_SETTINGS.useObsidianTheme!);
       toggle.onChange((value) => {
@@ -153,7 +153,7 @@ function addActionSettings(plugin: ObsidianTypstMate, containerEl: HTMLElement) 
 
   new Setting(containerEl)
     .setName('Revert Tab to Default')
-    .setDesc('Reverts the Tab key behavior to the default indentation instead of jumping to the next placeholder.')
+    .setDesc('Revert the Tab key to default indentation behavior instead of jumping to the next placeholder.')
     .addToggle((toggle) => {
       toggle.setValue(plugin.settings.revertTabToDefault ?? DEFAULT_SETTINGS.revertTabToDefault!);
       toggle.onChange((value) => {
@@ -175,7 +175,7 @@ function addActionSettings(plugin: ObsidianTypstMate, containerEl: HTMLElement) 
 
   new Setting(containerEl)
     .setName('Move to End of Math Block Before Exiting')
-    .setDesc('When exiting math, first move the cursor to the end of the block.')
+    .setDesc('When exiting math mode, move the cursor to the end of the block first.')
     .addToggle((toggle) => {
       toggle.setValue(
         plugin.settings.moveToEndOfMathBlockBeforeExiting ?? DEFAULT_SETTINGS.moveToEndOfMathBlockBeforeExiting!,
@@ -204,7 +204,7 @@ function addActionSettings(plugin: ObsidianTypstMate, containerEl: HTMLElement) 
 
   new Setting(containerEl)
     .setName('Disable Macro')
-    .setDesc('Disable default macros like mk and dm.')
+    .setDesc('Disable default macros such as mk and dm.')
     .addToggle((toggle) => {
       toggle.setValue(plugin.settings.disableMacro ?? DEFAULT_SETTINGS.disableMacro!);
       toggle.onChange((value) => {

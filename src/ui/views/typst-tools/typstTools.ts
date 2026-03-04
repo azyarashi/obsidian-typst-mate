@@ -88,7 +88,7 @@ export class TypstToolsView extends ItemView {
           };
 
           const latex = contentEl.createEl('textarea');
-          latex.placeholder = 'LaTex';
+          latex.placeholder = 'LaTeX';
           latex.addClass('typstmate-form-control');
           latex.addEventListener('input', async () => {
             try {
@@ -157,7 +157,7 @@ export class TypstToolsView extends ItemView {
 
     new ButtonComponent(menuEl)
       .setIcon('refresh-ccw')
-      .setTooltip('再読み込み')
+      .setTooltip('Reload')
       .onClick(() => {
         switch (this.dropdown.getValue()) {
           case 'symbols':

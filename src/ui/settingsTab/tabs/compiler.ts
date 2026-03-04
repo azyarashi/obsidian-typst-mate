@@ -19,8 +19,8 @@ export function addCompilerTab(
 
 function addCompilerSettings(plugin: ObsidianTypstMate, containerEl: HTMLElement) {
   new Setting(containerEl)
-    .setName('Skip Preparation Waiting')
-    .setDesc('Defers initialization at startup (Unstable on mobile). Reduces startup time but delays first render.')
+    .setName('Skip Startup Preparation')
+    .setDesc('Defer initialization at startup (unstable on mobile). Reduces startup time but delays the first render.')
     .addToggle((toggle) => {
       toggle.setValue(plugin.settings.skipPreparationWaiting);
       toggle.onChange((value) => {
@@ -32,7 +32,7 @@ function addCompilerSettings(plugin: ObsidianTypstMate, containerEl: HTMLElement
   new Setting(containerEl)
     .setName('Disable Package Cache')
     .setDesc(
-      'Disable caching of imported packages. Useful for low memory environments but requires re-downloading packages.',
+      'Disable caching of imported packages. Useful for low-memory environments, but requires re-downloading packages.',
     )
     .addToggle((toggle) => {
       toggle.setValue(plugin.settings.disablePackageCache);
@@ -70,7 +70,7 @@ function addSubTabs(
       new Setting(containerEl)
         .setName('Package')
         .setDesc(
-          'When a package is imported, the cache is used instead of the actual files for faster performance. If you make changes directly, please click the package icon to refresh the cache (plugin reload is required.)',
+          'When a package is imported, the cache is used instead of the actual files for faster performance. If you make changes directly, click the package icon to refresh the cache (plugin reload is required).',
         )
         .setHeading();
       new PackagesList(plugin, containerEl);

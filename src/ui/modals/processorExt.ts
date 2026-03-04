@@ -15,7 +15,7 @@ export class ProcessorExtModal extends Modal {
     new Setting(this.contentEl).setName(processor.id).setHeading();
 
     // Preamble
-    new Setting(this.contentEl).setName(`Use preamble`).addToggle((toggle) => {
+    new Setting(this.contentEl).setName('Use preamble').addToggle((toggle) => {
       toggle.setValue(!processor.noPreamble);
 
       toggle.onChange(() => {
@@ -24,7 +24,7 @@ export class ProcessorExtModal extends Modal {
       });
     });
 
-    new Setting(this.contentEl).setName(`Disable symbol suggest`).addToggle((toggle) => {
+    new Setting(this.contentEl).setName('Disable symbol suggest').addToggle((toggle) => {
       toggle.setValue(processor.disableSuggest ?? false);
 
       toggle.onChange(() => {

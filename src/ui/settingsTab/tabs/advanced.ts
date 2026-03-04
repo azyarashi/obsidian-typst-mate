@@ -8,7 +8,7 @@ export function addAdvancedTab(plugin: ObsidianTypstMate, containerEl: HTMLEleme
   const setting = new Setting(containerEl)
     .setName('Typst file import path')
     .setDesc(
-      'The directory in your vault in which to look for typst files to be allowed to import, if the path does not exist or is empty the feature is disabled',
+      'The directory in your vault to look for Typst files to import. If the path does not exist or is empty, this feature is disabled.',
     )
     .addText((text) => {
       text.setValue(String(plugin.settings.importPath ?? DEFAULT_SETTINGS.importPath));
@@ -49,7 +49,7 @@ export function addAdvancedTab(plugin: ObsidianTypstMate, containerEl: HTMLEleme
 
   new Setting(containerEl)
     .setName('Open Typst Tools on Startup')
-    .setDesc('Open Typst tools in side panel when launching Obsidian.')
+    .setDesc('Open Typst Tools in the side panel when launching Obsidian.')
     .addToggle((toggle) => {
       toggle.setValue(plugin.settings.openTypstToolsOnStartup);
       toggle.onChange((value) => {
