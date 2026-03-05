@@ -1,6 +1,7 @@
 import { Notice, Setting, type TextComponent, type ToggleComponent } from 'obsidian';
 
 import { DEFAULT_SETTINGS } from '@/data/settings';
+import { t } from '@/i18n';
 import type ObsidianTypstMate from '@/main';
 
 export function addEditorTab(
@@ -11,9 +12,9 @@ export function addEditorTab(
 ) {
   const subTabsEl = containerEl.createDiv('typstmate-processor-tabs');
   const subTabs: { id: 'Decoration' | 'Popup' | 'Action'; name: string }[] = [
-    { id: 'Decoration', name: 'Decoration' },
-    { id: 'Popup', name: 'Popup' },
-    { id: 'Action', name: 'Action' },
+    { id: 'Decoration', name: t('settings.editor.subTabs.decoration') },
+    { id: 'Popup', name: t('settings.editor.subTabs.popup') },
+    { id: 'Action', name: t('settings.editor.subTabs.action') },
   ];
 
   for (const tab of subTabs) {
@@ -40,11 +41,11 @@ export function addEditorTab(
 }
 
 function addMathDecorationSettings(plugin: ObsidianTypstMate, containerEl: HTMLElement) {
-  new Setting(containerEl).setName('Conceal & Complement').setHeading();
+  new Setting(containerEl).setName(t('settings.editor.concealAndComplement')).setHeading();
 
   new Setting(containerEl)
-    .setName('Conceal Math Symbols')
-    .setDesc('Conceal math symbols (e.g., integral to ∫) in the editor.')
+    .setName(t('settings.editor.concealMathSymbols'))
+    .setDesc(t('settings.editor.concealMathSymbolsDesc'))
     .addToggle((toggle) => {
       toggle.setValue(plugin.settings.concealMathSymbols ?? DEFAULT_SETTINGS.concealMathSymbols);
 
@@ -59,8 +60,8 @@ function addMathDecorationSettings(plugin: ObsidianTypstMate, containerEl: HTMLE
 
   let revealDelayToggle: ToggleComponent | null = null;
   new Setting(containerEl)
-    .setName('Enable Math Symbol Reveal Delay')
-    .setDesc('Add a delay before revealing concealed math symbols when the cursor is nearby.')
+    .setName(t('settings.editor.enableRevealDelay'))
+    .setDesc(t('settings.editor.enableRevealDelayDesc'))
     .addToggle((toggle) => {
       revealDelayToggle = toggle;
       toggle.setValue(
@@ -77,16 +78,16 @@ function addMathDecorationSettings(plugin: ObsidianTypstMate, containerEl: HTMLE
 
   let revealDelayText: TextComponent | null = null;
   new Setting(containerEl)
-    .setName('Conceal Math Symbol Reveal Delay Duration (ms)')
-    .setDesc('Time in milliseconds to wait before revealing symbol text.')
+    .setName(t('settings.editor.revealDelayDuration'))
+    .setDesc(t('settings.editor.revealDelayDurationDesc'))
     .addText((text) => {
       revealDelayText = text;
       text.setValue(String(plugin.settings.mathSymbolRevealDelay ?? DEFAULT_SETTINGS.mathSymbolRevealDelay));
 
       text.onChange((value) => {
         const num = Number(value);
-        if (Number.isNaN(num)) return new Notice('Invalid number for Reveal Delay');
-        if (num <= 0) return new Notice('Reveal Delay must be greater than 0');
+        if (Number.isNaN(num)) return new Notice(t('notices.invalidNumberRevealDelay'));
+        if (num <= 0) return new Notice(t('notices.revealDelayMustBePositive'));
 
         plugin.settings.mathSymbolRevealDelay = num;
         plugin.saveSettings();
@@ -96,8 +97,8 @@ function addMathDecorationSettings(plugin: ObsidianTypstMate, containerEl: HTMLE
     });
 
   new Setting(containerEl)
-    .setName('Complement Symbol with Unicode')
-    .setDesc('Automatically replace typed symbols with their Unicode equivalents.')
+    .setName(t('settings.editor.complementSymbolWithUnicode'))
+    .setDesc(t('settings.editor.complementSymbolWithUnicodeDesc'))
     .addToggle((toggle) => {
       toggle.setValue(plugin.settings.complementSymbolWithUnicode ?? DEFAULT_SETTINGS.complementSymbolWithUnicode);
 
@@ -107,11 +108,11 @@ function addMathDecorationSettings(plugin: ObsidianTypstMate, containerEl: HTMLE
       });
     });
 
-  new Setting(containerEl).setName('Highlight').setHeading();
+  new Setting(containerEl).setName(t('settings.editor.highlight')).setHeading();
 
   new Setting(containerEl)
-    .setName('Disable Bracket Highlight')
-    .setDesc('Disable highlighting of matching brackets.')
+    .setName(t('settings.editor.disableBracketHighlight'))
+    .setDesc(t('settings.editor.disableBracketHighlightDesc'))
     .addToggle((toggle) => {
       toggle.setValue(plugin.settings.disableBracketHighlight ?? DEFAULT_SETTINGS.disableBracketHighlight!);
       toggle.onChange((value) => {
@@ -122,8 +123,8 @@ function addMathDecorationSettings(plugin: ObsidianTypstMate, containerEl: HTMLE
     });
 
   new Setting(containerEl)
-    .setName('Use Obsidian Theme')
-    .setDesc('Use the Obsidian theme instead of the Typst theme. Requires reload.')
+    .setName(t('settings.editor.useObsidianTheme'))
+    .setDesc(t('settings.editor.useObsidianThemeDesc'))
     .addToggle((toggle) => {
       toggle.setValue(plugin.settings.useObsidianTheme ?? DEFAULT_SETTINGS.useObsidianTheme!);
       toggle.onChange((value) => {
@@ -134,11 +135,11 @@ function addMathDecorationSettings(plugin: ObsidianTypstMate, containerEl: HTMLE
 }
 
 function addPopupSettings(plugin: ObsidianTypstMate, containerEl: HTMLElement) {
-  new Setting(containerEl).setName('Inline Preview').setHeading();
+  new Setting(containerEl).setName(t('settings.editor.inlinePreview')).setHeading();
 
   new Setting(containerEl)
-    .setName('Enable Inline Preview')
-    .setDesc('Show live preview for inline math.')
+    .setName(t('settings.editor.enableInlinePreview'))
+    .setDesc(t('settings.editor.enableInlinePreviewDesc'))
     .addToggle((toggle) => {
       toggle.setValue(plugin.settings.enableInlinePreview);
       toggle.onChange((value) => {
@@ -149,11 +150,11 @@ function addPopupSettings(plugin: ObsidianTypstMate, containerEl: HTMLElement) {
 }
 
 function addActionSettings(plugin: ObsidianTypstMate, containerEl: HTMLElement) {
-  new Setting(containerEl).setName('Tab Jump').setHeading();
+  new Setting(containerEl).setName(t('settings.editor.tabJump')).setHeading();
 
   new Setting(containerEl)
-    .setName('Revert Tab to Default')
-    .setDesc('Revert the Tab key to default indentation behavior instead of jumping to the next placeholder.')
+    .setName(t('settings.editor.revertTabToDefault'))
+    .setDesc(t('settings.editor.revertTabToDefaultDesc'))
     .addToggle((toggle) => {
       toggle.setValue(plugin.settings.revertTabToDefault ?? DEFAULT_SETTINGS.revertTabToDefault!);
       toggle.onChange((value) => {
@@ -163,8 +164,8 @@ function addActionSettings(plugin: ObsidianTypstMate, containerEl: HTMLElement) 
     });
 
   new Setting(containerEl)
-    .setName('Jump Outside Bracket')
-    .setDesc('Allow the cursor to jump outside the current bracket pair.')
+    .setName(t('settings.editor.jumpOutsideBracket'))
+    .setDesc(t('settings.editor.jumpOutsideBracketDesc'))
     .addToggle((toggle) => {
       toggle.setValue(plugin.settings.jumpOutsideBracket ?? DEFAULT_SETTINGS.jumpOutsideBracket!);
       toggle.onChange((value) => {
@@ -174,8 +175,8 @@ function addActionSettings(plugin: ObsidianTypstMate, containerEl: HTMLElement) 
     });
 
   new Setting(containerEl)
-    .setName('Move to End of Math Block Before Exiting')
-    .setDesc('When exiting math mode, move the cursor to the end of the block first.')
+    .setName(t('settings.editor.moveToEndOfMathBlock'))
+    .setDesc(t('settings.editor.moveToEndOfMathBlockDesc'))
     .addToggle((toggle) => {
       toggle.setValue(
         plugin.settings.moveToEndOfMathBlockBeforeExiting ?? DEFAULT_SETTINGS.moveToEndOfMathBlockBeforeExiting!,
@@ -187,8 +188,8 @@ function addActionSettings(plugin: ObsidianTypstMate, containerEl: HTMLElement) 
     });
 
   new Setting(containerEl)
-    .setName('Prefer Inline Exit for Single Line Display Math')
-    .setDesc('If a display math block fits on a single line, exit inline instead of creating a new line.')
+    .setName(t('settings.editor.preferInlineExit'))
+    .setDesc(t('settings.editor.preferInlineExitDesc'))
     .addToggle((toggle) => {
       toggle.setValue(
         plugin.settings.preferInlineExitForSingleLineDisplayMath ??
@@ -200,11 +201,11 @@ function addActionSettings(plugin: ObsidianTypstMate, containerEl: HTMLElement) 
       });
     });
 
-  new Setting(containerEl).setName('Macro').setHeading();
+  new Setting(containerEl).setName(t('settings.editor.macro')).setHeading();
 
   new Setting(containerEl)
-    .setName('Disable Macro')
-    .setDesc('Disable default macros such as mk and dm.')
+    .setName(t('settings.editor.disableMacro'))
+    .setDesc(t('settings.editor.disableMacroDesc'))
     .addToggle((toggle) => {
       toggle.setValue(plugin.settings.disableMacro ?? DEFAULT_SETTINGS.disableMacro!);
       toggle.onChange((value) => {

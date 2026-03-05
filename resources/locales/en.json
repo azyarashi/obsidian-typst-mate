@@ -1,0 +1,395 @@
+{
+  "common": {
+    "error": "Error",
+    "hintsCount": "[{{count}} hints]"
+  },
+
+  "commands": {
+    "boxCurrentEquation": "Box current equation",
+    "openTypstTools": "Open Typst Tools",
+    "reloadTagFiles": "Reload tag files",
+    "renderToExcalidraw": "Render to Excalidraw",
+    "replaceTexWithTypst": "Replace TeX with Typst in markdown content or selection",
+    "selectCurrentEquation": "Select current equation",
+    "toggleBackgroundRendering": "Toggle Background Rendering"
+  },
+
+  "contextMenu": {
+    "copyAsImgTag": "Copy as img tag (for embedding into Obsidian notes)",
+    "copyAsPngOpaque": "Copy as PNG (Opaque)",
+    "copyAsPngTransparent": "Copy as PNG (Transparent)",
+    "copyAsScript": "Copy as script",
+    "copyAsSvgObsidian": "Copy as SVG (Obsidian Theme)",
+    "copyAsSvgTypst": "Copy as SVG (Typst Default)",
+    "newTypstFile": "New typst file",
+    "newTypstFileWithTemplate": "New typst file with template",
+    "openAsPreview": "Open as Preview",
+    "openAsText": "Open as text",
+    "openWithDefaultApp": "Open with default app"
+  },
+
+  "modals": {
+    "diagnostic": {
+      "hintPrefix": "hint: {{hint}}"
+    },
+    "excalidraw": {
+      "code": "code",
+      "heading": "Excalidraw",
+      "previewPlaceholder": "Type in the input above to see the preview",
+      "processorId": "processor id",
+      "buttons": {
+        "add": "Add"
+      }
+    },
+    "exportTool": {
+      "customTimestamp": "Custom Timestamp",
+      "customTimestampDesc": "Set a custom creation date/time.",
+      "documentIdentifier": "Document Identifier",
+      "documentIdentifierDesc": "A unique identifier for the document.",
+      "filenameTemplate": "Filename Template",
+      "filenameTemplateDesc": "Template for page filenames. {p}: page number, {0p}: zero-padded, {t}: total count.",
+      "format": "Format",
+      "heading": "Export Typst Document",
+      "optionalPlaceholder": "Optional",
+      "pageRanges": "Page Ranges",
+      "pageRangesDesc": "Comma separated list of ranges. e.g., 1-3, 5, 7-",
+      "pageRangesPlaceholder": "e.g., 1-3, 5, 7-",
+      "pdfOptions": "PDF Options",
+      "pngOptions": "PNG Options",
+      "ppi": "PPI",
+      "ppiDesc": "Pixels per inch. Higher values produce higher resolution (e.g., 72, 144, 300).",
+      "standard": "Standard",
+      "standardDesc": "Enforce conformance with a PDF standard.",
+      "svgOptions": "SVG Options",
+      "taggedPdf": "Tagged PDF",
+      "taggedPdfDesc": "Include accessibility metadata.",
+      "buttons": {
+        "export": "Export"
+      },
+      "filenameTemplateDefaults": {
+        "png": "page-{0p}-of-{t}.png",
+        "svg": "page-{0p}-of-{t}.svg"
+      },
+      "formatOptions": {
+        "pdf": "PDF",
+        "png": "PNG (Image)",
+        "svg": "SVG"
+      }
+    },
+    "font": {
+      "copyFontFamilyName": "Copy Font Family Name",
+      "labels": {
+        "style": "style: {{value}}",
+        "weight": "weight: {{value}}",
+        "stretch": "stretch: {{value}}",
+        "flags": "flags: {{value}}"
+      }
+    },
+    "processorExt": {
+      "disableSymbolSuggest": "Disable symbol suggest",
+      "fitToNoteWidth": "Fit to note width",
+      "fitToNoteWidthDesc": "Adds a line at the beginning of the code declaring length: <code>WIDTH</code>",
+      "syntaxMode": "Syntax mode",
+      "syntaxModeDesc": "Specifies the syntax tree parsing mode. Select None to completely bypass AST parsing and syntax highlighting.",
+      "usePreamble": "Use preamble",
+      "useReplaceAll": "Use replace all",
+      "syntaxModeOptions": {
+        "code": "Code",
+        "markup": "Markup",
+        "math": "Math",
+        "none": "None"
+      }
+    },
+    "templateSelect": {
+      "heading": "Select a template",
+      "buttons": {
+        "select": "Select"
+      }
+    }
+  },
+
+  "notices": {
+    "alreadyRegisteredCodeblock": "Already registered codeblock language: {{id}}",
+    "cachedSuccessfully": "Cached successfully!",
+    "copied": "Copied!",
+    "copiedToClipboard": "Copied to clipboard!",
+    "crashAutoDisabled": "[Typst Mate] The plugin has been automatically turned off due to three consecutive crashes",
+    "downloadingWasm": "Downloading latest wasm...",
+    "exportFailed": "Export failed. Check the console for details.",
+    "exportedPngImages": "Exported {{count}} PNG image(s)",
+    "exportedSvgPages": "Exported {{count}} SVG page(s)",
+    "exportedTo": "Exported to {{path}}",
+    "failedToCache": "Failed to cache",
+    "failedToConvertSvgToPng": "Failed to convert SVG to PNG",
+    "failedToLoadCache": "Failed to load cache: {{name}}",
+    "failedToLoadFont": "Failed to load font: {{name}}",
+    "failedToRemove": "Failed to remove",
+    "filesUpdated": "Files updated.",
+    "fontAlreadyImported": "Font already imported!",
+    "idAlreadyExists": "This ID already exists.",
+    "idCannotBeEmpty": "ID cannot be empty",
+    "importedSuccessfully": "Imported successfully!",
+    "initFailed": "Failed to initialize Typst. Please check that the processor ID does not contain any symbols, try clearing the package cache, and ensure that there are no invalid fonts installed.",
+    "invalidNumberRevealDelay": "Invalid number for Reveal Delay",
+    "noActiveRegion": "There is no active region",
+    "noActiveView": "No active view found.",
+    "pluginReloaded": "Plugin reloaded.",
+    "removedSuccessfully": "Removed successfully!",
+    "revealDelayMustBePositive": "Reveal Delay must be greater than 0",
+    "snippetExecutionFailed": "Snippet execution failed: {{error}}",
+    "templateDirNotExist": "Template directory does not exist. Please create a `templates` directory in the import path.",
+    "typstDirNotExist": "Typst directory does not exist. Check the Advanced settings.",
+    "wasmDownloaded": "Wasm downloaded!"
+  },
+
+  "settings": {
+    "advanced": {
+      "applyProcessorToMathJax": "Apply Processor to MathJax",
+      "enableDebugger": "Enable Debugger",
+      "enableMathjaxFallback": "Enable MathJax Fallback",
+      "enableMathjaxFallbackDesc": "Not recommended for performance reasons. When enabled, <bold>Typst errors, warnings, and hints will be unavailable.</bold>",
+      "importPath": "Typst file import path",
+      "importPathDesc": "The directory in your vault to look for Typst files to import. If the path does not exist or is empty, this feature is disabled.",
+      "openDetails": "Open Details",
+      "openSnippetManager": "Open Snippet Manager",
+      "openTypstToolsOnStartup": "Open Typst Tools on Startup",
+      "openTypstToolsOnStartupDesc": "Open Typst Tools in the side panel when launching Obsidian.",
+      "reloadPlugin": "Reload Plugin",
+      "snippetsManaged": "Snippets are managed in a separate leaf.",
+      "buttons": {
+        "reloadPlugin": "Reload Plugin"
+      }
+    },
+
+    "compiler": {
+      "disablePackageCache": "Disable Package Cache",
+      "disablePackageCacheDesc": "Disable caching of imported packages. Useful for low-memory environments, but requires re-downloading packages.",
+      "skipStartup": "Skip Startup Preparation",
+      "skipStartupDesc": "Defer initialization at startup (unstable on mobile). Reduces startup time but delays the first render.",
+      "font": {
+        "clickToLoad": "Click to load the system font list",
+        "filterPlaceholder": "Filter Font Name",
+        "fontCount": "{{count}} font(s)",
+        "heading": "Font",
+        "importFont": "Import Font",
+        "importFontDesc": "Desktop App only. Typst supports .ttf, .otf, .ttc, and .otc fonts.",
+        "importedFonts": "Imported Fonts",
+        "importedFontsDesc": "The string next to each font name is used to identify fonts that share the same PostScript name.",
+        "tooltips": {
+          "getFontList": "Get Font List",
+          "getInfo": "Get Info",
+          "importFont": "Import Font",
+          "openFolder": "Open Folder",
+          "remove": "Remove"
+        }
+      },
+      "package": {
+        "cachedPackages": "Cached Packages",
+        "desc": "When a package is imported, the cache is used instead of the actual files for faster performance. If you make changes directly, click the package icon to refresh the cache (plugin reload is required).",
+        "heading": "Package",
+        "importLocal": "Import Local Package",
+        "importLocalDesc": "Desktop App only.",
+        "tooltips": {
+          "cache": "Cache",
+          "importLocalPackage": "Import Local Package",
+          "openFolder": "Open Folder",
+          "remove": "Remove"
+        }
+      },
+      "subTabs": {
+        "font": "Font",
+        "package": "Package"
+      }
+    },
+
+    "editor": {
+      "complementSymbolWithUnicode": "Complement Symbol with Unicode",
+      "complementSymbolWithUnicodeDesc": "Automatically replace typed symbols with their Unicode equivalents.",
+      "concealAndComplement": "Conceal & Complement",
+      "concealMathSymbols": "Conceal Math Symbols",
+      "concealMathSymbolsDesc": "Conceal math symbols (e.g., integral to ∫) in the editor.",
+      "disableBracketHighlight": "Disable Bracket Highlight",
+      "disableBracketHighlightDesc": "Disable highlighting of matching brackets.",
+      "disableMacro": "Disable Macro",
+      "disableMacroDesc": "Disable default macros such as mk and dm.",
+      "enableInlinePreview": "Enable Inline Preview",
+      "enableInlinePreviewDesc": "Show live preview for inline math.",
+      "enableRevealDelay": "Enable Math Symbol Reveal Delay",
+      "enableRevealDelayDesc": "Add a delay before revealing concealed math symbols when the cursor is nearby.",
+      "highlight": "Highlight",
+      "inlinePreview": "Inline Preview",
+      "jumpOutsideBracket": "Jump Outside Bracket",
+      "jumpOutsideBracketDesc": "Allow the cursor to jump outside the current bracket pair.",
+      "macro": "Macro",
+      "moveToEndOfMathBlock": "Move to End of Math Block Before Exiting",
+      "moveToEndOfMathBlockDesc": "When exiting math mode, move the cursor to the end of the block first.",
+      "preferInlineExit": "Prefer Inline Exit for Single Line Display Math",
+      "preferInlineExitDesc": "If a display math block fits on a single line, exit inline instead of creating a new line.",
+      "revealDelayDuration": "Conceal Math Symbol Reveal Delay Duration (ms)",
+      "revealDelayDurationDesc": "Time in milliseconds to wait before revealing symbol text.",
+      "revertTabToDefault": "Revert Tab to Default",
+      "revertTabToDefaultDesc": "Revert the Tab key to default indentation behavior instead of jumping to the next placeholder.",
+      "tabJump": "Tab Jump",
+      "useObsidianTheme": "Use Obsidian Theme",
+      "useObsidianThemeDesc": "Use the Obsidian theme instead of the Typst theme. Requires reload.",
+      "subTabs": {
+        "action": "Action",
+        "decoration": "Decoration",
+        "popup": "Popup"
+      }
+    },
+
+    "processor": {
+      "desc": "In each mode, the first matching Processor ID from the top is used. An empty Processor ID acts as the default and should be placed at the bottom. In the format, <code>{CODE}</code> can be used (only the first occurrence is replaced), and <code>fontsize</code> can be used as an internal length value. In inline mode, separate the ID and the code with a colon <code>:</code> in the format. When adding or removing processors for codeblock mode, reload the plugin to apply changes. <bold>IDs should not contain any special characters!</bold> For more details, see <link href=\"https://github.com/azyarashi/obsidian-typst-mate/blob/main/docs/processor/Processor.md\">Processor.md</link>.",
+      "formatPlaceholder": "format",
+      "heading": "Processor",
+      "idPlaceholder": "id",
+      "inlineDesc": "Use only inline elements, with no extra line breaks (including ; in Code mode) on the last line. If you use block elements, convert them to inline elements using the box function. To use the same typesetting as Typst, set the style to inline. For display math equations, using $#math.equation($ {CODE} $, block: false)$ is recommended.",
+      "preamble": "Preamble",
+      "preambleDesc": "Preamble can be turned on or off by toggling each processor.",
+      "preview": "Preview",
+      "previewPlaceholder": "Type in the input above to see the preview",
+      "buttons": {
+        "new": "New",
+        "remove": "Remove"
+      },
+      "processorTitles": {
+        "codeblock": "CodeBlock (```id...``` / ~~~id...~~~)",
+        "display": "Display Math ($$id...$$ / $$...$$)",
+        "excalidraw": "Excalidraw",
+        "inline": "Inline Math ($id:...$ / $...$)"
+      },
+      "renderingEngineOptions": {
+        "typstSvg": "Typst SVG",
+        "mathjax": "MathJax"
+      },
+      "stylingOptions": {
+        "inline": "inline",
+        "middle": "middle",
+        "baseline": "baseline",
+        "block": "block",
+        "blockCenter": "block-center",
+        "codeblock": "codeblock"
+      },
+      "subTabs": {
+        "codeblock": "CodeBlock",
+        "display": "Display",
+        "excalidraw": "Excalidraw",
+        "inline": "Inline"
+      },
+      "tooltips": {
+        "openMoreSettings": "Open more settings"
+      }
+    },
+
+    "renderer": {
+      "addProfile": "Add Profile",
+      "newProfileName": "New Profile",
+      "baseColor": "Base Color",
+      "baseColorDesc": "Replace black in SVGs with another color. Useful for dark themes. Disable <code>Use Theme Text Color</code> to use this.",
+      "deleteProfile": "Delete Profile",
+      "enableBackgroundRendering": "Enable Background Rendering",
+      "enableBackgroundRenderingDesc": "The UI will no longer freeze, but it may conflict with plugins related to export or rendering. (Disabled automatically when exporting to PDF via Markdown menu)",
+      "fitNoteWidthProfiles": "Fit Note Width Profiles",
+      "fitToNoteWidthProfile": "Fit To Note Width Profile",
+      "fitToNoteWidthProfileDesc": "Profile to use when calculating \"fit to note width\". Select a preset or Live to detect editor width.",
+      "offset": "Offset",
+      "offsetDesc": "Vertical offset for inline math. The appearance may vary depending on the font used in Obsidian. Adjust as needed.",
+      "patchPdfExport": "Patch PDF Export",
+      "patchPdfExportDesc": "Temporarily disable AutoBaseColor and use BaseColor during PDF export to fix white background issues in dark themes.",
+      "profileNamePlaceholder": "Name",
+      "profileWidthPlaceholder": "Width",
+      "profiles": "Profiles",
+      "profilesDesc": "Add or remove custom width profiles.",
+      "useThemeTextColor": "Use Theme Text Color",
+      "useThemeTextColorDesc": "Use Obsidian's text color as the base color."
+    },
+
+    "tabs": {
+      "advanced": "Advanced",
+      "compiler": "Compiler",
+      "editor": "Editor",
+      "processor": "Processor",
+      "renderer": "Renderer"
+    }
+  },
+
+  "snippets": {
+    "buttons": {
+      "detail": "Detail",
+      "new": "New",
+      "remove": "Remove"
+    },
+    "categoryNew": {
+      "heading": "New Category"
+    },
+    "categoryRename": {
+      "heading": "Rename Category"
+    },
+    "defaultName": "new",
+    "edit": {
+      "id": "ID",
+      "processorKind": "Processor Kind",
+      "scriptMode": "Script Mode",
+      "buttons": {
+        "preview": "Preview"
+      },
+      "kindOptions": {
+        "inline": "Inline",
+        "display": "Display",
+        "codeblock": "CodeBlock"
+      }
+    },
+    "ext": {
+      "category": "Category",
+      "newCategory": "New"
+    },
+    "namePlaceholder": "name",
+    "tooltips": {
+      "new": "New",
+      "rename": "Rename"
+    },
+    "uncategorized": "Uncategorized"
+  },
+
+  "views": {
+    "typstPreview": {
+      "fitToPage": "Fit to Page",
+      "buttons": {
+        "reset": "Reset"
+      }
+    },
+    "typstText": {
+      "displayText": "Typst Text",
+      "actions": {
+        "export": "Export",
+        "exportAsPdf": "Export as PDF",
+        "openAsPreview": "Open as Preview"
+      }
+    },
+    "typstTools": {
+      "displayText": "Typst Tools",
+      "converter": {
+        "cetzTikz": "CeTZ/TikZ",
+        "latexPlaceholder": "LaTeX",
+        "markupDocument": "Markup Document",
+        "mathEquation": "Math Equation",
+        "typstPlaceholder": "Typst",
+        "buttons": {
+          "copy": "Copy"
+        }
+      },
+      "dropdown": {
+        "converter": "Converter",
+        "detypify": "Detypify",
+        "packages": "Packages",
+        "quiver": "Quiver",
+        "snippets": "Snippets",
+        "symbols": "Symbols"
+      },
+      "tooltips": {
+        "reload": "Reload"
+      }
+    }
+  }
+}

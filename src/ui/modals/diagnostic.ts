@@ -1,5 +1,6 @@
 import { type App, Modal, Setting } from 'obsidian';
 
+import { t } from '@/i18n';
 import type { Diagnostic } from '@/libs/worker';
 
 export class DiagnosticModal extends Modal {
@@ -9,7 +10,8 @@ export class DiagnosticModal extends Modal {
     for (const diagnostic of diagnosticArray) {
       new Setting(this.contentEl).setName(diagnostic.message).setHeading();
 
-      for (const hint of diagnostic.hints) new Setting(this.contentEl).setName(`hint: ${hint}`);
+      for (const hint of diagnostic.hints)
+        new Setting(this.contentEl).setName(t('modals.diagnostic.hintPrefix', { hint }));
     }
   }
 }

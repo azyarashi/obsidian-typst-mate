@@ -1,5 +1,6 @@
 import { Notice, Platform, Setting } from 'obsidian';
 
+import { t } from '@/i18n';
 import type { PackageSpec } from '@/libs/worker';
 import type ObsidianTypstMate from '@/main';
 
@@ -19,11 +20,11 @@ export class PackagesList {
     // ローカルパッケージ
     if (Platform.isDesktopApp) {
       new Setting(containerEl)
-        .setName('Import Local Package')
-        .setDesc('Desktop App only.')
+        .setName(t('settings.compiler.package.importLocal'))
+        .setDesc(t('settings.compiler.package.importLocalDesc'))
         .addButton((button) => {
           button.setIcon('list-restart');
-          button.setTooltip('Import Local Package');
+          button.setTooltip(t('settings.compiler.package.tooltips.importLocalPackage'));
 
           button.onClick(this.listLocalPackage.bind(this));
         });
@@ -31,10 +32,10 @@ export class PackagesList {
     }
 
     // キャッシュ一覧
-    const settings = new Setting(containerEl).setName('Cached Packages');
+    const settings = new Setting(containerEl).setName(t('settings.compiler.package.cachedPackages'));
     if (Platform.isDesktopApp) {
       settings.addButton((button) => {
-        button.setTooltip('Open Folder');
+        button.setTooltip(t('settings.compiler.package.tooltips.openFolder'));
         button.setIcon('folder');
         button.onClick(async () => {
           window.open(`file://${this.plugin.baseDirPath}/${this.plugin.packagesDirNPath}`);
@@ -93,7 +94,7 @@ export class PackagesList {
       setting.settingEl.id = `${spec.rPath}/${spec.namespace}/${spec.name}:${spec.version}`;
 
       setting.setName(`@${spec.namespace}/${spec.name}:${spec.version}`).addButton((button) => {
-        button.setTooltip('Import Font');
+        button.setTooltip(t('settings.compiler.package.tooltips.importLocalPackage'));
         button.setIcon('plus');
         button.onClick(() => {
           this.plugin.typstManager.createCache(spec, true, [spec.rPath]);
@@ -126,32 +127,32 @@ export class PackagesList {
       const packageEl = new Setting(this.packageTableEl)
         .setName(`@${spec.namespace}/${spec.name}:${spec.version}`)
         .addButton((cacheButton) => {
-          cacheButton.setTooltip('Cache');
+          cacheButton.setTooltip(t('settings.compiler.package.tooltips.cache'));
           cacheButton.setIcon('package');
 
           cacheButton.onClick(async () => {
             await this.plugin.typstManager
               .createCache(spec, true)
               .then(() => {
-                new Notice('Cached successfully!');
+                new Notice(t('notices.cachedSuccessfully'));
               })
               .catch(() => {
-                new Notice('Failed to cache');
+                new Notice(t('notices.failedToCache'));
               });
           });
         })
         .addButton((delButton) => {
           delButton.buttonEl.addClass('typstmate-button', 'typstmate-button-danger');
-          delButton.setTooltip('Remove');
+          delButton.setTooltip(t('settings.compiler.package.tooltips.remove'));
           delButton.setIcon('trash');
 
           delButton.onClick(async () => {
             await this.removePackage(spec)
               .then(() => {
-                new Notice('Removed successfully!');
+                new Notice(t('notices.removedSuccessfully'));
               })
               .catch(() => {
-                new Notice('Failed to remove');
+                new Notice(t('notices.failedToRemove'));
               });
           });
         });

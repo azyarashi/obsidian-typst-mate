@@ -1,5 +1,6 @@
 import { ButtonComponent, DropdownComponent, ItemView, Platform, type WorkspaceLeaf } from 'obsidian';
 
+import { t } from '@/i18n';
 import type ObsidianTypstMate from '@/main';
 import { SnippetView } from './components/snippet';
 
@@ -23,7 +24,7 @@ export class TypstToolsView extends ItemView {
   }
 
   getDisplayText(): string {
-    return 'Typst Tools';
+    return t('views.typstTools.displayText');
   }
 
   override getIcon(): string {
@@ -41,12 +42,14 @@ export class TypstToolsView extends ItemView {
     this.dropdown = new DropdownComponent(menuEl);
     if (Platform.isDesktop) {
       this.dropdown
-        .addOption('symbols', 'Symbols')
-        .addOption('detypify', 'Detypify')
-        .addOption('packages', 'Packages')
-        .addOption('quiver', 'Quiver');
+        .addOption('symbols', t('views.typstTools.dropdown.symbols'))
+        .addOption('detypify', t('views.typstTools.dropdown.detypify'))
+        .addOption('packages', t('views.typstTools.dropdown.packages'))
+        .addOption('quiver', t('views.typstTools.dropdown.quiver'));
     }
-    this.dropdown.addOption('snippets', 'Snippets').addOption('converter', 'Converter');
+    this.dropdown
+      .addOption('snippets', t('views.typstTools.dropdown.snippets'))
+      .addOption('converter', t('views.typstTools.dropdown.converter'));
 
     this.onChangeHandler = (value: string) => {
       contentEl.empty();
@@ -70,9 +73,9 @@ export class TypstToolsView extends ItemView {
         case 'converter': {
           const dropdown = new DropdownComponent(contentEl);
           dropdown
-            .addOption('math-eq', 'Math Equation')
-            .addOption('markup-doc', 'Markup Document')
-            .addOption('cetz-tikz', 'CeTZ/TikZ');
+            .addOption('math-eq', t('views.typstTools.converter.mathEquation'))
+            .addOption('markup-doc', t('views.typstTools.converter.markupDocument'))
+            .addOption('cetz-tikz', t('views.typstTools.converter.cetzTikz'));
 
           const updatePreview = () => {
             preview.empty();
@@ -88,7 +91,7 @@ export class TypstToolsView extends ItemView {
           };
 
           const latex = contentEl.createEl('textarea');
-          latex.placeholder = 'LaTeX';
+          latex.placeholder = t('views.typstTools.converter.latexPlaceholder');
           latex.addClass('typstmate-form-control');
           latex.addEventListener('input', async () => {
             try {
@@ -110,7 +113,7 @@ export class TypstToolsView extends ItemView {
           });
 
           const typst = contentEl.createEl('textarea');
-          typst.placeholder = 'Typst';
+          typst.placeholder = t('views.typstTools.converter.typstPlaceholder');
           typst.addClass('typstmate-form-control');
           typst.addEventListener('input', async () => {
             try {
@@ -135,7 +138,7 @@ export class TypstToolsView extends ItemView {
           preview.addClass('typstmate-settings-preview-preview');
 
           const button = contentEl.createEl('button');
-          button.setText('Copy');
+          button.setText(t('views.typstTools.converter.buttons.copy'));
           button.addClass('typstmate-button');
           button.onClickEvent(async () => {
             switch (dropdown.getValue()) {
@@ -157,7 +160,7 @@ export class TypstToolsView extends ItemView {
 
     new ButtonComponent(menuEl)
       .setIcon('refresh-ccw')
-      .setTooltip('Reload')
+      .setTooltip(t('views.typstTools.tooltips.reload'))
       .onClick(() => {
         switch (this.dropdown.getValue()) {
           case 'symbols':

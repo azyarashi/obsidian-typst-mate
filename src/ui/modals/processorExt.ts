@@ -1,9 +1,9 @@
 import { SyntaxMode } from '@typstmate/typst-syntax';
 import { type App, Modal, Setting } from 'obsidian';
 
+import { t, tFragment } from '@/i18n';
 import type { ProcessorKind } from '@/libs/processor';
 import type ObsidianTypstMate from '@/main';
-import { CustomFragment } from '@/utils/customFragment';
 
 export class ProcessorExtModal extends Modal {
   constructor(app: App, plugin: ObsidianTypstMate, kind: ProcessorKind, id: string) {
@@ -15,7 +15,7 @@ export class ProcessorExtModal extends Modal {
     new Setting(this.contentEl).setName(processor.id).setHeading();
 
     // Preamble
-    new Setting(this.contentEl).setName('Use preamble').addToggle((toggle) => {
+    new Setting(this.contentEl).setName(t('modals.processorExt.usePreamble')).addToggle((toggle) => {
       toggle.setValue(!processor.noPreamble);
 
       toggle.onChange(() => {
@@ -24,7 +24,7 @@ export class ProcessorExtModal extends Modal {
       });
     });
 
-    new Setting(this.contentEl).setName('Disable symbol suggest').addToggle((toggle) => {
+    new Setting(this.contentEl).setName(t('modals.processorExt.disableSymbolSuggest')).addToggle((toggle) => {
       toggle.setValue(processor.disableSuggest ?? false);
 
       toggle.onChange(() => {
@@ -35,12 +35,8 @@ export class ProcessorExtModal extends Modal {
 
     if (kind !== 'excalidraw') {
       new Setting(this.contentEl)
-        .setName('Fit to note width')
-        .setDesc(
-          new CustomFragment()
-            .appendText('Adds a line at the beginning of the code declaring length: ')
-            .appendCodeText('WIDTH'),
-        )
+        .setName(t('modals.processorExt.fitToNoteWidth'))
+        .setDesc(tFragment('modals.processorExt.fitToNoteWidthDesc'))
         .addToggle((toggle) => {
           toggle.setValue(processor.fitToNoteWidth ?? false);
 
@@ -52,16 +48,14 @@ export class ProcessorExtModal extends Modal {
     }
 
     new Setting(this.contentEl)
-      .setName('Syntax mode')
-      .setDesc(
-        'Specifies the syntax tree parsing mode. Select None to completely bypass AST parsing and syntax highlighting.',
-      )
+      .setName(t('modals.processorExt.syntaxMode'))
+      .setDesc(t('modals.processorExt.syntaxModeDesc'))
       .addDropdown((dropdown) => {
         dropdown
-          .addOption('null', 'None')
-          .addOption(SyntaxMode.Markup.toString(), 'Markup')
-          .addOption(SyntaxMode.Math.toString(), 'Math')
-          .addOption(SyntaxMode.Code.toString(), 'Code');
+          .addOption('null', t('modals.processorExt.syntaxModeOptions.none'))
+          .addOption(SyntaxMode.Markup.toString(), t('modals.processorExt.syntaxModeOptions.markup'))
+          .addOption(SyntaxMode.Math.toString(), t('modals.processorExt.syntaxModeOptions.math'))
+          .addOption(SyntaxMode.Code.toString(), t('modals.processorExt.syntaxModeOptions.code'));
 
         let defaultModeValue = 'null';
         if (processor.syntaxMode !== null) {
@@ -77,7 +71,7 @@ export class ProcessorExtModal extends Modal {
         });
       });
 
-    new Setting(this.contentEl).setName('Use replace all').addToggle((toggle) => {
+    new Setting(this.contentEl).setName(t('modals.processorExt.useReplaceAll')).addToggle((toggle) => {
       toggle.setValue(processor.useReplaceAll ?? false);
 
       toggle.onChange(() => {

@@ -1,5 +1,6 @@
 import { type App, Platform, PluginSettingTab } from 'obsidian';
 
+import { t } from '@/i18n';
 import type ObsidianTypstMate from '@/main';
 import { addAdvancedTab, addCompilerTab, addEditorTab, addProcessorTab, addRendererTab } from './tabs';
 
@@ -23,11 +24,11 @@ export class SettingTab extends PluginSettingTab {
     containerEl.empty();
 
     const options: { id: SettingTab['activeTab']; name: string }[] = [
-      { id: 'processor', name: 'Processor' },
-      { id: 'editor', name: 'Editor' },
-      { id: 'compiler', name: 'Compiler' },
-      { id: 'renderer', name: 'Renderer' },
-      { id: 'advanced', name: 'Advanced' },
+      { id: 'processor', name: t('settings.tabs.processor') },
+      { id: 'editor', name: t('settings.tabs.editor') },
+      { id: 'compiler', name: t('settings.tabs.compiler') },
+      { id: 'renderer', name: t('settings.tabs.renderer') },
+      { id: 'advanced', name: t('settings.tabs.advanced') },
     ];
 
     if (Platform.isMobile) {

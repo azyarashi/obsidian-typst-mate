@@ -21,6 +21,7 @@ import {
 } from 'obsidian';
 
 import { EditorHelper } from '@/editor';
+import { initI18n, t } from '@/i18n';
 import { BASE_COLOR_VAR, TYPST_SVG_FILL, TYPST_SVG_STROKE } from './constants';
 import { DEFAULT_SETTINGS, type Settings } from './data/settings';
 import { collectRegions } from './editor/markdown/extensions/MarkdownCore';
@@ -71,9 +72,10 @@ export default class ObsidianTypstMate extends Plugin {
   path?: typeof pathModule;
 
   override async onload() {
+    await initI18n();
     await this.loadSettings(); // ユーザーの設定 (data.json) を読み込む
     if (3 === (this.settings.crashCount ?? 0)) {
-      new Notice('[Typst Mate] The plugin has been automatically turned off due to three consecutive crashes');
+      new Notice(t('notices.crashAutoDisabled'));
       this.settings.crashCount = 0;
       await this.saveSettings();
       await this.app.plugins.disablePlugin(this.pluginId);
@@ -197,14 +199,12 @@ export default class ObsidianTypstMate extends Plugin {
     this.typstManager.registerOnce();
     await this.init().catch((err) => {
       console.error(err);
-      new Notice(
-        'Failed to initialize Typst. Please check that the processor ID does not contain any symbols, try clearing the package cache, and ensure that there are no invalid fonts installed.',
-      );
+      new Notice(t('notices.initFailed'));
     });
   }
 
   private async downloadWasm(version: string) {
-    new Notice('Downloading latest wasm...');
+    new Notice(t('notices.downloadingWasm'));
 
     // 古い Wasm を削除する
     const oldWasms = (await this.app.vault.adapter.list(this.pluginDirNPath)).files.filter((file) =>
@@ -251,7 +251,7 @@ export default class ObsidianTypstMate extends Plugin {
     }
     await this.app.vault.adapter.writeBinary(this.wasmPath, totalBuffer.buffer);
 
-    new Notice('Wasm downloaded!');
+    new Notice(t('notices.wasmDownloaded'));
   }
 
   async activateLeaf(active = false, content?: string) {
@@ -278,7 +278,7 @@ export default class ObsidianTypstMate extends Plugin {
   private addCommands() {
     this.addCommand({
       id: 'tools-open',
-      name: 'Open Typst Tools',
+      name: t('commands.openTypstTools'),
       callback: async () => {
         await this.activateLeaf(true);
       },
@@ -286,7 +286,7 @@ export default class ObsidianTypstMate extends Plugin {
 
     this.addCommand({
       id: 'toggle-background-rendering',
-      name: 'Toggle Background Rendering',
+      name: t('commands.toggleBackgroundRendering'),
       callback: async () => {
         this.settings.enableBackgroundRendering = !this.settings.enableBackgroundRendering;
         await this.saveSettings();
@@ -296,11 +296,11 @@ export default class ObsidianTypstMate extends Plugin {
 
     this.addCommand({
       id: 'tex2typ',
-      name: 'Replace TeX with Typst in markdown content or selection',
+      name: t('commands.replaceTexWithTypst'),
       editorCallback: async (editor) => {
         const view = editor.cm;
         if (!view) {
-          new Notice('No active view found.');
+          new Notice(t('notices.noActiveView'));
           return;
         }
 
@@ -328,19 +328,19 @@ export default class ObsidianTypstMate extends Plugin {
 
     this.addCommand({
       id: 'box-current-equation',
-      name: 'Box current equation',
+      name: t('commands.boxCurrentEquation'),
       editorCallback: (editor) => this.editorHelper.boxCurrentEquation(editor.cm),
     });
 
     this.addCommand({
       id: 'select-current-equation',
-      name: 'Select current equation',
+      name: t('commands.selectCurrentEquation'),
       editorCallback: (editor) => this.editorHelper.selectCurrentEquation(editor.cm),
     });
 
     this.addCommand({
       id: 'reload tag files',
-      name: 'Reload tag files',
+      name: t('commands.reloadTagFiles'),
       editorCallback: async () => {
         const files = await this.typstManager.collectTagFiles();
         await this.typst.store({ files });
@@ -352,7 +352,7 @@ export default class ObsidianTypstMate extends Plugin {
     if (this.excalidrawPluginInstalled) {
       this.addCommand({
         id: 'render-to-excalidraw',
-        name: 'Render to Excalidraw',
+        name: t('commands.renderToExcalidraw'),
         callback: () => {
           new ExcalidrawModal(this.app, this).open();
         },
@@ -444,7 +444,7 @@ export default class ObsidianTypstMate extends Plugin {
 
         if (leaf.view.getViewType() !== TypstTextView.viewtype) return;
         menu.addItem(async (item) => {
-          item.setTitle('Open as Preview').onClick(async () => {
+          item.setTitle(t('contextMenu.openAsPreview')).onClick(async () => {
             await leaf.setViewState({
               type: TypstPreviewView.viewtype,
               state: { file: (leaf.view as TypstTextView).file },
@@ -455,12 +455,12 @@ export default class ObsidianTypstMate extends Plugin {
       this.app.workspace.on('file-menu', (menu, file) => {
         if (!(file instanceof TFolder)) return;
         menu.addItem((item) => {
-          item.setTitle('New typst file').onClick(async () => {
+          item.setTitle(t('contextMenu.newTypstFile')).onClick(async () => {
             const tfile = await createNewFile(this.app.vault, file);
             this.app.workspace.getLeaf(true).openFile(tfile);
           });
           menu.addItem((item) => {
-            item.setTitle('New typst file with template').onClick(() => {
+            item.setTitle(t('contextMenu.newTypstFileWithTemplate')).onClick(() => {
               new TemplateSelectModal(this, file).open();
             });
           });

@@ -1,15 +1,13 @@
 import { debounce, Notice, Setting } from 'obsidian';
 
 import { DEFAULT_SETTINGS } from '@/data/settings';
+import { t, tFragment } from '@/i18n';
 import type ObsidianTypstMate from '@/main';
-import { CustomFragment } from '@/utils/customFragment';
 
 export function addAdvancedTab(plugin: ObsidianTypstMate, containerEl: HTMLElement) {
   const setting = new Setting(containerEl)
-    .setName('Typst file import path')
-    .setDesc(
-      'The directory in your vault to look for Typst files to import. If the path does not exist or is empty, this feature is disabled.',
-    )
+    .setName(t('settings.advanced.importPath'))
+    .setDesc(t('settings.advanced.importPathDesc'))
     .addText((text) => {
       text.setValue(String(plugin.settings.importPath ?? DEFAULT_SETTINGS.importPath));
 
@@ -17,7 +15,7 @@ export function addAdvancedTab(plugin: ObsidianTypstMate, containerEl: HTMLEleme
         async () => {
           const files = await plugin.typstManager.collectTagFiles();
           await plugin.typst.store({ files });
-          new Notice('Files updated.');
+          new Notice(t('notices.filesUpdated'));
 
           plugin.typstManager.refreshView();
         },
@@ -32,11 +30,11 @@ export function addAdvancedTab(plugin: ObsidianTypstMate, containerEl: HTMLEleme
       });
     });
   setting.infoEl.createEl('a', {
-    text: 'Open Details',
+    text: t('settings.advanced.openDetails'),
     href: 'https://github.com/azyarashi/obsidian-typst-mate/releases/tag/2.2.28',
   });
 
-  new Setting(containerEl).setName('Enable Debugger').addToggle((toggle) => {
+  new Setting(containerEl).setName(t('settings.advanced.enableDebugger')).addToggle((toggle) => {
     toggle.setValue(plugin.settings.enableDebugger);
     toggle.onChange((value) => {
       plugin.settings.enableDebugger = value;
@@ -48,8 +46,8 @@ export function addAdvancedTab(plugin: ObsidianTypstMate, containerEl: HTMLEleme
   });
 
   new Setting(containerEl)
-    .setName('Open Typst Tools on Startup')
-    .setDesc('Open Typst Tools in the side panel when launching Obsidian.')
+    .setName(t('settings.advanced.openTypstToolsOnStartup'))
+    .setDesc(t('settings.advanced.openTypstToolsOnStartupDesc'))
     .addToggle((toggle) => {
       toggle.setValue(plugin.settings.openTypstToolsOnStartup);
       toggle.onChange((value) => {
@@ -59,12 +57,8 @@ export function addAdvancedTab(plugin: ObsidianTypstMate, containerEl: HTMLEleme
     });
 
   new Setting(containerEl)
-    .setName('Enable MathJax Fallback')
-    .setDesc(
-      new CustomFragment()
-        .appendText('Not recommended for performance reasons. When enabled, ')
-        .appendBoldText('Typst errors, warnings, and hints will be unavailable.'),
-    )
+    .setName(t('settings.advanced.enableMathjaxFallback'))
+    .setDesc(tFragment('settings.advanced.enableMathjaxFallbackDesc'))
     .addToggle((toggle) => {
       toggle.setValue(plugin.settings.enableMathjaxFallback);
       toggle.onChange((value) => {
@@ -73,7 +67,7 @@ export function addAdvancedTab(plugin: ObsidianTypstMate, containerEl: HTMLEleme
       });
     });
 
-  new Setting(containerEl).setName('Apply Processor to MathJax').addToggle((toggle) => {
+  new Setting(containerEl).setName(t('settings.advanced.applyProcessorToMathJax')).addToggle((toggle) => {
     toggle.setValue(plugin.settings.applyProcessorToMathJax);
     toggle.onChange((value) => {
       plugin.settings.applyProcessorToMathJax = value;
@@ -81,17 +75,17 @@ export function addAdvancedTab(plugin: ObsidianTypstMate, containerEl: HTMLEleme
     });
   });
 
-  new Setting(containerEl).setName('Reload Plugin').addButton((button) => {
-    button.setButtonText('Reload Plugin');
+  new Setting(containerEl).setName(t('settings.advanced.reloadPlugin')).addButton((button) => {
+    button.setButtonText(t('settings.advanced.buttons.reloadPlugin'));
     button.onClick(async () => {
       await plugin.reload(true);
-      new Notice('Plugin reloaded.');
+      new Notice(t('notices.pluginReloaded'));
     });
   });
 
   const div = containerEl.createDiv();
-  div.textContent = 'Snippets are managed in a separate leaf. ';
-  const a = div.createEl('a', { text: 'Open Snippet Manager' });
+  div.textContent = t('settings.advanced.snippetsManaged');
+  const a = div.createEl('a', { text: t('settings.advanced.openSnippetManager') });
   a.href = '#';
   a.style.cursor = 'pointer';
   a.addEventListener('click', async (e) => {

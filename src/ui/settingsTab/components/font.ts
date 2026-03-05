@@ -1,5 +1,6 @@
 import { Notice, Platform, Setting } from 'obsidian';
 
+import { t } from '@/i18n';
 import type ObsidianTypstMate from '@/main';
 import { FontModal } from '@/ui/modals/font';
 import { hashLike } from '@/utils/hashLike';
@@ -18,10 +19,10 @@ export class FontList {
     // システムフォント
     if (Platform.isDesktopApp) {
       new Setting(containerEl)
-        .setName('Import Font')
-        .setDesc('Desktop App only. Typst supports .ttf, .otf, .ttc, and .otc fonts.')
+        .setName(t('settings.compiler.font.importFont'))
+        .setDesc(t('settings.compiler.font.importFontDesc'))
         .addSearch((search) => {
-          search.setPlaceholder('Filter Font Name');
+          search.setPlaceholder(t('settings.compiler.font.filterPlaceholder'));
 
           search.onChange((value) => {
             this.filterSystemFontList(value.toLowerCase());
@@ -29,24 +30,24 @@ export class FontList {
         })
         .addButton((button) => {
           button.setIcon('list-restart');
-          button.setTooltip('Get Font List');
+          button.setTooltip(t('settings.compiler.font.tooltips.getFontList'));
 
           button.onClick(this.displaySystemFontList.bind(this));
         });
 
       this.fontDataCountEl = containerEl.createDiv();
-      this.fontDataCountEl.textContent = 'Click to load the system font list';
+      this.fontDataCountEl.textContent = t('settings.compiler.font.clickToLoad');
 
       this.fontDataTableEl = containerEl.createDiv('typstmate-settings-table typstmate-hidden');
     }
 
     // 読み込み済みフォント
     const settings = new Setting(containerEl)
-      .setName('Imported Fonts')
-      .setDesc('The string next to each font name is used to identify fonts that share the same PostScript name.');
+      .setName(t('settings.compiler.font.importedFonts'))
+      .setDesc(t('settings.compiler.font.importedFontsDesc'));
     if (Platform.isDesktopApp) {
       settings.addButton((button) => {
-        button.setTooltip('Open Folder');
+        button.setTooltip(t('settings.compiler.font.tooltips.openFolder'));
         button.setIcon('folder');
         button.onClick(async () => {
           window.open(`file://${this.plugin.baseDirPath}/${this.plugin.fontsDirNPath}`);
@@ -74,7 +75,7 @@ export class FontList {
       }
     }
 
-    this.fontDataCountEl!.textContent = `${count} font(s)`;
+    this.fontDataCountEl!.textContent = t('settings.compiler.font.fontCount', { count });
     if (count === 0) this.fontDataTableEl!.classList.add('typstmate-hidden');
     else this.fontDataTableEl!.classList.remove('typstmate-hidden');
   }
@@ -86,7 +87,7 @@ export class FontList {
     if (fontDataList.length === 0) return;
     this.fontDataTableEl!.classList.remove('typstmate-hidden');
 
-    this.fontDataCountEl!.textContent = `${fontDataList.length} font(s)`;
+    this.fontDataCountEl!.textContent = t('settings.compiler.font.fontCount', { count: fontDataList.length });
     for (const fontData of fontDataList) {
       const setting = new Setting(this.fontDataTableEl!);
       setting.settingEl.id = fontData.postscriptName.toLowerCase();
@@ -97,7 +98,7 @@ export class FontList {
         .setName(`${fontData.fullName} (${fontId})`)
         .addButton((button) => {
           button.setIcon('info');
-          button.setTooltip('Get Info');
+          button.setTooltip(t('settings.compiler.font.tooltips.getInfo'));
 
           button.onClick(async () => {
             const info = await this.plugin.typst.parseFont(await (await fontData.blob()).arrayBuffer());
@@ -106,7 +107,7 @@ export class FontList {
           });
         })
         .addButton((button) => {
-          button.setTooltip('Import Font');
+          button.setTooltip(t('settings.compiler.font.tooltips.importFont'));
           button.setIcon('plus');
           button.onClick(() => this.importFont(fontData));
         });
@@ -125,7 +126,7 @@ export class FontList {
       .setName(`${PSName} (${fontId})`)
       .addButton((button) => {
         button.setIcon('info');
-        button.setTooltip('Get Info');
+        button.setTooltip(t('settings.compiler.font.tooltips.getInfo'));
 
         button.onClick(async () => {
           const info = await this.plugin.typst.parseFont(await this.plugin.app.vault.adapter.readBinary(fontPath));
@@ -135,7 +136,7 @@ export class FontList {
       })
       .addButton((button) => {
         button.setIcon('trash');
-        button.setTooltip('Remove');
+        button.setTooltip(t('settings.compiler.font.tooltips.remove'));
         button.buttonEl.classList.add('typstmate-button', 'typstmate-button-danger');
 
         button.onClick(this.removeFont.bind(this, basename));
@@ -165,7 +166,7 @@ export class FontList {
     const basename = `${fontData.postscriptName}.${fontId}.font`;
 
     if (this.importedFontTableEl.children.namedItem(basename)) {
-      new Notice('Font already imported!');
+      new Notice(t('notices.fontAlreadyImported'));
       return;
     }
 
@@ -180,7 +181,7 @@ export class FontList {
     // 表示
     this.addImportedFontSetting(`${this.plugin.fontsDirNPath}/${basename}`);
 
-    new Notice('Imported successfully!');
+    new Notice(t('notices.importedSuccessfully'));
   }
 
   async removeFont(basename: string) {
@@ -191,7 +192,7 @@ export class FontList {
     this.importedFontTableEl.children.namedItem(basename)?.remove();
     if (this.importedFontTableEl.children.length === 0) this.importedFontTableEl.classList.add('typstmate-hidden');
 
-    new Notice('Removed successfully!');
+    new Notice(t('notices.removedSuccessfully'));
   }
 }
 

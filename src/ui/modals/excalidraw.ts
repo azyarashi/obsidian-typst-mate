@@ -1,5 +1,6 @@
 import { type App, Modal, Setting } from 'obsidian';
 
+import { t } from '@/i18n';
 import { DefaultNewExcalidrawProcessor } from '@/libs/processor';
 import type ObsidianTypstMate from '@/main';
 
@@ -8,10 +9,10 @@ export class ExcalidrawModal extends Modal {
     super(app);
     let id: string, code: string;
 
-    new Setting(this.contentEl).setName('Excalidraw').setHeading();
+    new Setting(this.contentEl).setName(t('modals.excalidraw.heading')).setHeading();
 
     // Processor の選択
-    new Setting(this.contentEl).setName('processor id').addDropdown((dropdown) => {
+    new Setting(this.contentEl).setName(t('modals.excalidraw.processorId')).addDropdown((dropdown) => {
       const processors = plugin.settings.processor.excalidraw?.processors ?? [];
       for (const processor of processors) {
         dropdown.addOption(processor.id, processor.id);
@@ -25,7 +26,7 @@ export class ExcalidrawModal extends Modal {
     });
 
     // コード
-    new Setting(this.contentEl).setName('code').addText((text) => {
+    new Setting(this.contentEl).setName(t('modals.excalidraw.code')).addText((text) => {
       text.onChange((value) => {
         code = value;
         previewEl.empty();
@@ -35,7 +36,7 @@ export class ExcalidrawModal extends Modal {
 
     // 追加ボタン
     new Setting(this.contentEl).addButton((button) => {
-      button.setButtonText('Add');
+      button.setButtonText(t('modals.excalidraw.buttons.add'));
 
       button.onClick(() => {
         this.close();
@@ -47,6 +48,6 @@ export class ExcalidrawModal extends Modal {
     });
 
     const previewEl = this.contentEl.createDiv('typstmate-settings-preview-preview');
-    previewEl.setText('Type in the input above to see the preview');
+    previewEl.setText(t('modals.excalidraw.previewPlaceholder'));
   }
 }

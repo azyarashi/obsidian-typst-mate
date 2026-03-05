@@ -10,6 +10,7 @@ import {
 } from '@codemirror/view';
 import { Notice } from 'obsidian';
 
+import { t } from '@/i18n';
 import type { Snippet } from '@/libs/snippet';
 import { getActiveRegion } from '../utils/core';
 import { calculatePopupPosition } from '../utils/position';
@@ -345,7 +346,7 @@ class SnippetSuggestPlugin implements PluginValue {
         const argValue = this.argument ? this.argument.slice(1, -1) : undefined;
         content = new Function('input', 'window', content)(argValue, window);
       } catch (e) {
-        new Notice(`Snippet execution failed: ${String(e)}`);
+        new Notice(t('notices.snippetExecutionFailed', { error: e.toString() }));
         return;
       }
     }

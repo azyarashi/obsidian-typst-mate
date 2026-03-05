@@ -2,6 +2,7 @@ import { type Diagnostic, setDiagnostics } from '@codemirror/lint';
 import { StateEffect, StateField } from '@codemirror/state';
 import type { EditorView } from '@codemirror/view';
 
+import { t } from '@/i18n';
 import type { Processor } from '@/libs/processor';
 import { renderDiagnosticMessage } from '@/ui/elements/diagnostics';
 import { getActiveRegion } from '../utils/core';
@@ -37,7 +38,7 @@ function computeDiagnostics(view: EditorView, result: TypstMateResult): Diagnost
     return {
       from,
       to,
-      message: diag.message || 'Error',
+      message: diag.message || t('common.error'),
       severity: diag.severity,
       renderMessage: () =>
         renderDiagnosticMessage({

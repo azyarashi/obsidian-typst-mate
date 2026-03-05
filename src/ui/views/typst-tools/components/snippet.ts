@@ -1,5 +1,6 @@
 import { ButtonComponent, DropdownComponent, Setting } from 'obsidian';
 
+import { t } from '@/i18n';
 import { DefaultNewSnippet } from '@/libs/snippet';
 import type ObsidianTypstMate from '@/main';
 import { CategoryRenameModal } from '../modals/categoryRename';
@@ -33,13 +34,14 @@ export class SnippetView {
   buildMenu() {
     // カテゴリーの選択
     this.dropdown = new DropdownComponent(this.menuEl);
+    const uncategorized = t('snippets.uncategorized');
     const categories = (this.plugin.settings.snippets?.map((snippet) => snippet.category) ?? []).filter(
-      (category) => category !== 'Uncategorized',
+      (category) => category !== uncategorized,
     );
-    this.dropdown.addOption('Uncategorized', 'Uncategorized');
+    this.dropdown.addOption(uncategorized, uncategorized);
     this.dropdown.addOptions(Object.fromEntries(categories.map((name) => [name, name])));
 
-    this.dropdown.setValue(this.currentCategory ?? 'Uncategorized');
+    this.dropdown.setValue(this.currentCategory ?? uncategorized);
     this.dropdown.onChange((category) => {
       this.currentCategory = category;
       this.buildSnippets();
@@ -48,7 +50,7 @@ export class SnippetView {
     // カテゴリー名の変更
     new ButtonComponent(this.menuEl)
       .setIcon('pencil')
-      .setTooltip('Rename')
+      .setTooltip(t('snippets.tooltips.rename'))
       .onClick(() => {
         new CategoryRenameModal(this.plugin.app, this.plugin, this.currentCategory!, this).open();
       });
@@ -61,11 +63,11 @@ export class SnippetView {
     // スニペットの作成
     new Setting(this.snippetsEl).addButton((button) => {
       button
-        .setButtonText('New')
-        .setTooltip('New')
+        .setButtonText(t('snippets.buttons.new'))
+        .setTooltip(t('snippets.tooltips.new'))
         .onClick(() => {
           const defaultSnippet = Object.assign({}, DefaultNewSnippet);
-          defaultSnippet.category = this.currentCategory ?? 'Uncategorized';
+          defaultSnippet.category = this.currentCategory ?? t('snippets.uncategorized');
 
           this.plugin.settings.snippets?.push(defaultSnippet);
           this.plugin.saveSettings();
@@ -82,7 +84,7 @@ export class SnippetView {
       new Setting(snippetEl)
         // スニペット名
         .addText((text) => {
-          text.setPlaceholder('name');
+          text.setPlaceholder(t('snippets.namePlaceholder'));
           text.setValue(snippet.name);
           text.onChange((value) => {
             this.plugin.settings.snippets![index]!.name = value;
@@ -92,7 +94,7 @@ export class SnippetView {
         // 詳細
         .addButton((button) => {
           button
-            .setButtonText('Detail')
+            .setButtonText(t('snippets.buttons.detail'))
             .setIcon('pencil')
             .onClick(() => {
               new SnippetExtModal(this.plugin.app, this.plugin, index, this).open();
@@ -101,7 +103,7 @@ export class SnippetView {
         // 削除
         .addButton((button) => {
           button
-            .setButtonText('Remove')
+            .setButtonText(t('snippets.buttons.remove'))
             .setIcon('trash')
             .onClick(() => {
               this.plugin.settings.snippets?.splice(index, 1);

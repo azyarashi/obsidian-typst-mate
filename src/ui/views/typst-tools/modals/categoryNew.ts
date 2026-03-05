@@ -1,5 +1,6 @@
 import { type App, Modal, Setting } from 'obsidian';
 
+import { t } from '@/i18n';
 import type ObsidianTypstMate from '@/main';
 import type { SnippetView } from '../components/snippet';
 
@@ -12,7 +13,7 @@ export class CategoryNewModal extends Modal {
     this.snippetView = snippetView;
     this.category = plugin.settings.snippets![snippetIndex]!.category;
 
-    new Setting(this.contentEl).setName(`New Category`).addText((text) => {
+    new Setting(this.contentEl).setName(t('snippets.categoryNew.heading')).addText((text) => {
       text.setValue(this.category);
 
       text.onChange((value) => {

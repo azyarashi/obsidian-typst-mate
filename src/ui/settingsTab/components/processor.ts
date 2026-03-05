@@ -1,6 +1,7 @@
 import { ButtonComponent, debounce, Notice, Setting, setIcon } from 'obsidian';
 
 import { DEFAULT_SETTINGS } from '@/data/settings';
+import { t } from '@/i18n';
 import {
   DefaultNewProcessor,
   type Processor,
@@ -10,14 +11,6 @@ import {
 } from '@/libs/processor';
 import type ObsidianTypstMate from '@/main';
 import { ProcessorExtModal } from '@/ui/modals/processorExt';
-
-const description = {
-  inline:
-    'Use only inline elements, with no extra line breaks (including ; in Code mode) on the last line. If you use block elements, convert them to inline elements using the box function. To use the same typesetting as Typst, set the style to inline. For display math equations, using $#math.equation($ {CODE} $, block: false)$ is recommended.',
-  display: '',
-  codeblock: '',
-  excalidraw: '',
-};
 
 export class ProcessorList {
   plugin: ObsidianTypstMate;
@@ -30,12 +23,12 @@ export class ProcessorList {
     this.plugin = plugin;
     this.kind = kind;
 
-    if (kind === 'inline') new Setting(containerEl).setDesc(description[kind]);
+    if (kind === 'inline') new Setting(containerEl).setDesc(t('settings.processor.inlineDesc'));
 
     // プロセッサー追加ボタンを追加
     const setting = new Setting(containerEl).setName(title).setHeading();
     setting.addButton((button) => {
-      button.setButtonText('New');
+      button.setButtonText(t('settings.processor.buttons.new'));
       button.onClick(this.newProcessor.bind(this));
     });
 
@@ -166,14 +159,14 @@ export class ProcessorList {
     setting
       .addButton((button) => {
         button.setIcon('pencil');
-        button.setTooltip('Open more settings');
+        button.setTooltip(t('settings.processor.tooltips.openMoreSettings'));
         button.onClick(() => {
           new ProcessorExtModal(this.plugin.app, this.plugin, this.kind, processor.id).open();
         });
       })
       .addDropdown((renderingEngineDropdown) => {
-        renderingEngineDropdown.addOption('typst-svg', 'Typst SVG');
-        renderingEngineDropdown.addOption('mathjax', 'MathJax');
+        renderingEngineDropdown.addOption('typst-svg', t('settings.processor.renderingEngineOptions.typstSvg'));
+        renderingEngineDropdown.addOption('mathjax', t('settings.processor.renderingEngineOptions.mathjax'));
 
         // @ts-expect-error: 過去バージョンとの互換性を保つため
         if (processor.renderingEngine === 'typst') {
@@ -194,18 +187,18 @@ export class ProcessorList {
       .addDropdown((stylingDropdown) => {
         switch (this.kind) {
           case 'inline':
-            stylingDropdown.addOption('inline', 'inline');
-            stylingDropdown.addOption('middle', 'middle');
-            stylingDropdown.addOption('baseline', 'baseline');
+            stylingDropdown.addOption('inline', t('settings.processor.stylingOptions.inline'));
+            stylingDropdown.addOption('middle', t('settings.processor.stylingOptions.middle'));
+            stylingDropdown.addOption('baseline', t('settings.processor.stylingOptions.baseline'));
             break;
           case 'display':
-            stylingDropdown.addOption('block', 'block');
-            stylingDropdown.addOption('block-center', 'block-center');
+            stylingDropdown.addOption('block', t('settings.processor.stylingOptions.block'));
+            stylingDropdown.addOption('block-center', t('settings.processor.stylingOptions.blockCenter'));
             break;
           case 'codeblock':
-            stylingDropdown.addOption('block', 'block');
-            stylingDropdown.addOption('block-center', 'block-center');
-            stylingDropdown.addOption('codeblock', 'codeblock');
+            stylingDropdown.addOption('block', t('settings.processor.stylingOptions.block'));
+            stylingDropdown.addOption('block-center', t('settings.processor.stylingOptions.blockCenter'));
+            stylingDropdown.addOption('codeblock', t('settings.processor.stylingOptions.codeblock'));
             break;
         }
         stylingDropdown.setValue(processor.styling);
@@ -219,7 +212,7 @@ export class ProcessorList {
 
     setting.addText((idText) => {
       idText.setValue(processor.id);
-      idText.setPlaceholder('id');
+      idText.setPlaceholder(t('settings.processor.idPlaceholder'));
       if (processor.id === '') {
         idText.setDisabled(true);
         return;
@@ -252,11 +245,11 @@ export class ProcessorList {
 
             if (cleanId === '') {
               idText.setValue(processors[currentIndex]!.id);
-              return new Notice('ID cannot be empty');
+              return new Notice(t('notices.idCannotBeEmpty'));
             }
 
             const isDuplicate = processors.some((p, i) => i !== currentIndex && p.id === cleanId && cleanId !== '');
-            if (isDuplicate) return new Notice('This ID already exists.');
+            if (isDuplicate) return new Notice(t('notices.idAlreadyExists'));
 
             this.plugin.settings.processor[this.kind].processors[Number(processorEl.id)]!.id = cleanId;
             this.updateDraggability();
@@ -273,7 +266,7 @@ export class ProcessorList {
 
     const formatTextEl = processorBottomEl.createEl('textarea');
     formatTextEl.value = processor.format;
-    formatTextEl.placeholder = 'format';
+    formatTextEl.placeholder = t('settings.processor.formatPlaceholder');
 
     formatTextEl.addEventListener(
       'input',
@@ -291,7 +284,7 @@ export class ProcessorList {
     // 削除ボタンを追加
     if (processor.id !== '') {
       new ButtonComponent(processorBottomEl)
-        .setButtonText('Remove')
+        .setButtonText(t('settings.processor.buttons.remove'))
         .setIcon('trash')
         .onClick(() => this.removeProcessor(Number(processorEl.id)))
         .buttonEl.addClasses(['typstmate-button', 'typstmate-button-danger']);

@@ -1,4 +1,5 @@
 import { Notice, type TFile } from 'obsidian';
+import { t } from '@/i18n';
 import type { PdfrResult, PngrResult, SvgrResult } from '@/libs/worker';
 import type ObsidianTypstMate from '@/main';
 
@@ -64,7 +65,7 @@ export async function exportToPdf(
   const exportPath = `${file.path.slice(0, -file.extension.length - 1)}.pdf`;
   await plugin.app.vault.adapter.writeBinary(exportPath, buffer);
 
-  if (notice) new Notice(`Exported to ${exportPath}`);
+  if (notice) new Notice(t('notices.exportedTo', { path: exportPath }));
 
   return exportPath;
 }
@@ -81,7 +82,7 @@ export async function exportToSvg(plugin: ObsidianTypstMate, file: TFile, conten
     await plugin.app.vault.adapter.write(exportPath, svg);
   }
 
-  new Notice(`Exported ${total} SVG page(s)`);
+  new Notice(t('notices.exportedSvgPages', { count: total }));
 }
 
 export async function exportToPng(plugin: ObsidianTypstMate, file: TFile, content: string, options: PngExportOptions) {
@@ -101,7 +102,7 @@ export async function exportToPng(plugin: ObsidianTypstMate, file: TFile, conten
     await plugin.app.vault.adapter.writeBinary(exportPath, buffer);
   }
 
-  new Notice(`Exported ${total} PNG image(s)`);
+  new Notice(t('notices.exportedPngImages', { count: total }));
 }
 
 function formatFilename(file: TFile, template: string, p: number, t: number, ext: string): string {

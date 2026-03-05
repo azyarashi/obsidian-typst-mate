@@ -1,5 +1,6 @@
 import { type App, Modal, Notice, Setting } from 'obsidian';
 
+import { t } from '@/i18n';
 import type ObsidianTypstMate from '@/main';
 
 import './snippet-edit.css';
@@ -35,8 +36,11 @@ export class SnippetEditModal extends Modal {
     new Setting(this.contentEl).setName(this.name).setHeading();
 
     // プロセッサーの種類
-    new Setting(this.contentEl).setName('Processor Kind').addDropdown((dropdown) => {
-      dropdown.addOption('inline', 'Inline').addOption('display', 'Display').addOption('codeblock', 'CodeBlock');
+    new Setting(this.contentEl).setName(t('snippets.edit.processorKind')).addDropdown((dropdown) => {
+      dropdown
+        .addOption('inline', t('snippets.edit.kindOptions.inline'))
+        .addOption('display', t('snippets.edit.kindOptions.display'))
+        .addOption('codeblock', t('snippets.edit.kindOptions.codeblock'));
       dropdown.setValue(this.kind);
 
       dropdown.onChange((value) => {
@@ -48,7 +52,7 @@ export class SnippetEditModal extends Modal {
     });
 
     // プロセッサーのid
-    new Setting(this.contentEl).setName('ID').addDropdown((dropdown) => {
+    new Setting(this.contentEl).setName(t('snippets.edit.id')).addDropdown((dropdown) => {
       const ids = plugin.settings.processor[this.kind]?.processors.map((processor) => processor.id) ?? [];
       dropdown.addOptions(Object.fromEntries(ids.map((id) => [id, id])));
       dropdown.setValue(this.id);
@@ -75,7 +79,7 @@ export class SnippetEditModal extends Modal {
     });
 
     // スクリプトのオンオフ
-    new Setting(this.contentEl).setName('Script Mode').addToggle((toggle) => {
+    new Setting(this.contentEl).setName(t('snippets.edit.scriptMode')).addToggle((toggle) => {
       toggle.setValue(this.script);
 
       toggle.onChange((isScript) => {
@@ -99,8 +103,8 @@ export class SnippetEditModal extends Modal {
         });
         scriptSetting.addButton((button) => {
           button
-            .setButtonText('Preview')
-            .setTooltip('Preview')
+            .setButtonText(t('snippets.edit.buttons.preview'))
+            .setTooltip(t('snippets.edit.buttons.preview'))
             .onClick(() => {
               try {
                 const content = new Function('input', 'window', this.content)(value, window);
@@ -127,8 +131,8 @@ export class SnippetEditModal extends Modal {
       });
       scriptSetting.addButton((button) => {
         button
-          .setButtonText('Preview')
-          .setTooltip('Preview')
+          .setButtonText(t('snippets.edit.buttons.preview'))
+          .setTooltip(t('snippets.edit.buttons.preview'))
           .onClick(() => {
             try {
               const content = new Function('input', 'window', this.content)(value, window);
