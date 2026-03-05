@@ -2,9 +2,9 @@ import { EditorState } from '@codemirror/state';
 import { EditorView } from '@codemirror/view';
 import { debounce, type Menu, TextFileView, TFile, type WorkspaceLeaf } from 'obsidian';
 
-import { updateDiagnosticEffect } from '@/editor/shared/extensions/decorations/Diagnostic';
+import { updateDiagnosticEffect } from '@/editor/shared/extensions/Diagnostic';
 import { buildTypstTextExtensions } from '@/editor/typst/build';
-import { jumpToPreviewTargetFacet } from '@/editor/typst/extensions/actions/JumpToPreview';
+import { jumpToPreviewTargetFacet } from '@/editor/typst/extensions/JumpToPreview';
 import type ObsidianTypstMate from '@/main';
 import { exportToPdf } from '@/utils/export';
 import { TypstPreviewView } from '../typst-preview/typstPreview';

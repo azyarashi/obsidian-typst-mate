@@ -4,7 +4,9 @@ import type { EditorView } from '@codemirror/view';
 
 import type { Processor } from '@/libs/processor';
 import { renderDiagnosticMessage } from '@/ui/elements/diagnostics';
-import { getActiveRegion } from '../core/TypstMate';
+import { getActiveRegion } from '../utils/core';
+
+import './Diagnostic.css';
 
 interface TypstDiagnostic extends Diagnostic {
   severity: 'error' | 'warning';

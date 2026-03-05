@@ -1,6 +1,6 @@
 import { type EditorView, ViewPlugin } from '@codemirror/view';
 
-import { editorHelperFacet } from '@/editor/shared/extensions/core/Helper';
+import { helperFacet } from '@/editor/shared/extensions/Helper';
 import type { Jump } from '@/libs/worker';
 
 class JumpFromClickPluginValue {
@@ -20,7 +20,7 @@ class JumpFromClickPluginValue {
       scrollIntoView: true,
     });
 
-    const helper = this.view.state.facet(editorHelperFacet);
+    const helper = this.view.state.facet(helperFacet);
     requestAnimationFrame(() => {
       helper.triggerRippleEffect(this.view, expectedPosition);
     });

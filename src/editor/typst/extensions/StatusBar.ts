@@ -2,7 +2,7 @@ import type { Extension } from '@codemirror/state';
 import { type EditorView, type PluginValue, ViewPlugin, type ViewUpdate } from '@codemirror/view';
 
 import { SyntaxKind, SyntaxMode } from '@typstmate/typst-syntax';
-import { getActiveRegion } from '@/editor/shared/extensions/core/TypstMate';
+import { getActiveRegion } from '@/editor/shared/utils/core';
 
 import './StatusBar.css';
 
@@ -59,11 +59,11 @@ class StatusBarPlugin implements PluginValue {
     const region = getActiveRegion(this.view);
     if (!region) return;
 
-    const { syntaxKind, syntaxMode } = region;
-    this.currentSyntaxKind = syntaxKind!; // TODO: name の表示
+    const { activeKind, activeMode } = region;
+    this.currentSyntaxKind = activeKind!; // TODO: name の表示
 
-    this.kindEl.textContent = syntaxKind !== null ? SyntaxKind[syntaxKind!] : 'End';
-    this.modeEl.textContent = syntaxMode !== null ? SyntaxMode[syntaxMode!] : 'Opaque';
+    this.kindEl.textContent = activeKind !== null ? SyntaxKind[activeKind!] : 'End';
+    this.modeEl.textContent = activeMode !== null ? SyntaxMode[activeMode!] : 'Opaque';
     this.posEl.textContent = `${line.number}:${col}`;
   }
 }

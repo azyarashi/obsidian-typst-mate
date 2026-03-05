@@ -10,11 +10,11 @@ import {
 } from '@codemirror/view';
 
 import type { EditorHelper } from '@/editor';
-import { editorHelperFacet } from '@/editor/shared/extensions/core/Helper';
-import { getActiveRegion } from '@/editor/shared/extensions/core/TypstMate';
+import { getActiveRegion } from '@/editor/shared/utils/core';
 import { getNdirAndNPath } from '@/libs/typst';
 
 import './CodeBlockPreview.css';
+import { helperFacet } from '@/editor/shared/extensions/Helper';
 
 interface WidgetData {
   code: string;
@@ -76,7 +76,7 @@ const codeblockPreviewState = StateField.define<DecorationSet>({
         const widgetData = effect.value;
         if (!widgetData) return Decoration.none;
 
-        const helper = tr.state.facet(editorHelperFacet);
+        const helper = tr.state.facet(helperFacet);
         const widget = new CodeBlockPreviewWidget(widgetData.code, helper, widgetData.id, widgetData.regionFrom);
 
         const deco = Decoration.widget({ widget, side: 1, block: true });
@@ -115,14 +115,14 @@ class CodeblockPreviewPlugin implements PluginValue {
       return;
     }
 
-    const content = view.state.sliceDoc(region.from, region.to);
+    const content = view.state.sliceDoc(region.from + region.skip, region.to);
     const position = view.state.doc.lineAt(region.to + 1).to;
 
     const newWidgetData: WidgetData = {
       code: content,
       id: region.processor?.id ?? '',
       position,
-      regionFrom: region.from,
+      regionFrom: region.from + region.skip,
     };
 
     if (this.isChanged(newWidgetData)) {

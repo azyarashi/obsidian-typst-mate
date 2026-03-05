@@ -7,8 +7,8 @@ import {
   WidgetType,
 } from '@codemirror/view';
 
-import { getActiveRegion } from '@/editor/shared/extensions/core/TypstMate';
-import { diagnosticsState } from '@/editor/shared/extensions/decorations/Diagnostic';
+import { diagnosticsState } from '@/editor/shared/extensions/Diagnostic';
+import { getActiveRegion } from '@/editor/shared/utils/core';
 
 import './ErrorLens.css';
 

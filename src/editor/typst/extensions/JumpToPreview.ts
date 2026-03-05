@@ -1,6 +1,6 @@
 import { Facet } from '@codemirror/state';
 import { EditorView, ViewPlugin } from '@codemirror/view';
-import { editorHelperFacet } from '@/editor/shared/extensions/core/Helper';
+import { helperFacet } from '@/editor/shared/extensions/Helper';
 
 export type JumpToPreviewTarget = {
   jumpToPosition: (position: { page: number; x: number; y: number }) => Promise<void>;
@@ -26,7 +26,7 @@ class JumpToPreviewPluginValue {
     const pos = this.view.posAtCoords({ x: event.clientX, y: event.clientY });
     if (pos === null) return;
 
-    const helper = this.view.state.facet(editorHelperFacet);
+    const helper = this.view.state.facet(helperFacet);
     const target = this.view.state.facet(jumpToPreviewTargetFacet);
 
     if (!target) return;

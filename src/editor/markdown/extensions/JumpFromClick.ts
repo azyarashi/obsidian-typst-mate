@@ -2,8 +2,8 @@ import { type EditorView, ViewPlugin } from '@codemirror/view';
 
 import type { Jump } from '@/libs/worker';
 import type TypstElement from '@/ui/elements/Typst';
-import { editorHelperFacet } from '../../shared/extensions/core/Helper';
-import { getRegionAt } from '../../shared/extensions/core/TypstMate';
+import { helperFacet } from '../../shared/extensions/Helper';
+import { getRegionAt } from '../../shared/utils/core';
 
 class JumpFromClickPluginValue {
   constructor(public view: EditorView) {}
@@ -34,8 +34,8 @@ class JumpFromClickPluginValue {
       scrollIntoView: true,
     });
 
-    const helper = this.view.state.facet(editorHelperFacet);
-    if (region.from <= expectedPosition && expectedPosition <= region.to)
+    const helper = this.view.state.facet(helperFacet);
+    if (region.from < expectedPosition && expectedPosition < region.to)
       requestAnimationFrame(() => {
         helper.triggerRippleEffect(this.view, clampedOffset);
       });

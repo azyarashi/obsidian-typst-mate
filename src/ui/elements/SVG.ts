@@ -1,7 +1,7 @@
 import { MarkdownView, Notice } from 'obsidian';
 
 import { BASE_COLOR_VAR } from '@/constants';
-import { jumpFromClickPlugin } from '@/editor/markdown/actions/JumpFromClick';
+import { jumpFromClickPlugin } from '@/editor/markdown/extensions/JumpFromClick';
 import type { Diagnostic, SVGResult } from '@/libs/worker';
 import TypstElement from './Typst';
 
@@ -101,10 +101,10 @@ export default class TypstSVGElement extends TypstElement {
   }
 
   async render() {
-    const input = this.format();
+    const formatted = this.format();
 
     try {
-      const result = this.plugin.typst.svg(input, this.ndir, this.kind, this.id);
+      const result = this.plugin.typst.svg(formatted, this.ndir, this.kind, this.id);
 
       if (result instanceof Promise)
         result
@@ -132,6 +132,7 @@ export default class TypstSVGElement extends TypstElement {
     const y = (event.clientY - rect.top) / (rect.height / svg.viewBox.baseVal.height);
 
     await this.plugin.typst.svg(this.format(), this.ndir, this.kind, this.id); // フレーム生成のための副作用
+
     const result = await this.plugin.typst.jumpFromClick(x, y);
     if (result) {
       const view = this.plugin.app.workspace.getActiveFileView();

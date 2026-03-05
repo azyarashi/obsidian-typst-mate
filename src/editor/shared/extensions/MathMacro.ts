@@ -1,6 +1,6 @@
 import { EditorView, ViewPlugin, type ViewUpdate } from '@codemirror/view';
 
-import { editorHelperFacet } from '../core/Helper';
+import { helperFacet } from './Helper';
 
 const MACRO_DELAY = 500;
 
@@ -36,7 +36,7 @@ class MathMacroPluginValue {
   }
 
   handleKeyDown(e: KeyboardEvent): boolean {
-    const helper = this.view.state.facet(editorHelperFacet);
+    const helper = this.view.state.facet(helperFacet);
     if (helper.plugin.settings.disableMacro) return false;
 
     const { key, ctrlKey, metaKey, altKey } = e;

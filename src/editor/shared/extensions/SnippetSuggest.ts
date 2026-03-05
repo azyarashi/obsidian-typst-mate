@@ -11,9 +11,9 @@ import {
 import { Notice } from 'obsidian';
 
 import type { Snippet } from '@/libs/snippet';
-import { calculatePopupPosition } from '../../utils/position';
-import { editorHelperFacet } from '../core/Helper';
-import { getActiveRegion } from '../core/TypstMate';
+import { getActiveRegion } from '../utils/core';
+import { calculatePopupPosition } from '../utils/position';
+import { helperFacet } from './Helper';
 
 import './SnippetSuggest.css';
 
@@ -85,7 +85,7 @@ class SnippetSuggestPlugin implements PluginValue {
       this.hide();
       return;
     }
-    const helper = update.state.facet(editorHelperFacet);
+    const helper = update.state.facet(helperFacet);
 
     const cursor = update.state.selection.main.head;
     const line = update.state.doc.lineAt(cursor);

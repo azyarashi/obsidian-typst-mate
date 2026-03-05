@@ -23,7 +23,7 @@ import {
 import { EditorHelper } from '@/editor';
 import { BASE_COLOR_VAR, TYPST_SVG_FILL, TYPST_SVG_STROKE } from './constants';
 import { DEFAULT_SETTINGS, type Settings } from './data/settings';
-import { collectRegions } from './editor/shared/extensions/core/TypstMate';
+import { collectRegions } from './editor/markdown/extensions/MarkdownCore';
 import TypstManager from './libs/typst';
 import type $ from './libs/worker';
 import Typst from './libs/worker';
@@ -31,16 +31,16 @@ import TypstWorker from './libs/worker?worker&inline';
 import ExcalidrawPlugin from './plugins/excalidraw';
 import type TypstSVGElement from './ui/elements/SVG';
 import { ExcalidrawModal } from './ui/modals/excalidraw';
+import { TemplateSelectModal } from './ui/modals/templateSelect';
 import { SettingTab } from './ui/settingsTab';
 import { TypstPreviewView } from './ui/views/typst-preview/typstPreview';
 import { TypstTextView } from './ui/views/typst-text/typstText';
 import { TypstToolsView } from './ui/views/typst-tools/typstTools';
+import { exportToPdf } from './utils/export';
+import { createNewFile } from './utils/file';
 import { zip } from './utils/packageCompressor';
 
 import './main.css';
-import { TemplateSelectModal } from './ui/modals/templateSelect';
-import { exportToPdf } from './utils/export';
-import { createNewFile } from './utils/file';
 
 export default class ObsidianTypstMate extends Plugin {
   pluginId = 'typst-mate';
@@ -379,7 +379,7 @@ export default class ObsidianTypstMate extends Plugin {
       () => {
         const svgs = document.querySelectorAll('typstmate-svg') as NodeListOf<TypstSVGElement> | undefined;
         if (!svgs) return;
-        for (const svg of svgs) if (svg.dataset.fitToNoteWidth) svg.render();
+        for (const svg of svgs) if (svg.processor.fitToNoteWidth) svg.render();
       },
       100,
       true,

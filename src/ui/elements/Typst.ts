@@ -1,8 +1,8 @@
 import { MarkdownView, Menu, Notice } from 'obsidian';
 
 import { DEFAULT_FONT_SIZE } from '@/constants';
-import { getActiveRegion } from '@/editor/shared/extensions/core/TypstMate';
-import { updateDiagnosticEffect } from '@/editor/shared/extensions/decorations/Diagnostic';
+import { updateDiagnosticEffect } from '@/editor/shared/extensions/Diagnostic';
+import { getActiveRegion } from '@/editor/shared/utils/core';
 import type { Processor, ProcessorKind } from '@/libs/processor';
 import { getNoteWidth } from '@/libs/profile';
 import type { Diagnostic, SVGResult } from '@/libs/worker';
@@ -25,11 +25,13 @@ export default abstract class TypstElement extends HTMLElement {
 
   menu = new Menu().addItem((item) => {
     item.setTitle('Copy as script').onClick(() => {
-      const code = this.format().replaceAll(
-        'fontsize',
-        `${(this.plugin.app.vault.config.baseFontSize ?? DEFAULT_FONT_SIZE) / 1.25}pt`,
+      const { formatted } = format(this.plugin, this.source, this.kind, this.processor);
+      navigator.clipboard.writeText(
+        formatted.replaceAll(
+          'fontsize',
+          `${(this.plugin.app.vault.config.baseFontSize ?? DEFAULT_FONT_SIZE) / 1.25}pt`,
+        ),
       );
-      navigator.clipboard.writeText(code);
       new Notice('Copied to clipboard!');
     });
   });
@@ -55,24 +57,8 @@ export default abstract class TypstElement extends HTMLElement {
   }
 
   format() {
-    let formatted = this.processor.useReplaceAll
-      ? this.processor.format.replaceAll('{CODE}', this.source)
-      : this.processor.format.replace('{CODE}', this.source);
-    formatted = `${this.plugin.typstManager.preamble}\n${formatted}${this.kind === 'inline' ? '#text(size:0pt)[TypstMate]' : ''}`;
-    formatted = this.processor.noPreamble ? formatted : `${this.plugin.settings.preamble}\n${formatted}`;
-
-    this.offset =
-      -this.processor.format.indexOf('{CODE}') -
-      (this.processor.noPreamble ? 0 : this.plugin.settings.preamble.length + 1) -
-      this.plugin.typstManager.preamble.length -
-      1;
-
-    if (this.processor.fitToNoteWidth) {
-      const width = getNoteWidth(this.plugin);
-      formatted = `#let WIDTH = ${width}\n${formatted}`;
-      this.offset -= 16 + width.length;
-      this.dataset.fitToNoteWidth = 'true';
-    }
+    const { formatted, offset } = format(this.plugin, this.source, this.kind, this.processor);
+    this.offset = offset;
 
     return formatted;
   }
@@ -83,12 +69,14 @@ export default abstract class TypstElement extends HTMLElement {
 
     const view = this.plugin.app.workspace.getActiveFileView();
     if (view instanceof MarkdownView)
-      updateDiagnosticEffect(view.editor.cm, {
-        diagnostics: err,
-        processor: this.processor,
-        noDiag: this.noDiag,
-        offset: this.offset,
-      });
+      setTimeout(() => {
+        updateDiagnosticEffect(view.editor.cm, {
+          diagnostics: err,
+          processor: this.processor,
+          noDiag: this.noDiag,
+          offset: this.offset,
+        });
+      }, 0);
 
     if (this.plugin.settings.enableMathjaxFallback) {
       this.replaceChildren(
@@ -122,4 +110,27 @@ export default abstract class TypstElement extends HTMLElement {
       this.menu.showAtPosition({ x: event.pageX, y: event.pageY });
     });
   }
+}
+
+export function format(plugin: ObsidianTypstMate, source: string, kind: ProcessorKind, processor: Processor) {
+  let formatted = processor.useReplaceAll
+    ? processor.format.replaceAll('{CODE}', source)
+    : processor.format.replace('{CODE}', source);
+  formatted = `${plugin.typstManager.preamble}\n${formatted}${kind === 'inline' ? '#text(size:0pt)[TypstMate]' : ''}`;
+  formatted = processor.noPreamble ? formatted : `${plugin.settings.preamble}\n${formatted}`;
+
+  let offset =
+    -processor.format.indexOf('{CODE}') -
+    (processor.noPreamble ? 0 : plugin.settings.preamble.length + 1) -
+    plugin.typstManager.preamble.length -
+    1;
+
+  if (processor.fitToNoteWidth) {
+    const width = getNoteWidth(plugin);
+    formatted = `#let WIDTH = ${width}\n${formatted}`;
+    offset -= 16 + width.length;
+  }
+  if (kind === 'codeblock') offset += 2;
+
+  return { formatted, offset };
 }

@@ -2,7 +2,7 @@ import { type EditorView, ViewPlugin, type ViewUpdate } from '@codemirror/view';
 
 import SHORTCUTS_DATA from '@/data/shortcuts.json';
 import { RenderingEngine } from '@/libs/processor';
-import { getActiveRegion } from '../core/TypstMate';
+import { getActiveRegion } from '../utils/core';
 
 const SHORTCUTS_KEYS = Object.keys(SHORTCUTS_DATA);
 const SHORTCUT_DELAY = 250;
@@ -83,7 +83,7 @@ class ShortcutPluginValue {
       content: this.view.state.sliceDoc(selection.from, selection.to),
     };
 
-    // TODO: const helper = this.view.state.facet(editorHelperFacet);
+    // TODO: const helper = this.view.state.facet(editorhelperFacet);
     this.timeoutId = window.setTimeout(() => {
       this.executeShortcut(key);
       this.clearTimeout();

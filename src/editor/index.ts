@@ -4,7 +4,7 @@ import { Notice } from 'obsidian';
 
 import type ObsidianTypstMate from '@/main';
 import { buildExtension as buildSharedExtensions } from './markdown/build';
-import { getActiveRegion } from './shared/extensions/core/TypstMate';
+import { getActiveRegion } from './shared/utils/core';
 
 import './shared/css';
 

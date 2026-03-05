@@ -1,7 +1,7 @@
 import { type EditorView, type PluginValue, ViewPlugin, type ViewUpdate } from '@codemirror/view';
 
-import { editorHelperFacet } from '@/editor/shared/extensions/core/Helper';
-import { getActiveRegion } from '@/editor/shared/extensions/core/TypstMate';
+import { helperFacet } from '@/editor/shared/extensions/Helper';
+import { getActiveRegion } from '@/editor/shared/utils/core';
 import { calculatePopupPosition } from '@/editor/shared/utils/position';
 
 import './InlineMathPreview.css';
@@ -19,7 +19,7 @@ class InlinePreviewPlugin implements PluginValue {
   }
 
   update(update: ViewUpdate) {
-    const helper = update.state.facet(editorHelperFacet)!;
+    const helper = update.state.facet(helperFacet)!;
     if (!helper.plugin.settings.enableInlinePreview || !update.view.hasFocus) {
       this.hide();
       return;

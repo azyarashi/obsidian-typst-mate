@@ -1,5 +1,3 @@
-import '@/editor/shared/extensions/decorations/Diagnostic.css';
-
 export interface DiagnosticInfo {
   severity: 'error' | 'warning' | 'info' | 'hint';
   message: string;

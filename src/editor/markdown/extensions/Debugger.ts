@@ -3,8 +3,8 @@ import { type EditorView, type PluginValue, ViewPlugin, type ViewUpdate } from '
 
 import { SyntaxKind, SyntaxMode } from '@typstmate/typst-syntax';
 import type { EditorHelper } from '@/editor';
-import { editorHelperFacet } from './Helper';
-import { getActiveRegion } from './TypstMate';
+import { getActiveRegion } from '@/editor/shared/utils/core';
+import { helperFacet } from '../../shared/extensions/Helper';
 
 import './Debugger.css';
 
@@ -19,7 +19,7 @@ class DebugPlugin implements PluginValue {
 
     view.dom.appendChild(this.dom);
 
-    this.helper = view.state.facet(editorHelperFacet);
+    this.helper = view.state.facet(helperFacet);
     if (!this.helper.plugin.settings.enableDebugger) this.dom.hide();
     this.render();
   }
@@ -58,12 +58,12 @@ class DebugPlugin implements PluginValue {
         typstPos = (relativePos + offset).toString();
       }
 
-      const { syntaxMode, syntaxKind } = region;
+      const { activeMode, activeKind } = region;
 
       data.push(
         { title: 'Processor', description: `${region.kind}${region.processor?.id ? `(${region.processor.id})` : ''}` },
-        { title: 'Mode', description: syntaxMode !== null ? SyntaxMode[syntaxMode!] : 'Opaque' },
-        { title: 'Kind', description: syntaxKind !== null ? SyntaxKind[syntaxKind!] : 'End' },
+        { title: 'Mode', description: activeMode !== null ? SyntaxMode[activeMode!] : 'Opaque' },
+        { title: 'Kind', description: activeKind !== null ? SyntaxKind[activeKind!] : 'End' },
         { title: 'GlobalPos', description: cursor.toString() },
         { title: 'LocalPos', description: `${relativePos} (+${region.skip})` },
         { title: 'TypstPos', description: typstPos },

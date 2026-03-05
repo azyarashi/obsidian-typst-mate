@@ -4,8 +4,8 @@ import { Decoration, type DecorationSet, EditorView, ViewPlugin, type ViewUpdate
 import { LinkedNode, SyntaxKind } from '@typstmate/typst-syntax';
 import symbolData from '@/data/symbols.json';
 import { RenderingEngine } from '@/libs/processor';
-import { editorHelperFacet } from '../core/Helper';
-import { getActiveRegion } from '../core/TypstMate';
+import { getActiveRegion } from '../utils/core';
+import { helperFacet } from './Helper';
 
 export const SYMBOL_MAP = new Map<string, string>();
 for (const [key, val] of Object.entries(symbolData as Record<string, { sym?: string }>)) {
@@ -78,7 +78,7 @@ class MathSymbolConcealPlugin {
 
   private updateDecorations(view: EditorView, isDocChange: boolean, isCursorMove: boolean) {
     const region = getActiveRegion(view);
-    const helper = view.state.facet(editorHelperFacet);
+    const helper = view.state.facet(helperFacet);
     const conceal = helper.plugin.settings.concealMathSymbols;
 
     if (!region || !region.tree || !conceal) {
@@ -97,7 +97,7 @@ class MathSymbolConcealPlugin {
     }
 
     const cursor = view.state.selection.main.head;
-    const offset = region.kind === 'codeblock' ? region.from : region.from + region.skip;
+    const offset = region.from + region.skip;
 
     const marks: ReturnType<Decoration['range']>[] = [];
     let newHoveredPos = -1;

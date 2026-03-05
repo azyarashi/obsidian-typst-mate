@@ -13,34 +13,33 @@ import {
 } from '@codemirror/view';
 
 import type { EditorHelper } from '@/editor';
-import { shortcutExtension } from '@/editor/shared/extensions/actions/Shortcut';
-import { tabJumpExtensionForTypstText } from '@/editor/shared/extensions/actions/TabJump';
-import { editorHelperFacet } from '@/editor/shared/extensions/core/Helper';
-import { typstSyntaxHighlighting, typstTextCore } from '@/editor/shared/extensions/core/TypstMate';
-import { diagnosticsState } from '@/editor/shared/extensions/decorations/Diagnostic';
-import { mathSymbolConcealExtension } from '@/editor/shared/extensions/decorations/MathSymbolConceal';
-import { PairHighlightExtension } from '@/editor/shared/extensions/decorations/PairHighlight';
-import { obsidianTheme, typstTheme } from '@/editor/shared/extensions/decorations/Theme';
-import { snippetSuggestExtension } from '@/editor/shared/extensions/popup/SnippetSuggest';
-import { symbolSuggestExtension } from '@/editor/shared/extensions/popup/SymbolSuggest';
-import { jumpFromClickExtension } from './extensions/actions/JumpFromClick';
-import { jumpToPreviewExtension } from './extensions/actions/JumpToPreview';
-import { errorLensExtension } from './extensions/decorations/ErrorLens';
-import { indentRainbowExtension } from './extensions/decorations/IndentRainbow';
-import { statusBarExtension } from './extensions/decorations/StatusBar';
-import { typstTextViewTheme } from './extensions/decorations/Theme';
+import { diagnosticsState } from '@/editor/shared/extensions/Diagnostic';
+import { helperFacet } from '@/editor/shared/extensions/Helper';
+import { mathSymbolConcealExtension } from '@/editor/shared/extensions/MathSymbolConceal';
+import { pairHighlightExtension } from '@/editor/shared/extensions/PairHighlight';
+import { shortcutExtension } from '@/editor/shared/extensions/Shortcut';
+import { typstSyntaxHighlighting } from '@/editor/shared/extensions/SyntaxHighlight';
+import { tabJumpExtensionForTypstText } from '@/editor/shared/extensions/TabJump';
+import { obsidianTheme, typstTheme } from '@/editor/shared/extensions/Theme';
+import { snippetSuggestExtension } from '../shared/extensions/SnippetSuggest';
+import { errorLensExtension } from './extensions/ErrorLens';
+import { indentRainbowExtension } from './extensions/IndentRainbow';
+import { jumpFromClickExtension } from './extensions/JumpFromClick';
+import { jumpToPreviewExtension } from './extensions/JumpToPreview';
+import { statusBarExtension } from './extensions/StatusBar';
+import { typstTextViewTheme } from './extensions/Theme';
+import { typstTextCore } from './extensions/TypstCore';
 
 import '@/editor/shared/css';
 
 export function buildTypstTextExtensions(editorHelper: EditorHelper) {
   const extensions: Extension[] = [
-    editorHelperFacet.of(editorHelper),
+    helperFacet.of(editorHelper),
     typstTextCore,
 
     EditorState.tabSize.of(2),
     EditorView.lineWrapping,
 
-    symbolSuggestExtension,
     snippetSuggestExtension,
     shortcutExtension,
     tabJumpExtensionForTypstText,
@@ -67,7 +66,7 @@ export function buildTypstTextExtensions(editorHelper: EditorHelper) {
     errorLensExtension,
 
     mathSymbolConcealExtension,
-    PairHighlightExtension(),
+    pairHighlightExtension,
 
     typstSyntaxHighlighting(),
     highlightTrailingWhitespace(),

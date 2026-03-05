@@ -1,35 +1,34 @@
 import type { Extension } from '@codemirror/state';
 
 import type { EditorHelper } from '@/editor';
-import { codeblockPreviewExtension } from '@/editor/markdown/extensions/decorations/CodeBlockPreview';
-import { inlinePreviewExtension } from '@/editor/markdown/extensions/popup/InlineMathPreview';
-import { mathMacroExtension } from '../shared/extensions/actions/MathMacro';
-import { shortcutExtension } from '../shared/extensions/actions/Shortcut';
-import { tabJumpExtension } from '../shared/extensions/actions/TabJump';
-import { debuggerExtension } from '../shared/extensions/core/Debugger';
-import { editorHelperFacet } from '../shared/extensions/core/Helper';
-import { typstMateCore, typstSyntaxHighlighting } from '../shared/extensions/core/TypstMate';
-import { diagnosticsState } from '../shared/extensions/decorations/Diagnostic';
-import { mathSymbolConcealExtension } from '../shared/extensions/decorations/MathSymbolConceal';
-import { PairHighlightExtension } from '../shared/extensions/decorations/PairHighlight';
-import { obsidianTheme, typstTheme } from '../shared/extensions/decorations/Theme';
-import { snippetSuggestExtension } from '../shared/extensions/popup/SnippetSuggest';
-import { symbolSuggestExtension } from '../shared/extensions/popup/SymbolSuggest';
-import { jumpFromClickExtension } from './actions/JumpFromClick';
+import { diagnosticsState } from '../shared/extensions/Diagnostic';
+import { helperFacet } from '../shared/extensions/Helper';
+import { mathMacroExtension } from '../shared/extensions/MathMacro';
+import { mathSymbolConcealExtension } from '../shared/extensions/MathSymbolConceal';
+import { pairHighlightExtension } from '../shared/extensions/PairHighlight';
+import { shortcutExtension } from '../shared/extensions/Shortcut';
+import { snippetSuggestExtension } from '../shared/extensions/SnippetSuggest';
+import { typstSyntaxHighlighting } from '../shared/extensions/SyntaxHighlight';
+import { tabJumpExtension } from '../shared/extensions/TabJump';
+import { obsidianTheme, typstTheme } from '../shared/extensions/Theme';
+import { codeblockPreviewExtension } from './extensions/CodeBlockPreview';
+import { debuggerExtension } from './extensions/Debugger';
+import { inlinePreviewExtension } from './extensions/InlineMathPreview';
+import { jumpFromClickExtension } from './extensions/JumpFromClick';
+import { markdownCore } from './extensions/MarkdownCore';
 
 export function buildExtension(editorHelper: EditorHelper) {
   const extensions: Extension[] = [
     // Core
-    editorHelperFacet.of(editorHelper),
-    typstMateCore,
+    helperFacet.of(editorHelper),
+    markdownCore,
 
     // Decorations
     diagnosticsState,
-    PairHighlightExtension(),
+    pairHighlightExtension,
     mathSymbolConcealExtension,
 
     // Popups
-    symbolSuggestExtension,
     snippetSuggestExtension,
 
     // Actions

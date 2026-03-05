@@ -2,8 +2,8 @@ import { Prec } from '@codemirror/state';
 import { type EditorView, keymap } from '@codemirror/view';
 
 import type { EditorHelper } from '@/editor';
-import { editorHelperFacet } from '../core/Helper';
-import { getActiveRegion, type ParsedRegion } from '../core/TypstMate';
+import { getActiveRegion, type ParsedRegion } from '../utils/core';
+import { helperFacet } from './Helper';
 
 const cursorStr = '#CURSOR';
 
@@ -12,7 +12,7 @@ export const tabJumpExtension = Prec.high(
     {
       key: 'Tab',
       run: (view) => {
-        const helper = view.state.facet(editorHelperFacet);
+        const helper = view.state.facet(helperFacet);
         if (helper.plugin.settings.revertTabToDefault) return false;
         const region = getActiveRegion(view);
         if (!region) return false;
@@ -22,7 +22,7 @@ export const tabJumpExtension = Prec.high(
     {
       key: 'Shift-Tab',
       run: (view) => {
-        const helper = view.state.facet(editorHelperFacet);
+        const helper = view.state.facet(helperFacet);
         if (helper.plugin.settings.revertTabToDefault) return false;
         const region = getActiveRegion(view);
         if (!region) return false;
@@ -37,7 +37,7 @@ export const tabJumpExtensionForTypstText = Prec.high(
     {
       key: 'Tab',
       run: (view) => {
-        const helper = view.state.facet(editorHelperFacet);
+        const helper = view.state.facet(helperFacet);
         if (helper.plugin.settings.revertTabToDefault) return false;
         const region = getActiveRegion(view);
         if (!region) return false;
@@ -48,7 +48,7 @@ export const tabJumpExtensionForTypstText = Prec.high(
     {
       key: 'Shift-Tab',
       run: (view) => {
-        const helper = view.state.facet(editorHelperFacet);
+        const helper = view.state.facet(helperFacet);
         if (helper.plugin.settings.revertTabToDefault) return false;
         const region = getActiveRegion(view);
         if (!region) return false;

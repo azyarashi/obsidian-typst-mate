@@ -1,6 +1,6 @@
 import { type Menu, TextFileView, type TFile, type WorkspaceLeaf } from 'obsidian';
 
-import { jumpFromClickExtension } from '@/editor/typst/extensions/actions/JumpFromClick';
+import { jumpFromClickExtension } from '@/editor/typst/extensions/JumpFromClick';
 import type ObsidianTypstMate from '@/main';
 import type { TypstTextView } from '../typst-text/typstText';
 
