@@ -1,5 +1,6 @@
 import { type App, Modal, Setting } from 'obsidian';
 
+import { t } from '@/i18n';
 import type ObsidianTypstMate from '@/main';
 import type { SnippetView } from '../components/snippet';
 
@@ -15,7 +16,7 @@ export class CategoryRenameModal extends Modal {
     this.oldCategory = oldCategory;
     this.plugin = plugin;
 
-    new Setting(this.contentEl).setName(`Rename Category`).addText((text) => {
+    new Setting(this.contentEl).setName(t('snippets.categoryRename.heading')).addText((text) => {
       text.setValue(oldCategory);
 
       text.onChange((value) => {

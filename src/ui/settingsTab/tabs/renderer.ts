@@ -1,20 +1,15 @@
 import { Setting } from 'obsidian';
 
 import { DEFAULT_SETTINGS } from '@/data/settings';
+import { t, tFragment } from '@/i18n';
 import type ObsidianTypstMate from '@/main';
-import { CustomFragment } from '@/utils/customFragment';
 
 import './renderer.css';
 
 export function addRendererTab(plugin: ObsidianTypstMate, containerEl: HTMLElement) {
   new Setting(containerEl)
-    .setName('Enable Background Rendering')
-    .setDesc(
-      new CustomFragment()
-        .appendText('The UI will no longer freeze, but ')
-        .appendText('it may conflict with plugins related to export or rendering.')
-        .appendText(' (Disabled automatically when exporting to PDF via Markdown menu)'),
-    )
+    .setName(t('settings.renderer.enableBackgroundRendering'))
+    .setDesc(t('settings.renderer.enableBackgroundRenderingDesc'))
     .addToggle((toggle) => {
       toggle.setValue(plugin.settings.enableBackgroundRendering);
       toggle.onChange((value) => {
@@ -25,10 +20,8 @@ export function addRendererTab(plugin: ObsidianTypstMate, containerEl: HTMLEleme
     });
 
   new Setting(containerEl)
-    .setName('Patch PDF Export')
-    .setDesc(
-      'Temporarily disable AutoBaseColor and use BaseColor during PDF export to fix white background issues in dark themes.',
-    )
+    .setName(t('settings.renderer.patchPdfExport'))
+    .setDesc(t('settings.renderer.patchPdfExportDesc'))
     .addToggle((toggle) => {
       toggle.setValue(plugin.settings.patchPDFExport ?? DEFAULT_SETTINGS.patchPDFExport!);
       toggle.onChange((value) => {
@@ -38,8 +31,8 @@ export function addRendererTab(plugin: ObsidianTypstMate, containerEl: HTMLEleme
     });
 
   new Setting(containerEl)
-    .setName('Use Theme Text Color')
-    .setDesc("Use Obsidian's text color as the base color.")
+    .setName(t('settings.renderer.useThemeTextColor'))
+    .setDesc(t('settings.renderer.useThemeTextColorDesc'))
     .addToggle((toggle) => {
       toggle.setValue(plugin.settings.autoBaseColor);
       toggle.onChange((value) => {
@@ -51,13 +44,8 @@ export function addRendererTab(plugin: ObsidianTypstMate, containerEl: HTMLEleme
     });
 
   new Setting(containerEl)
-    .setName('Base Color')
-    .setDesc(
-      new CustomFragment()
-        .appendText('Replace black in SVGs with another color. Useful for dark themes. Disable ')
-        .appendCodeText('Use Theme Text Color')
-        .appendText(' to use this.'),
-    )
+    .setName(t('settings.renderer.baseColor'))
+    .setDesc(tFragment('settings.renderer.baseColorDesc'))
     .addColorPicker((colorPicker) => {
       colorPicker.setValue(plugin.settings.baseColor);
       colorPicker.onChange((value) => {
@@ -68,10 +56,8 @@ export function addRendererTab(plugin: ObsidianTypstMate, containerEl: HTMLEleme
     });
 
   new Setting(containerEl)
-    .setName('Offset')
-    .setDesc(
-      'Vertical offset for inline math. The appearance may vary depending on the font used in Obsidian. Adjust as needed.',
-    )
+    .setName(t('settings.renderer.offset'))
+    .setDesc(t('settings.renderer.offsetDesc'))
     .addSlider((slider) => {
       slider.setLimits(-0.5, 0.5, 0.05);
       slider.setValue(plugin.settings.offset);
@@ -84,7 +70,7 @@ export function addRendererTab(plugin: ObsidianTypstMate, containerEl: HTMLEleme
       });
     });
 
-  new Setting(containerEl).setName('Fit Note Width Profiles').setHeading();
+  new Setting(containerEl).setName(t('settings.renderer.fitNoteWidthProfiles')).setHeading();
 
   const profilesContainer = containerEl.createDiv();
 
@@ -95,8 +81,8 @@ export function addRendererTab(plugin: ObsidianTypstMate, containerEl: HTMLEleme
     profilesContainer.empty();
 
     new Setting(profilesContainer)
-      .setName('Fit To Note Width Profile')
-      .setDesc('Profile to use when calculating "fit to note width". Select a preset or Live to detect editor width.')
+      .setName(t('settings.renderer.fitToNoteWidthProfile'))
+      .setDesc(t('settings.renderer.fitToNoteWidthProfileDesc'))
       .addDropdown((dropdown) => {
         dropdown.addOption('Live', 'Live');
         for (const profile of plugin.settings.fitToNoteWidthProfiles) {
@@ -110,11 +96,11 @@ export function addRendererTab(plugin: ObsidianTypstMate, containerEl: HTMLEleme
       });
 
     new Setting(profilesContainer)
-      .setName('Profiles')
-      .setDesc('Add or remove custom width profiles.')
+      .setName(t('settings.renderer.profiles'))
+      .setDesc(t('settings.renderer.profilesDesc'))
       .addButton((btn) =>
-        btn.setButtonText('Add Profile').onClick(async () => {
-          plugin.settings.fitToNoteWidthProfiles.push({ name: 'New Profile', width: '500pt' });
+        btn.setButtonText(t('settings.renderer.addProfile')).onClick(async () => {
+          plugin.settings.fitToNoteWidthProfiles.push({ name: t('settings.renderer.newProfileName'), width: '500pt' });
           await plugin.saveSettings();
           plugin.typstManager?.updateNoteWidth();
           renderProfiles();
@@ -125,7 +111,7 @@ export function addRendererTab(plugin: ObsidianTypstMate, containerEl: HTMLEleme
       new Setting(profilesContainer)
         .addText((text) => {
           text
-            .setPlaceholder('Name')
+            .setPlaceholder(t('settings.renderer.profileNamePlaceholder'))
             .setValue(profile.name)
             .onChange(async (value) => {
               const currentProfile = plugin.settings.fitToNoteWidthProfiles[index];
@@ -139,7 +125,7 @@ export function addRendererTab(plugin: ObsidianTypstMate, containerEl: HTMLEleme
         })
         .addText((text) => {
           text
-            .setPlaceholder('Width')
+            .setPlaceholder(t('settings.renderer.profileWidthPlaceholder'))
             .setValue(String(profile.width))
             .onChange(async (value) => {
               const currentProfile = plugin.settings.fitToNoteWidthProfiles[index];
@@ -152,7 +138,7 @@ export function addRendererTab(plugin: ObsidianTypstMate, containerEl: HTMLEleme
         .addExtraButton((btn) => {
           btn
             .setIcon('trash')
-            .setTooltip('Delete Profile')
+            .setTooltip(t('settings.renderer.deleteProfile'))
             .onClick(async () => {
               const currentProfile = plugin.settings.fitToNoteWidthProfiles[index];
               if (currentProfile) {

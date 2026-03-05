@@ -23,9 +23,15 @@
 
 		"resolveJsonModule": true,
 
-		"types": ["vite/client", "obsidian-typings"],
+		"types": [
+			"bun-types",
+			"vite/client",
+			"obsidian-typings"
+		],
+
 		"paths": {
       "@/*": ["./src/*"],
+      "@resources/*": ["./resources/*"],
       "@typstmate/typst-syntax": ["./packages/typst-syntax/src/typst-syntax/index.ts"],
       "obsidian": ["./node_modules/obsidian"]
     }

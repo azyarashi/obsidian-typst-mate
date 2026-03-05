@@ -64,7 +64,6 @@ export default defineConfig(async ({ mode }) => {
           '@lezer/highlight',
           '@lezer/lr',
           '@excalidraw/excalidraw',
-          'i18next',
           'obsidian-excalidraw-plugin',
           '@zsviczian/excalidraw',
           ...builtinModules,

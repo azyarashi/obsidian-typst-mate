@@ -1,6 +1,7 @@
 import { type Menu, TextFileView, type TFile, type WorkspaceLeaf } from 'obsidian';
 
 import { jumpFromClickExtension } from '@/editor/typst/extensions/JumpFromClick';
+import { t } from '@/i18n';
 import type ObsidianTypstMate from '@/main';
 import type { TypstTextView } from '../typst-text/typstText';
 
@@ -53,7 +54,7 @@ export class TypstPreviewView extends TextFileView {
 
   override onPaneMenu(menu: Menu, source: string) {
     menu.addItem((item) => {
-      item.setTitle('Open as text').onClick(async () => {
+      item.setTitle(t('contextMenu.openAsText')).onClick(async () => {
         try {
           if (!this.file) return;
           const leaf = this.app.workspace.getLeaf(false);
@@ -189,8 +190,8 @@ export class TypstPreviewView extends TextFileView {
     const nextButton = this.controlsEl.createEl('button', { text: '→' });
     nextButton.addEventListener('click', () => this.goToNextPage());
 
-    const resetButton = this.controlsEl.createEl('button', { text: 'Reset' });
-    resetButton.title = 'Fit to Page';
+    const resetButton = this.controlsEl.createEl('button', { text: t('views.typstPreview.buttons.reset') });
+    resetButton.title = t('views.typstPreview.fitToPage');
     resetButton.addEventListener('click', () => this.fitToPage(true));
 
     this.zoomSliderEl = this.controlsEl.createEl('input', {

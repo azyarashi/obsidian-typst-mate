@@ -2,6 +2,7 @@ import { Prec } from '@codemirror/state';
 import type { EditorView } from '@codemirror/view';
 import { Notice } from 'obsidian';
 
+import { t } from '@/i18n';
 import type ObsidianTypstMate from '@/main';
 import { buildExtension as buildSharedExtensions } from './markdown/build';
 import { getActiveRegion } from './shared/utils/core';
@@ -50,7 +51,7 @@ export class EditorHelper {
 
   boxCurrentEquation(view: EditorView) {
     const region = getActiveRegion(view);
-    if (!region) return new Notice('There is no active region');
+    if (!region) return new Notice(t('notices.noActiveRegion'));
 
     const content = view.state.sliceDoc(region.from + region.skip, region.to);
 
@@ -68,7 +69,7 @@ export class EditorHelper {
 
   selectCurrentEquation(view: EditorView) {
     const region = getActiveRegion(view);
-    if (!region) return new Notice('There is no active region');
+    if (!region) return new Notice(t('notices.noActiveRegion'));
 
     view.dispatch({
       selection: { anchor: region.from + region.skip, head: region.to },

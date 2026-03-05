@@ -5,6 +5,7 @@ import { debounce, type Menu, TextFileView, TFile, type WorkspaceLeaf } from 'ob
 import { updateDiagnosticEffect } from '@/editor/shared/extensions/Diagnostic';
 import { buildTypstTextExtensions } from '@/editor/typst/build';
 import { jumpToPreviewTargetFacet } from '@/editor/typst/extensions/JumpToPreview';
+import { t } from '@/i18n';
 import type ObsidianTypstMate from '@/main';
 import { exportToPdf } from '@/utils/export';
 import { TypstPreviewView } from '../typst-preview/typstPreview';
@@ -38,12 +39,12 @@ export class TypstTextView extends TextFileView {
     // 念の為 await
     await super.onload();
 
-    this.addAction('upload', 'Export', () => {
+    this.addAction('upload', t('views.typstText.actions.export'), () => {
       if (!this.file) return;
       new ExportToolModal(this.app, this.plugin, this.file, this.view.state.doc.toString()).open();
     });
 
-    this.addAction('file-image', 'Export as PDF', async () => {
+    this.addAction('file-image', t('views.typstText.actions.exportAsPdf'), async () => {
       if (!this.file) return;
       const path = await exportToPdf(this.plugin, this.file, this.view.state.doc.toString(), {
         tagged: true,
@@ -58,7 +59,7 @@ export class TypstTextView extends TextFileView {
       }
     });
 
-    this.addAction('eye', 'Open as Preview', async () => {
+    this.addAction('eye', t('views.typstText.actions.openAsPreview'), async () => {
       if (this.linkedPreviewLeaf && this.linkedPreviewLeaf.view instanceof TypstPreviewView) {
         this.app.workspace.revealLeaf(this.linkedPreviewLeaf);
         return;
@@ -91,7 +92,7 @@ export class TypstTextView extends TextFileView {
 
   override onPaneMenu(menu: Menu, source: string) {
     menu.addItem((item) => {
-      item.setTitle('Open with default app').onClick(async () => {
+      item.setTitle(t('contextMenu.openWithDefaultApp')).onClick(async () => {
         try {
           if (!this.file) return;
           this.app.openWithDefaultApp(this.file.path);
@@ -154,7 +155,7 @@ export class TypstTextView extends TextFileView {
   }
 
   override getDisplayText() {
-    return this.file?.name ?? 'Typst Text';
+    return this.file?.name ?? t('views.typstText.displayText');
   }
 
   override getViewData() {

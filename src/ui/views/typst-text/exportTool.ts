@@ -1,5 +1,6 @@
 import { type App, Modal, Notice, Setting, type TFile } from 'obsidian';
 
+import { t } from '@/i18n';
 import type ObsidianTypstMate from '@/main';
 import {
   type ExportFormat,
@@ -53,14 +54,14 @@ export class ExportToolModal extends Modal {
   override onOpen() {
     const { contentEl } = this;
     contentEl.empty();
-    contentEl.createEl('h2', { text: 'Export Typst Document' });
+    contentEl.createEl('h2', { text: t('modals.exportTool.heading') });
 
-    new Setting(contentEl).setName('Format').addDropdown((dropdown) => {
+    new Setting(contentEl).setName(t('modals.exportTool.format')).addDropdown((dropdown) => {
       dropdown
         .addOptions({
-          pdf: 'PDF',
-          svg: 'SVG',
-          png: 'PNG (Image)',
+          pdf: t('modals.exportTool.formatOptions.pdf'),
+          svg: t('modals.exportTool.formatOptions.svg'),
+          png: t('modals.exportTool.formatOptions.png'),
         })
         .setValue(this.options.format)
         .onChange((value) => {
@@ -73,7 +74,7 @@ export class ExportToolModal extends Modal {
 
     new Setting(contentEl).addButton((btn) => {
       btn
-        .setButtonText('Export')
+        .setButtonText(t('modals.exportTool.buttons.export'))
         .setCta()
         .onClick(async () => {
           await this.export();
@@ -88,11 +89,11 @@ export class ExportToolModal extends Modal {
 
   renderOptions(contentEl: HTMLElement) {
     if (this.options.format === 'pdf') {
-      contentEl.createEl('h3', { text: 'PDF Options' });
+      contentEl.createEl('h3', { text: t('modals.exportTool.pdfOptions') });
 
       new Setting(contentEl)
-        .setName('Tagged PDF')
-        .setDesc('Include accessibility metadata.')
+        .setName(t('modals.exportTool.taggedPdf'))
+        .setDesc(t('modals.exportTool.taggedPdfDesc'))
         .addToggle((toggle) => {
           toggle.setValue(this.options.pdf.tagged).onChange((value) => {
             this.options.pdf.tagged = value;
@@ -100,11 +101,11 @@ export class ExportToolModal extends Modal {
         });
 
       new Setting(contentEl)
-        .setName('Document Identifier')
-        .setDesc('A unique identifier for the document.')
+        .setName(t('modals.exportTool.documentIdentifier'))
+        .setDesc(t('modals.exportTool.documentIdentifierDesc'))
         .addText((text) => {
           text
-            .setPlaceholder('Optional')
+            .setPlaceholder(t('modals.exportTool.optionalPlaceholder'))
             .setValue(this.options.pdf.ident ?? '')
             .onChange((value) => {
               this.options.pdf.ident = value || undefined;
@@ -112,8 +113,8 @@ export class ExportToolModal extends Modal {
         });
 
       new Setting(contentEl)
-        .setName('Standard')
-        .setDesc('Enforce conformance with a PDF standard.')
+        .setName(t('modals.exportTool.standard'))
+        .setDesc(t('modals.exportTool.standardDesc'))
         .addDropdown((dropdown) => {
           dropdown
             .addOptions(PDF_STANDARDS)
@@ -124,8 +125,8 @@ export class ExportToolModal extends Modal {
         });
 
       new Setting(contentEl)
-        .setName('Custom Timestamp')
-        .setDesc('Set a custom creation date/time.')
+        .setName(t('modals.exportTool.customTimestamp'))
+        .setDesc(t('modals.exportTool.customTimestampDesc'))
         .addText((text) => {
           text.inputEl.type = 'datetime-local';
           if (this.options.pdf.timestamp) {
@@ -147,25 +148,25 @@ export class ExportToolModal extends Modal {
         });
 
       new Setting(contentEl)
-        .setName('Page Ranges')
-        .setDesc('Comma separated list of ranges. e.g. 1-3, 5, 7-')
+        .setName(t('modals.exportTool.pageRanges'))
+        .setDesc(t('modals.exportTool.pageRangesDesc'))
         .addText((text) => {
           text
-            .setPlaceholder('e.g. 1-3, 5, 7-')
+            .setPlaceholder(t('modals.exportTool.pageRangesPlaceholder'))
             .setValue(this.options.pdf.pageRanges ?? '')
             .onChange((value) => {
               this.options.pdf.pageRanges = value || undefined;
             });
         });
     } else if (this.options.format === 'svg') {
-      contentEl.createEl('h3', { text: 'SVG Options' });
+      contentEl.createEl('h3', { text: t('modals.exportTool.svgOptions') });
 
       new Setting(contentEl)
-        .setName('Page Ranges')
-        .setDesc('Comma separated list of ranges. e.g. 1-3, 5, 7-')
+        .setName(t('modals.exportTool.pageRanges'))
+        .setDesc(t('modals.exportTool.pageRangesDesc'))
         .addText((text) => {
           text
-            .setPlaceholder('e.g. 1-3, 5, 7-')
+            .setPlaceholder(t('modals.exportTool.pageRangesPlaceholder'))
             .setValue(this.options.svg.pageRanges ?? '')
             .onChange((value) => {
               this.options.svg.pageRanges = value || undefined;
@@ -173,22 +174,22 @@ export class ExportToolModal extends Modal {
         });
 
       new Setting(contentEl)
-        .setName('Filename Template')
-        .setDesc('Template for page filenames. {p}: page number, {0p}: zero-padded, {t}: total count.')
+        .setName(t('modals.exportTool.filenameTemplate'))
+        .setDesc(t('modals.exportTool.filenameTemplateDesc'))
         .addText((text) => {
           text
-            .setPlaceholder('page-{0p}-of-{t}.svg')
+            .setPlaceholder(t('modals.exportTool.filenameTemplateDefaults.svg'))
             .setValue(this.options.svg.filenameTemplate)
             .onChange((value) => {
               this.options.svg.filenameTemplate = value || '{p}.svg';
             });
         });
     } else if (this.options.format === 'png') {
-      contentEl.createEl('h3', { text: 'PNG Options' });
+      contentEl.createEl('h3', { text: t('modals.exportTool.pngOptions') });
 
       new Setting(contentEl)
-        .setName('PPI')
-        .setDesc('Pixels per inch. Higher values produce higher resolution (e.g., 72, 144, 300).')
+        .setName(t('modals.exportTool.ppi'))
+        .setDesc(t('modals.exportTool.ppiDesc'))
         .addText((text) => {
           text.inputEl.type = 'number';
           text
@@ -200,11 +201,11 @@ export class ExportToolModal extends Modal {
         });
 
       new Setting(contentEl)
-        .setName('Page Ranges')
-        .setDesc('Comma separated list of ranges. e.g. 1-3, 5, 7-')
+        .setName(t('modals.exportTool.pageRanges'))
+        .setDesc(t('modals.exportTool.pageRangesDesc'))
         .addText((text) => {
           text
-            .setPlaceholder('e.g. 1-3, 5, 7-')
+            .setPlaceholder(t('modals.exportTool.pageRangesPlaceholder'))
             .setValue(this.options.png.pageRanges ?? '')
             .onChange((value) => {
               this.options.png.pageRanges = value || undefined;
@@ -212,11 +213,11 @@ export class ExportToolModal extends Modal {
         });
 
       new Setting(contentEl)
-        .setName('Filename Template')
-        .setDesc('Template for page filenames. {p}: page number, {0p}: zero-padded, {t}: total count.')
+        .setName(t('modals.exportTool.filenameTemplate'))
+        .setDesc(t('modals.exportTool.filenameTemplateDesc'))
         .addText((text) => {
           text
-            .setPlaceholder('page-{0p}-of-{t}.png')
+            .setPlaceholder(t('modals.exportTool.filenameTemplateDefaults.png'))
             .setValue(this.options.png.filenameTemplate)
             .onChange((value) => {
               this.options.png.filenameTemplate = value || '{p}.png';
@@ -240,7 +241,7 @@ export class ExportToolModal extends Modal {
       }
     } catch (e) {
       console.error('Export failed:', e);
-      new Notice('Export failed. Check the console for details.');
+      new Notice(t('notices.exportFailed'));
     }
   }
 }

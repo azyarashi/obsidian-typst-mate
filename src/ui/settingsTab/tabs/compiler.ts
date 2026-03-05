@@ -1,5 +1,6 @@
 import { Setting } from 'obsidian';
 
+import { t } from '@/i18n';
 import type ObsidianTypstMate from '@/main';
 
 import { FontList } from '../components/font';
@@ -19,8 +20,8 @@ export function addCompilerTab(
 
 function addCompilerSettings(plugin: ObsidianTypstMate, containerEl: HTMLElement) {
   new Setting(containerEl)
-    .setName('Skip Startup Preparation')
-    .setDesc('Defer initialization at startup (unstable on mobile). Reduces startup time but delays the first render.')
+    .setName(t('settings.compiler.skipStartup'))
+    .setDesc(t('settings.compiler.skipStartupDesc'))
     .addToggle((toggle) => {
       toggle.setValue(plugin.settings.skipPreparationWaiting);
       toggle.onChange((value) => {
@@ -30,10 +31,8 @@ function addCompilerSettings(plugin: ObsidianTypstMate, containerEl: HTMLElement
     });
 
   new Setting(containerEl)
-    .setName('Disable Package Cache')
-    .setDesc(
-      'Disable caching of imported packages. Useful for low-memory environments, but requires re-downloading packages.',
-    )
+    .setName(t('settings.compiler.disablePackageCache'))
+    .setDesc(t('settings.compiler.disablePackageCacheDesc'))
     .addToggle((toggle) => {
       toggle.setValue(plugin.settings.disablePackageCache);
       toggle.onChange((value) => {
@@ -51,8 +50,8 @@ function addSubTabs(
 ) {
   const subTabsEl = containerEl.createDiv('typstmate-compiler-tabs');
   const subTabs: { id: 'package' | 'font'; name: string }[] = [
-    { id: 'package', name: 'Package' },
-    { id: 'font', name: 'Font' },
+    { id: 'package', name: t('settings.compiler.subTabs.package') },
+    { id: 'font', name: t('settings.compiler.subTabs.font') },
   ];
 
   subTabs.forEach((tab) => {
@@ -68,15 +67,13 @@ function addSubTabs(
   switch (activeTab) {
     case 'package':
       new Setting(containerEl)
-        .setName('Package')
-        .setDesc(
-          'When a package is imported, the cache is used instead of the actual files for faster performance. If you make changes directly, click the package icon to refresh the cache (plugin reload is required).',
-        )
+        .setName(t('settings.compiler.package.heading'))
+        .setDesc(t('settings.compiler.package.desc'))
         .setHeading();
       new PackagesList(plugin, containerEl);
       break;
     case 'font':
-      new Setting(containerEl).setName('Font').setHeading();
+      new Setting(containerEl).setName(t('settings.compiler.font.heading')).setHeading();
       new FontList(plugin, containerEl);
       break;
   }

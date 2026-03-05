@@ -3,6 +3,7 @@ import { MarkdownView, Menu, Notice } from 'obsidian';
 import { DEFAULT_FONT_SIZE } from '@/constants';
 import { updateDiagnosticEffect } from '@/editor/shared/extensions/Diagnostic';
 import { getActiveRegion } from '@/editor/shared/utils/core';
+import { t } from '@/i18n';
 import type { Processor, ProcessorKind } from '@/libs/processor';
 import { getNoteWidth } from '@/libs/profile';
 import type { Diagnostic, SVGResult } from '@/libs/worker';
@@ -24,7 +25,7 @@ export default abstract class TypstElement extends HTMLElement {
   isErr = true;
 
   menu = new Menu().addItem((item) => {
-    item.setTitle('Copy as script').onClick(() => {
+    item.setTitle(t('contextMenu.copyAsScript')).onClick(() => {
       const { formatted } = format(this.plugin, this.source, this.kind, this.processor);
       navigator.clipboard.writeText(
         formatted.replaceAll(
@@ -32,7 +33,7 @@ export default abstract class TypstElement extends HTMLElement {
           `${(this.plugin.app.vault.config.baseFontSize ?? DEFAULT_FONT_SIZE) / 1.25}pt`,
         ),
       );
-      new Notice('Copied to clipboard!');
+      new Notice(t('notices.copiedToClipboard'));
     });
   });
 
@@ -95,7 +96,7 @@ export default abstract class TypstElement extends HTMLElement {
       const diagEl = document.createElement('span');
       diagEl.className = 'typstmate-error';
 
-      diagEl.textContent = `${err[0]?.message}${err[0]?.hints.length !== 0 ? ` [${err[0]?.hints.length} hints]` : ''}`;
+      diagEl.textContent = `${err[0]?.message}${err[0]?.hints.length !== 0 ? ` ${t('common.hintsCount', { count: err[0]?.hints.length ?? 0 })}` : ''}`;
 
       if (err[0]?.hints.length !== 0)
         diagEl.addEventListener('click', () => new DiagnosticModal(this.plugin.app, err).open());

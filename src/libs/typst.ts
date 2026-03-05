@@ -2,6 +2,7 @@ import { type CachedMetadata, getAllTags, MarkdownView, Notice, type TFile } fro
 
 import { DEFAULT_FONT_SIZE } from '@/constants';
 import { DEFAULT_SETTINGS, type Settings } from '@/data/settings';
+import { t } from '@/i18n';
 import type ObsidianTypstMate from '@/main';
 import TypstSVGElement from '@/ui/elements/SVG';
 import { overwriteCustomElements } from '@/utils/custromElementRegistry';
@@ -55,7 +56,7 @@ export default class TypstManager {
       await Promise.all(
         fontPaths.map((fontPath) =>
           this.plugin.app.vault.adapter.readBinary(fontPath).catch(() => {
-            new Notice(`Failed to load font: ${fontPath.split('/').pop()}`);
+            new Notice(t('notices.failedToLoadFont', { name: fontPath.split('/').pop() }));
           }),
         ),
       )
@@ -75,7 +76,7 @@ export default class TypstManager {
           const cacheMap = unzip(await this.plugin.app.vault.adapter.readBinary(cachePath));
           for (const [path, data] of cacheMap) sources.set(`@${path}`, new Uint8Array(data!));
         } catch {
-          new Notice(`Failed to load cache: ${cachePath.split('/').pop()}`);
+          new Notice(t('notices.failedToLoadCache', { name: cachePath.split('/').pop() }));
         }
       }
     }
@@ -138,7 +139,7 @@ export default class TypstManager {
           return Promise.resolve(this.render(source, el, processor.id, ndir, npath));
         });
       } catch {
-        new Notice(`Already registered codeblock language: ${processor.id}`);
+        new Notice(t('notices.alreadyRegisteredCodeblock', { id: processor.id }));
       }
     }
 

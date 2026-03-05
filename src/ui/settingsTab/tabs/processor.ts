@@ -1,7 +1,7 @@
 import { debounce, Setting } from 'obsidian';
 
+import { t, tFragment } from '@/i18n';
 import type ObsidianTypstMate from '@/main';
-import { CustomFragment } from '@/utils/customFragment';
 import { ProcessorList } from '../components/processor';
 
 import './processor.css';
@@ -13,33 +13,11 @@ export function addProcessorTab(
   setActiveTab: (tab: 'inline' | 'display' | 'codeblock' | 'excalidraw') => void,
 ) {
   new Setting(containerEl)
-    .setName('Processor')
-    .setDesc(
-      new CustomFragment()
-        .appendText(
-          'In each mode, the first matching Processor ID from the top is used. An empty Processor ID acts as the default and should be placed at the bottom. In the format, ',
-        )
-        .appendCodeText('{CODE}')
-        .appendText(' can be used (only the first occurrence is replaced), and ')
-        .appendCodeText('fontsize')
-        .appendText(
-          ' can be used as an internal length value. In inline mode, separate the ID and the code with a colon ',
-        )
-        .appendCodeText(':')
-        .appendText(
-          ' in the format. When adding or removing processors for codeblock mode, reload the plugin to apply changes. ',
-        )
-        .appendBoldText('IDs should not contain any special characters!')
-        .appendText(' For more details, see ')
-        .appendLinkText(
-          'Processor.md',
-          'https://github.com/azyarashi/obsidian-typst-mate/blob/main/docs/processor/Processor.md',
-        )
-        .appendText('.'),
-    )
+    .setName(t('settings.processor.heading'))
+    .setDesc(tFragment('settings.processor.desc'))
     .setHeading();
 
-  new Setting(containerEl).setName('Preamble').setDesc('Preamble can be turned on or off by toggling each processor.');
+  new Setting(containerEl).setName(t('settings.processor.preamble')).setDesc(t('settings.processor.preambleDesc'));
   const preambleTextEl = containerEl.createEl('textarea');
   preambleTextEl.addClass('typstmate-form-control');
   preambleTextEl.addClass('typstmate-preamble');
@@ -63,11 +41,12 @@ export function addProcessorTab(
 
   const subTabsEl = containerEl.createDiv('typstmate-processor-tabs');
   const subTabs: { id: 'inline' | 'display' | 'codeblock' | 'excalidraw'; name: string }[] = [
-    { id: 'inline', name: 'Inline' },
-    { id: 'display', name: 'Display' },
-    { id: 'codeblock', name: 'CodeBlock' },
+    { id: 'inline', name: t('settings.processor.subTabs.inline') },
+    { id: 'display', name: t('settings.processor.subTabs.display') },
+    { id: 'codeblock', name: t('settings.processor.subTabs.codeblock') },
   ];
-  if (plugin.excalidrawPluginInstalled) subTabs.push({ id: 'excalidraw', name: 'Excalidraw' });
+  if (plugin.excalidrawPluginInstalled)
+    subTabs.push({ id: 'excalidraw', name: t('settings.processor.subTabs.excalidraw') });
 
   for (const tab of subTabs) {
     const tabEl = subTabsEl.createDiv({
@@ -81,16 +60,17 @@ export function addProcessorTab(
 
   switch (activeTab) {
     case 'inline':
-      new ProcessorList(plugin, 'inline', containerEl, 'Inline Math ($id:...$ / $...$)');
+      new ProcessorList(plugin, 'inline', containerEl, t('settings.processor.processorTitles.inline'));
       break;
     case 'display':
-      new ProcessorList(plugin, 'display', containerEl, 'Display Math ($$id...$$ / $$...$$)');
+      new ProcessorList(plugin, 'display', containerEl, t('settings.processor.processorTitles.display'));
       break;
     case 'codeblock':
-      new ProcessorList(plugin, 'codeblock', containerEl, 'CodeBlock (```id...``` / ~~~id...~~~)');
+      new ProcessorList(plugin, 'codeblock', containerEl, t('settings.processor.processorTitles.codeblock'));
       break;
     case 'excalidraw':
-      if (plugin.excalidrawPluginInstalled) new ProcessorList(plugin, 'excalidraw', containerEl, 'Excalidraw');
+      if (plugin.excalidrawPluginInstalled)
+        new ProcessorList(plugin, 'excalidraw', containerEl, t('settings.processor.processorTitles.excalidraw'));
       break;
   }
 }
@@ -103,12 +83,12 @@ function addPreview(
   const previewContainer = containerEl.createDiv('typstmate-settings-preview');
 
   new Setting(previewContainer)
-    .setName('Preview')
+    .setName(t('settings.processor.preview'))
     .setHeading()
     .addDropdown((dropdown) => {
-      dropdown.addOption('inline', 'Inline');
-      dropdown.addOption('display', 'Display');
-      dropdown.addOption('codeblock', 'CodeBlock');
+      dropdown.addOption('inline', t('settings.processor.subTabs.inline'));
+      dropdown.addOption('display', t('settings.processor.subTabs.display'));
+      dropdown.addOption('codeblock', t('settings.processor.subTabs.codeblock'));
       dropdown.setValue(activeTab);
 
       dropdown.onChange((value) => {
@@ -120,7 +100,7 @@ function addPreview(
 
   const inputEl = previewContainer.createDiv('typstmate-settings-preview-input');
   const previewEl = previewContainer.createDiv('typstmate-settings-preview-preview');
-  previewEl.setText('Type in the input above to see the preview');
+  previewEl.setText(t('settings.processor.previewPlaceholder'));
 
   renderInput(activeTab, inputEl, previewEl, plugin);
 }

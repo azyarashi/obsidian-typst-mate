@@ -2,6 +2,7 @@ import { MarkdownView, Notice } from 'obsidian';
 
 import { BASE_COLOR_VAR } from '@/constants';
 import { jumpFromClickPlugin } from '@/editor/markdown/extensions/JumpFromClick';
+import { t } from '@/i18n';
 import type { Diagnostic, SVGResult } from '@/libs/worker';
 import TypstElement from './Typst';
 
@@ -26,7 +27,7 @@ export default class TypstSVGElement extends TypstElement {
     super();
     this.menu.addSeparator();
     this.menu.addItem((item) => {
-      item.setTitle('Copy as SVG (Obsidian Theme)').onClick(async () => {
+      item.setTitle(t('contextMenu.copyAsSvgObsidian')).onClick(async () => {
         if (this.isErr) return;
 
         const bodyStyles = getComputedStyle(document.body);
@@ -35,22 +36,22 @@ export default class TypstSVGElement extends TypstElement {
         const svg = this.innerHTML.replaceAll(`var(${BASE_COLOR_VAR})`, baseColor);
         await copySVGToClipboard(svg);
 
-        new Notice('Copied to clipboard!');
+        new Notice(t('notices.copiedToClipboard'));
       });
     });
     this.menu.addItem((item) => {
-      item.setTitle('Copy as SVG (Typst Default)').onClick(async () => {
+      item.setTitle(t('contextMenu.copyAsSvgTypst')).onClick(async () => {
         if (this.isErr) return;
 
         const svg = this.innerHTML.replaceAll(`var(${BASE_COLOR_VAR})`, '#000000');
         await copySVGToClipboard(svg);
 
-        new Notice('Copied to clipboard!');
+        new Notice(t('notices.copiedToClipboard'));
       });
     });
     this.menu.addSeparator();
     this.menu.addItem((item) => {
-      item.setTitle('Copy as PNG (Transparent)').onClick(async () => {
+      item.setTitle(t('contextMenu.copyAsPngTransparent')).onClick(async () => {
         if (this.isErr) return;
 
         const bodyStyles = getComputedStyle(document.body);
@@ -61,12 +62,12 @@ export default class TypstSVGElement extends TypstElement {
 
         if (pngBlob) {
           await copyPNGToClipboard(pngBlob);
-          new Notice('Copied to clipboard!');
-        } else new Notice('Failed to convert SVG to PNG');
+          new Notice(t('notices.copiedToClipboard'));
+        } else new Notice(t('notices.failedToConvertSvgToPng'));
       });
     });
     this.menu.addItem((item) => {
-      item.setTitle('Copy as PNG (Opaque)').onClick(async () => {
+      item.setTitle(t('contextMenu.copyAsPngOpaque')).onClick(async () => {
         if (this.isErr) return;
 
         const bodyStyles = getComputedStyle(document.body);
@@ -78,13 +79,13 @@ export default class TypstSVGElement extends TypstElement {
 
         if (pngBlob) {
           await copyPNGToClipboard(pngBlob);
-          new Notice('Copied to clipboard!');
-        } else new Notice('Failed to convert SVG to PNG');
+          new Notice(t('notices.copiedToClipboard'));
+        } else new Notice(t('notices.failedToConvertSvgToPng'));
       });
     });
     this.menu.addSeparator();
     this.menu.addItem((item) => {
-      item.setTitle('Copy as img tag (for embedding into Obsidian notes)').onClick(async () => {
+      item.setTitle(t('contextMenu.copyAsImgTag')).onClick(async () => {
         if (this.isErr) return;
 
         const bodyStyles = getComputedStyle(document.body);
@@ -95,7 +96,7 @@ export default class TypstSVGElement extends TypstElement {
         const tag = `<img src="${dataUrl}">`;
         await navigator.clipboard.writeText(tag);
 
-        new Notice('Copied to clipboard!');
+        new Notice(t('notices.copiedToClipboard'));
       });
     });
   }

@@ -1,5 +1,6 @@
 import { type App, Modal, Notice, Setting } from 'obsidian';
 
+import { t } from '@/i18n';
 import type { FontInfo } from '@/libs/worker';
 
 export class FontModal extends Modal {
@@ -12,18 +13,24 @@ export class FontModal extends Modal {
         .setHeading()
         .addButton((button) => {
           button.setIcon('copy');
-          button.setTooltip('Copy Font Family Name');
+          button.setTooltip(t('modals.font.copyFontFamilyName'));
 
           button.onClick(async () => {
             await navigator.clipboard.writeText(fontInfo.family);
-            new Notice('Copied!');
+            new Notice(t('notices.copied'));
           });
         });
 
-      new Setting(this.contentEl).setName(`style: ${fontInfo.variant.style}`);
-      new Setting(this.contentEl).setName(`weight: ${fontWeightAliasFromNumber(fontInfo.variant.weight)}`);
-      new Setting(this.contentEl).setName(`stretch: ${fontStretchAliasFromRatio(fontInfo.variant.stretch)}`);
-      new Setting(this.contentEl).setName(`flags: ${fontFlagsToArray(fontInfo.flags)}`);
+      new Setting(this.contentEl).setName(t('modals.font.labels.style', { value: fontInfo.variant.style }));
+      new Setting(this.contentEl).setName(
+        t('modals.font.labels.weight', { value: fontWeightAliasFromNumber(fontInfo.variant.weight) }),
+      );
+      new Setting(this.contentEl).setName(
+        t('modals.font.labels.stretch', { value: fontStretchAliasFromRatio(fontInfo.variant.stretch) ?? '' }),
+      );
+      new Setting(this.contentEl).setName(
+        t('modals.font.labels.flags', { value: fontFlagsToArray(fontInfo.flags).join(', ') }),
+      );
     }
   }
 }
