@@ -1,3 +1,5 @@
+(globalThis as any).I18NEXT_DISABLE_ADVERTISEMENT = true;
+
 import en from '@resources/locales/en.json';
 import i18next, { type TOptions } from 'i18next';
 
