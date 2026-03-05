@@ -128,9 +128,8 @@ export function format(plugin: ObsidianTypstMate, source: string, kind: Processo
   if (processor.fitToNoteWidth) {
     const width = getNoteWidth(plugin);
     formatted = `#let WIDTH = ${width}\n${formatted}`;
-    offset -= 16 + width.length;
+    offset -= 14 + width.length;
   }
-  if (kind === 'codeblock') offset += 2;
 
   return { formatted, offset };
 }
