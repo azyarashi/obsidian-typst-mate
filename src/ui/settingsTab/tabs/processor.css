@@ -12,6 +12,7 @@
 .typstmate-settings-processor > .typstmate-settings-processor-bottom {
   display: flex;
   align-items: stretch;
+  width: 100%;
   gap: 4px;
 }
 
@@ -24,20 +25,80 @@
 
 .typstmate-settings-processor-bottom .typstmate-button-danger {
   height: auto;
+  flex-shrink: 0;
 }
 
-.typstmate-settings-processor-bottom textarea {
-  width: 100%;
-  min-height: 4em;
-  resize: vertical;
-  field-sizing: content;
+.typstmate-settings-processor-bottom textarea,
+.typstmate-processor-format-editor {
+  flex: 1 1 0px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
   background: var(--background-primary);
   color: var(--text-normal);
   border: 1px solid var(--background-modifier-border);
   border-radius: 3px;
+  overflow: hidden;
+}
+
+.typstmate-settings-processor-bottom textarea {
+  min-height: 4em;
+  resize: vertical;
+  field-sizing: content;
   padding: 4px 8px;
   font-family: var(--font-monospace);
   font-size: 0.9em;
+}
+
+.typstmate-processor-format-editor .cm-editor {
+  flex: 1;
+  width: 100%;
+  min-height: 4em;
+  font-family: var(--font-monospace);
+  font-size: 0.9em;
+  outline: none !important;
+}
+
+.typstmate-processor-format-editor .cm-scroller {
+  padding: 0;
+}
+
+.typstmate-processor-format-placeholder {
+  flex: 1;
+  width: 100%;
+  min-height: 4em;
+  margin: 0;
+  padding: 4px 8px;
+  font-family: var(--font-monospace);
+  font-size: 0.9em;
+  white-space: pre-wrap;
+  cursor: pointer;
+  background: var(--background-primary);
+  color: var(--text-muted);
+}
+
+.typstmate-processor-format-placeholder:hover {
+  background: var(--background-modifier-hover);
+}
+
+.typstmate-processor-format-editor .cm-content,
+.typstmate-processor-format-editor .cm-line {
+  padding: 0;
+}
+
+.typstmate-processor-format-editor .cm-content {
+  padding: 4px 0 !important;
+}
+
+.typstmate-processor-format-editor .cm-line {
+  padding: 0 8px 0 4px !important;
+}
+
+.typstmate-processor-format-editor .cm-gutterElement {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 0 4px 0 8px !important;
 }
 
 /* Processor Sub-tabs */

@@ -1,6 +1,16 @@
+import { history, historyKeymap, indentWithTab, standardKeymap } from '@codemirror/commands';
+import { EditorState } from '@codemirror/state';
+import { EditorView, highlightActiveLineGutter, keymap, lineNumbers } from '@codemirror/view';
+import { SyntaxMode } from '@typstmate/typst-syntax';
 import { ButtonComponent, debounce, Notice, Setting, setIcon } from 'obsidian';
 
 import { DEFAULT_SETTINGS } from '@/data/settings';
+import { helperFacet } from '@/editor/shared/extensions/Helper';
+import { pairHighlightExtension } from '@/editor/shared/extensions/PairHighlight';
+import { typstSyntaxHighlighting } from '@/editor/shared/extensions/SyntaxHighlight';
+import { obsidianTheme, typstTheme } from '@/editor/shared/extensions/Theme';
+import { typstTextViewTheme } from '@/editor/typst/extensions/Theme';
+import { typstTextCore } from '@/editor/typst/extensions/TypstCore';
 import { t } from '@/i18n';
 import {
   DefaultNewProcessor,
@@ -11,6 +21,7 @@ import {
 } from '@/libs/processor';
 import type ObsidianTypstMate from '@/main';
 import { ProcessorExtModal } from '@/ui/modals/processorExt';
+import { getModeAndKind } from '@/utils/typstSyntax';
 
 export class ProcessorList {
   plugin: ObsidianTypstMate;
@@ -264,27 +275,82 @@ export class ProcessorList {
     const processorBottomEl = processorEl.createEl('div');
     processorBottomEl.addClass('typstmate-settings-processor-bottom');
 
-    const formatTextEl = processorBottomEl.createEl('textarea');
-    formatTextEl.value = processor.format;
-    formatTextEl.placeholder = t('settings.processor.formatPlaceholder');
+    const saveFormat = debounce(
+      (newVal: string, view: EditorView) => {
+        const index = Number(processorEl.id);
+        const target = this.plugin.settings.processor[this.kind].processors[index];
+        if (target && target.renderingEngine !== RenderingEngine.MathJax) {
+          target.format = newVal;
 
-    formatTextEl.addEventListener(
-      'input',
-      debounce(
-        async () => {
-          this.plugin.settings.processor[this.kind].processors[Number(processorEl.id)]!.format = formatTextEl.value;
+          const tree = view.plugin(typstTextCore)?.activeRegion.tree;
+          const codeIndex = newVal.indexOf('{CODE}');
+          if (tree && codeIndex !== -1) {
+            const { mode } = getModeAndKind(tree, codeIndex, SyntaxMode.Markup);
+            if (mode !== null && mode !== target.syntaxMode) target.syntaxMode = mode;
+          }
 
           this.plugin.saveSettings();
-        },
-        500,
-        true,
-      ),
+        }
+      },
+      100,
+      true,
     );
+
+    const startState = EditorState.create({
+      doc: processor.format,
+      extensions:
+        processor.renderingEngine !== RenderingEngine.MathJax
+          ? [
+              EditorState.tabSize.of(2),
+              helperFacet.of(this.plugin.editorHelper),
+              typstTextCore,
+              pairHighlightExtension,
+              typstSyntaxHighlighting(),
+              lineNumbers(),
+              highlightActiveLineGutter(),
+              typstTextViewTheme,
+              history(),
+              keymap.of([...historyKeymap, ...standardKeymap, indentWithTab]),
+              EditorView.lineWrapping,
+              this.plugin.settings.useObsidianTheme ? obsidianTheme : typstTheme,
+              EditorView.updateListener.of((update) => {
+                if (update.docChanged) saveFormat(update.state.doc.toString(), update.view);
+              }),
+            ]
+          : [
+              EditorState.tabSize.of(2),
+              lineNumbers(),
+              highlightActiveLineGutter(),
+              typstTextViewTheme,
+              history(),
+              keymap.of([...historyKeymap, ...standardKeymap, indentWithTab]),
+              EditorView.lineWrapping,
+              EditorView.updateListener.of((update) => {
+                if (update.docChanged) saveFormat(update.state.doc.toString(), update.view);
+              }),
+            ],
+    });
+
+    const editorEl = processorBottomEl.createDiv('typstmate-processor-format-editor');
+    const placeholder = editorEl.createEl('pre', {
+      text: processor.format || ' ',
+      cls: 'typstmate-processor-format-placeholder',
+      title: t('settings.processor.formatPlaceholder'),
+    });
+
+    placeholder.addEventListener('click', () => {
+      placeholder.remove();
+      const view = new EditorView({
+        parent: editorEl,
+        state: startState,
+      });
+      view.focus();
+    });
 
     // 削除ボタンを追加
     if (processor.id !== '') {
       new ButtonComponent(processorBottomEl)
-        .setButtonText(t('settings.processor.buttons.remove'))
+        .setButtonText('Remove')
         .setIcon('trash')
         .onClick(() => this.removeProcessor(Number(processorEl.id)))
         .buttonEl.addClasses(['typstmate-button', 'typstmate-button-danger']);

@@ -31,7 +31,7 @@ export interface InlineProcessor {
   disableSuggest?: boolean;
   noPreamble?: boolean;
   fitToNoteWidth?: boolean;
-  syntaxMode?: SyntaxMode | null;
+  syntaxMode?: SyntaxMode;
   useReplaceAll?: boolean;
 }
 
@@ -43,7 +43,7 @@ export interface DisplayProcessor {
   disableSuggest?: boolean;
   noPreamble?: boolean;
   fitToNoteWidth?: boolean;
-  syntaxMode?: SyntaxMode | null;
+  syntaxMode?: SyntaxMode;
   useReplaceAll?: boolean;
 }
 export interface CodeblockProcessor {
@@ -54,7 +54,7 @@ export interface CodeblockProcessor {
   disableSuggest?: boolean;
   noPreamble?: boolean;
   fitToNoteWidth?: boolean;
-  syntaxMode?: SyntaxMode | null;
+  syntaxMode?: SyntaxMode;
   useReplaceAll?: boolean;
 }
 export interface ExcalidrawProcessor {
@@ -65,7 +65,7 @@ export interface ExcalidrawProcessor {
   disableSuggest?: boolean;
   noPreamble?: boolean;
   fitToNoteWidth?: boolean;
-  syntaxMode?: SyntaxMode | null;
+  syntaxMode?: SyntaxMode;
   useReplaceAll?: boolean;
 }
 export type Processor = InlineProcessor | DisplayProcessor | CodeblockProcessor | ExcalidrawProcessor;

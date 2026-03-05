@@ -89,16 +89,8 @@
       "disableSymbolSuggest": "Disable symbol suggest",
       "fitToNoteWidth": "Fit to note width",
       "fitToNoteWidthDesc": "Adds a line at the beginning of the code declaring length: <code>WIDTH</code>",
-      "syntaxMode": "Syntax mode",
-      "syntaxModeDesc": "Specifies the syntax tree parsing mode. Select None to completely bypass AST parsing and syntax highlighting.",
       "usePreamble": "Use preamble",
-      "useReplaceAll": "Use replace all",
-      "syntaxModeOptions": {
-        "code": "Code",
-        "markup": "Markup",
-        "math": "Math",
-        "none": "None"
-      }
+      "useReplaceAll": "Use replace all"
     },
     "templateSelect": {
       "heading": "Select a template",

@@ -1,5 +1,14 @@
+import { history, historyKeymap, indentWithTab, standardKeymap } from '@codemirror/commands';
+import { EditorState } from '@codemirror/state';
+import { EditorView, highlightActiveLineGutter, keymap, lineNumbers } from '@codemirror/view';
 import { debounce, Setting } from 'obsidian';
 
+import { helperFacet } from '@/editor/shared/extensions/Helper';
+import { pairHighlightExtension } from '@/editor/shared/extensions/PairHighlight';
+import { typstSyntaxHighlighting } from '@/editor/shared/extensions/SyntaxHighlight';
+import { obsidianTheme, typstTheme } from '@/editor/shared/extensions/Theme';
+import { typstTextViewTheme } from '@/editor/typst/extensions/Theme';
+import { typstTextCore } from '@/editor/typst/extensions/TypstCore';
 import { t, tFragment } from '@/i18n';
 import type ObsidianTypstMate from '@/main';
 import { ProcessorList } from '../components/processor';
@@ -18,24 +27,52 @@ export function addProcessorTab(
     .setHeading();
 
   new Setting(containerEl).setName(t('settings.processor.preamble')).setDesc(t('settings.processor.preambleDesc'));
-  const preambleTextEl = containerEl.createEl('textarea');
-  preambleTextEl.addClass('typstmate-form-control');
-  preambleTextEl.addClass('typstmate-preamble');
-  preambleTextEl.value = plugin.settings.preamble;
-  preambleTextEl.placeholder = 'preamble';
 
-  preambleTextEl.addEventListener(
-    'input',
-    debounce(
-      () => {
-        plugin.settings.preamble = preambleTextEl.value;
-
-        plugin.saveSettings();
-      },
-      500,
-      true,
-    ),
+  const savePreamble = debounce(
+    (newVal: string) => {
+      plugin.settings.preamble = newVal;
+      plugin.saveSettings();
+    },
+    100,
+    true,
   );
+
+  const startState = EditorState.create({
+    doc: plugin.settings.preamble,
+    extensions: [
+      EditorState.tabSize.of(2),
+      helperFacet.of(plugin.editorHelper),
+      typstTextCore,
+      pairHighlightExtension,
+      typstSyntaxHighlighting(),
+      lineNumbers(),
+      highlightActiveLineGutter(),
+      typstTextViewTheme,
+      history(),
+      keymap.of([...historyKeymap, ...standardKeymap, indentWithTab]),
+      EditorView.lineWrapping,
+      plugin.settings.useObsidianTheme ? obsidianTheme : typstTheme,
+      EditorView.updateListener.of((update) => {
+        if (update.docChanged) savePreamble(update.state.doc.toString());
+      }),
+    ],
+  });
+
+  const editorEl = containerEl.createDiv('typstmate-processor-format-editor');
+  const placeholder = editorEl.createEl('pre', {
+    text: plugin.settings.preamble || ' ',
+    cls: 'typstmate-processor-format-placeholder typstmate-preamble',
+    title: t('settings.processor.formatPlaceholder'),
+  });
+
+  placeholder.addEventListener('click', () => {
+    placeholder.remove();
+    const view = new EditorView({
+      parent: editorEl,
+      state: startState,
+    });
+    view.focus();
+  });
 
   addPreview(plugin, containerEl, activeTab === 'excalidraw' ? 'inline' : activeTab);
 
