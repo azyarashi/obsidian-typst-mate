@@ -22,6 +22,10 @@ These are required because the Taskfile uses GNU OS commands (e.g. `cp`, `mv`, `
 2. [coreutils](https://packages.msys2.org/packages/coreutils) (install with `pacman -S coreutils`)
 3. add `C:\msys64\usr\bin` to your `PATH`
 
+### Recommended
+
+- [i18n Ally](https://marketplace.visualstudio.com/items?itemName=Lokalise.i18n-ally) IDE extension
+
 ### Installation
 
 Clone the repository, move to the directory and install dependencies
