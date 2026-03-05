@@ -16,5 +16,6 @@
   "[css]": {
     "editor.defaultFormatter": "biomejs.biome"
   },
-  "i18n-ally.localesPaths": ["resources/locales"]
+  "i18n-ally.localesPaths": ["resources/locales"],
+  "i18n-ally.regex.usageMatchAppend": ["t\\(\\s*['\"`]([^'\"`]+)['\"`]"]
 }
