@@ -10,6 +10,7 @@
 	"dependencies": {
 		"@typstmate/typst-syntax": "workspace:*",
 		"comlink": "^4.4.2",
+		"i18next": "^25.8.13",
 		"nanoid": "^5.1.6",
 		"pako": "^2.1.0",
 		"untar-sync": "^1.0.4"
@@ -30,7 +31,6 @@
 		"autoprefixer": "^10.4.27",
 		"builtin-modules": "^5.0.0",
 		"esbuild": "^0.27.3",
-		"i18next": "^25.8.13",
 		"obsidian": "1.12.3",
 		"obsidian-excalidraw-plugin": "github:zsviczian/obsidian-excalidraw-plugin#master",
 		"obsidian-typings": "^4.110.0",
