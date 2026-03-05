@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'bun:test';
 import { Glob } from 'bun';
+
 import en from '../../resources/locales/en.json';
 
-function getKeys(obj: any, prefix = ''): string[] {
+export function getKeys(obj: any, prefix = ''): string[] {
   let keys: string[] = [];
   for (const key in obj) {
     const fullKey = prefix ? `${prefix}.${key}` : key;
