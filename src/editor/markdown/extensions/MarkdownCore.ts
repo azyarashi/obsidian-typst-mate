@@ -159,7 +159,7 @@ function findActiveRegion(view: EditorView, cursor: number): Region | null {
 
           if (codeblockLangEnd < codeblockEnd) {
             // ? the range of ... in  ```lang\n...\n```
-            if (codeblockLangEnd < cursor && cursor < codeblockEnd) {
+            if (codeblockLangEnd < cursor && cursor <= codeblockEnd) {
               result = { id, from: codeblockStart, to: codeblockEnd, kind: 'codeblock', lang: codeblockLang };
               return false;
             }
@@ -339,10 +339,11 @@ export class MarkdownCorePluginValue implements PluginValue {
         this.recompute(update.view);
       } else {
         let hasDelimiter = false;
-        update.changes.iterChanges((_fA, _tA, _fB, tB, inserted) => {
+        update.changes.iterChanges((_fA, _tA, fB, tB, inserted) => {
           if (hasDelimiter) return;
           const text = inserted.toString();
           const textNext = update.view.state.sliceDoc(tB, tB + 1);
+          const currentLine = update.view.state.doc.lineAt(fB).text;
           if (
             text.includes('$') ||
             text.includes('`') ||
@@ -351,7 +352,8 @@ export class MarkdownCorePluginValue implements PluginValue {
             textNext.includes('$') ||
             textNext.includes('`') ||
             textNext.includes('~') ||
-            textNext.includes('\\')
+            textNext.includes('\\') ||
+            (currentLine.startsWith('```') && text === '\n')
           )
             hasDelimiter = true;
         });
