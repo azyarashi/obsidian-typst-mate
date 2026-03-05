@@ -21,11 +21,12 @@ class JumpFromClickPluginValue {
     const region = getRegionAt(this.view, regionFrom);
     if (!region) return;
 
-    const offset = region.from + region.skip + context.offset;
+    const start = region.from + region.skip;
+    const offset = start + context.offset;
 
     const expectedPosition = jump.pos + offset;
     const clampedOffset =
-      expectedPosition <= region.from ? region.from : region.to <= expectedPosition ? region.to : expectedPosition;
+      expectedPosition <= start ? start : region.to <= expectedPosition ? region.to : expectedPosition;
     event.preventDefault();
 
     this.view.focus(); // ? コードブロックプレビューが正しく表示される
