@@ -4,6 +4,8 @@
 		"target": "ESNext",
 		"module": "ESNext",
 		"allowJs": true,
+    "jsx": "react-jsx",
+    "jsxImportSource": "hono/jsx",
 
 		"moduleResolution": "bundler",
 		"allowImportingTsExtensions": true,
