@@ -1,7 +1,7 @@
 import { MarkdownView, Notice } from 'obsidian';
 
 import { BASE_COLOR_VAR } from '@/constants';
-import { jumpFromClickPlugin } from '@/editor/markdown/extensions/JumpFromClick';
+import { jumpFromClickPlugin } from '@/editor/shared/extensions/JumpFromClick';
 import { t } from '@/i18n';
 import type { Diagnostic, SVGResult } from '@/libs/worker';
 import TypstElement from './Typst';
@@ -138,7 +138,7 @@ export default class TypstSVGElement extends TypstElement {
     if (result) {
       const view = this.plugin.app.workspace.getActiveFileView();
       if (!(view instanceof MarkdownView)) return;
-      view.editor.cm.plugin(jumpFromClickPlugin)?.jumpTo(result, this, event);
+      view.editor.cm.plugin(jumpFromClickPlugin)?.jumpTo(result, event, this);
     }
   }
 }

@@ -15,6 +15,10 @@ class InlinePreviewPlugin implements PluginValue {
     this.container.addClasses(['typstmate-inlinemathpreview', 'typstmate-temporary']);
     this.container.hide();
 
+    this.container.addEventListener('mousedown', (event) => {
+      event.preventDefault();
+    });
+
     document.body.appendChild(this.container);
   }
 
@@ -47,17 +51,18 @@ class InlinePreviewPlugin implements PluginValue {
           }
         },
         write: (pos) => {
-          if (pos) this.render(pos, content);
+          if (pos) this.render(pos, content, region.from + region.skip);
           else this.hide();
         },
       });
     }
   }
 
-  render(pos: { x: number; y: number }, content: string) {
+  render(pos: { x: number; y: number }, content: string, regionFrom: number) {
     if (!window.MathJax) return;
     if (this.lastContent === content) return;
     this.lastContent = content;
+    this.container.dataset.regionFrom = regionFrom.toString();
 
     const html = window.MathJax.tex2chtml(content, { display: false });
     this.container.replaceChildren(html);
@@ -70,6 +75,7 @@ class InlinePreviewPlugin implements PluginValue {
   hide() {
     this.container.hide();
     this.lastContent = '';
+    delete this.container.dataset.regionFrom;
   }
 
   destroy() {

@@ -3,6 +3,7 @@ import type { Extension } from '@codemirror/state';
 import type { EditorHelper } from '@/editor';
 import { diagnosticsState } from '../shared/extensions/Diagnostic';
 import { helperFacet } from '../shared/extensions/Helper';
+import { jumpFromClickExtension } from '../shared/extensions/JumpFromClick';
 import { mathMacroExtension } from '../shared/extensions/MathMacro';
 import { mathSymbolConcealExtension } from '../shared/extensions/MathSymbolConceal';
 import { pairHighlightExtension } from '../shared/extensions/PairHighlight';
@@ -14,7 +15,6 @@ import { obsidianTheme, typstTheme } from '../shared/extensions/Theme';
 import { codeblockPreviewExtension } from './extensions/CodeBlockPreview';
 import { debuggerExtension } from './extensions/Debugger';
 import { inlinePreviewExtension } from './extensions/InlineMathPreview';
-import { jumpFromClickExtension } from './extensions/JumpFromClick';
 import { markdownCore } from './extensions/MarkdownCore';
 
 export function buildExtension(editorHelper: EditorHelper) {
