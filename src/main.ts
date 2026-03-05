@@ -113,6 +113,8 @@ export default class ObsidianTypstMate extends Plugin {
     await this.prepareMathJax();
     // TypstManager を設定する
     await this.prepareTypst();
+    // EditorHelper を設定する
+    this.editorHelper = new EditorHelper(this);
 
     this.registerView(TypstToolsView.viewtype, (leaf) => new TypstToolsView(leaf, this));
     this.registerView(TypstTextView.viewtype, (leaf) => new TypstTextView(leaf, this));
@@ -125,9 +127,6 @@ export default class ObsidianTypstMate extends Plugin {
 
       // 設定タブを登録
       this.addSettingTab(new SettingTab(this.app, this));
-
-      // EditorHelper を初期化
-      this.editorHelper = new EditorHelper(this);
 
       // View を登録
       this.registerExtensions(['typ'], TypstTextView.viewtype);
