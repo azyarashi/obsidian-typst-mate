@@ -54,6 +54,7 @@
     "ignoreUnknown": false,
     "includes": [
       "src/**",
+      "tests/**",
       "scripts/*",
       "packages/**",
       "vite.config.ts",
