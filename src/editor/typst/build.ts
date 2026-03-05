@@ -15,22 +15,21 @@ import {
 import type { EditorHelper } from '@/editor';
 import { diagnosticsState } from '@/editor/shared/extensions/Diagnostic';
 import { helperFacet } from '@/editor/shared/extensions/Helper';
+import { jumpFromClickExtension } from '@/editor/shared/extensions/JumpFromClick';
 import { mathSymbolConcealExtension } from '@/editor/shared/extensions/MathSymbolConceal';
 import { pairHighlightExtension } from '@/editor/shared/extensions/PairHighlight';
 import { shortcutExtension } from '@/editor/shared/extensions/Shortcut';
 import { typstSyntaxHighlighting } from '@/editor/shared/extensions/SyntaxHighlight';
 import { tabJumpExtensionForTypstText } from '@/editor/shared/extensions/TabJump';
 import { obsidianTheme, typstTheme } from '@/editor/shared/extensions/Theme';
+import { linterExtension } from '../shared/extensions/Linter';
 import { snippetSuggestExtension } from '../shared/extensions/SnippetSuggest';
 import { errorLensExtension } from './extensions/ErrorLens';
 import { indentRainbowExtension } from './extensions/IndentRainbow';
-import { jumpFromClickExtension } from './extensions/JumpFromClick';
 import { jumpToPreviewExtension } from './extensions/JumpToPreview';
 import { statusBarExtension } from './extensions/StatusBar';
 import { typstTextViewTheme } from './extensions/Theme';
 import { typstTextCore } from './extensions/TypstCore';
-
-import '@/editor/shared/css';
 
 export function buildTypstTextExtensions(editorHelper: EditorHelper) {
   const extensions: Extension[] = [
@@ -62,6 +61,7 @@ export function buildTypstTextExtensions(editorHelper: EditorHelper) {
     ]),
 
     diagnosticsState,
+    linterExtension,
     lintGutter(),
     errorLensExtension,
 

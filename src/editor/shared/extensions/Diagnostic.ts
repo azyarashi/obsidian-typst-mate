@@ -2,10 +2,7 @@ import { type Diagnostic, setDiagnostics } from '@codemirror/lint';
 import { StateEffect, StateField } from '@codemirror/state';
 import type { EditorView } from '@codemirror/view';
 
-import { t } from '@/i18n';
 import type { Processor } from '@/libs/processor';
-import { renderDiagnosticMessage } from '@/ui/elements/diagnostics';
-import { getActiveRegion } from '../utils/core';
 
 import './Diagnostic.css';
 
@@ -14,60 +11,11 @@ interface TypstDiagnostic extends Diagnostic {
   hints: string[];
 }
 
-interface TypstMateResult {
+export interface TypstMateResult {
   diagnostics: TypstDiagnostic[];
   processor?: Processor;
   offset: number;
   noDiag: boolean;
-}
-
-function computeDiagnostics(view: EditorView, result: TypstMateResult): Diagnostic[] {
-  if (result.noDiag) return [];
-
-  const region = getActiveRegion(view);
-  if (!region) return [];
-
-  const offset = region.from + region.skip + result.offset;
-
-  const docLength = view.state.doc.length;
-
-  const mapped = result.diagnostics.map((diag) => {
-    const from = Math.max(region.from, Math.min(diag.from + offset, docLength));
-    const to = Math.max(region.from, Math.min(diag.to + offset, docLength));
-
-    return {
-      from,
-      to,
-      message: diag.message || t('common.error'),
-      severity: diag.severity,
-      renderMessage: () =>
-        renderDiagnosticMessage({
-          severity: diag.severity,
-          message: diag.message,
-          hints: diag.hints,
-        }),
-    } as Diagnostic;
-  });
-
-  const uniqueDiags: Diagnostic[] = [];
-  const seenStr = new Set<string>();
-  const zeroWidthPos = new Set<number>();
-
-  for (const item of mapped) {
-    const key = `${item.from}-${item.to}-${item.message}`;
-    if (!seenStr.has(key)) {
-      seenStr.add(key);
-
-      if (item.from === item.to) {
-        if (zeroWidthPos.has(item.from)) continue;
-        zeroWidthPos.add(item.from);
-      }
-
-      uniqueDiags.push(item);
-    }
-  }
-
-  return uniqueDiags;
 }
 
 export const diagnosticsState = StateField.define<TypstMateResult | undefined>({
@@ -87,9 +35,6 @@ export const updateDiagnosticEffect = (view: EditorView, diags: TypstMateResult)
   view.dispatch({
     effects: diagnosticsStateEffect.of(diags),
   });
-
-  const computed = computeDiagnostics(view, diags);
-  view.dispatch(setDiagnostics(view.state, computed));
 };
 
 export const clearDiagnosticEffect = (view: EditorView) => {

@@ -4,6 +4,7 @@ import type { EditorHelper } from '@/editor';
 import { diagnosticsState } from '../shared/extensions/Diagnostic';
 import { helperFacet } from '../shared/extensions/Helper';
 import { jumpFromClickExtension } from '../shared/extensions/JumpFromClick';
+import { linterExtension } from '../shared/extensions/Linter';
 import { mathMacroExtension } from '../shared/extensions/MathMacro';
 import { mathSymbolConcealExtension } from '../shared/extensions/MathSymbolConceal';
 import { pairHighlightExtension } from '../shared/extensions/PairHighlight';
@@ -38,6 +39,7 @@ export function buildExtension(editorHelper: EditorHelper) {
     tabJumpExtension,
 
     // Decorations
+    linterExtension,
     codeblockPreviewExtension,
     inlinePreviewExtension,
 
