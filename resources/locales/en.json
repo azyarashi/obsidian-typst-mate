@@ -318,7 +318,6 @@
     "categoryRename": {
       "heading": "Rename Category"
     },
-    "defaultName": "new",
     "edit": {
       "id": "ID",
       "processorKind": "Processor Kind",

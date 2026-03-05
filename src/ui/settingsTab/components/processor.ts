@@ -350,7 +350,7 @@ export class ProcessorList {
     // 削除ボタンを追加
     if (processor.id !== '') {
       new ButtonComponent(processorBottomEl)
-        .setButtonText('Remove')
+        .setButtonText(t('settings.processor.buttons.remove'))
         .setIcon('trash')
         .onClick(() => this.removeProcessor(Number(processorEl.id)))
         .buttonEl.addClasses(['typstmate-button', 'typstmate-button-danger']);
