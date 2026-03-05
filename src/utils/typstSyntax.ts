@@ -1,26 +1,20 @@
-import { LinkedNode, Side, SyntaxKind, SyntaxMode } from '@typstmate/typst-syntax';
+import { LinkedNode, Side, SyntaxKind, SyntaxMode, type SyntaxNode } from '@typstmate/typst-syntax';
 
 import type { ParsedRegion } from '@/editor/shared/utils/core';
 
 export function getModeAndKind(
-  region: ParsedRegion | null,
-  pos: number,
+  node: SyntaxNode,
+  cursor: number,
+  mode: SyntaxMode,
 ): { kind: SyntaxKind | null; mode: SyntaxMode | null } {
-  if (!region || !region.tree) return { kind: null, mode: null };
-
-  let mode: SyntaxMode | null = region.mode;
-
-  const offset = region.from + region.skip;
-  const relativePos = pos - offset;
-
-  const linkedNode = LinkedNode.new(region.tree);
-  const leftNode = linkedNode.leafAt(relativePos, Side.Before);
-  const rightNode = linkedNode.leafAt(relativePos, Side.After);
+  const linkedNode = LinkedNode.new(node);
+  const leftNode = linkedNode.leafAt(cursor, Side.Before);
+  const rightNode = linkedNode.leafAt(cursor, Side.After);
   const syntaxKindLeft = leftNode?.kind() ?? SyntaxKind.None;
   const syntaxKindRight = rightNode?.kind() ?? SyntaxKind.End;
 
-  const leftMode = getMode(leftNode) ?? region.mode;
-  const rightMode = getMode(rightNode) ?? region.mode;
+  const leftMode = getMode(leftNode) ?? mode;
+  const rightMode = getMode(rightNode) ?? mode;
 
   // 両側が同じ
   if (leftMode === rightMode) mode = leftMode;
@@ -33,6 +27,18 @@ export function getModeAndKind(
   else mode = leftMode;
 
   return { kind: syntaxKindRight, mode };
+}
+
+export function getModeAndKindFromRegion(
+  region: ParsedRegion | null,
+  pos: number,
+): { kind: SyntaxKind | null; mode: SyntaxMode | null } {
+  if (!region || !region.tree) return { kind: null, mode: null };
+
+  const offset = region.from + region.skip;
+  const relativePos = pos - offset;
+
+  return getModeAndKind(region.tree, relativePos, region.mode);
 }
 
 function getMode(node?: LinkedNode): SyntaxMode | null {

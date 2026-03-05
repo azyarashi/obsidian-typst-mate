@@ -7,7 +7,7 @@ import { helperFacet } from '@/editor/shared/extensions/Helper';
 import type { ParsedRegion } from '@/editor/shared/utils/core';
 import { type ProcessorKind, RenderingEngine } from '@/libs/processor';
 import { extarctCMMath } from '@/libs/typst';
-import { getModeAndKind } from '@/utils/typstSyntax';
+import { getModeAndKindFromRegion } from '@/utils/typstSyntax';
 
 interface Region {
   id: number;
@@ -367,7 +367,7 @@ export class MarkdownCorePluginValue implements PluginValue {
         this.activeRegion.from + this.activeRegion.skip <= cursor &&
         cursor <= this.activeRegion.to
       ) {
-        const { kind, mode } = getModeAndKind(this.activeRegion, cursor);
+        const { kind, mode } = getModeAndKindFromRegion(this.activeRegion, cursor);
         this.activeRegion.activeKind = kind;
         this.activeRegion.activeMode = mode;
         return;
@@ -393,7 +393,7 @@ export class MarkdownCorePluginValue implements PluginValue {
 
   updateActiveKindAndMode(cursor: number): boolean {
     if (!this.activeRegion) return false;
-    const { mode, kind } = getModeAndKind(this.activeRegion, cursor);
+    const { mode, kind } = getModeAndKindFromRegion(this.activeRegion, cursor);
     this.activeRegion.activeMode = mode;
     this.activeRegion.activeKind = kind;
     return true;

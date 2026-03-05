@@ -2,7 +2,7 @@ import { type EditorView, type PluginValue, ViewPlugin, type ViewUpdate } from '
 import { parse, reparse, SyntaxMode } from '@typstmate/typst-syntax';
 
 import type { ParsedRegion } from '@/editor/shared/utils/core';
-import { getModeAndKind } from '@/utils/typstSyntax';
+import { getModeAndKindFromRegion } from '@/utils/typstSyntax';
 
 export class TypstCorePluginValue implements PluginValue {
   activeRegion: ParsedRegion = {
@@ -69,7 +69,7 @@ export class TypstCorePluginValue implements PluginValue {
   }
 
   updateKindAndMode(cursor: number) {
-    const { kind, mode } = getModeAndKind(this.activeRegion, cursor);
+    const { kind, mode } = getModeAndKindFromRegion(this.activeRegion, cursor);
     this.activeRegion.activeKind = kind;
     this.activeRegion.activeMode = mode;
   }
