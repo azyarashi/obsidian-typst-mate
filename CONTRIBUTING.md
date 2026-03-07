@@ -1,34 +1,40 @@
 # Contributing to Typst Mate
 
-I appreciate your consideration to contribute to this project!
+I appreciate your interest in contributing to this project!
 This document is a guide to help make your contribution easier and more effective.
 
 ## Getting Started
 
 ### Prerequisites
 
+#### System
+
 - JavaScript runtime: [Bun](https://bun.sh)
 - Rust runtime: [Rustup](https://rustup.rs)
 - Wasm compiler: [wasm-pack](https://drager.github.io/wasm-pack/) (install with `cargo install wasm-pack`)
 - Task runner: [Taskfile](https://taskfile.dev)
-- Code styler: [Biome](https://biomejs.dev/) (not required beforehand, as it will be installed later with `bun install`) and the [its IDE extension](https://biomejs.dev/guides/editors/first-party-extensions/)
-- Hot-Reload Plugin: [Hot-Reload](https://github.com/pjeby/hot-reload) (install via [BRAT](https://obsidian.md/plugins?id=obsidian42-brat))
+- Code styler: [Biome](https://biomejs.dev/) (not required beforehand, as it will be installed later with `bun install`)
 
-#### Windows only
+##### Windows only
 
 These are required because the Taskfile uses GNU OS commands (e.g. `cp`, `mv`, `rm`, `touch`).
 
 1. [MSYS2](https://www.msys2.org/)
 2. [coreutils](https://packages.msys2.org/packages/coreutils) (install with `pacman -S coreutils`)
-3. add `C:\msys64\usr\bin` to your `PATH`
+3. Add `C:\msys64\usr\bin` to your `PATH`
 
-### Recommended
+#### VSCode
 
-- [i18n Ally](https://marketplace.visualstudio.com/items?itemName=Lokalise.i18n-ally) IDE extension
+- [Biome](https://biomejs.dev/guides/editors/first-party-extensions/) extension
+- [i18n Ally](https://marketplace.visualstudio.com/items?itemName=Lokalise.i18n-ally) extension (Recommended)
+
+#### Obsidian
+
+- [Hot-Reload](https://github.com/pjeby/hot-reload) plugin (install via [BRAT](https://obsidian.md/plugins?id=obsidian42-brat))
 
 ### Installation
 
-Clone the repository, move to the directory and install dependencies
+Clone the repository, move to the directory, and install dependencies
 
 ```sh
 git clone https://github.com/azyarashi/obsidian-typst-mate.git
@@ -42,7 +48,7 @@ Add your `.env` file
 CONFIG_DIR='/path/to/your_vault/.obsidian'
 ```
 
-Place static files(`manifest.json`, `.hotreload`) into your vault
+Place static files (`manifest.json`, `.hotreload`) into your vault
 
 ```sh
 task placestatic
@@ -55,8 +61,10 @@ task placestatic
 The main scripts used during development are:
 
 - `task wasm-release`: Build the wasm file and copy it to the plugin directory
-- `task dev`:  Build the plugin files in development mode, copy them to plugin directory, and watch for changes
+- `task dev`: Build the plugin files in development mode, copy them to plugin directory, and watch for changes
 - `bun check`: Run formatter and linter
+- `bun test`: Run tests
+- `bun test --watch`: Run tests in watch mode
 
 ### Structure
 
@@ -89,7 +97,7 @@ The main scripts used during development are:
 - `packages/`
   - `typst-syntax/`: Pure TypeScript implementation of typst-syntax crate.
 
-Also you can refer to [deepwiki](https://deepwiki.com/azyarashi/obsidian-typst-mate).
+You can also refer to [deepwiki](https://deepwiki.com/azyarashi/obsidian-typst-mate).
 
 ## How to Contribute
 
