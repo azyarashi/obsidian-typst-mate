@@ -156,8 +156,9 @@ export default class TypstManager {
         const container = document.createElement('mjx-container');
         container.className = 'Mathjax';
         container.setAttribute('jax', 'CHTML');
+        const ndir = ctxToNDir(ctx.sourcePath);
 
-        mel.replaceChildren(this.render(text, container, inline ? 'inline' : 'display', ctx.sourcePath));
+        mel.replaceChildren(this.render(text, container, inline ? 'inline' : 'display', ndir, ctx.sourcePath));
 
         mel.setAttribute('contenteditable', 'false');
         mel.addClass('is-loaded');
@@ -197,7 +198,10 @@ export default class TypstManager {
           });
         this.syncFileCache(cache);
       }
-    } else this.preamble = '';
+    } else {
+      this.lastStateHash = '';
+      this.preamble = '';
+    }
 
     // プロセッサーを決定
     let processor: Processor;
