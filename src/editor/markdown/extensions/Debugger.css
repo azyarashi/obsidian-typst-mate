@@ -3,7 +3,7 @@
   bottom: 0;
   right: 0;
 
-  z-index: 100;
+  z-index: var(--layer-cover);
 
   background: var(--background-secondary);
 

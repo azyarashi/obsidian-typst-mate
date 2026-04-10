@@ -1,0 +1,86 @@
+{
+  "!": {
+    "content": "cancel(#CURSOR)",
+    "category": "Cancel"
+  },
+  "l": {
+    "content": "lr(#CURSOR)",
+    "category": "Left/Right"
+  },
+  "a": {
+    "content": "abs(#CURSOR)",
+    "category": "Left/Right"
+  },
+  "n": {
+    "content": "norm(#CURSOR)",
+    "category": "Left/Right"
+  },
+  "f": {
+    "content": "floor(#CURSOR)",
+    "category": "Left/Right"
+  },
+  "c": {
+    "content": "ceil(#CURSOR)",
+    "category": "Left/Right"
+  },
+  "e": {
+    "content": "round(#CURSOR)",
+    "category": "Left/Right"
+  },
+  "2": {
+    "content": "sqrt(#CURSOR)",
+    "category": "Roots"
+  },
+  "3": {
+    "content": "root(3, #CURSOR)",
+    "category": "Roots"
+  },
+  "^": {
+    "content": "stretch(#CURSOR)^\"\"",
+    "category": "Stretch"
+  },
+  "_": {
+    "content": "stretch(#CURSOR)_\"\"",
+    "category": "Stretch"
+  },
+  "u": {
+    "content": "upright(#CURSOR)",
+    "category": "Styles"
+  },
+  "b": {
+    "content": "bold(#CURSOR)",
+    "category": "Styles"
+  },
+  "U": {
+    "content": "underbrace(#CURSOR, \"\")",
+    "category": "Under/Over"
+  },
+  "O": {
+    "content": "overbrace(#CURSOR, \"\")",
+    "category": "Under/Over"
+  },
+  "s": {
+    "content": "sans(#CURSOR)",
+    "category": "Variants"
+  },
+  "F": {
+    "content": "frak(#CURSOR)",
+    "category": "Variants"
+  },
+  "M": {
+    "content": "mono(#CURSOR)",
+    "category": "Variants"
+  },
+  "B": {
+    "content": "bb(#CURSOR)",
+    "category": "Variants"
+  },
+  "C": {
+    "content": "cal(#CURSOR)",
+    "category": "Variants"
+  },
+  "S": {
+    "content": "scr(#CURSOR)",
+    "category": "Variants"
+  }
+}

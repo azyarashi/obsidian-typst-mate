@@ -1,0 +1,400 @@
+{
+  "common": {
+    "error": "エラー",
+    "hintsCount": "[{{count}} 件のヒント]"
+  },
+
+  "commands": {
+    "boxCurrentEquation": "数式を囲む",
+    "openTypstTools": "Typst ツールを開く",
+    "reloadTagFiles": "タグファイルを再読み込みする",
+    "renderToExcalidraw": "Excalidraw にレンダリングする",
+    "replaceTexWithTypst": "TeX を Typst に変換する",
+    "selectCurrentEquation": "現在の数式範囲を選択する",
+    "toggleBackgroundRendering": "バックグラウンドレンダリングを切り替える",
+    "formatTypst": "Typst フォーマットを適用"
+  },
+
+  "contextMenu": {
+    "copyAsImgTag": "img タグとしてコピー (Obsidian ノートに埋め込む用)",
+    "copyAsPngOpaque": "PNG (不透明) としてコピー",
+    "copyAsPngTransparent": "PNG (透明) としてコピー",
+    "copyAsHtml": "HTML としてコピー",
+    "copyAsScript": "スクリプトとしてコピー",
+    "copyAsSvgObsidian": "SVG (Obsidian テーマ) としてコピー",
+    "copyAsSvgTypst": "SVG (Typst デフォルト) としてコピー",
+    "newTypstFile": "Typst ファイルを作成",
+    "newTypstFileWithTemplate": "テンプレートから Typst ファイルを作成",
+    "openAsPreview": "プレビューとして開く",
+    "openAsText": "テキストとして開く",
+    "openWithDefaultApp": "デフォルトアプリで開く"
+  },
+
+  "modals": {
+    "diagnostic": {
+      "hintPrefix": "ヒント: {{hint}}"
+    },
+    "excalidraw": {
+      "code": "コード",
+      "heading": "Excalidraw",
+      "previewPlaceholder": "上の入力欄にコードを入力すると、プレビューが表示されます",
+      "processorId": "プロセッサ ID",
+      "buttons": {
+        "add": "追加"
+      }
+    },
+    "exportTool": {
+      "customTimestamp": "カスタムタイムスタンプ",
+      "customTimestampDesc": "カスタムの作成日時を設定します。",
+      "documentIdentifier": "ドキュメント識別子",
+      "documentIdentifierDesc": "ドキュメントの一意の識別子。",
+      "filenameTemplate": "ファイル名テンプレート",
+      "filenameTemplateDesc": "ページのファイル名のテンプレート。{p}: ページ番号, {0p}: ゼロ埋めされたページ番号, {t}: 総ページ数。",
+      "format": "形式",
+      "heading": "Typst ドキュメントの書き出し",
+      "optionalPlaceholder": "オプション",
+      "pageRanges": "ページ範囲",
+      "pageRangesDesc": "カンマ区切りの範囲リスト。例: 1-3, 5, 7-",
+      "pageRangesPlaceholder": "例: 1-3, 5, 7-",
+      "pdfOptions": "PDF オプション",
+      "pngOptions": "PNG オプション",
+      "ppi": "PPI",
+      "ppiDesc": "1インチあたりのピクセル数。高い数値ほど高解像度になります (例: 72, 144, 300)。",
+      "standard": "標準",
+      "standardDesc": "PDF 標準への準拠を強制します。",
+      "svgOptions": "SVG オプション",
+      "taggedPdf": "タグ付き PDF",
+      "taggedPdfDesc": "アクセシビリティのメタデータを含めます。",
+      "buttons": {
+        "export": "書き出し"
+      },
+      "filenameTemplateDefaults": {
+        "png": "page-{0p}-of-{t}.png",
+        "svg": "page-{0p}-of-{t}.svg"
+      },
+      "formatOptions": {
+        "pdf": "PDF",
+        "png": "PNG (画像)",
+        "svg": "SVG",
+        "html": "HTML (ソース)"
+      },
+      "htmlOptions": "HTML オプション",
+      "extractBody": "body 内のみを抽出",
+      "extractBodyDesc": "HTML の <body> タグの中身のみを書き出します。"
+    },
+    "font": {
+      "copyFontFamilyName": "フォントファミリー名をコピー",
+      "labels": {
+        "style": "スタイル: {{value}}",
+        "weight": "ウェイト: {{value}}",
+        "stretch": "ストレッチ: {{value}}",
+        "flags": "フラグ: {{value}}"
+      }
+    },
+    "processorExt": {
+      "disableSymbolSuggest": "シンボルの補完を無効化",
+      "fitToNoteWidth": "ノートの幅に合わせる",
+      "fitToNoteWidthDesc": "コードの冒頭に <code>WIDTH</code> という長さを宣言する行を追加します",
+      "usePreamble": "プリアンブルを使用",
+      "useReplaceAll": "置換をすべて使用"
+    },
+    "templateSelect": {
+      "heading": "テンプレートを選択",
+      "buttons": {
+        "select": "選択"
+      }
+    }
+  },
+
+  "notices": {
+    "unloadFailed": "プラグインのアンロード中にエラーが発生しました。",
+    "alreadyRegisteredCodeblock": "登録済みのコードブロック言語です: {{id}}",
+    "cachedSuccessfully": "キャッシュに成功しました！",
+    "copied": "コピーしました！",
+    "copiedToClipboard": "クリップボードにコピーしました！",
+    "crashAutoDisabled": "[Typst Mate] 3回連続でクラッシュしたため、プラグインを自動的にオフにしました",
+    "downloadingAsset": "{{asset}} をダウンロード中...",
+    "downloadingWasm": "最新の wasm をダウンロード中...",
+    "exportFailed": "書き出しに失敗しました。詳細はコンソールを確認してください。",
+    "exportedPngImages": "{{count}} 枚の PNG 画像を書き出しました",
+    "exportedSvgPages": "{{count}} ページの SVG を書き出しました",
+    "exportedTo": "{{path}} に書き出しました",
+    "failedToCache": "キャッシュに失敗しました",
+    "failedToConvertSvgToPng": "SVG から PNG への変換に失敗しました",
+    "failedToLoadCache": "キャッシュの読み込みに失敗しました: {{name}}",
+    "failedToLoadFont": "フォントの読み込みに失敗しました: {{name}}",
+    "failedToRemove": "削除に失敗しました",
+    "filesUpdated": "ファイルが更新されました。",
+    "fontAlreadyImported": "フォントは既にインポートされています！",
+    "idAlreadyExists": "この ID は既に存在します。",
+    "idCannotBeEmpty": "ID を空にすることはできません",
+    "importedSuccessfully": "インポートに成功しました！",
+    "initFailed": "Typst の初期化に失敗しました。プロセッサ ID に記号が含まれていないか確認し、パッケージキャッシュの消去を試し、無効なフォントがインストールされていないか確認してください。",
+    "invalidNumberRevealDelay": "Reveal Delay の数値が無効です",
+    "noActiveRegion": "アクティブな範囲がありません",
+    "noActiveView": "アクティブなビューが見つかりません。",
+    "pluginReloaded": "プラグインを再読み込みしました。",
+    "removedSuccessfully": "正常に削除されました！",
+    "revealDelayMustBePositive": "Reveal Delay は 0 より大きい必要があります",
+    "snippetExecutionFailed": "スニペットの実行に失敗しました: {{error}}",
+    "templateDirNotExist": "テンプレートディレクトリが存在しません。インポートパスに `templates` ディレクトリを作成してください。",
+    "typstDirNotExist": "Typst ディレクトリが存在しません。高度な設定を確認してください。",
+    "assetDownloaded": "{{asset}} をダウンロードしました！",
+    "wasmDownloaded": "Wasm をダウンロードしました！"
+  },
+
+  "settings": {
+    "status": {
+      "pending": "準備中...",
+      "loadingMathJax": "MathJax を読み込み中...",
+      "downloadingWasm": "Typst コンパイラ (Wasm) をダウンロード中...",
+      "initializingWasm": "Typst コンパイラを初期化中...",
+      "preparingAssets": "フォントとパッケージを準備中...",
+      "error": "Typst コンパイラの初期化に失敗しました",
+      "renderingPath": "レンダリング中: {{path}}"
+    },
+    "processors": {
+      "headerName": "Processor",
+      "headerDesc": "Processor とは, レンダリングエンジンやスタイル, フォーマットなどをまとめた環境のことです. 設定した id を接頭辞に利用することで切り替えられます. id が空白のものはデフォルトとして使用されます. フォーマット内で <code>{CODE}</code> と記された箇所に挿入されます. fontsize といった値で. また, <bold> id にはパスに使用される制御文字, すなわち <code>/</code>, <code>\\</code>, <code>:</code>, <code>.</code> が使用できないことに注意してください</bold>. スタイルやその他の詳細設定については, <link href=\"https://github.com/azyarashi/obsidian-typst-mate/blob/main/docs/processor/Processor.md\">Processor.md</link> を参照してください.",
+
+      "preambleName": "プリアンブル",
+      "preambleDesc": "各プロセッサの設定でオンオフを切り替えられます.",
+      "renderingEngineTabs": {
+        "typstSVG": "SVG",
+        "typstHTML": "HTML",
+        "mathjax": "MathJax"
+      },
+
+      "kindTabs": {
+        "inline": "Inline Math",
+        "display": "Display Math",
+        "codeblock": "Codeblock"
+      },
+      "inlineProcessorName": "Inline Math (<code>$id:...$</code> / <code>$...$</code>)",
+      "inlineProcessorDesc": "接頭辞が id の指定に相当しますが, id と数式の間は コロン(<code>:</code>) で区切る必要があります. インライン要素のみを期待します.",
+      "displayProcessorName": "Display Math (<code>$$id...$$</code> / <code>$$...$$</code>)",
+      "displayProcessorDesc": "接頭辞が id の指定に相当します.",
+      "codeblockProcessorName": "Codeblock (<code>```id...```</code> / <code>~~~id...~~~</code>)",
+      "codeblockProcessorDesc": "言語が id の指定に相当します.",
+
+      "addProcessorButton": "新規作成",
+
+      "idPlaceholder": "id",
+      "renderingEngineOptions": {
+        "typstSVG": "SVG",
+        "typstHTML": "HTML",
+        "mathjax": "MathJax"
+      },
+      "stylingOptions": {
+        "inline": "inline",
+        "middle": "middle",
+        "baseline": "baseline",
+        "block": "block",
+        "blockCenter": "block center",
+        "codeblock": "codeblock"
+      },
+      "iconTooltips": {
+        "useReplaceAll": "{CODE} を全て置換する",
+        "fitToNoteWidth": "ノート幅に合わせる",
+        "noPreamble": "プリアンブルを使用しない",
+        "syntaxModeAnalyzing": "モードを解析中...",
+        "syntaxModeMarkup": "マークアップモード",
+        "syntaxModeMath": "数式モード",
+        "syntaxModeCode": "コードモード",
+        "syntaxModeOpaque": "不透明モード",
+        "openMoreSettings": "詳細設定を開く"
+      },
+      "formatPlaceholder": "フォーマット",
+
+      "useReplaceAllName": "ReplaceAll を使用",
+      "useReplaceAllDesc": "フォーマット内に含まれる <code>{CODE}</code> を全て置換します.",
+      "fitToNoteWidthName": "ノート幅を利用",
+      "fitToNoteWidthDesc": "<code>WIDTH</code> に値が格納されるので, フォーマット内で <code>page(width: WIDTH)</code> を使用してください.",
+      "noPreambleName": "プリアンブルを無効化",
+      "noPreambleDesc": "プリアンブルを使用しません.",
+      "deleteProcessorButton": "このプロセッサーを削除する"
+    },
+
+    "actions": {},
+
+    "extensions": {
+      "complementSymbolWithUnicode": "シンボルを Unicode で補完する",
+      "complementSymbolWithUnicodeDesc": "入力されたシンボルを自動的に Unicode 等価物に置き換えます。",
+      "concealAndComplement": "非表示と補完",
+      "concealMathSymbols": "数式記号を非表示にする",
+      "concealMathSymbolsDesc": "エディタ上で数式記号を非表示（例: integral を ∫ に）にします。",
+      "disableBracketHighlight": "括弧のハイライトを無効にする",
+      "disableBracketHighlightDesc": "対応する括弧のハイライトを無効にします。",
+      "disableMacro": "マクロを無効にする",
+      "disableMacroDesc": "mk や dm などのデフォルトマクロを無効にします。",
+      "enableInlinePreview": "インラインプレビューを有効にする",
+      "enableInlinePreviewDesc": "インライン数式のライブプレビューを表示します。",
+      "enableRevealDelay": "数式記号の表示遅延を有効にする",
+      "enableRevealDelayDesc": "カーソルが近づいたときに、非表示にされている数式記号を表示するまでの遅延を追加します。",
+      "highlight": "ハイライト",
+      "inlinePreview": "インラインプレビュー",
+      "jumpOutsideBracket": "括弧の外にジャンプ",
+      "jumpOutsideBracketDesc": "カーソルが現在の括弧ペアの外にジャンプすることを許可します。",
+      "macro": "マクロ",
+      "moveToEndOfMathBlock": "終了前に数式ブロックの末尾に移動",
+      "moveToEndOfMathBlockDesc": "数式モードを終了するとき、まずカーソルをブロックの末尾に移動させます。",
+      "preferInlineExit": "単一行のディスプレイ数式でインライン終了を優先",
+      "preferInlineExitDesc": "ディスプレイ数式ブロックが1行に収まる場合、改行せずにインラインで終了します。",
+      "revealDelayDuration": "数式記号の表示遅延時間 (ms)",
+      "revealDelayDurationDesc": "記号のテキストを表示するまでの待機時間（ミリ秒）。",
+      "revealDelay": "数式記号の表示遅延",
+      "revealDelayDesc": "カーソルが近づいたときに、非表示にされている数式記号を表示するまでの遅延を追加します。",
+      "revertTabToDefault": "Tab キーをデフォルトに戻す",
+      "revertTabToDefaultDesc": "次のプレースホルダーへのジャンプではなく、Tab キーをデフォルトのインデント動作に戻します。",
+      "tabJump": "Tab ジャンプ",
+      "useObsidianTheme": "Obsidian テーマを使用",
+      "useObsidianThemeDesc": "Typst テーマの代わりに Obsidian テーマを使用します。再読み込みが必要です。",
+      "subTabs": {
+        "action": "アクション",
+        "decoration": "装飾",
+        "popup": "ポップアップ"
+      }
+    },
+
+    "compiler": {
+      "disablePackageCache": "パッケージキャッシュを無効にする",
+      "disablePackageCacheDesc": "インポートされたパッケージのキャッシュを無効にします。メモリの少ない環境で便利ですが、パッケージの再ダウンロードが必要になります。",
+      "skipStartup": "起動時の準備をスキップ",
+      "skipStartupDesc": "起動時の初期化を遅らせます（モバイルでは不安定）。起動時間を短縮しますが、最初のレンダリングが遅れます。",
+      "fonts": {
+        "desc": "Typst CLI に含まれる標準フォント(<link href=\"https://github.com/typst/typst-assets/tree/{{version}}/files/fonts\">一覧はこちら</link>) は埋め込まれています.",
+        "clickToLoad": "クリックしてシステムフォント一覧を読み込む",
+        "filterPlaceholder": "フォント名をフィルタリング",
+        "fontCount": "{{count}} 個のフォント",
+        "importFont": "フォントをインポート",
+        "importFontDesc": "デスクトップアプリのみ。Typst は .ttf, .otf, .ttc, .otc フォントをサポートしています。",
+        "importedFonts": "インポート済みフォント",
+        "importedFontsDesc": "フォント名の隣の文字列は、同じ PostScript 名を共有するフォントを識別するために使用されます。",
+        "tooltips": {
+          "getFontList": "フォント一覧を取得",
+          "getInfo": "情報を取得",
+          "importFont": "フォントをインポート",
+          "openFolder": "フォルダを開く",
+          "remove": "削除"
+        }
+      },
+      "packages": {
+        "cachedPackages": "キャッシュされたパッケージ",
+        "desc": "パッケージがインポートされると、パフォーマンス向上のために実際のファイルの代わりにキャッシュが使用されます。直接変更を加えた場合は、パッケージアイコンをクリックしてキャッシュを更新してください（プラグインの再読み込みが必要です）。",
+        "heading": "パッケージ",
+        "importLocal": "ローカルパッケージをインポート",
+        "importLocalDesc": "デスクトップアプリのみ。",
+        "tooltips": {
+          "cache": "キャッシュ",
+          "importLocalPackage": "ローカルパッケージをインポート",
+          "openFolder": "フォルダを開く",
+          "remove": "削除"
+        }
+      },
+      "subTabs": {
+        "fonts": "フォント",
+        "packages": "パッケージ"
+      }
+    },
+
+    "renderer": {
+      "addProfile": "プロファイルを追加",
+      "newProfileName": "新規プロファイル",
+      "baseColor": "基本色",
+      "baseColorDesc": "SVG 内の黒を別の色に置き換えます。ダークテーマで便利です。これを使用するには <code>テーマのテキスト色を使用する</code> を無効にしてください。",
+      "deleteProfile": "プロファイルを削除",
+      "enableBackgroundRendering": "バックグラウンドレンダリングを有効にする",
+      "enableBackgroundRenderingDesc": "UI がフリーズしなくなりますが、エクスポートやレンダリングに関連する他のプラグインと衝突する可能性があります。（Markdown メニューから PDF に書き出す際は自動的に無効になります）",
+      "fitNoteWidthProfiles": "プロファイルを選択する",
+      "fitToNoteWidthProfile": "プロファイルを選択する",
+      "fitToNoteWidthProfileDesc": "「ノートの幅に合わせる」計算に使用するプロファイル。プリセットを選択するか、Live を選択してエディタの幅を検出します。",
+      "offset": "オフセット",
+      "offsetDesc": "インライン数式の垂直オフセット。Obsidian で使用されているフォントによって見え方が異なる場合があります。必要に応じて調整してください。",
+      "patchPdfExport": "PDF 書き出しをパッチ",
+      "patchPdfExportDesc": "ダークテーマでの背景が白くなる問題を修正するため、PDF 書き出し中に一時的に AutoBaseColor を無効にし BaseColor を使用します。",
+      "profileNamePlaceholder": "名前",
+      "profileWidthPlaceholder": "幅",
+      "profiles": "プロファイル",
+      "profilesDesc": "カスタム幅プロファイルを追加または削除します。",
+      "useThemeTextColor": "テーマのテキスト色を使用する",
+      "useThemeTextColorDesc": "Obsidian のテキスト色を基本色として使用します。"
+    },
+
+    "advanced": {
+      "applyProcessorToMathJax": "プロセッサを MathJax に適用する",
+      "enableMathjaxFallback": "MathJax フォールバックを有効にする",
+      "enableMathjaxFallbackDesc": "パフォーマンス上の理由から推奨されません。有効にすると、<bold>Typst のエラー、警告、ヒントが利用できなくなります。</bold>",
+      "features": "有効な機能",
+      "featuresDesc": "プラットフォーム固有の機能（Node.js、ファイル監視）の状態。",
+      "importPath": "Typst ファイルのインポートパス",
+      "importPathDesc": "インポートする Typst ファイルを探す vault 内のディレクトリ。パスが存在しないか空の場合、この機能は無効になります。",
+      "linuxLibc": "Linux C 標準ライブラリ (libc)",
+      "linuxLibcDesc": "Linux ユーザーのみ。システムで使用されている libc の種類（glibc または musl）を選択してください。間違った方を選択すると、ファイル監視機能が利用できなくなります。",
+      "watcherExtensions": "監視する拡張子",
+      "watcherExtensionsDesc": "指定した拡張子のファイルが変更された場合にのみ、再レンダリングをトリガーします。（カンマ区切り）",
+      "openDetails": "詳細を開く",
+      "openSnippetManager": "スニペットマネージャーを開く",
+      "openTypstToolsOnStartup": "起動時に Typst ツールを開く",
+      "openTypstToolsOnStartupDesc": "Obsidian 起動時にサイドパネルに Typst ツールを開きます。",
+      "reloadPlugin": "プラグインを再読み込み",
+      "textViewExtensions": "エディタの対象拡張子",
+      "textViewExtensionsDesc": "指定した拡張子のファイルを Typst Mate のエディタで開けるようにします。（カンマ区切り、要再読み込み）",
+      "snippetsManaged": "スニペットは別のリーフで管理されます。",
+      "buttons": {
+        "reloadPlugin": "プラグインを再読み込み"
+      }
+    },
+
+    "tabs": {
+      "processors": "Processors",
+      "actions": "Actions",
+      "extensions": "Extensions",
+      "compiler": "Compiler",
+      "renderer": "Renderer",
+      "advanced": "高度な設定"
+    }
+  },
+
+  "views": {
+    "typstPreview": {
+      "waiting": "Typst を初期化中...",
+      "fitToPage": "ページに合わせる",
+      "buttons": {
+        "reset": "リセット"
+      }
+    },
+    "typstText": {
+      "waiting": "Typst を初期化中...",
+      "displayText": "Typst テキスト",
+      "actions": {
+        "export": "書き出し",
+        "exportAsPdf": "PDF として書き出し",
+        "openAsPreview": "プレビューとして開く"
+      }
+    },
+    "typstTools": {
+      "displayText": "Typst ツール",
+      "converter": {
+        "cetzTikz": "CeTZ/TikZ",
+        "latexPlaceholder": "LaTeX",
+        "markupDocument": "マークアップドキュメント",
+        "mathEquation": "数式",
+        "typstPlaceholder": "Typst",
+        "buttons": {
+          "copy": "コピー"
+        }
+      },
+      "dropdown": {
+        "converter": "コンバーター",
+        "detypify": "Detypify",
+        "packages": "パッケージ",
+        "quiver": "Quiver",
+        "snippets": "スニペット",
+        "symbols": "シンボル"
+      },
+      "tooltips": {
+        "reload": "再読み込み"
+      }
+    }
+  }
+}

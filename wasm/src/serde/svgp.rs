@@ -8,10 +8,13 @@ use typst::{diag::SourceDiagnostic, ecow};
 use crate::serde::diagnostic::SourceDiagnosticSer;
 use crate::world::WasmWorld;
 
-#[derive(Serialize)]
-struct SvgPResultSer {
-    svgp: Vec<String>,
-    diags: Vec<SourceDiagnosticSer>,
+use tsify::Tsify;
+
+#[derive(Serialize, Tsify)]
+#[serde(rename_all = "camelCase")]
+pub struct SvgpResultSer {
+    pub svgp: Vec<String>,
+    pub diags: Vec<SourceDiagnosticSer>,
 }
 
 pub fn svgp(
@@ -19,7 +22,7 @@ pub fn svgp(
     diags: EcoVec<SourceDiagnostic>,
     world: &WasmWorld,
 ) -> Result<JsValue, JsValue> {
-    let result = SvgPResultSer {
+    let result = SvgpResultSer {
         svgp,
         diags: diags
             .iter()

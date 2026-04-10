@@ -14,7 +14,7 @@
   background-color: var(--background-secondary-alt);
   border: 1px solid var(--background-modifier-border);
   border-radius: var(--radius-s);
-  z-index: 10;
+  z-index: var(--layer-status-bar);
   user-select: none;
   pointer-events: none;
   box-shadow: var(--shadow-s);

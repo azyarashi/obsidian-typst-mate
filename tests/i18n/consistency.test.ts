@@ -3,7 +3,16 @@ import { Glob } from 'bun';
 
 import en from '../../resources/locales/en.json';
 
-import { getKeys } from './unused.test';
+export function getKeys(obj: any, prefix = ''): string[] {
+  let keys: string[] = [];
+  for (const key in obj) {
+    const fullKey = prefix ? `${prefix}.${key}` : key;
+    if (typeof obj[key] === 'object' && obj[key] !== null && !Array.isArray(obj[key]))
+      keys = keys.concat(getKeys(obj[key], fullKey));
+    else keys.push(fullKey);
+  }
+  return keys;
+}
 
 describe('i18n consistency', () => {
   it('should have consistent keys across all locale files', async () => {

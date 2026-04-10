@@ -1,9 +1,9 @@
 import { beforeAll, describe, expect, it } from 'bun:test';
-import i18next from 'i18next';
+import { I18n } from '../../packages/i18n/src/index';
 import en from '../../resources/locales/en.json';
 
 describe('i18n integration', () => {
-  const i18n = i18next.createInstance();
+  const i18n = I18n.createInstance();
 
   beforeAll(async () => {
     await i18n.init({

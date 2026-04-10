@@ -1,0 +1,34 @@
+.typstmate-list-item {
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--size-4-2);
+  margin-bottom: var(--size-4-2);
+  background-color: var(--background-primary);
+  overflow: hidden;
+}
+
+.typstmate-list-item[open] {
+  border-color: var(--interactive-accent);
+}
+
+.typstmate-list-item-summary {
+  display: flex;
+  padding: var(--size-4-2);
+  cursor: pointer;
+  user-select: none;
+  background-color: var(--background-secondary);
+  transition: background-color 0.15s ease;
+}
+
+.typstmate-list-item-summary:hover {
+  background-color: var(--background-modifier-hover);
+}
+
+.typstmate-list-item-summary.is-vertical {
+  flex-direction: column;
+}
+
+.typstmate-list-item-content {
+  padding: var(--size-4-2);
+  border-top: 1px solid var(--background-modifier-border);
+  background-color: var(--background-primary-alt);
+}

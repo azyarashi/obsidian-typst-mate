@@ -3,7 +3,7 @@
   left: var(--preview-left, 0);
   top: var(--preview-top, 0);
 
-  z-index: 200;
+  z-index: var(--layer-popover);
 
   box-shadow: 0 4px 16px rgb(0 0 0 / 0.18);
 

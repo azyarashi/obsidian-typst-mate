@@ -1,10 +1,15 @@
-declare module '@/data/shortcuts.json' {
+declare module '@/data/actions/long-press.json' {
   interface Shortcut {
     content: string;
     category: string;
-    offset?: number;
   }
   const data: Record<string, Shortcut>;
+
+  export default data;
+}
+
+declare module '@/data/actions/type.json' {
+  const data: ActionDef[];
 
   export default data;
 }

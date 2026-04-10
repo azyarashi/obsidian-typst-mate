@@ -1,0 +1,63 @@
+.typstmate-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--size-4-2);
+  margin-top: var(--size-4-2);
+}
+
+.typstmate-sortable-item {
+  transition: margin 0.2s ease;
+}
+
+/* 上に挿入される時の線 */
+.typstmate-sortable-item.typstmate-drag-over-top::before {
+  content: "";
+  position: absolute;
+  top: calc(var(--size-4-2) * -0.5 - 2px);
+  left: 0;
+  right: 0;
+  height: 4px;
+  background-color: var(--interactive-accent);
+  border-radius: 2px;
+  z-index: var(--layer-cover);
+  pointer-events: none;
+}
+
+/* 下に挿入される時の線 */
+.typstmate-sortable-item.typstmate-drag-over-bottom::after {
+  content: "";
+  position: absolute;
+  bottom: calc(var(--size-4-2) * -0.5 - 2px);
+  left: 0;
+  right: 0;
+  height: 4px;
+  background-color: var(--interactive-accent);
+  border-radius: 2px;
+  z-index: var(--layer-cover);
+  pointer-events: none;
+}
+
+div.typstmate-drag-handle-icon {
+  width: "100%";
+  user-select: none;
+  -webkit-user-drag: element;
+  cursor: grab;
+  border-radius: var(--radius-s);
+  align-items: center;
+  padding-left: var(--size-2-2);
+  padding-right: var(--size-2-2);
+}
+
+div.typstmate-drag-handle-icon:hover {
+  background: var(--background-modifier-hover);
+  color: var(--text-normal);
+}
+
+div.typstmate-drag-handle-icon:active {
+  cursor: grabbing;
+}
+
+div.typstmate-drag-handle-icon svg {
+  width: 100%;
+  height: 100%;
+}

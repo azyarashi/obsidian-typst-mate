@@ -19,7 +19,8 @@
         "useKeyWithClickEvents": "off",
         "noStaticElementInteractions": "off",
         "useButtonType": "off",
-        "useSemanticElements": "off"
+        "useSemanticElements": "off",
+        "noSvgWithoutTitle": "off"
       },
       "style": {
         "noNonNullAssertion": "off"
@@ -59,9 +60,14 @@
       "packages/**",
       "vite.config.ts",
       "postcss.config.cjs",
+      "tsconfig.json",
       ".vscode/settings.json",
       "!src/data/symbols.json",
       "!**/dist/*"
     ]
+  },
+  "assist": {
+    "enabled": true,
+    "actions": { "source": { "organizeImports": "on" } }
   }
 }

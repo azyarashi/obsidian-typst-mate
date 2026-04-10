@@ -9,10 +9,14 @@ use typst::{diag::SourceDiagnostic, ecow};
 use crate::serde::diagnostic::SourceDiagnosticSer;
 use crate::world::WasmWorld;
 
-#[derive(Serialize)]
-struct PdfrSer {
-    pdf: Vec<u8>,
-    diags: Vec<SourceDiagnosticSer>,
+use tsify::Tsify;
+
+#[derive(Serialize, Tsify)]
+#[serde(rename_all = "camelCase")]
+pub struct PdfrResultSer {
+    #[tsify(type = "Uint8Array")]
+    pub pdf: Vec<u8>,
+    pub diags: Vec<SourceDiagnosticSer>,
 }
 
 pub fn pdfr(
@@ -20,7 +24,7 @@ pub fn pdfr(
     diags: EcoVec<SourceDiagnostic>,
     world: &WasmWorld,
 ) -> Result<JsValue, JsValue> {
-    let result = PdfrSer {
+    let result = PdfrResultSer {
         pdf,
         diags: diags
             .iter()

@@ -1,71 +1,30 @@
-import { Prec } from '@codemirror/state';
-import { type EditorView, keymap } from '@codemirror/view';
-
-import type { EditorHelper } from '@/editor';
+import type { Facet } from '@codemirror/state';
+import type { EditorView } from '@codemirror/view';
 import { getActiveRegion, type ParsedRegion } from '../utils/core';
-import { helperFacet } from './Helper';
+
+export interface TabJumpSettings {
+  jumpKey: string;
+  jumpBackKey: string;
+  revertTabToDefault: boolean;
+  jumpOutsideBracket: boolean;
+  preferInlineExitForSingleLineDisplayMath: boolean;
+  moveToEndBeforeExiting: boolean;
+}
 
 const cursorStr = '#CURSOR';
 
-export const tabJumpExtension = Prec.high(
-  keymap.of([
-    {
-      key: 'Tab',
-      run: (view) => {
-        const helper = view.state.facet(helperFacet);
-        if (helper.plugin.settings.revertTabToDefault) return false;
-        const region = getActiveRegion(view);
-        if (!region) return false;
-        return jumpCursor(view, helper, region, 1);
-      },
-    },
-    {
-      key: 'Shift-Tab',
-      run: (view) => {
-        const helper = view.state.facet(helperFacet);
-        if (helper.plugin.settings.revertTabToDefault) return false;
-        const region = getActiveRegion(view);
-        if (!region) return false;
-        return jumpCursor(view, helper, region, -1);
-      },
-    },
-  ]),
-);
-
-export const tabJumpExtensionForTypstText = Prec.high(
-  keymap.of([
-    {
-      key: 'Tab',
-      run: (view) => {
-        const helper = view.state.facet(helperFacet);
-        if (helper.plugin.settings.revertTabToDefault) return false;
-        const region = getActiveRegion(view);
-        if (!region) return false;
-        jumpCursor(view, helper, region, 1, true);
-        return true;
-      },
-    },
-    {
-      key: 'Shift-Tab',
-      run: (view) => {
-        const helper = view.state.facet(helperFacet);
-        if (helper.plugin.settings.revertTabToDefault) return false;
-        const region = getActiveRegion(view);
-        if (!region) return false;
-        jumpCursor(view, helper, region, -1, true);
-        return true;
-      },
-    },
-  ]),
-);
-
-function jumpCursor(
+export function executeTabJump(
   view: EditorView,
-  helper: EditorHelper,
-  region: ParsedRegion,
   direction: -1 | 1,
+  tabJumpSettingsFacet: Facet<TabJumpSettings, TabJumpSettings>,
   onlyJumpToCursor: boolean = false,
 ): boolean {
+  const settings = view.state.facet(tabJumpSettingsFacet);
+  if (settings.revertTabToDefault) return false;
+
+  const region = getActiveRegion(view);
+  if (!region) return false;
+
   const contentStart = region.from + region.skip;
   const contentEnd = region.to;
   const cursor = view.state.selection.main.head;
@@ -76,7 +35,7 @@ function jumpCursor(
 
   if (jumpToCursor(view, contentStart, offset, targetContent, direction)) return true;
   if (
-    helper.plugin.settings.jumpOutsideBracket &&
+    settings.jumpOutsideBracket &&
     view.state.selection.ranges.length === 1 &&
     jumpOutsideBracket(view, contentStart, offset, targetContent, direction)
   )
@@ -84,7 +43,7 @@ function jumpCursor(
   if (onlyJumpToCursor) return false;
   if (jumpOutsideTypstMath(view, contentStart, offset, targetContent, direction)) return true;
 
-  return jumpOutsideRegion(view, helper, region, cursor, targetContent, direction);
+  return jumpOutsideRegion(view, region, cursor, targetContent, direction, settings);
 }
 
 function jumpToCursor(
@@ -112,8 +71,6 @@ function jumpOutsideBracket(
   targetContent: string,
   direction: -1 | 1,
 ): boolean {
-  // TODO: SyntaxKind ベースにする
-
   if (direction === -1) {
     targetContent = targetContent.replaceAll('\\(', '  ').replaceAll('\\[', '  ').replaceAll('\\{', '  ');
 
@@ -147,8 +104,6 @@ function jumpOutsideTypstMath(
   targetContent: string,
   direction: -1 | 1,
 ): boolean {
-  // TODO: SyntaxKind ベースにする
-
   targetContent = targetContent.replaceAll('\\$', '  ');
   if (direction === -1) {
     const targetIndex = targetContent.lastIndexOf('$');
@@ -167,18 +122,18 @@ function jumpOutsideTypstMath(
 
 function jumpOutsideRegion(
   view: EditorView,
-  helper: EditorHelper,
   region: ParsedRegion,
   cursor: number,
   content: string,
   direction: -1 | 1,
+  settings: TabJumpSettings,
 ): boolean {
+  const moveToEnd = settings.moveToEndBeforeExiting;
+  const preferInlineExit = settings.preferInlineExitForSingleLineDisplayMath;
+
   if (region.kind === 'codeblock') {
     const insideTarget = direction === -1 ? region.from : region.to;
-    if (
-      helper.plugin.settings.moveToEndOfMathBlockBeforeExiting &&
-      (direction === -1 ? insideTarget < cursor : cursor < insideTarget)
-    )
+    if (moveToEnd && (direction === -1 ? insideTarget < cursor : cursor < insideTarget))
       view.dispatch({ selection: { anchor: insideTarget } });
     else {
       if (direction === -1) {
@@ -195,10 +150,7 @@ function jumpOutsideRegion(
   const delimiterLength = region.kind === 'inline' ? 1 : 2;
   const inside = direction === -1 ? region.from : region.to + region.skipEnd;
 
-  if (
-    helper.plugin.settings.moveToEndOfMathBlockBeforeExiting &&
-    (direction === -1 ? inside < cursor : cursor < inside)
-  ) {
+  if (moveToEnd && (direction === -1 ? inside < cursor : cursor < inside)) {
     view.dispatch({ selection: { anchor: inside - (direction === -1 ? 0 : region.skipEnd) } });
   } else {
     view.dispatch({
@@ -208,12 +160,7 @@ function jumpOutsideRegion(
     });
 
     if (region.kind === 'inline') return true;
-    if (
-      helper.plugin.settings.preferInlineExitForSingleLineDisplayMath &&
-      region.kind === 'display' &&
-      !content.includes('\n')
-    )
-      return true;
+    if (preferInlineExit && region.kind === 'display' && !content.includes('\n')) return true;
 
     view.dispatch({
       changes: {

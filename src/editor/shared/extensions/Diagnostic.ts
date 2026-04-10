@@ -41,5 +41,6 @@ export const clearDiagnosticEffect = (view: EditorView) => {
   view.dispatch({
     effects: diagnosticsStateEffect.of(undefined),
   });
+  // TODO
   view.dispatch(setDiagnostics(view.state, []));
 };

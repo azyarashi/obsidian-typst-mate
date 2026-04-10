@@ -6,13 +6,13 @@ import './Theme.css';
 
 export const typstTheme = EditorView.theme({
   [`.${CSSClass.Comment}`]: { color: 'var(--typstmate-c-comment) !important' },
-  [`.${CSSClass.Escape}`]: { color: 'var(--typstmate-c-escape) !important' },
+  [`.${CSSClass.Escape}`]: { color: 'var(--typstmate-c-escape) !important', fontStyle: 'normal !important' },
   [`.${CSSClass.Strong}`]: { fontWeight: '700 !important' },
   [`.${CSSClass.Emph}`]: { fontStyle: 'italic !important' },
   [`.${CSSClass.Link}`]: { textDecoration: 'underline !important' },
   [`.${CSSClass.Raw}`]: { color: 'var(--typstmate-c-monospace) !important' },
-  [`.${CSSClass.Label}`]: { color: 'var(--typstmate-c-escape) !important' },
-  [`.${CSSClass.Ref}`]: { color: 'var(--typstmate-c-escape) !important' },
+  [`.${CSSClass.Label}`]: { color: 'var(--typstmate-c-escape) !important', fontStyle: 'normal !important' },
+  [`.${CSSClass.Ref}`]: { color: 'var(--typstmate-c-escape) !important', fontStyle: 'normal !important' },
   [`.${CSSClass.Heading}`]: { fontWeight: '700 !important', textDecoration: 'underline !important' },
   [`.${CSSClass.ListMarker}`]: { color: 'var(--typstmate-c-list-marker) !important' },
   [`.${CSSClass.ListTerm}`]: { fontWeight: '700 !important' },

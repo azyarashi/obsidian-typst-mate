@@ -1,6 +1,6 @@
 import { type Diagnostic, setDiagnostics } from '@codemirror/lint';
 import { type EditorView, ViewPlugin, type ViewUpdate } from '@codemirror/view';
-import { t } from 'i18next';
+import { TypstMate } from '@/api';
 
 import { renderDiagnosticMessage } from '@/ui/elements/diagnostics';
 import { getActiveRegion } from '../utils/core';
@@ -23,7 +23,7 @@ function computeDiagnostics(view: EditorView, result: TypstMateResult): Diagnost
     return {
       from,
       to,
-      message: diag.message || t('common.error'),
+      message: diag.message,
       severity: diag.severity,
       renderMessage: () =>
         renderDiagnosticMessage({
@@ -78,6 +78,10 @@ export const linterExtension = ViewPlugin.fromClass(
       }
 
       const computed = computeDiagnostics(this.view, result);
+
+      const hasError = computed.some((d) => d.severity === 'error');
+      if (TypstMate.rendering.hasError !== hasError) TypstMate.update(undefined, { ...TypstMate.rendering, hasError });
+
       requestAnimationFrame(() => {
         this.view.dispatch(setDiagnostics(this.view.state, computed));
       });

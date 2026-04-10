@@ -1,40 +1,28 @@
 import { SyntaxMode } from '@typstmate/typst-syntax';
+import type { ActionDef } from '@/libs/action';
+import type { EditorContext, ExtensionSetting, Tag } from '@/libs/extensionManager';
 import {
   type CodeblockProcessor,
   CodeblockStyling,
   type DisplayProcessor,
   DisplayStyling,
-  type ExcalidrawProcessor,
-  ExcalidrawStyling,
   type InlineProcessor,
   InlineStyling,
+  type ProcessorKind,
   RenderingEngine,
 } from '@/libs/processor';
 import type { WidthProfile } from '@/libs/profile';
-import type { Snippet } from '@/libs/snippet';
+import type { Tab } from '@/ui/settingsTab';
+import type { CompilerSubTab } from '@/ui/settingsTab/tabs/compiler';
+import { DEFAULT_ACTIONS } from './actions/';
 
 /**
  * プラグイン設定
  */
 export interface Settings {
-  /* エディター */
-  // 数学記号の自動表示機能
-  concealMathSymbols: boolean;
-  enableConcealMathSymbolRevealDelay: boolean;
-  mathSymbolRevealDelay: number;
-  complementSymbolWithUnicode: boolean;
-  disableBracketHighlight: boolean;
-  useObsidianTheme: boolean;
-
-  // 表示
-  enableInlinePreview: boolean;
-
-  // アクション
-  revertTabToDefault: boolean;
-  jumpOutsideBracket: boolean;
-  preferInlineExitForSingleLineDisplayMath: boolean;
-  moveToEndOfMathBlockBeforeExiting: boolean;
-  disableMacro: boolean;
+  preambleSvg: string;
+  preambleHtml: string;
+  preambleMathJax: string;
 
   /* レンダリング */
   enableBackgroundRendering: boolean; // プラグインのリロードが必要
@@ -45,17 +33,12 @@ export interface Settings {
   fitToNoteWidthProfile: string;
   fitToNoteWidthProfiles: WidthProfile[];
 
-  /* コンパイラ */
-  skipPreparationWaiting: boolean;
-  disablePackageCache: boolean;
-  preamble: string;
-
   /* 高度な設定 */
-  openTypstToolsOnStartup: boolean;
-  enableMathjaxFallback: boolean;
   applyProcessorToMathJax: boolean;
   importPath: string;
-  enableDebugger: boolean;
+  linuxLibc: 'glibc' | 'musl';
+  watcherExtensions: string[];
+  textViewExtensions: string[];
 
   /* その他の設定 */
   processor: {
@@ -68,34 +51,48 @@ export interface Settings {
     codeblock: {
       processors: CodeblockProcessor[];
     };
-    excalidraw: {
-      processors: ExcalidrawProcessor[];
-    };
   };
-  snippets: Snippet[];
+
+  actions: ActionDef[];
+  extensionSettings: Record<EditorContext, Record<string, ExtensionSetting>>;
 
   /* 内部設定 */
+  version: string;
   crashCount: number; // ? OOM による Boot Loop 回避のため
+  settingsStates: {
+    tab: Tab;
+    preambleRenderingEngineTab: RenderingEngine;
+    processorKindTab: ProcessorKind;
+    compilerSubTab: CompilerSubTab;
+    extensionFilter: {
+      query: string;
+      tags: Tag[];
+      scopes: EditorContext[];
+    };
+    actionFilter: {
+      query: string;
+      triggers: string[];
+      actions: string[];
+    };
+  };
+
+  snippets: any[];
 }
 
 export const DEFAULT_SETTINGS: Settings = {
-  /* エディター */
-  concealMathSymbols: true,
-  enableConcealMathSymbolRevealDelay: true,
-  mathSymbolRevealDelay: 1000,
-  complementSymbolWithUnicode: false,
-  disableBracketHighlight: false,
-  useObsidianTheme: false,
-
-  // 表示
-  enableInlinePreview: true,
-
-  // アクション
-  revertTabToDefault: false,
-  jumpOutsideBracket: true,
-  preferInlineExitForSingleLineDisplayMath: true,
-  moveToEndOfMathBlockBeforeExiting: false,
-  disableMacro: false,
+  preambleSvg: [
+    '#set page(margin: 0pt, width: auto, height: auto)',
+    '#set text(size: fontsize)',
+    '#show raw: set text(size: 1.25em)',
+    '#import "@preview/mannot:0.3.2": *',
+    '#import "@preview/quick-maths:0.2.1": shorthands',
+    '#show: shorthands.with(',
+    '  ($+-$, sym.plus.minus),',
+    '  ($|-$, math.tack),',
+    ')',
+  ].join('\n'),
+  preambleHtml: '',
+  preambleMathJax: '',
 
   /* レンダリング */
   enableBackgroundRendering: true,
@@ -113,27 +110,12 @@ export const DEFAULT_SETTINGS: Settings = {
     { name: 'Tabloid', width: '690pt' },
   ],
 
-  /* コンパイラ */
-  skipPreparationWaiting: false,
-  disablePackageCache: false,
-  preamble: [
-    '#set page(margin: 0pt, width: auto, height: auto)',
-    '#show raw: set text(size: 1.25em)',
-    '#set text(size: fontsize)',
-    '#import "@preview/mannot:0.3.1": *',
-    '#import "@preview/quick-maths:0.2.1": shorthands',
-    '#show: shorthands.with(',
-    '  ($+-$, sym.plus.minus),',
-    '  ($|-$, math.tack),',
-    ')',
-  ].join('\n'),
-
   /* 高度な設定 */
-  openTypstToolsOnStartup: true,
-  enableMathjaxFallback: false,
   applyProcessorToMathJax: false,
   importPath: 'typstmate',
-  enableDebugger: false,
+  linuxLibc: 'glibc',
+  watcherExtensions: ['typ'],
+  textViewExtensions: ['html', 'toml'],
 
   /* その他の設定 */
   processor: {
@@ -148,8 +130,9 @@ export const DEFAULT_SETTINGS: Settings = {
             '#ce[{CODE}]',
           ].join('\n'),
           styling: InlineStyling.Inline,
-          noPreamble: false,
+          useReplaceAll: false,
           fitToNoteWidth: false,
+          noPreamble: false,
           syntaxMode: SyntaxMode.Markup,
         },
         {
@@ -157,28 +140,30 @@ export const DEFAULT_SETTINGS: Settings = {
           renderingEngine: RenderingEngine.MathJax,
           format: '',
           styling: InlineStyling.Inline,
-          noPreamble: false,
+          useReplaceAll: false,
           fitToNoteWidth: false,
+          noPreamble: false,
+          syntaxMode: SyntaxMode.Opaque,
         },
         {
           id: 'display',
           renderingEngine: RenderingEngine.TypstSVG,
           format: '#set page(margin: (x: 0pt, y: 0.3125em))\n#math.equation($ {CODE} $, block: false)',
           styling: InlineStyling.Inline,
-          noPreamble: false,
-          fitToNoteWidth: false,
-          syntaxMode: SyntaxMode.Math,
           useReplaceAll: false,
+          fitToNoteWidth: false,
+          noPreamble: false,
+          syntaxMode: SyntaxMode.Math,
         },
         {
           id: '',
           renderingEngine: RenderingEngine.TypstSVG,
           format: '#set page(margin: (x: 0pt, y: 0.3125em))\n${CODE}$',
           styling: InlineStyling.Inline,
-          noPreamble: false,
-          fitToNoteWidth: false,
-          syntaxMode: SyntaxMode.Math,
           useReplaceAll: false,
+          fitToNoteWidth: false,
+          noPreamble: false,
+          syntaxMode: SyntaxMode.Math,
         },
       ],
     },
@@ -189,20 +174,20 @@ export const DEFAULT_SETTINGS: Settings = {
           renderingEngine: RenderingEngine.TypstSVG,
           format: '$ {CODE} $',
           styling: DisplayStyling.Block,
-          noPreamble: false,
-          fitToNoteWidth: false,
-          syntaxMode: SyntaxMode.Math,
           useReplaceAll: false,
+          fitToNoteWidth: false,
+          noPreamble: false,
+          syntaxMode: SyntaxMode.Math,
         },
         {
           id: '',
           renderingEngine: RenderingEngine.TypstSVG,
           format: '$ {CODE} $',
           styling: DisplayStyling.BlockCenter,
-          noPreamble: false,
-          fitToNoteWidth: false,
-          syntaxMode: SyntaxMode.Math,
           useReplaceAll: false,
+          fitToNoteWidth: false,
+          noPreamble: false,
+          syntaxMode: SyntaxMode.Math,
         },
       ],
     },
@@ -213,99 +198,75 @@ export const DEFAULT_SETTINGS: Settings = {
           renderingEngine: RenderingEngine.TypstSVG,
           format: '{CODE}',
           styling: CodeblockStyling.BlockCenter,
-          noPreamble: false,
-          fitToNoteWidth: true,
-          syntaxMode: SyntaxMode.Markup,
           useReplaceAll: false,
+          fitToNoteWidth: true,
+          noPreamble: false,
+          syntaxMode: SyntaxMode.Markup,
         },
         {
           id: 'fletcher',
           renderingEngine: RenderingEngine.TypstSVG,
           format: '#import "@preview/fletcher:0.5.8" as fletcher: diagram, node, edge\n{CODE}',
           styling: CodeblockStyling.BlockCenter,
-          noPreamble: false,
-          fitToNoteWidth: false,
-          syntaxMode: SyntaxMode.Markup,
           useReplaceAll: false,
+          fitToNoteWidth: false,
+          noPreamble: false,
+          syntaxMode: SyntaxMode.Markup,
         },
         {
           id: 'lovelace',
           renderingEngine: RenderingEngine.TypstSVG,
-          format: '#import "@preview/lovelace:0.3.0": *\n#pseudocode-list[\n{CODE}\n]',
+          format: '#import "@preview/lovelace:0.3.1": *\n#pseudocode-list[\n{CODE}\n]',
           styling: CodeblockStyling.Block,
-          noPreamble: false,
-          fitToNoteWidth: false,
-          syntaxMode: SyntaxMode.Markup,
           useReplaceAll: false,
+          fitToNoteWidth: false,
+          noPreamble: false,
+          syntaxMode: SyntaxMode.Markup,
         },
         {
           id: 'lilaq',
           renderingEngine: RenderingEngine.TypstSVG,
           format: '#import "@preview/lilaq:0.5.0" as lq\n{CODE}',
           styling: CodeblockStyling.BlockCenter,
-          noPreamble: false,
+          useReplaceAll: false,
           fitToNoteWidth: false,
-          syntaxMode: SyntaxMode.Markup,
-          useReplaceAll: false,
-        },
-      ],
-    },
-    excalidraw: {
-      processors: [
-        {
-          id: 'default',
-          renderingEngine: RenderingEngine.TypstSVG,
-          format: '#set page(margin: 0.25em)\n${CODE}$',
-          styling: ExcalidrawStyling.Default,
           noPreamble: false,
-          syntaxMode: SyntaxMode.Math,
-          useReplaceAll: false,
+          syntaxMode: SyntaxMode.Markup,
         },
       ],
     },
   },
-  snippets: [
-    {
-      category: 'Matrix',
-      name: 'mat',
-      description: 'e.g. mat(3,3)@',
-      kind: 'display',
-      id: '',
-      content:
-        'const parts = input.split(",").map(s => s.trim());\n\nconst [x, y] = parts.map(Number)\n\nconst rowText = `${("#CURSOR, ".repeat(x)).slice(0, -2)} ;\\n`;\nconst contentText = `  ${rowText}`.repeat(y);\n\nreturn `mat(\\n${contentText})`;',
-      script: true,
-    },
-    {
-      category: 'Matrix',
-      name: 'matInline',
-      description: 'e.g. mat(3,3)@',
-      kind: 'inline',
-      id: '',
-      content:
-        'const parts = input.split(",").map(s => s.trim());\n\nconst [x, y] = parts.map(Number)\n\nconst rowText = `${("#CURSOR, ".repeat(x)).slice(0, -2)} ;`;\nconst contentText = `${rowText}`.repeat(y);\n\nreturn `mat(${contentText})`;',
-      script: true,
-    },
-    {
-      category: 'Cases',
-      name: 'cases',
-      description: '',
-      kind: 'display',
-      id: '',
-      content: 'cases(#CURSOR "if" #CURSOR, #CURSOR "else")',
-      script: false,
-    },
-    {
-      category: 'Cases',
-      name: 'casesn',
-      description: 'e.g. casesn(3)@',
-      kind: 'display',
-      id: '',
-      content:
-        'const n = Number(input);\nreturn `cases(\\n${(`  #CURSOR "if" #CURSOR,\\n`).repeat(n-1)}  #CURSOR "else"\\n)`',
-      script: true,
-    },
-  ],
+
+  actions: DEFAULT_ACTIONS,
+  /**
+   * ! 直接参照せずに Facet を使うこと
+   */
+  extensionSettings: {
+    markdown: {},
+    typst: {},
+  },
 
   /* 内部設定 */
   crashCount: 0,
+  settingsStates: {
+    tab: 'processors',
+    preambleRenderingEngineTab: RenderingEngine.TypstSVG,
+    processorKindTab: 'inline',
+    compilerSubTab: 'packages',
+    extensionFilter: {
+      query: '',
+      tags: [],
+      scopes: ['markdown', 'typst'],
+    },
+    actionFilter: {
+      query: '',
+      triggers: [],
+      actions: [],
+    },
+  },
+
+  version: '3.0.0',
+
+  /* 古い設定 */
+  snippets: [],
 };

@@ -7,7 +7,7 @@ export function typstSyntaxHighlighting() {
   return ViewPlugin.fromClass(
     class {
       decorations: DecorationSet;
-      private lastRegionid: number | null = null;
+      private lastRegionFrom: number | null = null;
 
       constructor(view: EditorView) {
         this.decorations = this.buildDecorations(view);
@@ -15,17 +15,17 @@ export function typstSyntaxHighlighting() {
 
       update(update: ViewUpdate) {
         const region = getActiveRegion(update.view);
-        const regionChanged = region?.id !== this.lastRegionid;
+        const regionChanged = region?.from !== this.lastRegionFrom;
 
-        if (update.docChanged || update.viewportChanged || regionChanged) {
+        if (update.docChanged || regionChanged) {
           this.decorations = this.buildDecorations(update.view, region);
-          this.lastRegionid = region?.id ?? null;
+          this.lastRegionFrom = region?.from ?? null;
         }
       }
 
       buildDecorations(view: EditorView, region?: ParsedRegion | null): DecorationSet {
         const targetRegion = region ?? getActiveRegion(view);
-        if (!targetRegion || !targetRegion.tree) return Decoration.none;
+        if (!targetRegion?.tree) return Decoration.none;
 
         const tree = targetRegion.tree;
         const offset = targetRegion.from + targetRegion.skip;

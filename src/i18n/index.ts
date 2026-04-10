@@ -1,28 +1,22 @@
 import en from '@resources/locales/en.json';
-import i18next, { type TOptions } from 'i18next';
+import ja from '@resources/locales/ja.json';
 
-export type InterpolationValues = Record<string, string | number>;
+import { I18n } from '@typst-mate/i18n';
 
-/**
- * Recursively extracts dot-separated paths from a nested object type, producing a union of all leaf keys.
- * e.g., `"settings.compiler.font.heading"`
- */
-type NestedKeys<T, Prefix extends string = ''> =
-  T extends Record<string, unknown>
-    ? { [K in keyof T & string]: NestedKeys<T[K], `${Prefix}${K}.`> }[keyof T & string]
-    : Prefix extends `${infer R}.`
-      ? R
-      : Prefix;
+const resources = {
+  en: { translation: en },
+  ja: { translation: ja },
+} as const;
 
-export type TranslationKey = NestedKeys<typeof en>;
+type MyResources = typeof resources;
+type SupportedLngs = keyof MyResources & string;
 
-const supportedLocales = new Set(['en']);
-
-const i18n = i18next.createInstance();
-
-function detectLocale(): string {
+const i18n = I18n.createInstance<MyResources>();
+function detectLocale(): SupportedLngs {
   const locale = localStorage.getItem('language')?.toLowerCase();
-  if (locale && supportedLocales.has(locale)) return locale;
+  if (locale && locale in resources) return locale as SupportedLngs;
+
+  console.warn(`Unsupported locale detected: ${locale}, using 'en'`);
   return 'en';
 }
 
@@ -31,18 +25,14 @@ export async function initI18n(): Promise<void> {
     lng: detectLocale(),
     fallbackLng: 'en',
     defaultNS: 'translation',
-    resources: {
-      en: { translation: en },
-    },
-    showSupportNotice: false,
+    resources,
   });
 }
 
-/**
- * Returns a translated string for the given key.
- */
-export function t(key: TranslationKey, options?: TOptions<InterpolationValues>): string {
-  return i18n.t(key, options);
-}
+export type InterpolationValues = Record<string, string | number>;
+
+export type TranslationKey = Parameters<typeof i18n.t>[0];
+
+export const t = i18n.t;
 
 export { tFragment } from './fragment';

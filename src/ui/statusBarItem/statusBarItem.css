@@ -1,0 +1,7 @@
+.typstmate-status-bar-item {
+  cursor: pointer;
+}
+
+.typstmate-status-bar-item:hover {
+  background-color: var(--background-modifier-hover);
+}

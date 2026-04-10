@@ -1,0 +1,9 @@
+.typstmate-settingstab {
+  display: flex;
+  flex-direction: column;
+  gap: var(--size-4-2);
+}
+
+.vertical-tab-content:has(.typstmate-settingstab) {
+  scrollbar-gutter: stable;
+}

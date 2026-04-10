@@ -1,16 +1,14 @@
 import type { Extension } from '@codemirror/state';
 import { type EditorView, type PluginValue, ViewPlugin, type ViewUpdate } from '@codemirror/view';
-
 import { SyntaxKind, SyntaxMode } from '@typstmate/typst-syntax';
-import type { EditorHelper } from '@/editor';
 import { getActiveRegion } from '@/editor/shared/utils/core';
-import { helperFacet } from '../../shared/extensions/Helper';
+
+import { format } from '@/ui/elements/Typst';
 
 import './Debugger.css';
 
 class DebugPlugin implements PluginValue {
   dom: HTMLElement;
-  helper: EditorHelper;
   private lastText: string = '';
 
   constructor(readonly view: EditorView) {
@@ -19,19 +17,10 @@ class DebugPlugin implements PluginValue {
 
     view.dom.appendChild(this.dom);
 
-    this.helper = view.state.facet(helperFacet);
-    if (!this.helper.plugin.settings.enableDebugger) this.dom.hide();
     this.render();
   }
 
   update(update: ViewUpdate) {
-    const enabled = this.helper.plugin.settings.enableDebugger;
-    if (enabled) this.dom.show();
-    else {
-      this.dom.hide();
-      return;
-    }
-
     if (update.docChanged || update.selectionSet) window.requestAnimationFrame(() => this.render());
   }
 
@@ -48,15 +37,12 @@ class DebugPlugin implements PluginValue {
     const data: Array<{ title: string; description: string }> = [];
 
     if (region) {
-      const relativePos = cursor - region.from;
-      let typstPos: string = 'N/A';
+      const innerStart = region.from + region.skip;
+      const code = this.view.state.sliceDoc(innerStart, region.to);
+      const { offset } = format(code, region.kind, region.processor!);
 
-      if (region.processor) {
-        const { id, noPreamble, format } = region.processor;
-        const offset =
-          id.length + (noPreamble ? 0 : this.helper.plugin.settings.preamble.length + 1) + format.indexOf('{CODE}');
-        typstPos = (relativePos + offset).toString();
-      }
+      const localPos = cursor - innerStart;
+      const typstPos = localPos - offset;
 
       const { activeMode, activeKind } = region;
 
@@ -65,8 +51,8 @@ class DebugPlugin implements PluginValue {
         { title: 'Mode', description: activeMode !== null ? SyntaxMode[activeMode!] : 'Opaque' },
         { title: 'Kind', description: activeKind !== null ? SyntaxKind[activeKind!] : 'End' },
         { title: 'GlobalPos', description: cursor.toString() },
-        { title: 'LocalPos', description: `${relativePos} (+${region.skip})` },
-        { title: 'TypstPos', description: typstPos },
+        { title: 'LocalPos', description: `${localPos} (+${region.skip})` },
+        { title: 'TypstPos', description: typstPos.toString() },
         { title: 'Length', description: (region.to - region.from).toString() },
       );
     } else

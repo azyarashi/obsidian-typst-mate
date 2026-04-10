@@ -1,15 +1,18 @@
 use serde::Serialize;
+use tsify::Tsify;
 
 use typst::text::{FontInfo, FontStyle};
 
-#[derive(Serialize)]
+#[derive(Serialize, Tsify)]
+#[serde(rename_all = "camelCase")]
 pub struct FontVariantSer {
     pub style: String,
     pub weight: u16,
     pub stretch: u16,
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, Tsify)]
+#[serde(rename_all = "camelCase")]
 pub struct FontInfoSer {
     pub family: String,
     pub variant: FontVariantSer,

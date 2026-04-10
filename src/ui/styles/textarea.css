@@ -1,0 +1,5 @@
+.typstmate-textarea {
+  width: 100%;
+  resize: vertical;
+  field-sizing: content-box;
+}

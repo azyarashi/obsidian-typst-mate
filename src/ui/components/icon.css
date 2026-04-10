@@ -1,0 +1,36 @@
+div.typstmate-icon-s {
+  width: var(--icon-s);
+  height: var(--icon-s);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--icon-color);
+  opacity: var(--icon-opacity);
+  border-radius: var(--clickable-icon-radius);
+  transition: all 0.15s ease;
+}
+
+div.typstmate-icon-s:hover {
+  color: var(--icon-color-hover);
+  opacity: var(--icon-opacity-hover);
+  background-color: var(--background-modifier-hover);
+}
+
+div.typstmate-icon-s:active {
+  color: var(--icon-color-active);
+  opacity: var(--icon-opacity-active);
+}
+
+div.typstmate-icon-s.is-clickable {
+  cursor: pointer;
+}
+
+div.typstmate-icon-s.is-dimmed {
+  opacity: 0.3;
+}
+
+div.typstmate-icon-s svg {
+  width: 100%;
+  height: 100%;
+  stroke-width: var(--icon-stroke);
+}

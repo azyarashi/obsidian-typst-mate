@@ -1,0 +1,21 @@
+.typstmate-progress-bar-container {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 80px;
+  height: 100%;
+}
+
+.typstmate-progress-bar-bg {
+  background-color: var(--background-secondary-alt);
+  border-radius: var(--radius-m);
+  height: 4px;
+  width: 100%;
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+}
+
+.typstmate-progress-bar-fill {
+  height: 100%;
+  transition: width 0.3s ease-in-out;
+}

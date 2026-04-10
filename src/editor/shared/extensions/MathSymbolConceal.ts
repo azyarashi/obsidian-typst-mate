@@ -1,11 +1,15 @@
-import { RangeSet, StateEffect } from '@codemirror/state';
+import { type Facet, RangeSet, StateEffect } from '@codemirror/state';
 import { Decoration, type DecorationSet, EditorView, ViewPlugin, type ViewUpdate, WidgetType } from '@codemirror/view';
-
 import { LinkedNode, SyntaxKind } from '@typstmate/typst-syntax';
 import symbolData from '@/data/symbols.json';
 import { RenderingEngine } from '@/libs/processor';
 import { getActiveRegion } from '../utils/core';
-import { helperFacet } from './Helper';
+
+export interface MathSymbolConcealSettings {
+  enabled: boolean;
+  revealDelay: number;
+  complementWithUnicode: boolean;
+}
 
 export const SYMBOL_MAP = new Map<string, string>();
 for (const [key, val] of Object.entries(symbolData as Record<string, { sym?: string }>)) {
@@ -42,14 +46,17 @@ function getSymbolWidget(text: string): SymbolWidget {
 
 const forceRevealEffect = StateEffect.define<void>();
 
-class MathSymbolConcealPlugin {
+export class MathSymbolConcealPlugin {
   decorations: DecorationSet = Decoration.none;
 
   forceRevealPos: number = -1;
   hoveredSymbolPos: number = -1;
   revealTimer: number | undefined;
 
-  constructor(public view: EditorView) {
+  constructor(
+    public view: EditorView,
+    private settingsFacet: Facet<MathSymbolConcealSettings, MathSymbolConcealSettings>,
+  ) {
     this.updateDecorations(view, false, false);
   }
 
@@ -78,17 +85,16 @@ class MathSymbolConcealPlugin {
 
   private updateDecorations(view: EditorView, isDocChange: boolean, isCursorMove: boolean) {
     const region = getActiveRegion(view);
-    const helper = view.state.facet(helperFacet);
-    const conceal = helper.plugin.settings.concealMathSymbols;
+    const settings = view.state.facet(this.settingsFacet);
 
-    if (!region || !region.tree || !conceal) {
+    if (!region?.tree || !settings?.enabled) {
       this.decorations = Decoration.none;
       this.clearTimer();
       this.hoveredSymbolPos = -1;
       this.forceRevealPos = -1;
       return;
     }
-    if (region.processor && region.processor.renderingEngine === RenderingEngine.MathJax) {
+    if (region.processor?.renderingEngine === RenderingEngine.MathJax) {
       this.decorations = Decoration.none;
       this.clearTimer();
       this.hoveredSymbolPos = -1;
@@ -130,14 +136,11 @@ class MathSymbolConcealPlugin {
             }
 
             if (this.forceRevealPos === absStart) {
-              // タイマーによってRevealが指示されている場合
               isConcealed = false;
             } else if (wasConcealed) {
-              // 前回Concealされており、今回カーソルが乗った場合
               isConcealed = true;
               newHoveredPos = absStart;
             } else {
-              // 文字入力などによって新たにSymbolが完成した場合
               isConcealed = false;
               newHoveredPos = absStart;
               isNewlyTyped = true;
@@ -158,16 +161,14 @@ class MathSymbolConcealPlugin {
 
     this.decorations = Decoration.set(marks, true);
 
-    const delay = Number(helper.plugin.settings.mathSymbolRevealDelay) || 1000;
+    const delay = Number(settings.revealDelay) || 1000;
 
     if (newHoveredPos !== -1) {
       if (isNewlyTyped) {
-        // 入力時は Reveal
         this.forceRevealPos = newHoveredPos;
         this.clearTimer();
       } else {
         const changedHover = this.hoveredSymbolPos !== newHoveredPos;
-        // ホバー対象の変更, カーソルの移動
         if (changedHover || isCursorMove || isDocChange) {
           this.clearTimer();
           this.hoveredSymbolPos = newHoveredPos;
@@ -179,7 +180,6 @@ class MathSymbolConcealPlugin {
         }
       }
     } else {
-      // シンボル外にカーソルが移動
       this.clearTimer();
       this.hoveredSymbolPos = -1;
       this.forceRevealPos = -1;
@@ -187,13 +187,24 @@ class MathSymbolConcealPlugin {
   }
 }
 
-export const mathSymbolConcealPlugin = ViewPlugin.fromClass(MathSymbolConcealPlugin, {
-  decorations: (v) => v.decorations,
-});
+export function createMathSymbolConcealExtension(
+  settingsFacet: Facet<MathSymbolConcealSettings, MathSymbolConcealSettings>,
+) {
+  const plugin = ViewPlugin.fromClass(
+    class extends MathSymbolConcealPlugin {
+      constructor(view: EditorView) {
+        super(view, settingsFacet);
+      }
+    },
+    {
+      decorations: (v) => v.decorations,
+    },
+  );
 
-export const mathSymbolConcealExtension = [
-  mathSymbolConcealPlugin,
-  EditorView.atomicRanges.of((view) => {
-    return view.plugin(mathSymbolConcealPlugin)?.decorations ?? RangeSet.empty;
-  }),
-];
+  return [
+    plugin,
+    EditorView.atomicRanges.of((view) => {
+      return view.plugin(plugin)?.decorations ?? RangeSet.empty;
+    }),
+  ];
+}

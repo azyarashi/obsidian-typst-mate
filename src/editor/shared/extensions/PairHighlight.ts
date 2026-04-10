@@ -1,8 +1,8 @@
 import { Decoration, type DecorationSet, type EditorView, ViewPlugin, type ViewUpdate } from '@codemirror/view';
 
 import { LinkedNode, Side, SyntaxKind } from '@typstmate/typst-syntax';
+import { EditorContextFacet, settingsManager } from '@/libs';
 import { getActiveRegion } from '../utils/core';
-import { helperFacet } from './Helper';
 
 const decoCache = new Map<string, Decoration>();
 function getMarkDeco(cls: string): Decoration {
@@ -49,11 +49,14 @@ export const pairHighlightExtension = ViewPlugin.fromClass(
     }
 
     buildDecorations(view: EditorView): DecorationSet {
-      const helper = view.state.facet(helperFacet);
-      if (helper.plugin.settings.disableBracketHighlight) return Decoration.none;
+      const context = view.state.facet(EditorContextFacet);
+      const setting = settingsManager.settings.extensionSettings[context]['pair-highlight'];
+
+      const enabled = setting?.enabled ?? true;
+      if (!enabled) return Decoration.none;
 
       const region = getActiveRegion(view);
-      if (!region || !region.tree) return Decoration.none;
+      if (!region?.tree) return Decoration.none;
 
       const cursor = view.state.selection.main.head;
       const offset = region.from + region.skip;
@@ -100,28 +103,14 @@ export const pairHighlightExtension = ViewPlugin.fromClass(
         return null;
       };
 
-      if (
-        leafAfter &&
-        (OPEN_KINDS.has(leafAfter.kind()) ||
-          CLOSE_KINDS.has(leafAfter.kind()) ||
-          SYMMETRIC_DELIMS.has(leafAfter.kind()) ||
-          leafAfter.kind() === SyntaxKind.BlockComment)
-      ) {
-        enclosing = findEnclosingBrackets(leafAfter);
-      } else if (
-        leafBefore &&
-        (OPEN_KINDS.has(leafBefore.kind()) ||
-          CLOSE_KINDS.has(leafBefore.kind()) ||
-          SYMMETRIC_DELIMS.has(leafBefore.kind()) ||
-          leafBefore.kind() === SyntaxKind.BlockComment)
-      )
-        enclosing = findEnclosingBrackets(leafBefore);
-      else enclosing = findEnclosingBrackets(leafAfter || leafBefore);
+      enclosing = findEnclosingBrackets(leafAfter || leafBefore);
 
       if (!enclosing) return Decoration.none;
 
       const openLen = enclosing.openLen || 1;
       const closeLen = enclosing.closeLen || 1;
+
+      if (relCursor < enclosing.open + openLen || relCursor > enclosing.close) return Decoration.none;
 
       const openDeco = getMarkDeco('typstmate-bracket-pair typstmate-bracket-pair-open');
       const closeDeco = getMarkDeco('typstmate-bracket-pair typstmate-bracket-pair-close');

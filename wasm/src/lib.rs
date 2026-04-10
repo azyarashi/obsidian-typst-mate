@@ -1,20 +1,22 @@
 use js_sys::{ArrayBuffer, Uint8Array};
 use rustc_hash::FxHashMap;
 use serde_wasm_bindgen::to_value;
+use std::path::Path;
 use tylax::{
     latex_document_to_typst, latex_to_typst,
     tikz::{convert_cetz_to_tikz, convert_tikz_to_cetz},
     typst_document_to_latex, typst_to_latex,
 };
+use typstyle_core::{Config as TypstyleConfig, Typstyle};
 use wasm_bindgen::prelude::*;
 
 use typst::{
     World,
     diag::Warned,
-    foundations::Bytes,
+    foundations::{Bytes, Module, Version},
     layout::{Abs, PageRanges, PagedDocument, Point},
     syntax::{
-        FileId, VirtualPath,
+        FileId, Side, VirtualPath,
         package::{PackageSpec, PackageVersion},
     },
     text::FontInfo,
@@ -25,15 +27,16 @@ mod utils;
 mod vfs;
 mod world;
 
-use crate::serde::{diagnostic, font, jump, options, package, pdfr, pngr, svg, svgp, svgr};
+use crate::serde::{
+    completion, definition, diagnostic, font, html, jump, options, package, pdfr, pngr, svg, svgp,
+    svgr, tooltip, values::VersionSer,
+};
 use crate::world::WasmWorld;
 
 #[wasm_bindgen]
-pub struct Typst {
+pub struct Wasm {
     world: WasmWorld,
     offset: f64,
-
-    basepath: String,
 
     last_kind: String,
     last_id: String,
@@ -41,17 +44,28 @@ pub struct Typst {
 }
 
 #[wasm_bindgen]
-impl Typst {
+impl Wasm {
     #[wasm_bindgen(constructor)]
-    pub fn new(basepath: String, fetch: js_sys::Function, fontsize: f64, offset: f64) -> Self {
+    pub fn new(
+        read_file: js_sys::Function,
+        read_package_file: js_sys::Function,
+        download_package: js_sys::Function,
+        fontsize: f64,
+        offset: f64,
+        call_obsidian: js_sys::Function,
+    ) -> Self {
         #[cfg(debug_assertions)]
         console_error_panic_hook::set_once();
 
         Self {
-            world: WasmWorld::new(fetch, fontsize),
+            world: WasmWorld::new(
+                read_file,
+                read_package_file,
+                download_package,
+                fontsize,
+                call_obsidian,
+            ),
             offset,
-
-            basepath,
 
             last_kind: String::new(),
             last_id: String::new(),
@@ -61,6 +75,47 @@ impl Typst {
 
     pub fn set_offset(&mut self, offset: f64) {
         self.offset = offset;
+    }
+
+    pub fn get_pdf_standards(&self) -> JsValue {
+        use typst_pdf::PdfStandard::*;
+        let mut map = std::collections::BTreeMap::new();
+        map.insert("".to_string(), "Default (PDF 1.7)".to_string());
+
+        let all = [
+            (V_1_4, "PDF 1.4"),
+            (V_1_5, "PDF 1.5"),
+            (V_1_6, "PDF 1.6"),
+            (V_1_7, "PDF 1.7"),
+            (V_2_0, "PDF 2.0"),
+            (A_1b, "PDF/A-1b"),
+            (A_1a, "PDF/A-1a"),
+            (A_2b, "PDF/A-2b"),
+            (A_2u, "PDF/A-2u"),
+            (A_2a, "PDF/A-2a"),
+            (A_3b, "PDF/A-3b"),
+            (A_3u, "PDF/A-3u"),
+            (A_3a, "PDF/A-3a"),
+            (A_4, "PDF/A-4"),
+            (A_4f, "PDF/A-4f"),
+            (A_4e, "PDF/A-4e"),
+            (Ua_1, "PDF/UA-1"),
+        ];
+
+        for (variant, desc) in all {
+            if let Ok(key) = serde_json::to_value(variant) {
+                if let Some(s) = key.as_str() {
+                    map.insert(s.to_string(), desc.to_string());
+                }
+            }
+        }
+
+        let serializer = serde_wasm_bindgen::Serializer::new().serialize_maps_as_objects(true);
+        <std::collections::BTreeMap<String, String> as ::serde::Serialize>::serialize(
+            &map,
+            &serializer,
+        )
+        .unwrap_or(JsValue::NULL)
     }
 
     pub fn store(
@@ -117,44 +172,63 @@ impl Typst {
         }
 
         for (path, text) in files {
-            self.world.add_file_text(
-                VirtualPath::new(format!("{}/{}", self.basepath, path)),
-                text,
-            );
+            self.world.add_file_text(VirtualPath::new(path), text);
         }
 
         Ok(())
     }
 
-    pub fn list_packages(&self) -> JsValue {
+    pub fn list_packages(&self) -> JsPackageSpecArray {
         let packages = self.world.list_packages();
         let packages_ser: Vec<package::PackageSpecSer> = packages.iter().map(Into::into).collect();
 
-        to_value(&packages_ser).unwrap_or(JsValue::NULL)
+        to_value(&packages_ser)
+            .unwrap_or(JsValue::NULL)
+            .unchecked_into()
     }
 
-    pub fn list_fonts(&self) -> JsValue {
+    pub fn list_fonts(&self) -> JsFontInfoArray {
         let families = self.world.book().families();
         let infos_ser: Vec<font::FontInfoSer> = families
             .flat_map(|(_, infos)| infos.map(Into::into))
             .collect();
 
-        to_value(&infos_ser).unwrap_or(JsValue::NULL)
+        to_value(&infos_ser)
+            .unwrap_or(JsValue::NULL)
+            .unchecked_into()
     }
 
-    pub fn get_font_info(&self, buffer: JsValue) -> JsValue {
+    pub fn get_font_info(&self, buffer: JsValue) -> JsFontInfoArray {
         let vec = Uint8Array::new(&buffer).to_vec();
         let bytes = Bytes::new(vec);
 
         let infos: Vec<font::FontInfoSer> =
             FontInfo::iter(&bytes).map(|info| (&info).into()).collect();
 
-        to_value(&infos).unwrap_or(JsValue::NULL)
+        to_value(&infos).unwrap_or(JsValue::NULL).unchecked_into()
+    }
+
+    pub fn get_typst_version(&self) -> Option<JsVersionSer> {
+        let std_scope = self.world.library().std.read().scope()?;
+        let sys_binding = std_scope.get("sys")?;
+        let sys_module = sys_binding.read().clone().cast::<Module>().ok()?;
+        let version_binding = sys_module.scope().get("version")?;
+        let version = version_binding.read().clone().cast::<Version>().ok()?;
+
+        Some(
+            to_value(&VersionSer::from(&version))
+                .unwrap()
+                .unchecked_into(),
+        )
     }
 }
 
 #[wasm_bindgen]
-impl Typst {
+impl Wasm {
+    pub fn take_pending(&mut self) -> bool {
+        self.world.take_pending()
+    }
+
     fn update_source(&mut self, vpath: VirtualPath, code: &str) {
         let file_id = FileId::new(None, vpath.clone());
         let result = self.world.source(file_id);
@@ -171,24 +245,21 @@ impl Typst {
         }
     }
 
-    // Markdown 用
+    /// Markdown 用
     pub fn svg(
         &mut self,
         code: &str,
-        ndir: &str, // ndir starts and ends with "/"
+        path: &str,
         kind: &str,
         id: &str,
-    ) -> Result<JsValue, JsValue> {
+    ) -> Result<JsSvgResult, JsValue> {
         if self.last_kind == kind && self.last_id == id {
             self.world.replace(code);
         } else {
             self.last_kind = kind.to_string();
             self.last_id = id.to_string();
 
-            self.update_source(
-                VirtualPath::new(format!("{}{}{}_{}.typ", self.basepath, ndir, kind, id)),
-                code,
-            );
+            self.update_source(VirtualPath::new(path), code);
         }
         let Warned { output, warnings } = typst::compile::<PagedDocument>(&mut self.world);
 
@@ -226,8 +297,50 @@ impl Typst {
 
                 self.last_document = Some(document);
 
-                svg::svg(svg, warnings, &self.world)
+                Ok(svg::svg(svg, warnings, &self.world)?.unchecked_into())
             }
+            Err(errs) => {
+                let diags: Vec<diagnostic::SourceDiagnosticSer> = errs
+                    .iter()
+                    .map(|d| diagnostic::SourceDiagnosticSer::from_diag(d, &self.world))
+                    .collect();
+                Err(to_value(&diags).unwrap_or(JsValue::NULL))
+            }
+        }
+    }
+
+    pub fn html(
+        &mut self,
+        code: &str,
+        path: &str,
+        kind: &str,
+        id: &str,
+    ) -> Result<JsHtmlResult, JsValue> {
+        if self.last_kind == kind && self.last_id == id {
+            self.world.replace(code);
+        } else {
+            self.last_kind = kind.to_string();
+            self.last_id = id.to_string();
+
+            self.update_source(VirtualPath::new(path), code);
+        }
+        let Warned { output, warnings } =
+            typst::compile::<typst_html::HtmlDocument>(&mut self.world);
+
+        match output {
+            Ok(document) => match typst_html::html(&document) {
+                Ok(html_str) => {
+                    let body = extract_body(&html_str).unwrap_or(&html_str);
+                    Ok(html::html(body.to_string(), warnings, &self.world)?.unchecked_into())
+                }
+                Err(errs) => {
+                    let diags: Vec<diagnostic::SourceDiagnosticSer> = errs
+                        .iter()
+                        .map(|d| diagnostic::SourceDiagnosticSer::from_diag(d, &self.world))
+                        .collect();
+                    Err(to_value(&diags).unwrap_or(JsValue::NULL))
+                }
+            },
             Err(errs) => {
                 let diags: Vec<diagnostic::SourceDiagnosticSer> = errs
                     .iter()
@@ -239,11 +352,9 @@ impl Typst {
     }
 
     // プレビュー用
-    pub fn svgp(&mut self, ndir: &str, filename: &str, code: &str) -> Result<JsValue, JsValue> {
-        self.update_source(
-            VirtualPath::new(format!("{}{}{}", self.basepath, ndir, filename)),
-            code,
-        );
+    /// `path` = JS 側で組み立てた完全パス (baseDirPath + ndir + filename)
+    pub fn svgp(&mut self, path: &str, code: &str) -> Result<JsSvgpResult, JsValue> {
+        self.update_source(VirtualPath::new(path), code);
         self.world.update_now();
         let Warned { output, warnings } = typst::compile::<PagedDocument>(&mut self.world);
 
@@ -255,7 +366,7 @@ impl Typst {
                     svgs.push(svg);
                 }
                 self.last_document = Some(document);
-                svgp::svgp(svgs, warnings, &self.world)
+                Ok(svgp::svgp(svgs, warnings, &self.world)?.unchecked_into())
             }
             Err(errs) => {
                 let diags: Vec<diagnostic::SourceDiagnosticSer> = errs
@@ -266,50 +377,137 @@ impl Typst {
             }
         }
     }
+
+    pub fn autocomplete(&mut self, cursor: usize, code: &str) -> Option<JsCompletionResult> {
+        self.world.replace(code);
+        let result = self.world.source(self.world.main());
+        let Ok(source) = result else {
+            return None;
+        };
+
+        let cursor_byte = source.lines().utf16_to_byte(cursor).unwrap_or(cursor);
+
+        let document_ref = self.last_document.as_ref();
+        let Some((from_byte, completions)) =
+            typst_ide::autocomplete(&self.world, document_ref, &source, cursor_byte, false)
+        else {
+            return None;
+        };
+
+        let from_utf16 = source.lines().byte_to_utf16(from_byte).unwrap_or(from_byte);
+
+        let completions_ser: Vec<completion::CompletionSer> = completions
+            .into_iter()
+            .filter(|c| c.kind != typst_ide::CompletionKind::Syntax)
+            .map(completion::CompletionSer::from_completion)
+            .collect();
+        let result_ser = completion::CompletionResultSer {
+            from: from_utf16,
+            completions: completions_ser,
+        };
+
+        Some(
+            to_value(&result_ser)
+                .unwrap_or(JsValue::NULL)
+                .unchecked_into(),
+        )
+    }
+
+    pub fn tooltip(
+        &mut self,
+        cursor: usize,
+        code: &str,
+        side_after: bool,
+    ) -> Option<JsTooltipResult> {
+        self.world.replace(code);
+        let Ok(source) = self.world.source(self.world.main()) else {
+            return None;
+        };
+        let cursor_byte = source.lines().utf16_to_byte(cursor).unwrap_or(cursor);
+        let document_ref = self.last_document.as_ref();
+
+        let side = if side_after {
+            Side::After
+        } else {
+            Side::Before
+        };
+        let tooltip = typst_ide::tooltip(&self.world, document_ref, &source, cursor_byte, side);
+        tooltip.map(|t| {
+            to_value(&tooltip::TooltipSer::from(t))
+                .unwrap_or(JsValue::NULL)
+                .unchecked_into()
+        })
+    }
+
+    pub fn definition(
+        &mut self,
+        cursor: usize,
+        code: &str,
+        side_after: bool,
+    ) -> Option<JsDefinitionResult> {
+        self.world.replace(code);
+        let Ok(source) = self.world.source(self.world.main()) else {
+            return None;
+        };
+        let cursor_byte = source.lines().utf16_to_byte(cursor).unwrap_or(cursor);
+        let document_ref = self.last_document.as_ref();
+        let side = if side_after {
+            Side::After
+        } else {
+            Side::Before
+        };
+
+        let definition =
+            typst_ide::definition(&self.world, document_ref, &source, cursor_byte, side);
+        definition.map(|d| {
+            let definition_ser = definition::DefinitionSer::from_definition(d, &self.world);
+            to_value(&definition_ser)
+                .unwrap_or(JsValue::NULL)
+                .unchecked_into()
+        })
+    }
 }
 
 #[wasm_bindgen]
-impl Typst {
-    pub fn jump_from_click(&self, x: f64, y: f64) -> JsValue {
+impl Wasm {
+    pub fn jump_from_click(&self, x: f64, y: f64) -> Option<JsJump> {
         match &self.last_document {
             Some(document) => {
                 let frame = &document.pages[0].frame;
                 let point = Point::new(Abs::pt(x), Abs::pt(y));
                 let point = typst_ide::jump_from_click(&self.world, document, frame, point);
-                match point {
-                    Some(point) => {
-                        let jump_ser = jump::JumpSer::from_jump(&point, &self.world);
-                        to_value(&jump_ser).unwrap_or(JsValue::NULL)
-                    }
-                    None => JsValue::NULL,
-                }
+                point.map(|point| {
+                    let jump_ser = jump::JumpSer::from_jump(&point, &self.world);
+                    to_value(&jump_ser)
+                        .unwrap_or(JsValue::NULL)
+                        .unchecked_into()
+                })
             }
-            None => JsValue::NULL,
+            None => None,
         }
     }
 
-    pub fn jump_from_click_p(&self, page: usize, x: f64, y: f64) -> JsValue {
+    pub fn jump_from_click_p(&self, page: usize, x: f64, y: f64) -> Option<JsJump> {
         match &self.last_document {
             Some(document) => {
                 if document.pages.len() <= page {
-                    return JsValue::NULL;
+                    return None;
                 }
                 let frame = &document.pages[page].frame;
                 let point = Point::new(Abs::pt(x), Abs::pt(y));
                 let point = typst_ide::jump_from_click(&self.world, document, frame, point);
-                match point {
-                    Some(point) => {
-                        let jump_ser = jump::JumpSer::from_jump(&point, &self.world);
-                        to_value(&jump_ser).unwrap_or(JsValue::NULL)
-                    }
-                    None => JsValue::NULL,
-                }
+                point.map(|point| {
+                    let jump_ser = jump::JumpSer::from_jump(&point, &self.world);
+                    to_value(&jump_ser)
+                        .unwrap_or(JsValue::NULL)
+                        .unchecked_into()
+                })
             }
-            None => JsValue::NULL,
+            None => None,
         }
     }
 
-    pub fn jump_from_cursor_p(&self, cursor: usize) -> JsValue {
+    pub fn jump_from_cursor_p(&self, cursor: usize) -> JsJumpArray {
         match &self.last_document {
             Some(document) => {
                 let result = self.world.source(self.world.main());
@@ -320,32 +518,35 @@ impl Typst {
                         .into_iter()
                         .map(jump::JumpSer::from_position)
                         .collect();
-                    return to_value(&positions_ser).unwrap_or(JsValue::NULL);
+                    return to_value(&positions_ser)
+                        .unwrap_or(JsValue::NULL)
+                        .unchecked_into();
                 }
-                JsValue::NULL
+                JsValue::NULL.unchecked_into()
             }
-            None => JsValue::NULL,
+            None => JsValue::NULL.unchecked_into(),
         }
     }
 }
 
 #[wasm_bindgen]
-impl Typst {
+impl Wasm {
     pub fn pdfr(
         &mut self,
-        ndir: &str,
-        filename: &str,
+        path: &str,
         code: &str,
-        options: JsValue,
-    ) -> Result<JsValue, JsValue> {
-        let options_ser: options::PdfOptionsSer = serde_wasm_bindgen::from_value(options)
+        options: JsPdfOptions,
+    ) -> Result<JsPdfrResult, JsValue> {
+        let filename: String = Path::new(path)
+            .file_name()
+            .and_then(|s| s.to_str())
+            .unwrap_or("document")
+            .to_string();
+        let options_ser: options::PdfOptionsSer = serde_wasm_bindgen::from_value(options.into())
             .map_err(|e| JsValue::from_str(&format!("failed to deserialize options: {}", e)))?;
 
         self.world.update_now();
-        self.update_source(
-            VirtualPath::new(format!("{}{}{}", self.basepath, ndir, filename)),
-            code,
-        );
+        self.update_source(VirtualPath::new(path), code);
         let Warned { output, warnings } = typst::compile::<PagedDocument>(&mut self.world);
 
         match output {
@@ -396,7 +597,9 @@ impl Typst {
                 }
 
                 match typst_pdf::pdf(&document, &options) {
-                    Ok(pdf_data) => pdfr::pdfr(pdf_data, warnings, &self.world),
+                    Ok(pdf_data) => {
+                        Ok(pdfr::pdfr(pdf_data, warnings, &self.world)?.unchecked_into())
+                    }
                     Err(errs) => {
                         let diags: Vec<diagnostic::SourceDiagnosticSer> = errs
                             .iter()
@@ -418,19 +621,15 @@ impl Typst {
 
     pub fn svgr(
         &mut self,
-        ndir: &str,
-        filename: &str,
+        path: &str,
         code: &str,
-        options: JsValue,
-    ) -> Result<JsValue, JsValue> {
-        let options_ser: options::SvgOptionsSer = serde_wasm_bindgen::from_value(options)
+        options: JsSvgOptions,
+    ) -> Result<JsSvgrResult, JsValue> {
+        let options_ser: options::SvgOptionsSer = serde_wasm_bindgen::from_value(options.into())
             .map_err(|e| JsValue::from_str(&format!("failed to deserialize options: {}", e)))?;
 
         self.world.update_now();
-        self.update_source(
-            VirtualPath::new(format!("{}{}{}", self.basepath, ndir, filename)),
-            code,
-        );
+        self.update_source(VirtualPath::new(path), code);
         let Warned { output, warnings } = typst::compile::<PagedDocument>(&mut self.world);
 
         match output {
@@ -449,7 +648,7 @@ impl Typst {
                     let svg = typst_svg::svg(page);
                     svgs.push(svg);
                 }
-                svgr::svgr(svgs, warnings, &self.world)
+                Ok(svgr::svgr(svgs, warnings, &self.world)?.unchecked_into())
             }
             Err(errs) => {
                 let diags: Vec<diagnostic::SourceDiagnosticSer> = errs
@@ -463,19 +662,15 @@ impl Typst {
 
     pub fn pngr(
         &mut self,
-        ndir: &str,
-        filename: &str,
+        path: &str,
         code: &str,
-        options: JsValue,
-    ) -> Result<JsValue, JsValue> {
-        let options_ser: options::PngOptionsSer = serde_wasm_bindgen::from_value(options)
+        options: JsPngOptions,
+    ) -> Result<JsPngrResult, JsValue> {
+        let options_ser: options::PngOptionsSer = serde_wasm_bindgen::from_value(options.into())
             .map_err(|e| JsValue::from_str(&format!("failed to deserialize options: {}", e)))?;
 
         self.world.update_now();
-        self.update_source(
-            VirtualPath::new(format!("{}{}{}", self.basepath, ndir, filename)),
-            code,
-        );
+        self.update_source(VirtualPath::new(path), code);
         let Warned { output, warnings } = typst::compile::<PagedDocument>(&mut self.world);
 
         match output {
@@ -498,7 +693,7 @@ impl Typst {
                         .map_err(|e| JsValue::from_str(&e.to_string()))?;
                     images.push(png);
                 }
-                pngr::pngr(images, warnings, &self.world)
+                Ok(pngr::pngr(images, warnings, &self.world)?.unchecked_into())
             }
             Err(errs) => {
                 let diags: Vec<diagnostic::SourceDiagnosticSer> = errs
@@ -509,10 +704,102 @@ impl Typst {
             }
         }
     }
+
+    pub fn htmlr(
+        &mut self,
+        path: &str,
+        code: &str,
+        options: JsHtmlOptions,
+    ) -> Result<JsHtmlResult, JsValue> {
+        let options_ser: options::HtmlOptionsSer =
+            serde_wasm_bindgen::from_value(options.into())
+                .map_err(|e| JsValue::from_str(&format!("failed to deserialize options: {}", e)))?;
+
+        self.world.update_now();
+        self.update_source(VirtualPath::new(path), code);
+        let Warned { output, warnings } =
+            typst::compile::<typst_html::HtmlDocument>(&mut self.world);
+
+        match output {
+            Ok(document) => match typst_html::html(&document) {
+                Ok(html_str) => {
+                    let html = if options_ser.extract_body.unwrap_or(true) {
+                        extract_body(&html_str)
+                            .unwrap_or(&html_str)
+                            .trim()
+                            .to_string()
+                    } else {
+                        html_str
+                    };
+                    Ok(html::html(html, warnings, &self.world)?.unchecked_into())
+                }
+                Err(errs) => {
+                    let diags: Vec<diagnostic::SourceDiagnosticSer> = errs
+                        .iter()
+                        .map(|d| diagnostic::SourceDiagnosticSer::from_diag(d, &self.world))
+                        .collect();
+                    Err(to_value(&diags).unwrap_or(JsValue::NULL))
+                }
+            },
+            Err(errs) => {
+                let diags: Vec<diagnostic::SourceDiagnosticSer> = errs
+                    .iter()
+                    .map(|d| diagnostic::SourceDiagnosticSer::from_diag(d, &self.world))
+                    .collect();
+                Err(to_value(&diags).unwrap_or(JsValue::NULL))
+            }
+        }
+    }
+
+    pub fn format(&self, code: &str, options: JsFormatOptions) -> Result<JsFormatResult, JsValue> {
+        let options_ser: options::FormatOptionsSer = serde_wasm_bindgen::from_value(options.into())
+            .map_err(|e| JsValue::from_str(&format!("failed to deserialize options: {}", e)))?;
+
+        let config = TypstyleConfig {
+            tab_spaces: options_ser.tab_spaces,
+            max_width: options_ser.max_width,
+            blank_lines_upper_bound: options_ser.blank_lines_upper_bound,
+            collapse_markup_spaces: options_ser.collapse_markup_spaces,
+            reorder_import_items: options_ser.reorder_import_items,
+            wrap_text: options_ser.wrap_text,
+        };
+
+        let typstyle = Typstyle::new(config);
+        let source = typst::syntax::Source::detached(code);
+
+        let range = if let Some([start, end]) = options_ser.range {
+            let lines = source.lines();
+            let start_byte = lines.utf16_to_byte(start).unwrap_or(start);
+            let end_byte = lines.utf16_to_byte(end).unwrap_or(end);
+            start_byte..end_byte
+        } else {
+            0..code.len()
+        };
+
+        let result = typstyle
+            .format_source_range(source.clone(), range)
+            .map_err(|e| JsValue::from_str(&format!("failed to format: {}", e)))?;
+
+        let lines = source.lines();
+        let res_ser = options::FormatResultSer {
+            content: result.content,
+            range: [
+                lines
+                    .byte_to_utf16(result.source_range.start)
+                    .unwrap_or(result.source_range.start),
+                lines
+                    .byte_to_utf16(result.source_range.end)
+                    .unwrap_or(result.source_range.end),
+            ],
+        };
+
+        Ok(to_value(&res_ser).unwrap_or(JsValue::NULL).into())
+    }
 }
 
+/// TyLax
 #[wasm_bindgen]
-impl Typst {
+impl Wasm {
     pub fn latex_to_typst(&self, code: &str) -> String {
         latex_document_to_typst(code)
     }
@@ -533,4 +820,57 @@ impl Typst {
     pub fn cetz_to_tikz(&self, code: &str) -> String {
         convert_cetz_to_tikz(code)
     }
+}
+
+fn extract_body(html: &str) -> Option<&str> {
+    let (_, rest) = html.split_once("<body")?;
+    let (_, rest) = rest.split_once('>')?;
+    let (body, _) = rest.split_once("</body>")?;
+    Some(body.trim())
+}
+
+#[wasm_bindgen]
+extern "C" {
+    #[wasm_bindgen(typescript_type = "VersionSer")]
+    pub type JsVersionSer;
+    #[wasm_bindgen(typescript_type = "CompletionResultSer")]
+    pub type JsCompletionResult;
+    #[wasm_bindgen(typescript_type = "TooltipSer")]
+    pub type JsTooltipResult;
+    #[wasm_bindgen(typescript_type = "DefinitionSer")]
+    pub type JsDefinitionResult;
+    #[wasm_bindgen(typescript_type = "FontInfoSer[]")]
+    pub type JsFontInfoArray;
+    #[wasm_bindgen(typescript_type = "PackageSpecSer[]")]
+    pub type JsPackageSpecArray;
+    #[wasm_bindgen(typescript_type = "JumpSer")]
+    pub type JsJump;
+    #[wasm_bindgen(typescript_type = "JumpSer[]")]
+    pub type JsJumpArray;
+
+    #[wasm_bindgen(typescript_type = "PdfOptionsSer")]
+    pub type JsPdfOptions;
+    #[wasm_bindgen(typescript_type = "SvgOptionsSer")]
+    pub type JsSvgOptions;
+    #[wasm_bindgen(typescript_type = "PngOptionsSer")]
+    pub type JsPngOptions;
+    #[wasm_bindgen(typescript_type = "HtmlOptionsSer")]
+    pub type JsHtmlOptions;
+    #[wasm_bindgen(typescript_type = "FormatOptionsSer")]
+    pub type JsFormatOptions;
+    #[wasm_bindgen(typescript_type = "FormatResultSer")]
+    pub type JsFormatResult;
+
+    #[wasm_bindgen(typescript_type = "PdfrResultSer")]
+    pub type JsPdfrResult;
+    #[wasm_bindgen(typescript_type = "SvgrResultSer")]
+    pub type JsSvgrResult;
+    #[wasm_bindgen(typescript_type = "PngrResultSer")]
+    pub type JsPngrResult;
+    #[wasm_bindgen(typescript_type = "HtmlResultSer")]
+    pub type JsHtmlResult;
+    #[wasm_bindgen(typescript_type = "SvgResultSer")]
+    pub type JsSvgResult;
+    #[wasm_bindgen(typescript_type = "SvgpResultSer")]
+    pub type JsSvgpResult;
 }

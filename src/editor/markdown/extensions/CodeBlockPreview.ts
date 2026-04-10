@@ -9,12 +9,9 @@ import {
   WidgetType,
 } from '@codemirror/view';
 
-import type { EditorHelper } from '@/editor';
 import { getActiveRegion } from '@/editor/shared/utils/core';
-import { getNdirAndNPath } from '@/libs/typst';
-
-import './CodeBlockPreview.css';
-import { helperFacet } from '@/editor/shared/extensions/Helper';
+import { appUtils, typstManager } from '@/libs';
+import { getNdirAndNPath } from '@/libs/typstManager';
 
 interface WidgetData {
   code: string;
@@ -28,22 +25,21 @@ const setPreviewEffect = StateEffect.define<WidgetData | null>();
 class CodeBlockPreviewWidget extends WidgetType {
   constructor(
     readonly code: string,
-    readonly helper: EditorHelper,
     readonly id: string,
     readonly regionFrom: number,
   ) {
     super();
   }
 
-  toDOM(_view: EditorView): HTMLElement {
+  toDOM(): HTMLElement {
     const container = document.createElement('div');
     container.addClasses(['typstmate-codeblockpreview', 'typstmate-temporary']);
     container.dataset.regionFrom = this.regionFrom.toString();
 
-    const file = this.helper.plugin.app.workspace.getActiveFile();
+    const file = appUtils.app.workspace.getActiveFile();
     const { ndir, npath } = getNdirAndNPath(file);
 
-    this.helper.plugin.typstManager.render(this.code, container, this.id, ndir, npath);
+    typstManager.render(this.code, container, this.id, ndir, npath);
 
     return container;
   }
@@ -55,10 +51,10 @@ class CodeBlockPreviewWidget extends WidgetType {
   override updateDOM(dom: HTMLElement, _view: EditorView): boolean {
     dom.replaceChildren();
 
-    const file = this.helper.plugin.app.workspace.getActiveFile();
+    const file = appUtils.app.workspace.getActiveFile();
     const { ndir, npath } = getNdirAndNPath(file);
 
-    this.helper.plugin.typstManager.render(this.code, dom, this.id, ndir, npath);
+    typstManager.render(this.code, dom, this.id, ndir, npath);
 
     return true;
   }
@@ -76,8 +72,7 @@ const codeblockPreviewState = StateField.define<DecorationSet>({
         const widgetData = effect.value;
         if (!widgetData) return Decoration.none;
 
-        const helper = tr.state.facet(helperFacet);
-        const widget = new CodeBlockPreviewWidget(widgetData.code, helper, widgetData.id, widgetData.regionFrom);
+        const widget = new CodeBlockPreviewWidget(widgetData.code, widgetData.id, widgetData.regionFrom);
 
         const deco = Decoration.widget({ widget, side: 1, block: true });
         return Decoration.set([deco.range(widgetData.position)]);

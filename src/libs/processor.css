@@ -1,0 +1,69 @@
+.typstmate-error {
+  color: red;
+  background-color: yellow;
+  cursor: pointer;
+}
+
+/* inline */
+.typstmate-inline {
+  display: inline-block;
+}
+
+.typstmate-inline.typstmate-style-inline,
+.typstmate-inline.typstmate-style-baseline {
+  vertical-align: baseline;
+}
+
+.typstmate-inline.typstmate-style-middle {
+  vertical-align: middle;
+}
+
+.typstmate-inline.typstmate-style-baseline typstmate-svg svg,
+.typstmate-inline.typstmate-style-middle typstmate-svg svg {
+  vertical-align: 0pt !important;
+}
+
+/* display */
+
+/* biome-ignore lint/suspicious/noEmptyBlock: readability */
+.typstmate-display.typstmate-style-block {
+}
+
+.typstmate-display.typstmate-style-block-center {
+  text-align: center;
+}
+
+/* codeblock */
+.markdown-source-view.mod-cm6 .cm-content > [contenteditable="false"]:has(> .typstmate-codeblock) {
+  contain: none !important;
+}
+
+/* biome-ignore lint/style/noDescendingSpecificity: readability */
+.typstmate-codeblock.typstmate-style-codeblock svg {
+  margin-top: 1em;
+  margin-bottom: 1em;
+}
+
+/* biome-ignore lint/suspicious/noEmptyBlock: readability */
+.typstmate-codeblock.typstmate-style-block {
+}
+
+.typstmate-codeblock.typstmate-style-block-center {
+  text-align: center;
+}
+
+/* shared */
+.typstmate-display,
+.typstmate-codeblock {
+  margin-left: 0px;
+  margin-right: 0px;
+  display: block;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.typstmate-inline,
+.typstmate-display,
+.typstmate-codeblock {
+  overflow: visible;
+}

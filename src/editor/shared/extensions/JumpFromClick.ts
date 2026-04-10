@@ -1,16 +1,24 @@
 import { type EditorView, ViewPlugin } from '@codemirror/view';
-import type { Jump } from '@/libs/worker';
+import { Keymap } from 'obsidian';
+import { appUtils, editorHelper } from '@/libs';
 import type TypstElement from '@/ui/elements/Typst';
 import { getRegionAt, type ParsedRegion } from '../utils/core';
-import { helperFacet } from './Helper';
 
 class JumpFromClickPluginValue {
   constructor(public view: EditorView) {}
 
-  jumpTo(jump: Jump, event: MouseEvent, context?: TypstElement) {
-    if (jump.type === 'url') return window.open(jump.url);
+  async jumpTo(jump: any, event: MouseEvent, context?: TypstElement) {
+    if (jump.type === 'url') {
+      if (jump.url.startsWith('obsidian://open?file=')) {
+        const target = decodeURIComponent(jump.url.replace('obsidian://open?file=', ''));
+        if (target) appUtils.app.workspace.openLinkText(target, context?.npath ?? '', Keymap.isModEvent(event));
+        else window.open(jump.url);
+      } else window.open(jump.url);
+      return;
+    }
+
     if (jump.type !== 'file') return;
-    if (jump.pos === undefined) return;
+    if (jump.pos === null || jump.pos === undefined) return;
 
     let expectedPosition = jump.pos;
     let originalExpectedPosition = jump.pos;
@@ -38,21 +46,17 @@ class JumpFromClickPluginValue {
             : originalExpectedPosition;
     }
 
-    event.preventDefault();
-
     this.view.focus();
     this.view.dispatch({
       selection: { anchor: expectedPosition, head: expectedPosition },
       scrollIntoView: true,
     });
 
-    const helper = this.view.state.facet(helperFacet);
-
     const shouldRipple =
       !context || (region && region.from <= originalExpectedPosition && originalExpectedPosition <= region.to);
     if (shouldRipple) {
       requestAnimationFrame(() => {
-        helper.triggerRippleEffect(this.view, expectedPosition);
+        editorHelper.triggerRippleEffect(this.view, expectedPosition);
       });
     }
   }

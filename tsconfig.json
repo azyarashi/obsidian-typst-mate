@@ -1,42 +1,47 @@
 {
-	"compilerOptions": {
-		"lib": ["ESNext", "DOM", "DOM.Iterable"],
-		"target": "ESNext",
-		"module": "ESNext",
-		"allowJs": true,
+  "compilerOptions": {
+    "lib": ["ESNext", "DOM", "DOM.Iterable"],
+    "target": "ESNext",
+    "module": "ESNext",
+    "allowJs": true,
     "jsx": "react-jsx",
     "jsxImportSource": "hono/jsx",
 
-		"moduleResolution": "bundler",
-		"allowImportingTsExtensions": true,
-		"verbatimModuleSyntax": true,
-		"noEmit": true,
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "verbatimModuleSyntax": true,
+    "noEmit": true,
 
-		"strict": true,
-		"strictNullChecks": true,
-		"skipLibCheck": true,
-		"noFallthroughCasesInSwitch": true,
-		"noUncheckedIndexedAccess": true,
-		"noImplicitOverride": true,
+    "strict": true,
+    "strictNullChecks": true,
+    "skipLibCheck": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
 
-		"noUnusedLocals": false,
-		"noUnusedParameters": false,
-		"noPropertyAccessFromIndexSignature": false,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "noPropertyAccessFromIndexSignature": false,
 
-		"resolveJsonModule": true,
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
 
-		"types": [
-			"bun-types",
-			"vite/client",
-			"obsidian-typings"
-		],
+    "types": ["bun-types", "vite/client", "obsidian-typings"],
 
-		"paths": {
+    "paths": {
       "@/*": ["./src/*"],
       "@resources/*": ["./resources/*"],
+      "@components/*": ["./src/ui/components/*"],
+      "@settings/*": ["./src/ui/settingsTab/*"],
       "@typstmate/typst-syntax": ["./packages/typst-syntax/src/typst-syntax/index.ts"],
-      "obsidian": ["./node_modules/obsidian"]
+      "obsidian": [
+        "./node_modules/obsidian/obsidian.d.ts",
+        "./node_modules/obsidian/canvas.d.ts",
+        "./node_modules/obsidian/publish.d.ts"
+      ],
+      "@codemirror/view": ["./node_modules/@codemirror/view"],
+      "@codemirror/state": ["./node_modules/@codemirror/state"]
     }
-	},
-	"include": ["src", "tests"]
+  },
+  "include": ["src", "wasm/src/serde/values", "tests", "resources", ".vscode/print.ts"]
 }

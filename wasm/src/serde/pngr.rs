@@ -8,10 +8,14 @@ use typst::{diag::SourceDiagnostic, ecow};
 use crate::serde::diagnostic::SourceDiagnosticSer;
 use crate::world::WasmWorld;
 
-#[derive(Serialize)]
-struct PngrSer {
-    images: Vec<Vec<u8>>,
-    diags: Vec<SourceDiagnosticSer>,
+use tsify::Tsify;
+
+#[derive(Serialize, Tsify)]
+#[serde(rename_all = "camelCase")]
+pub struct PngrResultSer {
+    #[tsify(type = "Uint8Array[]")]
+    pub images: Vec<Vec<u8>>,
+    pub diags: Vec<SourceDiagnosticSer>,
 }
 
 pub fn pngr(
@@ -19,7 +23,7 @@ pub fn pngr(
     diags: EcoVec<SourceDiagnostic>,
     world: &WasmWorld,
 ) -> Result<JsValue, JsValue> {
-    let result = PngrSer {
+    let result = PngrResultSer {
         images,
         diags: diags
             .iter()

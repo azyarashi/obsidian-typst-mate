@@ -4,12 +4,8 @@ import type { SyntaxKind, SyntaxMode, SyntaxNode } from '@typstmate/typst-syntax
 import { collectRegions, markdownCore, parseRegion } from '@/editor/markdown/extensions/MarkdownCore';
 import { typstTextCore } from '@/editor/typst/extensions/TypstCore';
 import type { Processor, ProcessorKind } from '@/libs/processor';
-import { helperFacet } from '../extensions/Helper';
 
 export interface ParsedRegion {
-  /** used for syntax highlighting */
-  readonly id: number;
-
   skip: number;
   skipEnd: number;
   /** innerFrom = from + skip */
@@ -41,8 +37,6 @@ export function getRegionAt(view: EditorView, cursor: number): ParsedRegion | nu
   const typstTextPlugin = view.plugin(typstTextCore);
   if (typstTextPlugin) return typstTextPlugin.activeRegion;
 
-  const helper = view.state.facet(helperFacet);
-
   const { from, to } = view.viewport;
   const regions = collectRegions(view, from, to);
 
@@ -51,5 +45,5 @@ export function getRegionAt(view: EditorView, cursor: number): ParsedRegion | nu
     return r.from - delimiterLength - (r.lang?.length ?? 0) <= cursor && cursor <= r.to + delimiterLength;
   });
 
-  return region ? parseRegion(view, helper, region) : null;
+  return region ? parseRegion(view, region) : null;
 }

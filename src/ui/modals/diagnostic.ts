@@ -1,17 +1,19 @@
-import { type App, Modal, Setting } from 'obsidian';
+import { type App, Component, MarkdownRenderer, Modal } from 'obsidian';
 
-import { t } from '@/i18n';
-import type { Diagnostic } from '@/libs/worker';
+import type { Diagnostic } from '@/libs/typstManager/worker';
 
 export class DiagnosticModal extends Modal {
   constructor(app: App, diagnosticArray: Diagnostic[]) {
     super(app);
 
-    for (const diagnostic of diagnosticArray) {
-      new Setting(this.contentEl).setName(diagnostic.message).setHeading();
+    let markdown = '';
+    let i = 1;
+    for (const diagnostic of diagnosticArray)
+      markdown += `\
+${i++}. **${diagnostic.message}**
+${diagnostic.hints?.map((hint) => `- ${hint}`).join('\n')}
+`;
 
-      for (const hint of diagnostic.hints)
-        new Setting(this.contentEl).setName(t('modals.diagnostic.hintPrefix', { hint }));
-    }
+    MarkdownRenderer.render(app, markdown, this.contentEl, '', new Component());
   }
 }

@@ -33,7 +33,7 @@ export function getModeAndKindFromRegion(
   region: ParsedRegion | null,
   pos: number,
 ): { kind: SyntaxKind | null; mode: SyntaxMode | null } {
-  if (!region || !region.tree) return { kind: null, mode: null };
+  if (!region?.tree) return { kind: null, mode: null };
 
   const offset = region.from + region.skip;
   const relativePos = pos - offset;

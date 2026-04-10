@@ -1,0 +1,412 @@
+/* ── Extension Card ─────────────────────────────────────────────────────── */
+
+.typstmate-extension-container {
+  display: flex;
+  gap: 12px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--background-modifier-border);
+  transition: background-color 0.15s ease;
+  align-items: center;
+}
+
+.typstmate-extension-container:last-child {
+  border-bottom: none;
+}
+
+.typstmate-extension-container:hover {
+  background-color: var(--background-modifier-hover);
+}
+
+/* Icon */
+.typstmate-extension-icon-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background-color: var(--background-secondary);
+  border-radius: 10px;
+  flex-shrink: 0;
+  color: var(--text-normal);
+  padding: 8px;
+}
+
+.typstmate-extension-icon {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.typstmate-extension-icon svg {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* Content */
+.typstmate-extension-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.typstmate-extension-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-normal);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.typstmate-extension-description {
+  font-size: 11.5px;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+.typstmate-extension-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 2px;
+}
+
+.typstmate-extension-tag {
+  font-size: 10px;
+  color: var(--text-faint);
+  letter-spacing: 0.02em;
+}
+
+/* Right panel */
+.typstmate-extension-right-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: space-between;
+  flex-shrink: 0;
+  gap: 6px;
+  align-self: stretch; /* ← 親の height に伸ばす */
+  min-height: 40px;
+}
+
+/* Footer icons (scope + settings) */
+.typstmate-extension-footer {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  /* align-self: flex-end は不要。right-panel の flex-direction: column + justify-content: space-between で末尾に寄る */
+}
+
+.typstmate-extension-scope-icon,
+.typstmate-extension-settings-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: color 0.15s ease;
+  flex-shrink: 0;
+}
+
+.typstmate-extension-scope-icon:hover,
+.typstmate-extension-settings-icon:hover {
+  color: var(--text-accent);
+}
+
+.typstmate-extension-scope-icon svg,
+.typstmate-extension-settings-icon svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* Disabled state */
+.typstmate-extension-container.is-disabled .typstmate-extension-name {
+  color: var(--text-faint);
+}
+
+.typstmate-extension-container.is-disabled .typstmate-extension-description {
+  color: var(--text-faint);
+  opacity: 0.7;
+}
+
+.typstmate-extension-container.is-disabled .typstmate-extension-icon-wrapper {
+  opacity: 0.4;
+}
+
+/* Core (builtin) - 薄くグレーアウト */
+.typstmate-extension-container.is-core {
+  opacity: 0.55;
+}
+
+.typstmate-extension-container.is-core .typstmate-extension-name {
+  font-weight: 500;
+  color: var(--text-faint);
+}
+
+.typstmate-extension-container.is-core .typstmate-extension-description {
+  color: var(--text-faint);
+}
+
+/* ── Core divider ───────────────────────────────────────────────────────── */
+
+.typstmate-ext-core-divider {
+  height: 1px;
+  background: var(--background-modifier-border);
+  margin: 4px 0;
+  position: relative;
+}
+
+.typstmate-ext-core-divider::before {
+  content: "Core";
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: var(--background-primary);
+  padding: 0 6px;
+  font-size: 10px;
+  color: var(--text-faint);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+/* ── Filter bar ─────────────────────────────────────────────────────────── */
+
+.typstmate-ext-filter {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 14px 8px;
+  border-bottom: 1px solid var(--background-modifier-border);
+  background: var(--background-secondary-alt);
+}
+
+.typstmate-ext-search {
+  width: 100%;
+  padding: 5px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--background-modifier-border);
+  background: var(--background-primary);
+  color: var(--text-normal);
+  font-size: 13px;
+  outline: none;
+  transition: border-color 0.15s ease;
+  box-sizing: border-box;
+}
+
+.typstmate-ext-search:focus {
+  border-color: var(--interactive-accent);
+}
+
+.typstmate-ext-chip-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.typstmate-ext-filter-label {
+  font-size: 10.5px;
+  color: var(--text-faint);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  flex-shrink: 0;
+  min-width: 32px;
+}
+
+.typstmate-ext-chips {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.typstmate-ext-chip {
+  padding: 2px 8px;
+  border-radius: 99px;
+  border: 1px solid var(--background-modifier-border);
+  background: var(--background-primary);
+  color: var(--text-muted);
+  font-size: 11px;
+  cursor: pointer;
+  transition:
+    background 0.12s ease,
+    color 0.12s ease,
+    border-color 0.12s ease;
+  line-height: 1.6;
+}
+
+.typstmate-ext-chip:hover {
+  background: var(--background-modifier-hover);
+  color: var(--text-normal);
+}
+
+.typstmate-ext-chip.is-active {
+  background: var(--interactive-accent);
+  color: var(--text-on-accent);
+  border-color: var(--interactive-accent);
+}
+
+/* ── Extension list wrapper ─────────────────────────────────────────────── */
+
+.typstmate-ext-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.typstmate-ext-empty {
+  padding: 16px 14px;
+  color: var(--text-faint);
+  font-size: 13px;
+  text-align: center;
+}
+
+/* ── Extension wrapper (card + settings panel) ──────────────────────────── */
+
+.typstmate-extension-wrapper {
+  border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.typstmate-extension-wrapper .typstmate-extension-container {
+  border-bottom: none;
+}
+
+/* ── Settings panel ──────────────────────────────────────────────────────── */
+
+.typstmate-extension-settings-panel {
+  display: none;
+  padding: 8px 14px 12px;
+  background: var(--background-secondary-alt);
+  border-top: 1px solid var(--background-modifier-border);
+}
+
+.typstmate-extension-settings-panel.is-open {
+  display: block;
+}
+
+.typstmate-ext-setting-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 7px 0;
+  border-bottom: 1px solid var(--background-modifier-border-hover);
+}
+
+.typstmate-ext-setting-row:last-child {
+  border-bottom: none;
+}
+
+.typstmate-ext-setting-label {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.typstmate-ext-setting-title {
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--text-normal);
+}
+
+.typstmate-ext-setting-desc {
+  font-size: 11px;
+  color: var(--text-faint);
+  line-height: 1.4;
+}
+
+.typstmate-ext-setting-control {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+}
+
+/* Settings icon active state */
+.typstmate-extension-settings-icon.is-active {
+  color: var(--interactive-accent);
+}
+
+/* Slider */
+.typstmate-ext-slider-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.typstmate-ext-slider-wrap input[type="range"] {
+  width: 100px;
+  accent-color: var(--interactive-accent);
+}
+
+.typstmate-ext-slider-value {
+  font-size: 11px;
+  color: var(--text-muted);
+  min-width: 28px;
+  text-align: right;
+}
+
+/* Text input */
+.typstmate-ext-text-input {
+  padding: 3px 8px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 4px;
+  background: var(--background-primary);
+  color: var(--text-normal);
+  font-size: 12px;
+  width: 120px;
+}
+
+/* Select */
+.typstmate-ext-select {
+  padding: 3px 6px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 4px;
+  background: var(--background-primary);
+  color: var(--text-normal);
+  font-size: 12px;
+}
+
+/* Keymap setting */
+.typstmate-ext-keymap-wrap {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.typstmate-ext-keymap-input {
+  cursor: pointer;
+  width: 150px;
+}
+
+.typstmate-ext-keymap-input.is-recording {
+  border-color: var(--interactive-accent);
+  box-shadow: 0 0 0 2px rgba(var(--interactive-accent-rgb), 0.2);
+}
+
+.typstmate-ext-keymap-clear {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  background: var(--background-modifier-border);
+  color: var(--text-muted);
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  padding: 0;
+  transition: all 0.15s ease;
+}
+
+.typstmate-ext-keymap-clear:hover {
+  background: var(--background-modifier-error);
+  color: var(--text-on-accent);
+}

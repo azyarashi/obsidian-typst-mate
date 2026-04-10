@@ -1,0 +1,43 @@
+.typstmate-processor-list-item-summary {
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.typstmate-processor-list-item-left {
+  display: flex;
+  align-items: center;
+  gap: var(--size-4-3);
+}
+
+.typstmate-drag-handle,
+.typstmate-up-down-arrows {
+  cursor: grab;
+  color: var(--text-faint);
+  font-size: var(--font-ui-medium);
+}
+
+.typstmate-processor-id {
+  font-weight: 600;
+  color: var(--text-normal);
+}
+
+.typstmate-renderer-select,
+.typstmate-style-select {
+  font-size: var(--font-ui-small);
+  color: var(--text-muted);
+}
+
+.typstmate-processor-list-item-right {
+  display: flex;
+  align-items: center;
+}
+
+.typstmate-processor-code-block {
+  padding: var(--size-4-2);
+  background-color: var(--background-primary);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--radius-s);
+  font-family: var(--font-monospace);
+}

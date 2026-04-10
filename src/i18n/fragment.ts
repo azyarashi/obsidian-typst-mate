@@ -1,28 +1,59 @@
-import type { TOptions } from 'i18next';
 import { type InterpolationValues, type TranslationKey, t } from './index';
 import { parseMarkup, type Segment } from './markup';
 
-function appendText(fragment: DocumentFragment, text: string): void {
-  fragment.appendChild(document.createTextNode(text));
+function appendText(parent: Node, text: string): void {
+  parent.appendChild(document.createTextNode(text));
 }
 
-function appendElement(fragment: DocumentFragment, tag: string, text: string): void {
+function appendElement(parent: Node, tag: string, content: string, recursive: boolean): void {
   const el = document.createElement(tag);
-  el.textContent = text;
-  fragment.appendChild(el);
+
+  if (recursive) renderMarkup(el, content);
+  else el.textContent = content;
+
+  parent.appendChild(el);
 }
 
-function appendLink(fragment: DocumentFragment, text: string, href: string): void {
+function appendLink(parent: Node, content: string, href: string, recursive: boolean): void {
   const a = document.createElement('a');
-  a.textContent = text;
   a.setAttribute('href', href);
-  fragment.appendChild(a);
+
+  if (recursive) renderMarkup(a, content);
+  else a.textContent = content;
+
+  parent.appendChild(a);
+}
+
+/**
+ * Renders the given text with markup into the parent node.
+ */
+function renderMarkup(parent: Node, text: string): void {
+  for (const segment of parseMarkup(text)) {
+    switch (segment.type) {
+      case 'text':
+        appendText(parent, segment.content);
+        break;
+      case 'bold':
+        appendElement(parent, 'b', segment.content, true);
+        break;
+      case 'code':
+        appendElement(parent, 'code', segment.content, false);
+        break;
+      case 'link':
+        appendLink(parent, segment.content, segment.href, true);
+        break;
+      default: {
+        throw new Error(`Unhandled segment type: ${(segment satisfies never as Segment).type}`);
+      }
+    }
+  }
 }
 
 /**
  * Returns a DocumentFragment with rich text for the given translation key.
  * Parses `<bold>`, `<code>`, and `<link href="...">` markup in the translation
- * string into the corresponding DOM elements.
+ * string into the corresponding DOM elements. Supports nested tags like
+ * `<code>` inside `<bold>`.
  *
  * Intended for Obsidian's `.setDesc()` which accepts DocumentFragment.
  * setting.setDesc(tFragment('settings.processor.desc'))
@@ -30,29 +61,11 @@ function appendLink(fragment: DocumentFragment, text: string, href: string): voi
  * NOTE: Not unit-tested because it requires a DOM environment.
  * The underlying `t()` and `parseMarkup()` are tested independently.
  */
-export function tFragment(key: TranslationKey, options?: TOptions<InterpolationValues>): DocumentFragment {
+export function tFragment(key: TranslationKey, options?: InterpolationValues): DocumentFragment {
   const text = t(key, options);
   const fragment = document.createDocumentFragment();
 
-  for (const segment of parseMarkup(text)) {
-    switch (segment.type) {
-      case 'text':
-        appendText(fragment, segment.content);
-        break;
-      case 'bold':
-        appendElement(fragment, 'b', segment.content);
-        break;
-      case 'code':
-        appendElement(fragment, 'code', segment.content);
-        break;
-      case 'link':
-        appendLink(fragment, segment.content, segment.href);
-        break;
-      default: {
-        throw new Error(`Unhandled segment type: ${(segment satisfies never as Segment).type}`);
-      }
-    }
-  }
+  renderMarkup(fragment, text);
 
   return fragment;
 }

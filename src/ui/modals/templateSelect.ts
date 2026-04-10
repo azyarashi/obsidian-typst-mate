@@ -1,38 +1,34 @@
-import { Modal, Notice, Setting, type TFile, type TFolder } from 'obsidian';
+import { type App, Modal, Notice, Setting, type TFile, type TFolder } from 'obsidian';
 import { t } from '@/i18n';
-import type ObsidianTypstMate from '@/main';
-import { createNewFile } from '@/utils/file';
+import { fileManager, settingsManager } from '@/libs';
 
 export class TemplateSelectModal extends Modal {
-  plugin: ObsidianTypstMate;
-
   target: TFile | TFolder;
 
-  constructor(plugin: ObsidianTypstMate, target: TFile | TFolder) {
-    super(plugin.app);
-    this.plugin = plugin;
+  constructor(app: App, target: TFile | TFolder) {
+    super(app);
     this.target = target;
   }
 
   override async onOpen() {
-    const { contentEl } = this;
+    const { contentEl, app } = this;
     contentEl.empty();
 
-    const importPath = this.plugin.settings.importPath;
-    if (!(await this.plugin.app.vault.adapter.exists(importPath))) {
+    const importPath = settingsManager.settings.importPath;
+    if (!(await app.vault.adapter.exists(importPath))) {
       new Notice(t('notices.typstDirNotExist'));
       this.close();
       return;
     }
 
     const templatePath = `${importPath}/templates`;
-    if (!(await this.plugin.app.vault.adapter.exists(templatePath))) {
+    if (!(await app.vault.adapter.exists(templatePath))) {
       new Notice(t('notices.templateDirNotExist'));
       this.close();
       return;
     }
 
-    const templates = this.plugin.app.vault
+    const templates = app.vault
       .getFiles()
       .filter((file) => file.path.startsWith(templatePath) && file.extension === 'typ');
 
@@ -41,9 +37,9 @@ export class TemplateSelectModal extends Modal {
     for (const template of templates) {
       new Setting(contentEl).setName(template.name).addButton((btn) => {
         btn.setButtonText(t('modals.templateSelect.buttons.select')).onClick(async () => {
-          const content = await this.plugin.app.vault.read(template);
-          const file = await createNewFile(this.plugin.app.vault, this.target, content);
-          if (file) this.plugin.app.workspace.openLinkText(file.path, '');
+          const content = await app.vault.read(template);
+          const file = await fileManager.createNewFile(this.target, content);
+          if (file) app.workspace.openLinkText(file.path, '');
           this.close();
         });
       });

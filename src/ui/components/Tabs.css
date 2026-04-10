@@ -1,0 +1,72 @@
+/** tabs */
+
+/* Desktop App */
+div.typstmate-tabs {
+  appearance: none;
+
+  margin-bottom: var(--size-4-2);
+
+  display: flex;
+  width: 100%;
+}
+
+/* Mobile App */
+select.typstmate-tabs-select {
+  appearance: none;
+
+  margin-bottom: var(--size-4-2);
+
+  width: 100%;
+
+  background: var(--background-primary-alt);
+  border: 1px solid var(--background-modifier-border);
+  box-shadow: none;
+
+  border-radius: var(--radius-s);
+
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--text-normal) 50%),
+    linear-gradient(-45deg, transparent 50%, var(--text-normal) 50%);
+  background-position:
+    calc(0.6em) 50%,
+    calc(1em) 50%;
+  background-size: 0.4em 0.4em;
+  background-repeat: no-repeat;
+  padding-left: 1.8em;
+}
+
+select.typstmate-tabs-select:hover {
+  background-color: var(--background-modifier-hover);
+}
+
+/** tab */
+
+/* Desktop App */
+button.typstmate-tab {
+  appearance: none;
+
+  flex: 1;
+
+  background: var(--background-primary-alt);
+  border: none;
+  box-shadow: none;
+  border-bottom: 1pt solid transparent;
+  border-radius: 0pt;
+}
+
+button.typstmate-tab:hover {
+  background: var(--background-modifier-hover);
+}
+
+button.typstmate-tab.active {
+  background: var(--background-modifier-active-hover);
+  border-bottom: 1pt solid var(--interactive-accent);
+}
+
+/** tab content */
+
+.typstmate-tab-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--size-4-2);
+}

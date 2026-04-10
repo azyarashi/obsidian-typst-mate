@@ -1,0 +1,129 @@
+.typstmate-hover-tooltip {
+  padding: 4px 8px;
+  border-radius: 4px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--background-modifier-border);
+  color: var(--text-normal);
+  max-width: 480px;
+  max-height: 500px;
+  overflow: auto;
+  word-wrap: break-word;
+  box-sizing: border-box;
+
+  min-height: 1em;
+  display: block !important;
+
+  user-select: text;
+  resize: both;
+
+  z-index: var(--layer-tooltip);
+}
+
+/* Obsidian レンダラーが抱え込んでいる「最小高さ」や「巨大な余白」を徹底破壊 */
+.typstmate-hover-tooltip .markdown-rendered,
+.typstmate-hover-tooltip .markdown-preview-view,
+.typstmate-hover-tooltip .markdown-rendered > div {
+  min-height: 0 !important;
+  height: auto !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  display: block !important;
+}
+
+.typstmate-hover-tooltip .markdown-rendered > *:first-child {
+  margin-top: 0 !important;
+}
+.typstmate-hover-tooltip .markdown-rendered > *:last-child {
+  margin-bottom: 0 !important;
+}
+
+/* 段落のマージンも極小に固定 */
+.typstmate-hover-tooltip p {
+  margin: 2px 0 !important;
+  padding: 0 !important;
+  line-height: 1.4 !important;
+  min-height: 0 !important;
+}
+
+/* シグネチャ表示 (HTML 形式) */
+.typstmate-hover-tooltip .typstmate-signature {
+  font-family: var(--font-monospace);
+  white-space: pre-wrap;
+  background: rgba(0, 0, 0, 0.2) !important;
+  color: var(--text-accent);
+  padding: 6px 8px !important;
+  border-radius: 4px;
+  margin-bottom: 12px;
+  font-size: 0.95em;
+  display: block !important;
+}
+
+.typstmate-hover-tooltip .typstmate-signature-types {
+  border-bottom: 1px dotted var(--text-muted);
+  cursor: help;
+  position: relative;
+  display: inline-block;
+}
+
+.typstmate-signature-tooltip {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background: var(--background-primary);
+  border: 1px solid var(--background-modifier-border);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  padding: 0 !important;
+  z-index: var(--layer-tooltip);
+  min-width: 200px;
+  pointer-events: none;
+}
+
+.typstmate-signature-types:hover .typstmate-signature-tooltip {
+  display: block;
+}
+
+/* コードブロック */
+.typstmate-hover-tooltip pre,
+.typstmate-hover-tooltip .typstmate-codeblock {
+  margin: 4px 0 !important;
+  padding: 6px 8px !important;
+  background: rgba(0, 0, 0, 0.2) !important;
+  border: none !important;
+  border-radius: 4px;
+  font-family: var(--font-monospace);
+  font-size: 0.95em;
+  white-space: pre-wrap;
+  word-break: break-all;
+  display: block !important;
+  min-height: 0 !important;
+}
+
+/* Color プレビュー */
+.typstmate-hover-tooltip span[style*="background-color"] {
+  display: inline-block !important;
+  width: 12px !important;
+  height: 12px !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  margin-right: 4px !important;
+  vertical-align: middle !important;
+  border-radius: 2px;
+}
+
+.typstmate-hover-tooltip strong {
+  color: var(--text-accent) !important;
+}
+
+.typstmate-hover-tooltip code {
+  color: var(--text-normal);
+  font-family: var(--font-monospace);
+}
+
+.typstmate-hover-tooltip-origin {
+  display: block;
+  font-size: 0.8em;
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--background-modifier-border);
+  margin-bottom: 6px;
+  padding-bottom: 4px;
+}

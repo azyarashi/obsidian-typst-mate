@@ -1,10 +1,10 @@
-import fs from 'node:fs';
 import path from 'node:path';
-
 import builtinModules from 'builtin-modules';
+import { buildSync } from 'esbuild';
 import { defineConfig, type UserConfig } from 'vite';
 import { viteStaticCopy } from 'vite-plugin-static-copy';
-import tsconfigPaths from 'vite-tsconfig-paths';
+
+import { supportedWatcherPlatforms } from './src/constants/watcher';
 
 export default defineConfig(async ({ mode }) => {
   const prod = mode === 'production';
@@ -12,28 +12,36 @@ export default defineConfig(async ({ mode }) => {
 
   return {
     plugins: [
-      tsconfigPaths(),
-      viteStaticCopy({
-        targets: prod
-          ? [
-              { src: `typst.wasm`, rename: `typst-${version}.wasm`, dest: '' },
-              { src: 'manifest.json', rename: 'manifest.json', dest: '' },
-            ]
-          : [],
-      }),
       {
-        name: 'prepend-style-settings',
-        apply: 'build',
-        enforce: 'post',
-        buildStart() {
-          this.addWatchFile(path.resolve(__dirname, 'src/plugins/style-settings.css'));
-        },
-        generateBundle(_, bundle) {
-          const styleSettings = fs.readFileSync('src/plugins/style-settings.css', 'utf-8');
-          const styleAsset = bundle['styles.css'];
-          if (styleAsset.type === 'asset') styleAsset.source = `${styleSettings}${styleAsset.source}`;
+        name: 'build-watcher',
+        writeBundle(options) {
+          const outDir = options.dir || 'dist';
+          buildSync({
+            entryPoints: ['packages/watcher/src/index.ts'],
+            bundle: true,
+            outfile: path.join(outDir, `watcher-${version}.js`),
+            platform: 'node',
+            format: 'cjs',
+            minify: prod,
+            external: ['obsidian', 'electron', ...builtinModules],
+          });
         },
       },
+      viteStaticCopy({
+        targets: [
+          ...(prod
+            ? [
+                { src: `typst.wasm`, rename: `typst-${version}.wasm`, dest: '' },
+                { src: 'manifest.json', rename: 'manifest.json', dest: '' },
+                ...supportedWatcherPlatforms.map((platform) => ({
+                  src: `node_modules/@parcel/watcher-${platform}/watcher.node`,
+                  rename: `watcher-${platform}-${version}.node`,
+                  dest: '',
+                })),
+              ]
+            : []),
+        ],
+      }),
     ],
     build: {
       lib: {
@@ -42,11 +50,11 @@ export default defineConfig(async ({ mode }) => {
       },
       emptyOutDir: prod,
       minify: 'oxc',
-      rollupOptions: {
+      rolldownOptions: {
         output: {
           entryFileNames: 'main.js',
           assetFileNames: 'styles.css',
-          inlineDynamicImports: true,
+          codeSplitting: false,
         },
         external: [
           'obsidian',
@@ -59,7 +67,6 @@ export default defineConfig(async ({ mode }) => {
           '@codemirror/search',
           '@codemirror/state',
           '@codemirror/view',
-          '@codemirror/fold',
           '@lezer/common',
           '@lezer/highlight',
           '@lezer/lr',
@@ -68,7 +75,13 @@ export default defineConfig(async ({ mode }) => {
           '@zsviczian/excalidraw',
           ...builtinModules,
         ],
+        onwarn: (warning, defaultHandler) => {
+          if (warning.code !== 'FILE_NAME_CONFLICT') defaultHandler(warning);
+        },
       },
     },
-  } as UserConfig;
+    resolve: {
+      tsconfigPaths: true,
+    },
+  } satisfies UserConfig;
 });

@@ -1,11 +1,16 @@
+pub mod completion;
+pub mod definition;
 pub mod diagnostic;
 pub mod font;
+pub mod html;
 pub mod jump;
-pub mod package;
-
 pub mod options;
+pub mod package;
 pub mod pdfr;
 pub mod pngr;
 pub mod svg;
 pub mod svgp;
 pub mod svgr;
+pub mod tooltip;
+pub mod value;
+pub mod values;

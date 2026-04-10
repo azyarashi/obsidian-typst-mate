@@ -1,6 +1,6 @@
 import { Facet } from '@codemirror/state';
 import { EditorView, ViewPlugin } from '@codemirror/view';
-import { helperFacet } from '@/editor/shared/extensions/Helper';
+import { typstManager } from '@/libs';
 
 export type JumpToPreviewTarget = {
   jumpToPosition: (position: { page: number; x: number; y: number }) => Promise<void>;
@@ -26,7 +26,6 @@ class JumpToPreviewPluginValue {
     const pos = this.view.posAtCoords({ x: event.clientX, y: event.clientY });
     if (pos === null) return;
 
-    const helper = this.view.state.facet(helperFacet);
     const target = this.view.state.facet(jumpToPreviewTargetFacet);
 
     if (!target) return;
@@ -34,8 +33,9 @@ class JumpToPreviewPluginValue {
     try {
       const utf8Pos = utf16ToUtf8Offset(this.view.state.doc.toString(), pos);
 
-      const positions = await (helper.plugin.typst as any).jumpFromCursorP(utf8Pos);
-      if (positions && Array.isArray(positions) && positions.length > 0) {
+      const positions = await typstManager.wasm.jumpFromCursorPAsync(utf8Pos);
+      // TODO
+      if (positions?.[0] && positions[0].type === 'position') {
         await target.jumpToPosition(positions[0]);
         target.reveal();
       }

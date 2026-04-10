@@ -41,6 +41,19 @@ jobs:
       - name: Build Plugin
         run: |
           bun install
+          bun add
+            @parcel/watcher-darwin-arm64
+            @parcel/watcher-darwin-x64
+            @parcel/watcher-win32-ia32
+            @parcel/watcher-win32-x64
+            @parcel/watcher-win32-arm64
+            @parcel/watcher-linux-x64-glibc
+            @parcel/watcher-linux-x64-musl
+            @parcel/watcher-linux-arm64-glibc
+            @parcel/watcher-linux-arm64-musl
+            @parcel/watcher-linux-arm-glibc
+            @parcel/watcher-freebsd-x64
+            --no-save
           mv ./pkg/typst_wasm_bg.wasm ./typst.wasm
           bun run build
 
@@ -57,7 +70,9 @@ jobs:
             dist/main.js \
             dist/styles.css \
             dist/manifest.json \
-            dist/typst-*.wasm
+            dist/typst-*.wasm \
+            dist/*.node \
+            dist/watcher-*.js
 
       - name: Upload Artifacts
         if: github.event_name == 'workflow_dispatch' && ((github.repository != 'azyarashi/obsidian-typst-mate') || (github.actor == 'azyarashi'))
@@ -70,3 +85,5 @@ jobs:
             dist/styles.css
             dist/manifest.json
             dist/typst-*.wasm
+            dist/*.node
+            dist/watcher-*.js

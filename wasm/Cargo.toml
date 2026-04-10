@@ -16,12 +16,14 @@ typst-timing = "0.14.2"
 
 typst-pdf = "0.14.2"
 typst-svg = "0.14.2"
+typst-html = "0.14.2"
 typst-render = "0.14.2"
 
 comemo = "^0"
 unscanny = "^0.1"
 
-tylax = { version = "^0.2", features = [] }
+tylax = { version = "^0.3", features = [] }
+typstyle-core = "^0.14"
 
 wasm-bindgen = "^0.2"
 wasm-bindgen-futures = "^0.4"
@@ -44,8 +46,10 @@ unicode-math-class = "^0.1"
 [patch.crates-io]
 typst = { path = "../typst/crates/typst" }
 typst-ide = { path = "../typst/crates/typst-ide" }
+typst-syntax = { path = "../typst/crates/typst-syntax" }
 typst-svg = { path = "../typst/crates/typst-svg" }
 typst-pdf = { path = "../typst/crates/typst-pdf" }
+typst-html = { path = "../typst/crates/typst-html" }
 typst-library = { path = "../typst/crates/typst-library" }
 typst-macros = { path = "../typst/crates/typst-macros" }
 typst-timing = { path = "../typst/crates/typst-timing" }

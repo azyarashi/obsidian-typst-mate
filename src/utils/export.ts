@@ -1,61 +1,43 @@
 import { Notice, type TFile } from 'obsidian';
 import { t } from '@/i18n';
-import type { PdfrResult, PngrResult, SvgrResult } from '@/libs/worker';
+import { ctxToNDir, typstManager } from '@/libs/typstManager';
+import type { HtmlOptionsSer, PdfOptionsSer, PngOptionsSer, SvgOptionsSer } from '@/libs/typstManager/worker';
 import type ObsidianTypstMate from '@/main';
 
-export const PDF_STANDARDS = {
-  '': 'Default (PDF 1.7)',
-  '1.4': 'PDF 1.4',
-  '1.5': 'PDF 1.5',
-  '1.6': 'PDF 1.6',
-  '1.7': 'PDF 1.7',
-  '2.0': 'PDF 2.0',
-  'a-1b': 'PDF/A-1b',
-  'a-1a': 'PDF/A-1a',
-  'a-2b': 'PDF/A-2b',
-  'a-2u': 'PDF/A-2u',
-  'a-2a': 'PDF/A-2a',
-  'a-3b': 'PDF/A-3b',
-  'a-3u': 'PDF/A-3u',
-  'a-3a': 'PDF/A-3a',
-  'a-4': 'PDF/A-4',
-  'a-4f': 'PDF/A-4f',
-  'a-4e': 'PDF/A-4e',
-  'ua-1': 'PDF/UA-1',
-} as const;
+export type SvgExportOptions = SvgOptionsSer & { filenameTemplate: string };
+export type PngExportOptions = PngOptionsSer & { filenameTemplate: string };
 
-export type PdfStandard = keyof typeof PDF_STANDARDS;
+export type ExportFormat = 'pdf' | 'svg' | 'png' | 'html';
 
-export interface PdfExportOptions {
-  tagged: boolean;
-  ident?: string;
-  standards: string[];
-  timestamp?: number;
-  offset?: number;
-  pageRanges?: string;
+export async function exportToHtml(
+  plugin: ObsidianTypstMate,
+  file: TFile,
+  content: string,
+  options: HtmlOptionsSer,
+  notice = true,
+) {
+  const ndir = ctxToNDir(file.path);
+  const result = await typstManager.wasm.htmlrAsync(ndir, file.name, content, options);
+  if (!result?.html) return;
+
+  const html = result.html;
+  const exportPath = `${file.path.slice(0, -file.extension.length - 1)}.html`;
+  await plugin.app.vault.adapter.write(exportPath, html);
+
+  if (notice) new Notice(t('notices.exportedTo', { path: exportPath }));
+
+  return exportPath;
 }
-
-export interface SvgExportOptions {
-  pageRanges?: string;
-  filenameTemplate: string;
-}
-
-export interface PngExportOptions {
-  ppi: number;
-  pageRanges?: string;
-  filenameTemplate: string;
-}
-
-export type ExportFormat = 'pdf' | 'svg' | 'png';
 
 export async function exportToPdf(
   plugin: ObsidianTypstMate,
   file: TFile,
   content: string,
-  options: PdfExportOptions,
+  options: PdfOptionsSer,
   notice: boolean = true,
 ): Promise<string | undefined> {
-  const result = (await plugin.typst.pdfr('/', file.name, content, options)) as PdfrResult;
+  const ndir = ctxToNDir(file.path);
+  const result = await typstManager.wasm.pdfrAsync(ndir, file.name, content, options);
   if (!result?.pdf) return;
 
   const uint8Array = result.pdf instanceof Uint8Array ? result.pdf : new Uint8Array(result.pdf);
@@ -71,7 +53,8 @@ export async function exportToPdf(
 }
 
 export async function exportToSvg(plugin: ObsidianTypstMate, file: TFile, content: string, options: SvgExportOptions) {
-  const result = (await plugin.typst.svgr('/', file.name, content, options)) as SvgrResult;
+  const ndir = ctxToNDir(file.path);
+  const result = await typstManager.wasm.svgrAsync(ndir, file.name, content, options);
   if (!result?.svgs) return;
 
   const total = result.svgs.length;
@@ -86,7 +69,8 @@ export async function exportToSvg(plugin: ObsidianTypstMate, file: TFile, conten
 }
 
 export async function exportToPng(plugin: ObsidianTypstMate, file: TFile, content: string, options: PngExportOptions) {
-  const result = (await plugin.typst.pngr('/', file.name, content, options)) as PngrResult;
+  const ndir = ctxToNDir(file.path);
+  const result = await typstManager.wasm.pngrAsync(ndir, file.name, content, options);
   if (!result?.images) return;
 
   const total = result.images.length;

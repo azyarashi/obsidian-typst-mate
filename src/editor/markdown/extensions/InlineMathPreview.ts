@@ -1,6 +1,5 @@
 import { type EditorView, type PluginValue, ViewPlugin, type ViewUpdate } from '@codemirror/view';
 
-import { helperFacet } from '@/editor/shared/extensions/Helper';
 import { getActiveRegion } from '@/editor/shared/utils/core';
 import { calculatePopupPosition } from '@/editor/shared/utils/position';
 
@@ -23,8 +22,7 @@ class InlinePreviewPlugin implements PluginValue {
   }
 
   update(update: ViewUpdate) {
-    const helper = update.state.facet(helperFacet)!;
-    if (!helper.plugin.settings.enableInlinePreview || !update.view.hasFocus) {
+    if (!update.view.hasFocus) {
       this.hide();
       return;
     }

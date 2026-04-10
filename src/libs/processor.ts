@@ -1,7 +1,10 @@
 import { SyntaxMode } from '@typstmate/typst-syntax';
 
+import './processor.css';
+
 export enum RenderingEngine {
   TypstSVG = 'typst-svg',
+  TypstHTML = 'typst-html',
   MathJax = 'mathjax',
 }
 export enum InlineStyling {
@@ -18,110 +21,69 @@ export enum CodeblockStyling {
   BlockCenter = 'block-center',
   Codeblock = 'codeblock',
 }
-export enum ExcalidrawStyling {
-  Default = 'default',
-}
-export type Styling = InlineStyling | DisplayStyling | CodeblockStyling | ExcalidrawStyling;
+export type Styling = InlineStyling | DisplayStyling | CodeblockStyling;
 
-export interface InlineProcessor {
+export interface ProcessorBase<Styling> {
   id: string;
   renderingEngine: RenderingEngine;
   format: string;
-  styling: InlineStyling;
-  disableSuggest?: boolean;
-  noPreamble?: boolean;
-  fitToNoteWidth?: boolean;
-  syntaxMode?: SyntaxMode;
+  styling: Styling;
   useReplaceAll?: boolean;
+  fitToNoteWidth?: boolean;
+  noPreamble?: boolean;
+  syntaxMode?: SyntaxMode;
 }
 
-export interface DisplayProcessor {
-  id: string;
-  renderingEngine: RenderingEngine;
-  format: string;
-  styling: DisplayStyling;
-  disableSuggest?: boolean;
-  noPreamble?: boolean;
-  fitToNoteWidth?: boolean;
-  syntaxMode?: SyntaxMode;
-  useReplaceAll?: boolean;
-}
-export interface CodeblockProcessor {
-  id: string;
-  renderingEngine: RenderingEngine;
-  format: string;
-  styling: CodeblockStyling;
-  disableSuggest?: boolean;
-  noPreamble?: boolean;
-  fitToNoteWidth?: boolean;
-  syntaxMode?: SyntaxMode;
-  useReplaceAll?: boolean;
-}
-export interface ExcalidrawProcessor {
-  id: string;
-  renderingEngine: RenderingEngine;
-  format: string;
-  styling: ExcalidrawStyling;
-  disableSuggest?: boolean;
-  noPreamble?: boolean;
-  fitToNoteWidth?: boolean;
-  syntaxMode?: SyntaxMode;
-  useReplaceAll?: boolean;
-}
-export type Processor = InlineProcessor | DisplayProcessor | CodeblockProcessor | ExcalidrawProcessor;
-export type Processors = InlineProcessor[] | DisplayProcessor[] | CodeblockProcessor[] | ExcalidrawProcessor[];
+export type InlineProcessor = ProcessorBase<InlineStyling>;
+export type DisplayProcessor = ProcessorBase<DisplayStyling>;
+export type CodeblockProcessor = ProcessorBase<CodeblockStyling>;
 
-export const ProcessorKindTokens = ['inline', 'display', 'codeblock', 'excalidraw'] as const;
+export type Processor = InlineProcessor | DisplayProcessor | CodeblockProcessor;
+
+export const ProcessorKindTokens = ['inline', 'display', 'codeblock'] as const;
 export type ProcessorKind = (typeof ProcessorKindTokens)[number];
+
+export type ProcessorOfKind<K extends ProcessorKind> = K extends 'inline'
+  ? InlineProcessor
+  : K extends 'display'
+    ? DisplayProcessor
+    : K extends 'codeblock'
+      ? CodeblockProcessor
+      : never;
 
 export const DefaultNewInlineProcessor: InlineProcessor = {
   id: 'new',
   renderingEngine: RenderingEngine.TypstSVG,
   format: '#set page(margin: (x: 0pt, y: 0.3125em))\n${CODE}$',
   styling: InlineStyling.Inline,
-  disableSuggest: false,
-  noPreamble: false,
-  fitToNoteWidth: false,
-  syntaxMode: SyntaxMode.Math,
   useReplaceAll: false,
+  fitToNoteWidth: false,
+  noPreamble: false,
+  syntaxMode: SyntaxMode.Math,
 };
 export const DefaultNewDisplayProcessor: DisplayProcessor = {
   id: 'new',
   renderingEngine: RenderingEngine.TypstSVG,
   format: '$ {CODE} $',
   styling: DisplayStyling.BlockCenter,
-  disableSuggest: false,
-  noPreamble: false,
-  fitToNoteWidth: false,
-  syntaxMode: SyntaxMode.Math,
   useReplaceAll: false,
+  fitToNoteWidth: false,
+  noPreamble: false,
+  syntaxMode: SyntaxMode.Math,
 };
 export const DefaultNewCodeblockProcessor: CodeblockProcessor = {
   id: 'new',
   renderingEngine: RenderingEngine.TypstSVG,
-  format: '#{CODE}',
+  format: '{CODE}',
   styling: CodeblockStyling.BlockCenter,
-  disableSuggest: false,
-  noPreamble: false,
-  fitToNoteWidth: false,
-  syntaxMode: SyntaxMode.Markup,
   useReplaceAll: false,
-};
-export const DefaultNewExcalidrawProcessor: ExcalidrawProcessor = {
-  id: 'new',
-  renderingEngine: RenderingEngine.TypstSVG,
-  format: '#set page(margin: 0.3125em)\n${CODE}$',
-  styling: ExcalidrawStyling.Default,
-  disableSuggest: false,
-  noPreamble: false,
   fitToNoteWidth: false,
+  noPreamble: false,
   syntaxMode: SyntaxMode.Markup,
-  useReplaceAll: false,
 };
 
 export const DefaultNewProcessor: Record<ProcessorKind, Processor> = {
   inline: DefaultNewInlineProcessor,
   display: DefaultNewDisplayProcessor,
   codeblock: DefaultNewCodeblockProcessor,
-  excalidraw: DefaultNewExcalidrawProcessor,
 } as const;

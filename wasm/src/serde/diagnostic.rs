@@ -28,11 +28,16 @@ impl SourceDiagnosticSer {
     where
         W: World,
     {
-        let source = world.source(diag.span.id().unwrap()).unwrap();
-        let range = world.range(diag.span).unwrap_or(Range { start: 0, end: 0 });
-        let lines = source.lines();
-        let from = lines.byte_to_utf16(range.start).unwrap_or(0);
-        let to = lines.byte_to_utf16(range.end).unwrap_or(0);
+        let (from, to) = match diag.span.id().and_then(|id| world.source(id).ok()) {
+            Some(source) => {
+                let range = world.range(diag.span).unwrap_or(0..0);
+                let lines = source.lines();
+                let from = lines.byte_to_utf16(range.start).unwrap_or(0);
+                let to = lines.byte_to_utf16(range.end).unwrap_or(0);
+                (from, to)
+            }
+            None => (0, 0),
+        };
 
         SourceDiagnosticSer {
             severity: match diag.severity {

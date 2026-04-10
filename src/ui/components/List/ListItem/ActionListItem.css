@@ -1,0 +1,26 @@
+.typstmate-action-list-item-summary {
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.typstmate-action-list-item-info {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.typstmate-action-list-item-trigger {
+  font-weight: bold;
+}
+
+.typstmate-action-list-item-action {
+  font-size: var(--font-ui-small);
+  color: var(--text-muted);
+}
+
+.typstmate-action-list-item-controls {
+  display: flex;
+  gap: 8px;
+}

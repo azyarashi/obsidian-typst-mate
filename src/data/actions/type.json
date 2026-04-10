@@ -1,0 +1,50 @@
+[
+  {
+    "id": "Enter Inline Math in Markdown",
+    "contexts": ["Markdown"],
+    "trigger": {
+      "t": "type",
+      "v": "mk"
+    },
+    "action": {
+      "t": "snippet",
+      "v": "${} #CURSOR {}$"
+    }
+  },
+  {
+    "id": "Enter Display Math in Markdown",
+    "contexts": ["Markdown"],
+    "trigger": {
+      "t": "type",
+      "v": "dm"
+    },
+    "action": {
+      "t": "snippet",
+      "v": "$$\n#CURSOR\n$$"
+    }
+  },
+  {
+    "id": "Enter Inline Math in Markup",
+    "contexts": ["Markup"],
+    "trigger": {
+      "t": "type",
+      "v": "mk"
+    },
+    "action": {
+      "t": "snippet",
+      "v": "$#CURSOR$"
+    }
+  },
+  {
+    "id": "Enter Display Math in Markup",
+    "contexts": ["Markup"],
+    "trigger": {
+      "t": "type",
+      "v": "dm"
+    },
+    "action": {
+      "t": "snippet",
+      "v": "$ #CURSOR $"
+    }
+  }
+]

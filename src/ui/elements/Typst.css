@@ -1,0 +1,14 @@
+mjx-container {
+  text-indent: 0;
+}
+
+/* https://docs.obsidian.md/Reference/CSS+variables/Foundations/Typography#Text+formatting */
+.cm-strong + .cm-widgetBuffer + .math,
+.math:has(+ .cm-widgetBuffer + .cm-strong) {
+  --typst-base-color: var(--bold-color);
+}
+
+.cm-em + .cm-widgetBuffer + .math,
+.math:has(+ .cm-widgetBuffer + .cm-em) {
+  --typst-base-color: var(--italic-color);
+}

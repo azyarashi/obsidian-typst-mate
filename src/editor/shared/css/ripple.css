@@ -1,7 +1,7 @@
 .typstmate-jump-ripple {
   position: fixed;
 
-  z-index: 1000;
+  z-index: var(--layer-notice);
 
   width: 0;
   height: 0;

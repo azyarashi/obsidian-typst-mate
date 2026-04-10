@@ -6,8 +6,6 @@ import { getModeAndKindFromRegion } from '@/utils/typstSyntax';
 
 export class TypstCorePluginValue implements PluginValue {
   activeRegion: ParsedRegion = {
-    id: 0,
-
     skip: 0, // readonly
     skipEnd: 0, // readonly
     from: 0, // readonly

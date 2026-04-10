@@ -1,37 +1,43 @@
-import { MarkdownView, Notice } from 'obsidian';
-
+import { MarkdownView, type Menu, type MenuItem, Notice } from 'obsidian';
 import { BASE_COLOR_VAR } from '@/constants';
 import { jumpFromClickPlugin } from '@/editor/shared/extensions/JumpFromClick';
 import { t } from '@/i18n';
-import type { Diagnostic, SVGResult } from '@/libs/worker';
+import { appUtils, typstManager } from '@/libs';
+import { type Diagnostic, ErrorCode, type SvgResultSer } from '@/libs/typstManager/worker';
 import TypstElement from './Typst';
 
 import './SVG.css';
 
 export default class TypstSVGElement extends TypstElement {
   override connectedCallback() {
-    this.addEventListener('contextmenu', (event) => {
-      const svg = this.querySelector('svg');
-      if (!svg) return;
+    if (this.isInitialized) return;
 
-      event.preventDefault();
-      this.menu.showAtPosition({ x: event.pageX, y: event.pageY });
-    });
+    super.connectedCallback();
 
     this.addEventListener('click', async (event) => {
+      event.preventDefault();
+      event.stopPropagation();
       await this.jump(event);
     });
   }
 
-  constructor() {
-    super();
-    this.menu.addSeparator();
-    this.menu.addItem((item) => {
+  protected override onContextMenu(event: MouseEvent) {
+    const svg = this.querySelector('svg');
+    if (!svg) return;
+
+    super.onContextMenu(event);
+  }
+
+  protected override additionalMenuItems(menu: Menu) {
+    if (this.isErr) return;
+
+    menu.addSeparator();
+    menu.addItem((item: MenuItem) => {
       item.setTitle(t('contextMenu.copyAsSvgObsidian')).onClick(async () => {
         if (this.isErr) return;
 
-        const bodyStyles = getComputedStyle(document.body);
-        const baseColor = bodyStyles.getPropertyValue('--text-normal').trim();
+        const styles = getComputedStyle(this);
+        const baseColor = styles.color;
 
         const svg = this.innerHTML.replaceAll(`var(${BASE_COLOR_VAR})`, baseColor);
         await copySVGToClipboard(svg);
@@ -39,7 +45,7 @@ export default class TypstSVGElement extends TypstElement {
         new Notice(t('notices.copiedToClipboard'));
       });
     });
-    this.menu.addItem((item) => {
+    menu.addItem((item: MenuItem) => {
       item.setTitle(t('contextMenu.copyAsSvgTypst')).onClick(async () => {
         if (this.isErr) return;
 
@@ -49,13 +55,13 @@ export default class TypstSVGElement extends TypstElement {
         new Notice(t('notices.copiedToClipboard'));
       });
     });
-    this.menu.addSeparator();
-    this.menu.addItem((item) => {
+    menu.addSeparator();
+    menu.addItem((item: MenuItem) => {
       item.setTitle(t('contextMenu.copyAsPngTransparent')).onClick(async () => {
         if (this.isErr) return;
 
-        const bodyStyles = getComputedStyle(document.body);
-        const baseColor = bodyStyles.getPropertyValue('--text-normal').trim();
+        const styles = getComputedStyle(this);
+        const baseColor = styles.color;
 
         const svg = this.innerHTML.replaceAll(`var(${BASE_COLOR_VAR})`, baseColor);
         const pngBlob = await SVGToPNG(svg, this);
@@ -66,12 +72,13 @@ export default class TypstSVGElement extends TypstElement {
         } else new Notice(t('notices.failedToConvertSvgToPng'));
       });
     });
-    this.menu.addItem((item) => {
+    menu.addItem((item: MenuItem) => {
       item.setTitle(t('contextMenu.copyAsPngOpaque')).onClick(async () => {
         if (this.isErr) return;
 
+        const styles = getComputedStyle(this);
         const bodyStyles = getComputedStyle(document.body);
-        const baseColor = bodyStyles.getPropertyValue('--text-normal').trim();
+        const baseColor = styles.color;
         const backgroundColor = bodyStyles.getPropertyValue('--background-primary').trim();
 
         const svg = this.innerHTML.replaceAll(`var(${BASE_COLOR_VAR})`, baseColor);
@@ -83,13 +90,13 @@ export default class TypstSVGElement extends TypstElement {
         } else new Notice(t('notices.failedToConvertSvgToPng'));
       });
     });
-    this.menu.addSeparator();
-    this.menu.addItem((item) => {
+    menu.addSeparator();
+    menu.addItem((item: MenuItem) => {
       item.setTitle(t('contextMenu.copyAsImgTag')).onClick(async () => {
         if (this.isErr) return;
 
-        const bodyStyles = getComputedStyle(document.body);
-        const baseColor = bodyStyles.getPropertyValue('--text-normal').trim();
+        const styles = getComputedStyle(this);
+        const baseColor = styles.color;
 
         const svg = this.innerHTML.replaceAll(`var(${BASE_COLOR_VAR})`, baseColor).replaceAll('\n', '');
         const dataUrl = `data:image/svg+xml,${encodeURIComponent(svg)}`;
@@ -105,21 +112,18 @@ export default class TypstSVGElement extends TypstElement {
     const formatted = this.format();
 
     try {
-      const result = this.plugin.typst.svg(formatted, this.ndir, this.kind, this.id);
-
-      if (result instanceof Promise)
-        result
-          .then((result: SVGResult) => this.postProcess(result))
-          .catch((err: Diagnostic[]) => this.handleError(err));
-      else this.postProcess(result);
+      const result = await typstManager.wasm.svgAsync(formatted, this.ndir, this.kind, this.id);
+      this.postProcess(result);
     } catch (err) {
+      console.log(err);
+      if (err === ErrorCode.Pending) return this; // Ignore pending as it will be retried internally
       this.handleError(err as Diagnostic[]);
     }
 
     return this;
   }
 
-  override postProcess(result: SVGResult) {
+  override postProcess(result: SvgResultSer) {
     super.postProcess(result);
     this.innerHTML = result.svg;
   }
@@ -132,11 +136,11 @@ export default class TypstSVGElement extends TypstElement {
     const x = (event.clientX - rect.left) / (rect.width / svg.viewBox.baseVal.width);
     const y = (event.clientY - rect.top) / (rect.height / svg.viewBox.baseVal.height);
 
-    await this.plugin.typst.svg(this.format(), this.ndir, this.kind, this.id); // フレーム生成のための副作用
+    await typstManager.wasm.svgAsync(this.format(), this.ndir, this.kind, this.id); // フレーム生成のための副作用
 
-    const result = await this.plugin.typst.jumpFromClick(x, y);
+    const result = await typstManager.wasm.jumpFromClickAsync(x, y);
     if (result) {
-      const view = this.plugin.app.workspace.getActiveFileView();
+      const view = appUtils.app.workspace.getActiveFileView();
       if (!(view instanceof MarkdownView)) return;
       view.editor.cm.plugin(jumpFromClickPlugin)?.jumpTo(result, event, this);
     }

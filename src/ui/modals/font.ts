@@ -1,7 +1,7 @@
 import { type App, Modal, Notice, Setting } from 'obsidian';
 
 import { t } from '@/i18n';
-import type { FontInfo } from '@/libs/worker';
+import type { FontInfo } from '@/libs/typstManager/worker';
 
 export class FontModal extends Modal {
   constructor(app: App, fontInfoArray: FontInfo[]) {

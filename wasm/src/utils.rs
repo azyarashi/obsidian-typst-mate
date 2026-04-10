@@ -44,7 +44,7 @@ pub fn find_baseline(frame: &Frame, offset_y: Abs) -> Option<Abs> {
     while let Some((cur, cur_offset)) = stack.pop() {
         for (pos, item) in cur.items().rev() {
             if let FrameItem::Text(text) = item {
-                if text.text.as_bytes() == b"TypstMate" {
+                if text.text.as_bytes() == b"mnomnomno" {
                     return Some(cur_offset + pos.y);
                 }
             } else if let FrameItem::Group(group) = item {

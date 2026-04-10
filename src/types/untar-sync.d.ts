@@ -1,10 +1,10 @@
 declare module 'untar-sync' {
-  export default function untarSync(buffer: ArrayBuffer): tarFile[];
-}
+  export interface TarFile {
+    name: string;
+    buffer: ArrayBuffer;
+    type: string;
+    linkname?: string;
+  }
 
-interface tarFile {
-  name: string;
-  buffer: ArrayBuffer;
-  type: string;
-  linkname?: string;
+  export default function untarSync(buffer: ArrayBuffer | Uint8Array): TarFile[];
 }
