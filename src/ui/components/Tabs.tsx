@@ -1,4 +1,4 @@
-import type { JSX } from 'hono/jsx/jsx-runtime';
+import type { JSX } from 'hono/jsx/dom/jsx-runtime';
 import { Platform } from 'obsidian';
 
 import './Tabs.css';
