@@ -23,8 +23,7 @@ export default class ObsidianTypstMate extends Plugin {
 
   override async onload() {
     await initI18n();
-    if (window.TypstMate?.status === Status.Disabling)
-      console.warn('[TypstMate] The plugin did not unload properly last time.');
+    await this.waitUntilNotDisabling();
 
     // * settingsManager & crashTracker
 
@@ -102,6 +101,15 @@ export default class ObsidianTypstMate extends Plugin {
       console.error('[TypstMate] Plugin.onload failed', e);
       new Notice(t('notices.initFailed'));
       TypstMate.update(Status.Error);
+    }
+  }
+
+  private async waitUntilNotDisabling() {
+    const start = Date.now();
+
+    while (window.TypstMate?.status === Status.Disabling) {
+      if (10000 < Date.now() - start) throw new Error('[TypstMate] The plugin did not unload properly last time.');
+      await new Promise((resolve) => setTimeout(resolve, 1000 / 60));
     }
   }
 
@@ -183,8 +191,8 @@ export default class ObsidianTypstMate extends Plugin {
    * ! Plugin.disablePlugin 時にも呼ばれる
    */
   override async onunload() {
+    TypstMate.update(Status.Disabling);
     try {
-      TypstMate.update(Status.Disabling);
       if (crashTracker.shouldBlockStart) crashTracker.updateCrashStatus(false);
 
       const renderedEls = document.querySelectorAll('typstmate-svg, typstmate-html');
@@ -192,11 +200,11 @@ export default class ObsidianTypstMate extends Plugin {
 
       for (const detach of this.detaches) await detach();
       this.detaches = [];
-      TypstMate.update(Status.Disabled);
     } catch (e) {
       console.error('[TypstMate] Plugin.onunload failed', e);
       new Notice(t('notices.unloadFailed'));
     }
+    TypstMate.update(Status.Disabled);
   }
 
   /* onExternalSettingsChange */
