@@ -5,7 +5,7 @@
     "module": "ESNext",
     "allowJs": true,
     "jsx": "react-jsx",
-    "jsxImportSource": "hono/jsx",
+    "jsxImportSource": "hono/jsx/dom",
 
     "moduleResolution": "bundler",
     "allowImportingTsExtensions": true,

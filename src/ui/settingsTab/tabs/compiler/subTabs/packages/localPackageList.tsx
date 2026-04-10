@@ -1,5 +1,5 @@
 import { Setting } from '@components/obsidian/Setting';
-import { useState } from 'hono/jsx';
+import { useState } from 'hono/jsx/dom';
 import { Notice, Platform } from 'obsidian';
 import { t } from '@/i18n';
 import { fileManager } from '@/libs';

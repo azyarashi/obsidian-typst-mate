@@ -1,4 +1,4 @@
-import { type Child, useEffect, useRef, useState } from 'hono/jsx';
+import { type Child, useEffect, useRef, useState } from 'hono/jsx/dom';
 import type { DragEvent, MouseEvent } from 'hono/jsx/dom';
 import { setTooltip } from 'obsidian';
 import { ICONS } from '@/constants/icons';

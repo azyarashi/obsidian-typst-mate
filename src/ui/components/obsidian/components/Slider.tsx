@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef } from 'hono/jsx';
+import { useLayoutEffect, useRef } from 'hono/jsx/dom';
 import { SliderComponent as ObsidianSliderComponent } from 'obsidian';
 
 import type { BuilderProps } from '..';

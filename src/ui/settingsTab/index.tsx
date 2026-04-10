@@ -1,6 +1,5 @@
 import { type TabDefinition, Tabs } from '@components/Tabs';
-import { useMemo, useState } from 'hono/jsx';
-import { render } from 'hono/jsx/dom';
+import { render, useMemo, useState } from 'hono/jsx/dom';
 import { type App, PluginSettingTab } from 'obsidian';
 
 import { t } from '@/i18n';

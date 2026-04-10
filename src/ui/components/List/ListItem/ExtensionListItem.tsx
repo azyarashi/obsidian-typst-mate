@@ -1,4 +1,4 @@
-import { useState } from 'hono/jsx';
+import { useState } from 'hono/jsx/dom';
 import { render } from 'hono/jsx/dom';
 import { ICONS } from '@/constants/icons';
 import { extensionManager, settingsManager } from '@/libs';

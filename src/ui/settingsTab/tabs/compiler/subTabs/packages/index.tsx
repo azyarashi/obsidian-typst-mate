@@ -1,5 +1,5 @@
 import { Setting } from '@components/obsidian/Setting';
-import { useEffect, useState } from 'hono/jsx';
+import { useEffect, useState } from 'hono/jsx/dom';
 import { t } from '@/i18n';
 import { appUtils, fileManager } from '@/libs';
 import type { PackageSpec } from '@/types/typst';

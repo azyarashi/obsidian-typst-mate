@@ -2,7 +2,7 @@ import { EditorState } from '@codemirror/state';
 import { EditorView } from '@codemirror/view';
 import { Setting } from '@components/obsidian/Setting';
 import { type TabDefinition, Tabs } from '@components/Tabs';
-import { useEffect, useMemo, useRef, useState } from 'hono/jsx';
+import { useEffect, useMemo, useRef, useState } from 'hono/jsx/dom';
 import { debounce } from 'obsidian';
 import { t } from '@/i18n';
 import { extensionManager, settingsManager } from '@/libs';

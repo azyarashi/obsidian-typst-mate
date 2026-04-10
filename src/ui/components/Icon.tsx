@@ -1,4 +1,4 @@
-import type { Child, MouseEvent } from 'hono/jsx';
+import type { Child, MouseEvent } from 'hono/jsx/dom';
 import { setTooltip } from 'obsidian';
 import './icon.css';
 

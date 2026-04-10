@@ -1,4 +1,4 @@
-import type { Child } from 'hono/jsx';
+import type { Child } from 'hono/jsx/dom';
 import { MarkdownView } from 'obsidian';
 
 import { Status, type TypstMate } from '@/api';

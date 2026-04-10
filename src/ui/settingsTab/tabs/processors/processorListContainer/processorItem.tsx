@@ -2,7 +2,7 @@ import { IconS } from '@components/Icon';
 import { SortableItem } from '@components/List/ListContainer';
 import { Setting } from '@components/obsidian/Setting';
 import { SyntaxMode } from '@typstmate/typst-syntax';
-import type { Child } from 'hono/jsx';
+import type { Child } from 'hono/jsx/dom';
 import type { MouseEvent } from 'hono/jsx/dom';
 
 import { ICONS } from '@/constants/icons';

@@ -1,4 +1,4 @@
-import type { Child } from 'hono/jsx';
+import type { Child } from 'hono/jsx/dom';
 
 export function Icon({
   icon,

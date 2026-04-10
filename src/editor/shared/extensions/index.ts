@@ -238,7 +238,7 @@ export const syntaxHighlightEntry = defineExtension<SyntaxHighlightSettings>()({
     tags: ['decoration'],
     scope: ['markdown', 'typst'],
     isBuiltin: false,
-    order: 50,
+    displayOrder: 50,
     settings: [
       { key: 'useObsidianTheme', type: 'toggle', title: 'Obsidian テーマ', description: 'テーマ', defaultValue: false },
     ] as const,
@@ -314,7 +314,7 @@ export const linterEntry = defineExtension()({
     tags: ['ui'],
     scope: ['markdown', 'typst'],
     isBuiltin: false,
-    order: 50,
+    displayOrder: 50,
     settings: [],
   },
   factory: (context) => (context === 'typst' ? [linterExtension, lintGutter()] : linterExtension),

@@ -1,13 +1,12 @@
 import { Compartment, EditorState } from '@codemirror/state';
 import { EditorView } from '@codemirror/view';
 import { debounce, type Menu, TextFileView, TFile, type View, type WorkspaceLeaf } from 'obsidian';
-
-import { updateDiagnosticEffect } from '@/editor/shared/extensions/Diagnostic';
 import { formatterSettingsFacet } from '@/editor/shared/extensions';
+import { updateDiagnosticEffect } from '@/editor/shared/extensions/Diagnostic';
 import { buildTypstTextExtensions } from '@/editor/typst/build';
 import { jumpToPreviewTargetFacet } from '@/editor/typst/extensions/JumpToPreview';
 import { t } from '@/i18n';
-import { editorHelper, settingsManager, typstManager } from '@/libs';
+import { settingsManager, typstManager } from '@/libs';
 import { viewTracker } from '@/libs/extensionManager';
 import type ObsidianTypstMate from '@/main';
 import { exportToPdf } from '@/utils/export';
@@ -211,7 +210,7 @@ export class TypstFileView extends TextFileView {
 
   private buildExtensions(): any[] {
     return [
-      ...buildTypstTextExtensions(editorHelper),
+      ...buildTypstTextExtensions(),
       viewTracker('typst'),
       jumpToPreviewTargetFacet.of({
         jumpToPosition: async (position) => {

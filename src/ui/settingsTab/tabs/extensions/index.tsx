@@ -1,5 +1,5 @@
 import { ExtensionListItem } from '@components/List/ListItem/ExtensionListItem';
-import { useMemo, useState } from 'hono/jsx';
+import { useMemo, useState } from 'hono/jsx/dom';
 import { debounce } from 'obsidian';
 import { extensionManager, settingsManager } from '@/libs';
 import { ALL_SCOPES, ALL_TAGS, type EditorContext, type ExtensionEntry, type Tag } from '@/libs/extensionManager';
@@ -48,10 +48,10 @@ export function ExtensionsTab() {
 
   const normal = filtered
     .filter((e) => !e.info.tags.includes('core'))
-    .sort((a, b) => (a.info.order ?? 0) - (b.info.order ?? 0));
+    .sort((a, b) => (a.info.displayOrder ?? 0) - (b.info.displayOrder ?? 0));
   const core = filtered
     .filter((e) => e.info.tags.includes('core'))
-    .sort((a, b) => (a.info.order ?? 0) - (b.info.order ?? 0));
+    .sort((a, b) => (a.info.displayOrder ?? 0) - (b.info.displayOrder ?? 0));
 
   return (
     <>

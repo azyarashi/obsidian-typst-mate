@@ -1,5 +1,4 @@
-import { jsx, useEffect, useState } from 'hono/jsx';
-import { render } from 'hono/jsx/dom';
+import { render, useEffect, useState } from 'hono/jsx/dom';
 import { MarkdownView, setTooltip } from 'obsidian';
 
 import { Status, TypstMate } from '@/api';
@@ -13,7 +12,7 @@ import './statusBarItem.css';
 
 export function setStatusBarItem(containerEl: HTMLElement) {
   containerEl.addClass('typstmate-status-bar-item');
-  render(jsx(StatusBarItem, { containerEl }), containerEl);
+  render(<StatusBarItem containerEl={containerEl} />, containerEl);
 }
 
 export function StatusBarItem({ containerEl }: { containerEl: HTMLElement }) {

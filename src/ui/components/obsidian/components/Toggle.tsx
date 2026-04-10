@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef } from 'hono/jsx';
+import { useLayoutEffect, useRef } from 'hono/jsx/dom';
 import { ToggleComponent as ObsidianToggleComponent } from 'obsidian';
 
 import type { BuilderProps } from '..';

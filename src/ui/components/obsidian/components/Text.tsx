@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef } from 'hono/jsx';
+import { useLayoutEffect, useRef } from 'hono/jsx/dom';
 import { TextComponent as ObsidianTextComponent } from 'obsidian';
 
 import type { BuilderProps } from '..';

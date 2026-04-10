@@ -1,5 +1,5 @@
 import { type TabDefinition, Tabs } from '@components/Tabs';
-import { useState } from 'hono/jsx';
+import { useState } from 'hono/jsx/dom';
 
 import { t } from '@/i18n';
 import { settingsManager } from '@/libs';

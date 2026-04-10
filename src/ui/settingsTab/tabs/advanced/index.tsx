@@ -1,5 +1,5 @@
 import { Setting } from '@components/obsidian/Setting';
-import { useState } from 'hono/jsx';
+import { useState } from 'hono/jsx/dom';
 import { debounce, Notice, Platform } from 'obsidian';
 import { DEFAULT_SETTINGS } from '@/data/settings';
 import { t } from '@/i18n';

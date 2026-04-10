@@ -1,6 +1,6 @@
 import { Compartment, type Extension, Facet } from '@codemirror/state';
 import { type EditorView, ViewPlugin } from '@codemirror/view';
-import type { Child } from 'hono/jsx';
+import type { Child } from 'hono/jsx/dom';
 
 import type ObsidianTypstMate from '@/main';
 import type { Singleton } from '@/types/singleton';
