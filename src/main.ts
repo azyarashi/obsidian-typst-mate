@@ -108,7 +108,7 @@ export default class ObsidianTypstMate extends Plugin {
   private async blockStart(): Promise<void> {
     new Notice(t('notices.crashAutoDisabled'));
     crashTracker.updateCrashStatus(false);
-    await this.app.plugins.disablePlugin(ObsidianTypstMate.id); // ? onunload is also called
+    await this.app.plugins.disablePlugin(ObsidianTypstMate.id);
   }
 
   private async onFirstLoadInProcess() {
@@ -179,6 +179,9 @@ export default class ObsidianTypstMate extends Plugin {
 
   /* onunload */
 
+  /**
+   * ! Plugin.disablePlugin 時にも呼ばれる
+   */
   override async onunload() {
     try {
       TypstMate.update(Status.Disabling);
