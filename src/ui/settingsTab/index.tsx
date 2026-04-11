@@ -22,6 +22,7 @@ export class SettingsTab extends PluginSettingTab {
     const { containerEl } = this;
 
     containerEl.empty();
+    render(null, containerEl);
     render(<Settings />, containerEl);
   }
 }
