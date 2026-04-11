@@ -3,12 +3,13 @@
     "lib": ["ESNext", "DOM", "DOM.Iterable"],
     "target": "ESNext",
     "module": "ESNext",
-    "allowJs": true,
-    "jsx": "react-jsx",
-    "jsxImportSource": "hono/jsx/dom",
-
     "moduleResolution": "bundler",
+
+    "allowJs": false,
+    "jsx": "react-jsx",
+    "jsxImportSource": "preact",
     "allowImportingTsExtensions": true,
+
     "verbatimModuleSyntax": true,
     "noEmit": true,
 
@@ -27,7 +28,6 @@
     "esModuleInterop": true,
 
     "types": ["bun-types", "vite/client", "obsidian-typings"],
-
     "paths": {
       "@/*": ["./src/*"],
       "@resources/*": ["./resources/*"],
@@ -43,5 +43,5 @@
       "@codemirror/state": ["./node_modules/@codemirror/state"]
     }
   },
-  "include": ["src", "wasm/src/serde/values", "tests", "resources", ".vscode/print.ts"]
+  "include": ["src", "wasm/src/serde/values", "tests", "resources"]
 }

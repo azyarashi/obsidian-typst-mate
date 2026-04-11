@@ -1,6 +1,7 @@
 import { type TabDefinition, Tabs } from '@components/Tabs';
-import { render, useMemo, useState } from 'hono/jsx/dom';
 import { type App, PluginSettingTab } from 'obsidian';
+import { render } from 'preact';
+import { useMemo, useState } from 'preact/hooks';
 
 import { t } from '@/i18n';
 import { settingsManager } from '@/libs';
@@ -18,8 +19,10 @@ export class SettingsTab extends PluginSettingTab {
   }
 
   display() {
-    this.containerEl.empty();
-    render(<Settings />, this.containerEl);
+    const { containerEl } = this;
+
+    containerEl.empty();
+    render(<Settings />, containerEl);
   }
 }
 

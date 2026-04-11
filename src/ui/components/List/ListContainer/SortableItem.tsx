@@ -1,6 +1,7 @@
-import { type Child, useEffect, useRef, useState } from 'hono/jsx/dom';
-import type { DragEvent, MouseEvent } from 'hono/jsx/dom';
 import { setTooltip } from 'obsidian';
+import type { ComponentChildren } from 'preact';
+import { useEffect, useRef, useState } from 'preact/hooks';
+
 import { ICONS } from '@/constants/icons';
 import { IconS } from '../../Icon';
 
@@ -10,11 +11,11 @@ export interface SortableItemProps {
   onMove: (dragUuid: string, dropUuid: string, side: 'top' | 'bottom') => void;
   onDelete?: () => void;
   deleteLabel?: string;
-  idInput?: Child;
-  summaryFields?: Child;
-  quickIcons?: Child;
-  mainField?: Child;
-  detailsContent?: Child;
+  idInput?: ComponentChildren;
+  summaryFields?: ComponentChildren;
+  quickIcons?: ComponentChildren;
+  mainField?: ComponentChildren;
+  detailsContent?: ComponentChildren;
   onOpenStateChange?: (open: boolean) => void;
 }
 
@@ -106,7 +107,7 @@ export function SortableItem({
     currentDragUuid = null;
   };
 
-  const preventAccordion = (e: MouseEvent | Event | KeyboardEvent) => {
+  const preventAccordion = (e: MouseEvent | Event) => {
     e.preventDefault();
     e.stopPropagation();
   };

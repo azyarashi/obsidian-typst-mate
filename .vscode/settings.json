@@ -19,11 +19,6 @@
   "[css]": {
     "editor.defaultFormatter": "biomejs.biome"
   },
-  "i18n-ally.localesPaths": [
-    "resources/locales",
-  ],
-  "i18n-ally.regex.usageMatch": [
-    "^[a-zA-Z0-9]t\\(\\s*['\"`]([^'\"`]+)['\"`]"
-  ]
+  "i18n-ally.localesPaths": ["resources/locales"],
+  "i18n-ally.regex.usageMatch": ["^[a-zA-Z0-9]t\\(\\s*['\"`]([^'\"`]+)['\"`]"]
 }
-

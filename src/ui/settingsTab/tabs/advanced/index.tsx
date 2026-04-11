@@ -1,6 +1,6 @@
 import { Setting } from '@components/obsidian/Setting';
-import { useState } from 'hono/jsx/dom';
 import { debounce, Notice, Platform } from 'obsidian';
+import { useState } from 'preact/hooks';
 import { DEFAULT_SETTINGS } from '@/data/settings';
 import { t } from '@/i18n';
 import { appUtils, settingsManager, typstManager } from '@/libs';

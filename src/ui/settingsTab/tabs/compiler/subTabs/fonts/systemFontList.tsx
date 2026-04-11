@@ -1,6 +1,6 @@
 import { Setting } from '@components/obsidian/Setting';
-import { useState } from 'hono/jsx/dom';
 import { Notice } from 'obsidian';
+import { useState } from 'preact/hooks';
 import { t } from '@/i18n';
 import { appUtils, fileManager, typstManager } from '@/libs';
 import { features } from '@/libs/features';

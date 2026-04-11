@@ -1,5 +1,5 @@
-import { useState } from 'hono/jsx/dom';
-import { render } from 'hono/jsx/dom';
+import { render } from 'preact';
+import { useState } from 'preact/hooks';
 import { ICONS } from '@/constants/icons';
 import { extensionManager, settingsManager } from '@/libs';
 import type { ExtensionInfo } from '@/libs/extensionManager';

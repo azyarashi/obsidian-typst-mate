@@ -6,7 +6,7 @@ import { format } from '@/ui/elements/Typst';
 import { getRegionAt } from '../utils/core';
 
 import './Tooltip.css';
-import { render } from 'hono/jsx/dom';
+import { render } from 'preact';
 
 export const hoverExtension = hoverTooltip(
   async (view, pos, side): Promise<Tooltip | null> => {

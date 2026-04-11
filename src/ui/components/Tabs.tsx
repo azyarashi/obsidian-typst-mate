@@ -1,5 +1,5 @@
-import type { JSX } from 'hono/jsx/dom/jsx-runtime';
 import { Platform } from 'obsidian';
+import type { JSX } from 'preact';
 
 import './Tabs.css';
 

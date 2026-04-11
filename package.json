@@ -9,18 +9,18 @@
 		"tsgo": "bunx --bun tsgo --noEmit"
 	},
 	"dependencies": {
-		"@lezer/common": "^1.5.1",
+		"@lezer/common": "^1.5.2",
 		"@typst-mate/i18n": "workspace:*",
 		"@typst-mate/watcher": "workspace:*",
 		"@typstmate/typst-syntax": "workspace:*",
 		"@vimee/core": "^0.3.0",
 		"@vimee/plugin-codemirror": "^0.2.0",
 		"comlink": "^4.4.2",
-		"hono": "^4.12.12",
+		"preact": "^10.29.1",
 		"untar-sync": "^1.0.4"
 	},
 	"devDependencies": {
-		"@biomejs/biome": "^2.4.10",
+		"@biomejs/biome": "^2.4.11",
 		"@codemirror/autocomplete": "^6.20.1",
 		"@codemirror/commands": "^6.10.3",
 		"@codemirror/language": "^6.12.3",
@@ -28,8 +28,8 @@
 		"@codemirror/search": "^6.6.0",
 		"@codemirror/state": "^6.6.0",
 		"@codemirror/view": "^6.41.0",
-		"@types/bun": "^1.3.11",
-		"@typescript/native-preview": "^7.0.0-dev.20260407.1",
+		"@types/bun": "^1.3.12",
+		"@typescript/native-preview": "^7.0.0-dev.20260410.1",
 		"@zsviczian/excalidraw": "^0.18.0-88",
 		"autoprefixer": "^10.4.27",
 		"builtin-modules": "^5.0.0",
@@ -38,7 +38,7 @@
 		"obsidian-typings": "^5.20.0",
 		"obsidian-excalidraw-plugin": "github:zsviczian/obsidian-excalidraw-plugin#master",
 		"postcss": "^8.5.9",
-		"vite": "^8.0.7",
+		"vite": "^8.0.8",
 		"vite-plugin-static-copy": "^4.0.1"
 	},
 	"peerDependencies": {

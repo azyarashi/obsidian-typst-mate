@@ -1,5 +1,5 @@
-import type { Child, MouseEvent } from 'hono/jsx/dom';
 import { setTooltip } from 'obsidian';
+import type { ComponentChildren, TargetedMouseEvent } from 'preact';
 import './icon.css';
 
 export function IconS({
@@ -8,20 +8,20 @@ export function IconS({
   title,
   onClick,
 }: {
-  icon: Child;
+  icon: ComponentChildren;
   isActive?: boolean;
   title?: string;
-  onClick?: (e: MouseEvent) => void;
+  onClick?: (e: TargetedMouseEvent<HTMLDivElement>) => void;
 }) {
   return (
     <div
       className={`typstmate-icon-s ${onClick ? 'is-clickable' : ''} ${!isActive ? 'is-dimmed' : ''}`}
-      ref={(el: HTMLElement) => {
+      ref={(el: HTMLDivElement | null) => {
         if (el && title) setTooltip(el, title);
       }}
       onClick={
         onClick
-          ? (e: MouseEvent) => {
+          ? (e: TargetedMouseEvent<HTMLDivElement>) => {
               e.preventDefault();
               e.stopPropagation();
               onClick(e);

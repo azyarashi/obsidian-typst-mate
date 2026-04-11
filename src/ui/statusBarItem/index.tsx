@@ -1,5 +1,6 @@
-import { render, useEffect, useState } from 'hono/jsx/dom';
 import { MarkdownView, setTooltip } from 'obsidian';
+import { render } from 'preact';
+import { useEffect, useState } from 'preact/hooks';
 
 import { Status, TypstMate } from '@/api';
 import { appUtils } from '@/libs';

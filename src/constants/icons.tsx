@@ -1,5 +1,5 @@
-import type { JSX } from 'hono/jsx/dom/jsx-runtime';
 import { addIcon, getIcon, removeIcon } from 'obsidian';
+import type { JSX } from 'preact';
 
 /**
  * @see https://docs.obsidian.md/Plugins/User+interface/Icons

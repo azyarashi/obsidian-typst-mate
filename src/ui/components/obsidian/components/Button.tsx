@@ -1,5 +1,5 @@
-import { useLayoutEffect, useRef } from 'hono/jsx/dom';
 import { ButtonComponent as ObsidianButtonComponent } from 'obsidian';
+import { useLayoutEffect, useRef } from 'preact/hooks';
 
 import type { BuilderProps } from '..';
 

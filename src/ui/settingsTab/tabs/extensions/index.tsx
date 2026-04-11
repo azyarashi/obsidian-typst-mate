@@ -1,6 +1,6 @@
 import { ExtensionListItem } from '@components/List/ListItem/ExtensionListItem';
-import { useMemo, useState } from 'hono/jsx/dom';
 import { debounce } from 'obsidian';
+import { useMemo, useState } from 'preact/hooks';
 import { extensionManager, settingsManager } from '@/libs';
 import { ALL_SCOPES, ALL_TAGS, type EditorContext, type ExtensionEntry, type Tag } from '@/libs/extensionManager';
 

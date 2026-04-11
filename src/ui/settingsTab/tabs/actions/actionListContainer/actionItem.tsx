@@ -1,7 +1,6 @@
 import { IconS } from '@components/Icon';
 import { SortableItem } from '@components/List/ListContainer';
 import { DropdownComponent, TextAreaComponent, TextComponent } from '@components/obsidian/components';
-import type { KeyboardEvent, MouseEvent } from 'hono/jsx/dom';
 import {
   type ActionContext,
   ActionContexts,
@@ -129,7 +128,7 @@ export function ActionItem({
                 })
                 .setDisabled(triggerType === 'hotkey');
 
-              text.inputEl.onkeydown = (e: KeyboardEvent) => {
+              text.inputEl.onkeydown = (e: any) => {
                 if (triggerType === 'hotkey') {
                   e.preventDefault();
                   if (e.key === 'Escape') {

@@ -1,4 +1,4 @@
-import type { Child } from 'hono/jsx/dom';
+import type { ComponentChildren } from 'preact';
 
 export function Icon({
   icon,
@@ -6,7 +6,7 @@ export function Icon({
   title,
   onClick,
 }: {
-  icon: Child;
+  icon: ComponentChildren;
   className?: string;
   title?: string;
   onClick?: () => void;

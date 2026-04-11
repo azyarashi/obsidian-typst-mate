@@ -1,4 +1,4 @@
-import { useCallback } from 'hono/jsx/dom';
+import { useCallback } from 'preact/hooks';
 
 const uuids = new WeakMap<any, string>();
 

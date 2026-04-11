@@ -1,6 +1,6 @@
 import { getSortableUuid, List, useSortableList } from '@components/List/ListContainer';
 import { Setting } from '@components/obsidian/Setting';
-import { useState } from 'hono/jsx/dom';
+import { useState } from 'preact/hooks';
 import { t, tFragment } from '@/i18n';
 import { settingsManager } from '@/libs';
 import { DefaultNewProcessor, type Processor, type ProcessorKind, type ProcessorOfKind } from '@/libs/processor';

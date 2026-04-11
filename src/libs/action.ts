@@ -33,10 +33,10 @@ export const newActionDef: ActionDef = {
   },
 };
 
-import type { Child } from 'hono/jsx/dom';
+import type { ComponentChildren } from 'preact';
 import { ICONS } from '@/constants/icons';
 
-export const CONTEXT_ICON_MAP: Record<ActionContext, Child> = {
+export const CONTEXT_ICON_MAP: Record<ActionContext, ComponentChildren> = {
   Markdown: ICONS.FileText,
   MathJax: ICONS.Sigma,
   Markup: ICONS.Code,

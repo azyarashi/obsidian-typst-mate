@@ -1,5 +1,5 @@
-import type { Child } from 'hono/jsx/dom';
 import { MarkdownView } from 'obsidian';
+import type { ComponentChildren } from 'preact';
 
 import { Status, type TypstMate } from '@/api';
 import { ICONS } from '@/constants/icons';
@@ -17,7 +17,7 @@ export function StatusIcon({
   color,
   onClick,
 }: {
-  icon: Child;
+  icon: ComponentChildren;
   className?: string;
   color?: string;
   onClick?: (e?: MouseEvent) => void;

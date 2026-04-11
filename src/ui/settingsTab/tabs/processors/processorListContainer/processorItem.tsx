@@ -2,8 +2,7 @@ import { IconS } from '@components/Icon';
 import { SortableItem } from '@components/List/ListContainer';
 import { Setting } from '@components/obsidian/Setting';
 import { SyntaxMode } from '@typstmate/typst-syntax';
-import type { Child } from 'hono/jsx/dom';
-import type { MouseEvent } from 'hono/jsx/dom';
+import type { ComponentChildren } from 'preact';
 
 import { ICONS } from '@/constants/icons';
 import { t, tFragment } from '@/i18n';
@@ -45,7 +44,7 @@ export function ProcessorItem({
     (processor.id === '' && index !== processors.length - 1 && kind !== 'codeblock') ||
     (processor.id !== '' && processors.some((p, i) => i !== index && p.id === processor.id));
 
-  const preventAccordion = (e: MouseEvent | Event | KeyboardEvent) => {
+  const preventAccordion = (e: MouseEvent | Event | any) => {
     e.preventDefault();
     e.stopPropagation();
   };
@@ -247,7 +246,7 @@ export function ProcessorItem({
   );
 }
 
-function getSyntaxModeIcon(kind: ProcessorKind, syntaxMode?: SyntaxMode): Child {
+function getSyntaxModeIcon(kind: ProcessorKind, syntaxMode?: SyntaxMode): ComponentChildren {
   switch (syntaxMode) {
     case SyntaxMode.Markup:
       return ICONS.Heading1;
