@@ -8,7 +8,7 @@ import { markdownExtensionEntries, sharedExtensionEntries, typstExtensionEntries
 import { appUtils, crashTracker, editorHelper, extensionManager, fileManager, registerCommands, registerEvents, settingsManager, typstManager } from './libs';
 import { buildTypstMiniEditorExtensions } from './libs/editorHelper/miniEditor';
 import { applyAllPatches, detachAllPatches } from './libs/patches';
-import { registerEmbeds, registerViews, SettingsTab, setStatusBarItem } from './ui';
+import { hideStatusBarItem, registerEmbeds, registerViews, SettingsTab, setStatusBarItem } from './ui';
 
 import './ui/styles';
 
@@ -49,7 +49,7 @@ export default class ObsidianTypstMate extends Plugin {
 
       const statusBarItemEl = this.addStatusBarItem();
       setStatusBarItem(statusBarItemEl);
-      // detach は不要
+      this.detaches.unshift(() => hideStatusBarItem(statusBarItemEl));
 
       // * MathJax
 

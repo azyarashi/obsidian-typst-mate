@@ -1,12 +1,13 @@
 import { hoverTooltip, type Tooltip } from '@codemirror/view';
 import { Component, MarkdownRenderer } from 'obsidian';
+import { render } from 'preact';
+
 import { formatDefinition, formatOrigin } from '@/../wasm/src/serde/values';
 import { typstManager } from '@/libs';
 import { format } from '@/ui/elements/Typst';
 import { getRegionAt } from '../utils/core';
 
 import './Tooltip.css';
-import { render } from 'preact';
 
 export const hoverExtension = hoverTooltip(
   async (view, pos, side): Promise<Tooltip | null> => {
@@ -68,12 +69,12 @@ export const hoverExtension = hoverTooltip(
       markdown = markdown.replace(/<!-- TM_TOOLTIP_DATA:.* -->/, '');
       markdown = markdown.replaceAll('```example', '```typ').replaceAll('```typ', '```typstmate-typ');
 
-      const containerEl = document.createElement('div');
+      const containerEl = createDiv({ cls: 'typstmate-temporary' });
 
-      const quickEl = document.createElement('div');
+      const quickEl = createDiv();
       // advancedEl
 
-      const docEl = document.createElement('div');
+      const docEl = createDiv();
       await MarkdownRenderer.render(typstManager.plugin.app, markdown.trim(), docEl, '', new Component());
       await processTooltipData(docEl, markdown);
 
@@ -112,13 +113,19 @@ export const hoverExtension = hoverTooltip(
             </>,
             containerEl,
           );
-          return { dom: containerEl };
+          return {
+            dom: containerEl,
+            destroy() {
+              render(null, containerEl);
+            },
+          };
         },
       };
     } catch {
       return null;
     }
   },
+
   { hideOnChange: 'touch' },
 );
 
@@ -146,16 +153,12 @@ async function processTooltipData(docEl: HTMLElement, markdown: string) {
       const data = tooltipData[key];
       if (!data) continue;
 
-      const span = document.createElement('span');
-      span.className = 'typstmate-signature-types';
+      const span = docEl.createDiv({ cls: 'typstmate-signature-types' });
       span.textContent = '...';
 
-      const tooltipDiv = document.createElement('div');
-      tooltipDiv.className = 'typstmate-signature-tooltip';
+      const tooltipDiv = span.createDiv({ cls: 'typstmate-signature-tooltip' });
       const detailMarkdown = `\`\`\`typc\ntype: ${data.types}${data.default ? ` = ${data.default}` : ''}\n\`\`\``;
       await MarkdownRenderer.render(typstManager.plugin.app, detailMarkdown, tooltipDiv, '', new Component());
-
-      span.appendChild(tooltipDiv);
 
       const parent = node.parentNode;
       if (parent && node.textContent) {

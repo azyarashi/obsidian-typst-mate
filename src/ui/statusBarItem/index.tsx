@@ -16,6 +16,10 @@ export function setStatusBarItem(containerEl: HTMLElement) {
   render(<StatusBarItem containerEl={containerEl} />, containerEl);
 }
 
+export function hideStatusBarItem(containerEl: HTMLElement) {
+  render(null, containerEl);
+}
+
 export function StatusBarItem({ containerEl }: { containerEl: HTMLElement }) {
   const [state, setState] = useState({
     status: TypstMate.status,
