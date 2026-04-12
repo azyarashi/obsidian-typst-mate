@@ -1,9 +1,12 @@
 .typstmate-list-item {
-  border: 1px solid var(--background-modifier-border);
-  border-radius: var(--size-4-2);
-  margin-bottom: var(--size-4-2);
-  background-color: var(--background-primary);
+  /* border-bottom: 1px solid var(--background-modifier-border); */
+  background-color: transparent;
   overflow: hidden;
+  margin-bottom: var(--size-4-1);
+}
+
+.typstmate-list-item:last-child {
+  /* border-bottom: none; */
 }
 
 .typstmate-list-item[open] {
@@ -28,7 +31,6 @@
 }
 
 .typstmate-list-item-content {
-  padding: var(--size-4-2);
-  border-top: 1px solid var(--background-modifier-border);
+  padding: var(--size-4-1) var(--size-4-2);
   background-color: var(--background-primary-alt);
 }

@@ -2,7 +2,15 @@ import { getSortableUuid, List, useSortableList } from '@components/List/ListCon
 import { debounce } from 'obsidian';
 import { useState } from 'preact/hooks';
 import { extensionManager, settingsManager } from '@/libs';
-import { type Action, ActionContexts, ActionTypes, TriggerTypes } from '@/libs/action';
+import {
+  type Action,
+  type ActionContext,
+  ActionContexts,
+  type ActionType,
+  ActionTypes,
+  type TriggerType,
+  TriggerTypes,
+} from '@/libs/action';
 import { ActionItem } from './actionItem';
 
 export function ActionListContainer() {
@@ -20,13 +28,13 @@ export function ActionListContainer() {
   });
 
   const [filterQuery, setFilterQuery] = useState(settingsManager.settings.settingsStates.actionFilter.query);
-  const [activeTriggers, setActiveTriggers] = useState<string[]>(
+  const [activeTriggers, setActiveTriggers] = useState<TriggerType[]>(
     settingsManager.settings.settingsStates.actionFilter.triggers || [],
   );
-  const [activeActions, setActiveActions] = useState<string[]>(
+  const [activeActions, setActiveActions] = useState<ActionType[]>(
     settingsManager.settings.settingsStates.actionFilter.actions || [],
   );
-  const [activeContexts, setActiveContexts] = useState<string[]>(
+  const [activeContexts, setActiveContexts] = useState<ActionContext[]>(
     settingsManager.settings.settingsStates.actionFilter.contexts || [],
   );
 
@@ -35,7 +43,7 @@ export function ActionListContainer() {
     await settingsManager.saveSettings();
   }, 150);
 
-  const toggleTriggerFilter = async (type: string) => {
+  const toggleTriggerFilter = async (type: TriggerType) => {
     const newTriggers = activeTriggers.includes(type)
       ? activeTriggers.filter((t) => t !== type)
       : [...activeTriggers, type];
@@ -44,7 +52,7 @@ export function ActionListContainer() {
     await settingsManager.saveSettings();
   };
 
-  const toggleActionFilter = async (type: string) => {
+  const toggleActionFilter = async (type: ActionType) => {
     const newActions = activeActions.includes(type)
       ? activeActions.filter((a) => a !== type)
       : [...activeActions, type];
@@ -53,7 +61,7 @@ export function ActionListContainer() {
     await settingsManager.saveSettings();
   };
 
-  const toggleContextFilter = async (type: string) => {
+  const toggleContextFilter = async (type: ActionContext) => {
     const newContexts = activeContexts.includes(type)
       ? activeContexts.filter((c) => c !== type)
       : [...activeContexts, type];

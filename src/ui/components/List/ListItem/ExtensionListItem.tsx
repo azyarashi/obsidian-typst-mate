@@ -2,7 +2,7 @@ import { render } from 'preact';
 import { useLayoutEffect, useRef, useState } from 'preact/hooks';
 import { ICONS } from '@/constants/icons';
 import { extensionManager, settingsManager } from '@/libs';
-import type { ExtensionPackage } from '@/libs/extensionManager';
+import type { EditorContext, ExtensionPackage } from '@/libs/extensionManager';
 import { Icon } from '../../decorations';
 import { Setting } from '../../obsidian/Setting';
 import { ListItem } from './index';
@@ -20,37 +20,43 @@ function RawMarkup({ content, className }: { content: string | DocumentFragment;
   return <span ref={ref} className={className} />;
 }
 
-export function ExtensionListItem({ package: pkg, isCore }: { package: ExtensionPackage; isCore?: boolean }) {
-  const { markdown, typst } = settingsManager.settings.extensionSettings;
-  const setting = markdown[pkg.id] || typst[pkg.id];
+export function ExtensionListItem({
+  package: pkg,
+  isCore,
+  context,
+}: {
+  package: ExtensionPackage;
+  isCore?: boolean;
+  context: EditorContext;
+}) {
+  const settingsRecord = settingsManager.settings.extensionSettings[context];
+  const setting = settingsRecord[pkg.id];
   const [enabled, setEnabled] = useState(pkg.isBuiltin ? true : (setting?.enabled ?? pkg.defaultEnabled ?? true));
   const [values, setValues] = useState({ ...setting?.values });
 
   const updateSettings = async (partial: { enabled?: boolean; values?: Record<string, unknown> }) => {
-    const extSettings = settingsManager.settings.extensionSettings;
-    [extSettings.markdown, extSettings.typst].forEach((record) => {
-      let s = record[pkg.id];
-      if (!s && (partial.enabled !== undefined || partial.values)) {
-        s = {
-          id: pkg.id,
-          enabled: pkg.isBuiltin ? true : (setting?.enabled ?? pkg.defaultEnabled ?? true),
-          values: { ...setting?.values },
-        };
-        record[pkg.id] = s;
-      }
+    const settingsRecord = settingsManager.settings.extensionSettings[context];
+    let s = settingsRecord[pkg.id];
+    if (!s && (partial.enabled !== undefined || partial.values)) {
+      s = {
+        id: pkg.id,
+        enabled: pkg.isBuiltin ? true : (setting?.enabled ?? pkg.defaultEnabled ?? true),
+        values: { ...setting?.values },
+      };
+      settingsRecord[pkg.id] = s;
+    }
 
-      if (s) {
-        if (partial.enabled !== undefined) s.enabled = partial.enabled;
-        if (partial.values) s.values = { ...s.values, ...partial.values };
-      }
-    });
+    if (s) {
+      if (partial.enabled !== undefined) s.enabled = partial.enabled;
+      if (partial.values) s.values = { ...s.values, ...partial.values };
+    }
 
     await settingsManager.saveSettings();
     extensionManager.reconfigure(pkg.id);
   };
 
   const updateValue = async (key: string, val: unknown) => {
-    setValues((v) => {
+    setValues((v: Record<string, unknown>) => {
       const next = { ...v, [key]: val };
       updateSettings({ values: next });
       return next;
@@ -67,7 +73,12 @@ export function ExtensionListItem({ package: pkg, isCore }: { package: Extension
             </div>
 
             <div className="typstmate-extension-list-item-info">
-              <span className="typstmate-extension-list-item-name">{pkg.name}</span>
+              <span className="typstmate-extension-list-item-name">
+                {pkg.name}
+                {0 < pkg.settings.length && (
+                  <Icon icon={ICONS.Settings} className="typstmate-extension-has-settings-icon" />
+                )}
+              </span>
               <RawMarkup content={pkg.description} className="typstmate-extension-list-item-desc" />
             </div>
 

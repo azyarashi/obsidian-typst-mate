@@ -1,5 +1,5 @@
 import { SyntaxMode } from '@typstmate/typst-syntax';
-import type { Action } from '@/libs/action';
+import type { Action, ActionContext, ActionType, TriggerType } from '@/libs/action';
 import type { EditorContext, ExtensionSetting, Tag } from '@/libs/extensionManager';
 import {
   type CodeblockProcessor,
@@ -64,16 +64,16 @@ export interface Settings {
     preambleRenderingEngineTab: RenderingEngine;
     processorKindTab: ProcessorKind;
     compilerSubTab: CompilerSubTab;
+    extensionContextTab: EditorContext;
     extensionFilter: {
       query: string;
       tags: Tag[];
-      scopes: EditorContext[];
     };
     actionFilter: {
       query: string;
-      triggers: string[];
-      actions: string[];
-      contexts: string[];
+      triggers: TriggerType[];
+      actions: ActionType[];
+      contexts: ActionContext[];
     };
   };
 
@@ -254,16 +254,21 @@ export const DEFAULT_SETTINGS: Settings = {
     preambleRenderingEngineTab: RenderingEngine.TypstSVG,
     processorKindTab: 'inline',
     compilerSubTab: 'packages',
+    extensionContextTab: 'typst',
     extensionFilter: {
       query: '',
       tags: [],
-      scopes: ['markdown', 'typst'],
     },
     actionFilter: {
       query: '',
       triggers: [],
       actions: [],
       contexts: [],
+    } as {
+      query: string;
+      triggers: TriggerType[];
+      actions: ActionType[];
+      contexts: ActionContext[];
     },
   },
 

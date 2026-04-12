@@ -1,15 +1,39 @@
 import { ExtensionListItem } from '@components/List/ListItem/ExtensionListItem';
+import { type TabDefinition, Tabs } from '@components/Tabs';
 import { debounce } from 'obsidian';
 import { useMemo, useState } from 'preact/hooks';
 import { extensionManager, settingsManager } from '@/libs';
-import { ALL_SCOPES, ALL_TAGS, type EditorContext, type ExtensionEntry, type Tag } from '@/libs/extensionManager';
+import { ALL_TAGS, type EditorContext, type ExtensionEntry, type Tag } from '@/libs/extensionManager';
 
 export function ExtensionsTab() {
+  const [activeTab, setActiveTabInternal] = useState<EditorContext>(
+    settingsManager.settings.settingsStates.extensionContextTab,
+  );
+  const onChangeTab = (tab: EditorContext) => {
+    setActiveTabInternal(tab);
+    settingsManager.settings.settingsStates.extensionContextTab = tab;
+    settingsManager.saveSettings();
+  };
+
+  const subTabs: TabDefinition<EditorContext>[] = [
+    {
+      id: 'typst',
+      name: 'TypstFileView',
+      renderContent: () => <ExtensionsContent context="typst" />,
+    },
+    {
+      id: 'markdown',
+      name: 'MarkdownView',
+      renderContent: () => <ExtensionsContent context="markdown" />,
+    },
+  ];
+
+  return <Tabs tabs={subTabs} activeTab={activeTab} onTabChange={onChangeTab} />;
+}
+
+function ExtensionsContent({ context }: { context: EditorContext }) {
   const [query, setQuery] = useState(settingsManager.settings.settingsStates.extensionFilter.query);
   const [activeTags, setActiveTags] = useState<Tag[]>(settingsManager.settings.settingsStates.extensionFilter.tags);
-  const [activeScopes, setActiveScopes] = useState<EditorContext[]>(
-    settingsManager.settings.settingsStates.extensionFilter.scopes,
-  );
 
   const entries = extensionManager.getEntries();
   const debouncedSaveQuery = useMemo(
@@ -28,29 +52,24 @@ export function ExtensionsTab() {
     await settingsManager.saveSettings();
   };
 
-  const toggleScope = async (scope: EditorContext) => {
-    const newScopes = activeScopes.includes(scope) ? activeScopes.filter((s) => s !== scope) : [...activeScopes, scope];
-    setActiveScopes(newScopes);
-    settingsManager.settings.settingsStates.extensionFilter.scopes = newScopes;
-    await settingsManager.saveSettings();
-  };
-
   const filtered = useMemo(() => {
     const q = query.toLowerCase();
     return entries.filter((entry) => {
       const { package: pkg } = entry;
+      // Filter out extensions that don't apply to the current context
+      if (!pkg.scope.includes(context)) return false;
       if (pkg.isHidden) return false;
       if (
         q &&
+        !pkg.id.toLowerCase().includes(q) &&
         !pkg.name.toLowerCase().includes(q) &&
         !(typeof pkg.description === 'string' && pkg.description.toLowerCase().includes(q))
       )
         return false;
       if (activeTags.length > 0 && !activeTags.some((t) => pkg.tags.includes(t))) return false;
-      if (activeScopes.length > 0 && !activeScopes.some((s) => pkg.scope.includes(s))) return false;
       return true;
     });
-  }, [query, activeTags, activeScopes, entries]);
+  }, [query, activeTags, context, entries]);
 
   const normal = filtered
     .filter((e) => !e.package.tags.includes('core'))
@@ -67,10 +86,8 @@ export function ExtensionsTab() {
         debouncedSaveQuery={debouncedSaveQuery}
         activeTags={activeTags}
         toggleTag={toggleTag}
-        activeScopes={activeScopes}
-        toggleScope={toggleScope}
       />
-      <ExtensionList normal={normal} core={core} />
+      <ExtensionList normal={normal} core={core} context={context} />
     </>
   );
 }
@@ -81,16 +98,12 @@ function ExtensionFilter({
   debouncedSaveQuery,
   activeTags,
   toggleTag,
-  activeScopes,
-  toggleScope,
 }: {
   query: string;
   setQuery: (q: string) => void;
   debouncedSaveQuery: (q: string) => void;
   activeTags: Tag[];
   toggleTag: (tag: Tag) => void;
-  activeScopes: EditorContext[];
-  toggleScope: (scope: EditorContext) => void;
 }) {
   return (
     <div className="typstmate-ext-filter">
@@ -120,39 +133,37 @@ function ExtensionFilter({
           ))}
         </div>
       </div>
-
-      <div className="typstmate-ext-chip-group">
-        <span className="typstmate-ext-filter-label">Scope</span>
-        <div className="typstmate-ext-chips">
-          {ALL_SCOPES.map((scope) => (
-            <button
-              key={scope}
-              className={`typstmate-ext-chip ${activeScopes.includes(scope) ? 'is-active' : ''}`}
-              onClick={() => toggleScope(scope)}
-            >
-              {scope}
-            </button>
-          ))}
-        </div>
-      </div>
     </div>
   );
 }
 
-function ExtensionList({ normal, core }: { normal: ExtensionEntry<any>[]; core: ExtensionEntry<any>[] }) {
+function ExtensionList({
+  normal,
+  core,
+  context,
+}: {
+  normal: ExtensionEntry<any>[];
+  core: ExtensionEntry<any>[];
+  context: EditorContext;
+}) {
   return (
     <div className="typstmate-ext-list">
       {normal.length === 0 && core.length === 0 && <p className="typstmate-ext-empty">No extensions match.</p>}
 
       {normal.map((entry) => (
-        <ExtensionListItem key={entry.package.id} package={entry.package} />
+        <ExtensionListItem key={`${context}-${entry.package.id}`} package={entry.package} context={context} />
       ))}
 
       {core.length > 0 && (
         <>
           {normal.length > 0 && <div className="typstmate-ext-core-divider" />}
           {core.map((entry) => (
-            <ExtensionListItem key={entry.package.id} package={entry.package} isCore />
+            <ExtensionListItem
+              key={`${context}-${entry.package.id}`}
+              package={entry.package}
+              isCore
+              context={context}
+            />
           ))}
         </>
       )}

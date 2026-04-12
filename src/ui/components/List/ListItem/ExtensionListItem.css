@@ -1,5 +1,5 @@
 .typstmate-extension-wrapper {
-  margin-bottom: var(--size-4-2);
+  margin-bottom: var(--size-4-1);
 }
 
 .typstmate-extension-list-item-summary {
@@ -28,6 +28,29 @@
 .typstmate-extension-list-item-name {
   font-weight: 600;
   color: var(--text-normal);
+  display: flex;
+  align-items: center;
+  gap: var(--size-4-1);
+}
+
+.typstmate-extension-has-settings-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 0.9em;
+  height: 0.9em;
+  color: var(--text-muted);
+  opacity: 0.6;
+}
+
+.typstmate-extension-has-settings-icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+.typstmate-extension-list-item-summary:hover .typstmate-extension-has-settings-icon {
+  opacity: 1;
+  color: var(--interactive-accent);
 }
 
 .typstmate-extension-list-item-desc {
@@ -55,8 +78,19 @@
   gap: var(--size-4-2);
 }
 
+.typstmate-extension-list-item-controls .setting-item {
+  border: none;
+  padding: 0;
+  margin: 0;
+}
+
+.typstmate-extension-list-item-controls .setting-item-info {
+  display: none;
+}
+
 .typstmate-extension-footer {
   display: flex;
+  flex-direction: column;
   gap: var(--size-4-1);
   color: var(--text-muted);
 }
@@ -64,7 +98,6 @@
 .typstmate-extension-settings-panel {
   padding-left: var(--size-4-4);
   border-left: 2px solid var(--background-modifier-border);
-  margin-top: var(--size-4-2);
   display: flex;
   flex-direction: column;
   gap: var(--size-4-1);
