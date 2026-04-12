@@ -1,8 +1,7 @@
 import { type App, MarkdownView, type WorkspaceLeaf } from 'obsidian';
 import { BASE_COLOR_VAR } from '@/constants';
 import ObsidianTypstMate from '@/main';
-import { TypstFileView } from '@/ui';
-import { TypstToolsView } from '@/ui/views/typst-tools';
+import { TextFileView, TypstFileView, TypstPreviewView, TypstToolsView } from '@/ui/views';
 import { settingsManager } from '../settingsManager';
 import { typstManager } from '../typstManager';
 
@@ -74,11 +73,22 @@ class AppUtils {
   }
 
   async refreshView(app?: App) {
+    this.refreshMarkdownView(app);
+    this.refreshTypstView(app);
+  }
+
+  async refreshMarkdownView(app?: App) {
     const view = (app ?? this.app).workspace.getActiveViewOfType(MarkdownView);
     if (!view) return;
 
     if (view.getMode() === 'preview') view.previewMode.rerender(true);
     else view.leaf.rebuildView();
+  }
+
+  async refreshTypstView(app?: App) {
+    const types = [TypstFileView.viewtype, TypstPreviewView.viewtype, TypstToolsView.viewtype, TextFileView.viewtype];
+
+    for (const type of types) for (const leaf of (app ?? this.app).workspace.getLeavesOfType(type)) leaf.rebuildView();
   }
 
   getNoteWidth(): string {
