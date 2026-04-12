@@ -1,7 +1,7 @@
-import { EditorState } from '@codemirror/state';
-import { EditorView } from '@codemirror/view';
 import { Setting } from '@components/obsidian/Setting';
 import { type TabDefinition, Tabs } from '@components/Tabs';
+import { EditorState } from '@codemirror/state';
+import { EditorView } from '@codemirror/view';
 import { debounce } from 'obsidian';
 import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
 import { t } from '@/i18n';

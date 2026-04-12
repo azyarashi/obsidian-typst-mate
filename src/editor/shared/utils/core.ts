@@ -1,6 +1,5 @@
-import type { EditorView } from '@codemirror/view';
 import type { SyntaxKind, SyntaxMode, SyntaxNode } from '@typstmate/typst-syntax';
-
+import type { EditorView } from '@codemirror/view';
 import { collectRegions, markdownCore, parseRegion } from '@/editor/markdown/extensions/MarkdownCore';
 import { typstTextCore } from '@/editor/typst/extensions/TypstCore';
 import type { Processor, ProcessorKind } from '@/libs/processor';

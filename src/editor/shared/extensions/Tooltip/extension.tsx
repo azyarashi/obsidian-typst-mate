@@ -1,5 +1,5 @@
-import { type EditorView, hoverTooltip } from '@codemirror/view';
 import { SyntaxMode } from '@typstmate/typst-syntax';
+import { type EditorView, hoverTooltip } from '@codemirror/view';
 import { render } from 'preact';
 import { typstManager } from '@/libs';
 import { getActiveRegion } from '../../utils/core';

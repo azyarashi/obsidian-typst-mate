@@ -1,5 +1,4 @@
 import type { Extension } from '@codemirror/state';
-
 import type { EditorContext } from '..';
 import type { ExtensionPackage } from '.';
 

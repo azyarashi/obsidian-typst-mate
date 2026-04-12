@@ -1,5 +1,4 @@
 import { LinkedNode, Side, SyntaxKind, SyntaxMode, type SyntaxNode } from '@typstmate/typst-syntax';
-
 import type { ParsedRegion } from '@/editor/shared/utils/core';
 
 export function getModeAndKind(

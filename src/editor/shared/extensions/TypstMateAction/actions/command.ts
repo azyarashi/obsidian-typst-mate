@@ -1,6 +1,5 @@
 import type { EditorView } from '@codemirror/view';
 import { Notice } from 'obsidian';
-
 import { t } from '@/i18n';
 import { appUtils } from '@/libs';
 import type { Action } from '@/libs/action';

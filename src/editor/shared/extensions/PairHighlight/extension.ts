@@ -1,5 +1,5 @@
-import { Decoration, type DecorationSet, type EditorView, ViewPlugin, type ViewUpdate } from '@codemirror/view';
 import { LinkedNode, Side, SyntaxKind } from '@typstmate/typst-syntax';
+import { Decoration, type DecorationSet, type EditorView, ViewPlugin, type ViewUpdate } from '@codemirror/view';
 import { EditorContextFacet, settingsManager } from '@/libs';
 import { getActiveRegion } from '../../utils/core';
 

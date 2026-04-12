@@ -1,6 +1,5 @@
 import { TextComponent as ObsidianTextComponent } from 'obsidian';
 import { useLayoutEffect, useRef } from 'preact/hooks';
-
 import type { BuilderProps } from '..';
 
 export function TextComponent({ build, deps = [] }: BuilderProps<ObsidianTextComponent>) {

@@ -3,7 +3,6 @@ import { SortableItem } from '@components/List/ListContainer';
 import { Setting } from '@components/obsidian/Setting';
 import { SyntaxMode } from '@typstmate/typst-syntax';
 import type { ComponentChildren } from 'preact';
-
 import { ICONS } from '@/constants/icons';
 import { t, tFragment } from '@/i18n';
 import {

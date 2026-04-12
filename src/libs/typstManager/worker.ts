@@ -1,11 +1,9 @@
 import type fsModule from 'node:fs';
 import type pathModule from 'node:path';
-
 import { expose } from 'comlink';
 import type * as Obsidian from 'obsidian';
 import type { TarFile } from 'untar-sync';
 import untar from 'untar-sync';
-
 import init, {
   type CompletionResultSer,
   type DefinitionSer,

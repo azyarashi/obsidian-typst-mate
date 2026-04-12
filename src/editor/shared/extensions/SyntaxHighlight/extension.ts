@@ -1,5 +1,5 @@
-import { Decoration, type DecorationSet, type EditorView, ViewPlugin, type ViewUpdate } from '@codemirror/view';
 import { highlight, LinkedNode } from '@typstmate/typst-syntax';
+import { Decoration, type DecorationSet, type EditorView, ViewPlugin, type ViewUpdate } from '@codemirror/view';
 import { getActiveRegion, type ParsedRegion } from '../../utils/core';
 
 export function typstSyntaxHighlighting() {

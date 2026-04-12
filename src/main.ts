@@ -1,5 +1,4 @@
 import { debounce, loadMathJax, Notice, Plugin, renderMath } from 'obsidian';
-
 import { initI18n, t } from '@/i18n';
 import { Status, TypstMate } from './api';
 import { markdownExtensionEntries, sharedExtensionEntries, typstExtensionEntries } from './editor';

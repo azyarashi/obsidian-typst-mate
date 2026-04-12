@@ -3,7 +3,6 @@ import builtinModules from 'builtin-modules';
 import { buildSync } from 'esbuild';
 import { defineConfig, type UserConfig } from 'vite';
 import { viteStaticCopy } from 'vite-plugin-static-copy';
-
 import { supportedWatcherPlatforms } from './src/constants/watcher';
 
 export default defineConfig(async ({ mode }) => {

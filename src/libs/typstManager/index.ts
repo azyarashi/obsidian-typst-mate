@@ -1,7 +1,6 @@
 import { proxy, type Remote, wrap } from 'comlink';
 import * as Obsidian from 'obsidian';
 import { type CachedMetadata, getAllTags, MarkdownPreviewRenderer, Notice, requestUrl, type TFile } from 'obsidian';
-
 import { Status, TypstMate } from '@/api';
 import { DEFAULT_FONT_SIZE } from '@/constants';
 import { DEFAULT_SETTINGS, type Settings } from '@/data/settings';
@@ -18,7 +17,6 @@ import type TypstElement from '@/ui/elements/Typst';
 import type { TypstFileView, TypstPreviewView } from '@/ui/views';
 import { overwriteCustomElements } from '@/utils/custromElementRegistry';
 import { expandHierarchicalTags } from '@/utils/tags';
-
 import type WasmAdapter from './worker';
 import Wasm, { ErrorCode } from './worker';
 import WasmWorker from './worker?worker&inline';

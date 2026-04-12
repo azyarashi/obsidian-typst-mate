@@ -1,6 +1,5 @@
 import { type Extension, Prec } from '@codemirror/state';
 import { EditorView, ViewPlugin, type ViewUpdate } from '@codemirror/view';
-
 import type { Action } from '@/libs/action';
 import { RenderingEngine } from '@/libs/processor';
 import { getActiveRegion } from '../../utils/core';

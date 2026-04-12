@@ -2,7 +2,6 @@ import { type TabDefinition, Tabs } from '@components/Tabs';
 import { type App, PluginSettingTab } from 'obsidian';
 import { render } from 'preact';
 import { useMemo, useState } from 'preact/hooks';
-
 import { t } from '@/i18n';
 import { settingsManager } from '@/libs';
 import type ObsidianTypstMate from '@/main';

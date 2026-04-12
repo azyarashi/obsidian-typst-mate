@@ -2,7 +2,6 @@ import { TypstMate } from '@/api';
 import { DEFAULT_SETTINGS, type Settings } from '@/data/settings';
 import type ObsidianTypstMate from '@/main';
 import type { Singleton } from '@/types/singleton';
-
 import { migrations } from './migration';
 
 class SettingsManager implements Singleton {

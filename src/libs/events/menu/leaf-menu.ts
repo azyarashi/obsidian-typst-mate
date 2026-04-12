@@ -1,5 +1,4 @@
 import type { Menu, WorkspaceLeaf } from 'obsidian';
-
 import { t } from '@/i18n';
 import { isTypstFileView, TypstPreviewView } from '@/ui/views';
 

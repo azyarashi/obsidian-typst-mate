@@ -1,5 +1,5 @@
-import { type EditorView, type PluginValue, ViewPlugin, type ViewUpdate } from '@codemirror/view';
 import { parse, reparse, SyntaxMode } from '@typstmate/typst-syntax';
+import { type EditorView, type PluginValue, ViewPlugin, type ViewUpdate } from '@codemirror/view';
 import type { ParsedRegion } from '@/editor/shared/utils/core';
 import { getModeAndKindFromRegion } from '@/utils/typstSyntax';
 

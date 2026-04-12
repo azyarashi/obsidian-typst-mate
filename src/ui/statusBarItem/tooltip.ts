@@ -1,5 +1,4 @@
 import type { MarkdownView } from 'obsidian';
-
 import type { TypstMate } from '@/api';
 import { diagnosticsState } from '@/editor/shared/extensions/Diagnostic';
 import { t } from '@/i18n';

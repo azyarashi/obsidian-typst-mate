@@ -6,7 +6,6 @@ import {
   type ViewUpdate,
   WidgetType,
 } from '@codemirror/view';
-
 import { diagnosticsState } from '@/editor/shared/extensions/Linter/extension';
 import { getActiveRegion } from '@/editor/shared/utils/core';
 

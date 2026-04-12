@@ -1,6 +1,6 @@
+import { LinkedNode, SyntaxKind } from '@typstmate/typst-syntax';
 import { type Facet, RangeSet, StateEffect } from '@codemirror/state';
 import { Decoration, type DecorationSet, EditorView, ViewPlugin, type ViewUpdate, WidgetType } from '@codemirror/view';
-import { LinkedNode, SyntaxKind } from '@typstmate/typst-syntax';
 import symbolData from '@/data/symbols.json';
 import { RenderingEngine } from '@/libs/processor';
 import { getActiveRegion } from '../../utils/core';

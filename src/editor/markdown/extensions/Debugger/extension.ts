@@ -1,6 +1,6 @@
+import { SyntaxKind, SyntaxMode } from '@typstmate/typst-syntax';
 import type { Extension } from '@codemirror/state';
 import { type EditorView, type PluginValue, ViewPlugin, type ViewUpdate } from '@codemirror/view';
-import { SyntaxKind, SyntaxMode } from '@typstmate/typst-syntax';
 import { getActiveRegion } from '@/editor/shared/utils/core';
 import { format } from '@/ui/elements/Typst';
 

@@ -1,5 +1,4 @@
 import { type App, Modal, Notice, Setting, type TFile } from 'obsidian';
-
 import { t } from '@/i18n';
 import { typstManager } from '@/libs';
 import type { HtmlOptionsSer, PdfOptionsSer } from '@/libs/typstManager/worker';

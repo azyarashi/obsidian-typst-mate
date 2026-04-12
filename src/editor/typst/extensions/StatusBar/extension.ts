@@ -1,6 +1,6 @@
+import { SyntaxKind, SyntaxMode } from '@typstmate/typst-syntax';
 import type { Extension } from '@codemirror/state';
 import { type EditorView, type Panel, showPanel } from '@codemirror/view';
-import { SyntaxKind, SyntaxMode } from '@typstmate/typst-syntax';
 import type { VimMode } from '@vimee/core';
 import { getActiveRegion } from '@/editor/shared/utils/core';
 import { vimModeField } from '@/editor/typst/extensions/Vim';

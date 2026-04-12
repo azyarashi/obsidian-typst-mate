@@ -1,6 +1,5 @@
 import { SliderComponent as ObsidianSliderComponent } from 'obsidian';
 import { useLayoutEffect, useRef } from 'preact/hooks';
-
 import type { BuilderProps } from '..';
 
 export function SliderComponent({ build, deps = [] }: BuilderProps<ObsidianSliderComponent>) {

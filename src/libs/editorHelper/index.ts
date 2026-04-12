@@ -1,7 +1,6 @@
 import { Prec } from '@codemirror/state';
 import type { EditorView } from '@codemirror/view';
 import { debounce, type Editor, Notice } from 'obsidian';
-
 import { t } from '@/i18n';
 import type ObsidianTypstMate from '@/main';
 import type { Singleton } from '@/types/singleton';

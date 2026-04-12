@@ -1,12 +1,11 @@
+import { SyntaxMode } from '@typstmate/typst-syntax';
 import { StateEffect } from '@codemirror/state';
 import type { EditorView } from '@codemirror/view';
-import { SyntaxMode } from '@typstmate/typst-syntax';
 import { getActiveRegion } from '@/editor/shared/utils/core';
 import { vimModeField } from '@/editor/typst/extensions/Vim';
 import type { Action, ActionContext } from '@/libs/action';
 import { getObsidianVimMode } from '@/libs/events/vim-mode-change';
 import { RenderingEngine } from '@/libs/processor';
-
 import { executeCommand } from './command';
 import { executeSnippet } from './snippet';
 

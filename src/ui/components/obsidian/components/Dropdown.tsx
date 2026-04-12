@@ -1,6 +1,5 @@
 import { DropdownComponent as ObsidianDropdownComponent } from 'obsidian';
 import { useLayoutEffect, useRef } from 'preact/hooks';
-
 import type { BuilderProps } from '..';
 
 export function DropdownComponent({ build, deps = [] }: BuilderProps<ObsidianDropdownComponent>) {

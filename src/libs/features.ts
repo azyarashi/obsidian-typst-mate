@@ -1,7 +1,6 @@
 import type fsModule from 'node:fs';
 import type osModule from 'node:os';
 import type pathModule from 'node:path';
-
 import { Platform } from 'obsidian';
 
 export let fs: typeof fsModule | undefined;

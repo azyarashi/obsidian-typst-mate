@@ -1,6 +1,5 @@
 import { Setting as ObsidianSetting } from 'obsidian';
 import { useLayoutEffect, useRef } from 'preact/hooks';
-
 import type { BuilderProps } from '.';
 
 export function Setting({ build, deps = [] }: BuilderProps<ObsidianSetting>) {

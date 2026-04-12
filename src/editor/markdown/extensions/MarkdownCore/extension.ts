@@ -1,5 +1,3 @@
-import { syntaxTree } from '@codemirror/language';
-import { type EditorView, type PluginValue, ViewPlugin, type ViewUpdate } from '@codemirror/view';
 import {
   parse,
   parseCode,
@@ -8,7 +6,8 @@ import {
   SyntaxMode,
   type SyntaxNode as TypstSyntaxNode,
 } from '@typstmate/typst-syntax';
-
+import { syntaxTree } from '@codemirror/language';
+import { type EditorView, type PluginValue, ViewPlugin, type ViewUpdate } from '@codemirror/view';
 import type { ParsedRegion } from '@/editor/shared/utils/core';
 import { editorHelper, extarctCMMath, settingsManager } from '@/libs';
 import { type ProcessorKind, RenderingEngine } from '@/libs/processor';

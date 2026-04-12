@@ -1,5 +1,4 @@
 import { type Menu, type MenuItem, Notice } from 'obsidian';
-
 import { t } from '@/i18n';
 import { typstManager } from '@/libs';
 import type { HtmlResultSer } from '@/libs/typstManager/worker';

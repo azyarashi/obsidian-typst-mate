@@ -1,5 +1,4 @@
 import { defineExtension } from '@/libs/extensionManager';
-
 import { createTabJumpExtension } from './extension';
 import { tabJumpPackage, tabJumpSettingsFacet } from './package';
 

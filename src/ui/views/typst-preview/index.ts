@@ -1,5 +1,4 @@
 import { type Menu, TextFileView, type TFile, type WorkspaceLeaf } from 'obsidian';
-
 import { jumpFromClickExtension } from '@/editor/shared/extensions/JumpFromClick';
 import { t } from '@/i18n';
 import { typstManager } from '@/libs';

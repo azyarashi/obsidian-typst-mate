@@ -1,5 +1,4 @@
 import { defineExtension } from '@/libs/extensionManager';
-
 import { createSymbolConcealExtension } from './extension';
 import { symbolConcealPackage, symbolConcealSettingsFacet } from './package';
 

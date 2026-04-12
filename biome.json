@@ -68,6 +68,15 @@
   },
   "assist": {
     "enabled": true,
-    "actions": { "source": { "organizeImports": "on" } }
+    "actions": {
+      "source": {
+        "organizeImports": {
+          "level": "on",
+          "options": {
+            "groups": ["@resources/**", "@components/**", "@settings/**", "@typstmate/**", "@main.ts"]
+          }
+        }
+      }
+    }
   }
 }

@@ -1,6 +1,5 @@
-import { EditorView } from '@codemirror/view';
-
 import { CSSClass } from '@typstmate/typst-syntax';
+import { EditorView } from '@codemirror/view';
 
 import './Theme.css';
 

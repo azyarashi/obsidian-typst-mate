@@ -1,6 +1,5 @@
 import { ButtonComponent as ObsidianButtonComponent } from 'obsidian';
 import { useLayoutEffect, useRef } from 'preact/hooks';
-
 import type { BuilderProps } from '..';
 
 export function ButtonComponent({ build, deps = [] }: BuilderProps<ObsidianButtonComponent>) {

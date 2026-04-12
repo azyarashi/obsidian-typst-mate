@@ -1,5 +1,4 @@
 import { type App, Component, MarkdownRenderer, Modal } from 'obsidian';
-
 import type { Diagnostic } from '@/libs/typstManager/worker';
 
 export class DiagnosticModal extends Modal {

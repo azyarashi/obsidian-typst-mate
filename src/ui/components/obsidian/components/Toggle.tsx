@@ -1,6 +1,5 @@
 import { ToggleComponent as ObsidianToggleComponent } from 'obsidian';
 import { useLayoutEffect, useRef } from 'preact/hooks';
-
 import type { BuilderProps } from '..';
 
 export function ToggleComponent({ build, deps = [] }: BuilderProps<ObsidianToggleComponent>) {

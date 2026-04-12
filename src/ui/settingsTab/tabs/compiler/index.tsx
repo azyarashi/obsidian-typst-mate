@@ -1,6 +1,5 @@
 import { type TabDefinition, Tabs } from '@components/Tabs';
 import { useState } from 'preact/hooks';
-
 import { t } from '@/i18n';
 import { settingsManager } from '@/libs';
 import { FontListContainer, PackagesListContainer } from '@/ui/settingsTab/tabs/compiler/subTabs';

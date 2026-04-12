@@ -1,5 +1,4 @@
 import type { Command } from 'obsidian';
-
 import { formatterSettingsFacet } from '@/editor';
 import { appUtils } from '@/libs/appUtils';
 import { formatView } from '@/libs/commands/format-typst';

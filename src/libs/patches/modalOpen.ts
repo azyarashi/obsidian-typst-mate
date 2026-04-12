@@ -1,5 +1,4 @@
 import { Modal } from 'obsidian';
-
 import type ObsidianTypstMate from '@/main';
 import type { Singleton } from '@/types/singleton';
 import { settingsManager } from '../settingsManager';

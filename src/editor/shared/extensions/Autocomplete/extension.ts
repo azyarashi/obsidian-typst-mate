@@ -1,12 +1,11 @@
+import { SyntaxMode } from '@typstmate/typst-syntax';
 import { Prec } from '@codemirror/state';
 import { type EditorView, keymap, type PluginValue, ViewPlugin, type ViewUpdate } from '@codemirror/view';
-import { SyntaxMode } from '@typstmate/typst-syntax';
 import { setIcon } from 'obsidian';
 import type { CompletionKindSer, CompletionSer } from '@/../pkg/typst_wasm';
 import { settingsManager, typstManager } from '@/libs';
 import { EditorContextFacet } from '@/libs/extensionManager';
 import { format } from '@/ui/elements/Typst';
-
 import { getActiveRegion, type ParsedRegion } from '../../utils/core';
 import { calculatePopupPosition } from '../../utils/position';
 import { type SymbolData, searchSymbols } from '../../utils/symbolSearcher';

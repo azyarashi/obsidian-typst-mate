@@ -1,7 +1,6 @@
 import { history, historyKeymap, indentWithTab, standardKeymap } from '@codemirror/commands';
 import type { Extension } from '@codemirror/state';
 import { EditorView, highlightActiveLineGutter, keymap, lineNumbers } from '@codemirror/view';
-
 import { typstSyntaxHighlighting } from '../../editor/shared/extensions/SyntaxHighlight';
 import { obsidianTheme } from '../../editor/shared/extensions/Theme';
 import { typstTextViewTheme } from '../../editor/typst/extensions/Theme';
