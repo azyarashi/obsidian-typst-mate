@@ -254,7 +254,7 @@ export const DEFAULT_SETTINGS: Settings = {
     preambleRenderingEngineTab: RenderingEngine.TypstSVG,
     processorKindTab: 'inline',
     compilerSubTab: 'packages',
-    extensionContextTab: 'typst',
+    extensionContextTab: 'markdown',
     extensionFilter: {
       query: '',
       tags: [],

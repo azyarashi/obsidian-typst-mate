@@ -17,14 +17,14 @@ export function ExtensionsTab() {
 
   const subTabs: TabDefinition<EditorContext>[] = [
     {
-      id: 'typst',
-      name: 'TypstFileView',
-      renderContent: () => <ExtensionsContent context="typst" />,
-    },
-    {
       id: 'markdown',
       name: 'MarkdownView',
       renderContent: () => <ExtensionsContent context="markdown" />,
+    },
+    {
+      id: 'typst',
+      name: 'TypstFileView',
+      renderContent: () => <ExtensionsContent context="typst" />,
     },
   ];
 

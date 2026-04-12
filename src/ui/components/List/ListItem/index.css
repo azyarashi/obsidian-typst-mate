@@ -1,12 +1,7 @@
 .typstmate-list-item {
-  /* border-bottom: 1px solid var(--background-modifier-border); */
   background-color: transparent;
   overflow: hidden;
   margin-bottom: var(--size-4-1);
-}
-
-.typstmate-list-item:last-child {
-  /* border-bottom: none; */
 }
 
 .typstmate-list-item[open] {
