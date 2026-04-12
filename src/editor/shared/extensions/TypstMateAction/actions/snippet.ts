@@ -11,7 +11,7 @@ export function executeSnippet(
   isScript: boolean,
   match?: RegExpMatchArray,
 ) {
-  const value = action.action.v;
+  let value = action.action.v;
 
   if (isScript) {
     try {
@@ -29,6 +29,8 @@ export function executeSnippet(
     }
     return;
   }
+
+  if (selectedText) value = value.replace(/#\.0(?:"[^"]*")?/g, () => selectedText);
 
   const hasTabStops = new RegExp(TAB_STOP_REGEX.source).test(value);
 
