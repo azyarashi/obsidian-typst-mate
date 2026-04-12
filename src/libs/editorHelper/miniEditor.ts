@@ -1,6 +1,20 @@
 import { history, historyKeymap, indentWithTab, standardKeymap } from '@codemirror/commands';
+import { bracketMatching, foldGutter, foldKeymap, indentOnInput } from '@codemirror/language';
+import { lintKeymap } from '@codemirror/lint';
+import { search, searchKeymap } from '@codemirror/search';
 import type { Extension } from '@codemirror/state';
-import { EditorView, highlightActiveLineGutter, keymap, lineNumbers } from '@codemirror/view';
+import {
+  crosshairCursor,
+  drawSelection,
+  dropCursor,
+  EditorView,
+  highlightActiveLine,
+  highlightActiveLineGutter,
+  highlightSpecialChars,
+  keymap,
+  lineNumbers,
+  rectangularSelection,
+} from '@codemirror/view';
 import { typstSyntaxHighlighting } from '../../editor/shared/extensions/SyntaxHighlight';
 import { obsidianTheme } from '../../editor/shared/extensions/Theme';
 import { typstTextViewTheme } from '../../editor/typst/extensions/Theme';
@@ -15,9 +29,20 @@ export function buildMiniEditorExtensions(options: MiniEditorOptions = {}): Exte
   const { language, lineNumbers: showLineNumbers = true } = options;
 
   return [
-    ...(showLineNumbers ? [lineNumbers(), highlightActiveLineGutter()] : []),
+    ...(showLineNumbers ? [lineNumbers(), highlightActiveLineGutter(), foldGutter()] : []),
+    highlightSpecialChars(),
     history(),
-    keymap.of([...historyKeymap, ...standardKeymap, indentWithTab]),
+    drawSelection(),
+    dropCursor(),
+    rectangularSelection(),
+    crosshairCursor(),
+    highlightActiveLine(),
+    bracketMatching(),
+    indentOnInput(),
+
+    keymap.of([...historyKeymap, ...standardKeymap, ...searchKeymap, ...lintKeymap, ...foldKeymap, indentWithTab]),
+
+    search({ top: true }),
     EditorView.lineWrapping,
     ...(language ? [language] : []),
   ];

@@ -1,7 +1,7 @@
 import { getSortableUuid, List, useSortableList } from '@components/List/ListContainer';
 import { debounce } from 'obsidian';
 import { useState } from 'preact/hooks';
-import { extensionManager, settingsManager } from '@/libs';
+import { appUtils, extensionManager, settingsManager } from '@/libs';
 import {
   type Action,
   type ActionContext,
@@ -11,6 +11,7 @@ import {
   type TriggerType,
   TriggerTypes,
 } from '@/libs/action';
+import { ActionJsonModal } from '@/ui/modals/actionJson';
 import { ActionItem } from './actionItem';
 
 export function ActionListContainer() {
@@ -181,7 +182,10 @@ export function ActionListContainer() {
         )}
       />
 
-      <div className="typstmate-add-button-container" style={{ marginTop: 'var(--size-4-2)' }}>
+      <div
+        className="typstmate-add-button-container"
+        style={{ marginTop: 'var(--size-4-2)', display: 'flex', gap: 'var(--size-4-2)' }}
+      >
         <button
           className="typstmate-button is-primary"
           onClick={async () => {
@@ -199,6 +203,20 @@ export function ActionListContainer() {
           }}
         >
           <span>Add action</span>
+        </button>
+
+        <button
+          className="typstmate-button"
+          onClick={() => {
+            new ActionJsonModal(appUtils.app, settingsManager.settings.actions, async (newActions) => {
+              setActions(newActions);
+              settingsManager.settings.actions = newActions;
+              await settingsManager.saveSettings();
+              extensionManager.reconfigure('typst-mate-action');
+            }).open();
+          }}
+        >
+          <span>Edit JSON</span>
         </button>
       </div>
     </div>

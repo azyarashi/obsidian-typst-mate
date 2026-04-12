@@ -24,7 +24,7 @@ export function ProcessorsTab() {
         return {
           id: k,
           name: t(`settings.processors.kindTabs.${k}`),
-          renderContent: () => <ProcessorsContainer kind={k} />,
+          renderContent: () => <ProcessorsContainer key={k} kind={k} />,
         };
       }),
     [],
