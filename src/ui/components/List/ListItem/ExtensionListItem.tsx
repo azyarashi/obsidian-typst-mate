@@ -1,30 +1,42 @@
 import { render } from 'preact';
-import { useState } from 'preact/hooks';
+import { useLayoutEffect, useRef, useState } from 'preact/hooks';
 import { ICONS } from '@/constants/icons';
 import { extensionManager, settingsManager } from '@/libs';
-import type { ExtensionInfo } from '@/libs/extensionManager';
+import type { ExtensionPackage } from '@/libs/extensionManager';
 import { Icon } from '../../decorations';
 import { Setting } from '../../obsidian/Setting';
 import { ListItem } from './index';
 import './ExtensionListItem.css';
 
-export function ExtensionListItem({ info, isCore }: { info: ExtensionInfo; isCore?: boolean }) {
+function RawMarkup({ content, className }: { content: string | DocumentFragment; className?: string }) {
+  const ref = useRef<HTMLSpanElement>(null);
+  useLayoutEffect(() => {
+    if (!ref.current) return;
+    ref.current.empty();
+    if (!content) return;
+    if (typeof content === 'string') ref.current.textContent = content;
+    else ref.current.appendChild(content.cloneNode(true));
+  }, [content]);
+  return <span ref={ref} className={className} />;
+}
+
+export function ExtensionListItem({ package: pkg, isCore }: { package: ExtensionPackage; isCore?: boolean }) {
   const { markdown, typst } = settingsManager.settings.extensionSettings;
-  const setting = markdown[info.id] || typst[info.id];
-  const [enabled, setEnabled] = useState(info.isBuiltin ? true : (setting?.enabled ?? true));
+  const setting = markdown[pkg.id] || typst[pkg.id];
+  const [enabled, setEnabled] = useState(pkg.isBuiltin ? true : (setting?.enabled ?? pkg.defaultEnabled ?? true));
   const [values, setValues] = useState({ ...setting?.values });
 
   const updateSettings = async (partial: { enabled?: boolean; values?: Record<string, unknown> }) => {
     const extSettings = settingsManager.settings.extensionSettings;
     [extSettings.markdown, extSettings.typst].forEach((record) => {
-      let s = record[info.id];
+      let s = record[pkg.id];
       if (!s && (partial.enabled !== undefined || partial.values)) {
         s = {
-          id: info.id,
-          enabled: info.isBuiltin ? true : (setting?.enabled ?? true),
+          id: pkg.id,
+          enabled: pkg.isBuiltin ? true : (setting?.enabled ?? pkg.defaultEnabled ?? true),
           values: { ...setting?.values },
         };
-        record[info.id] = s;
+        record[pkg.id] = s;
       }
 
       if (s) {
@@ -34,7 +46,7 @@ export function ExtensionListItem({ info, isCore }: { info: ExtensionInfo; isCor
     });
 
     await settingsManager.saveSettings();
-    extensionManager.reconfigure(info.id);
+    extensionManager.reconfigure(pkg.id);
   };
 
   const updateValue = async (key: string, val: unknown) => {
@@ -49,18 +61,18 @@ export function ExtensionListItem({ info, isCore }: { info: ExtensionInfo; isCor
     <div className={`typstmate-extension-wrapper ${isCore ? 'is-core' : ''}`}>
       <ListItem
         summary={
-          <div className={`typstmate-extension-list-item-summary ${!enabled && !info.isBuiltin ? 'is-disabled' : ''}`}>
+          <div className={`typstmate-extension-list-item-summary ${!enabled && !pkg.isBuiltin ? 'is-disabled' : ''}`}>
             <div className="typstmate-extension-list-item-icon">
-              <Icon icon={info.icon || ICONS.None} className="typstmate-extension-icon" />
+              <Icon icon={pkg.icon || ICONS.None} className="typstmate-extension-icon" />
             </div>
 
             <div className="typstmate-extension-list-item-info">
-              <span className="typstmate-extension-list-item-name">{info.name}</span>
-              <span className="typstmate-extension-list-item-desc">{info.description}</span>
+              <span className="typstmate-extension-list-item-name">{pkg.name}</span>
+              <RawMarkup content={pkg.description} className="typstmate-extension-list-item-desc" />
             </div>
 
             <div className="typstmate-extension-list-item-tags">
-              {info.tags.map((tag) => (
+              {pkg.tags.map((tag: any) => (
                 <span key={tag} className="typstmate-tag">
                   #{tag}
                 </span>
@@ -73,7 +85,7 @@ export function ExtensionListItem({ info, isCore }: { info: ExtensionInfo; isCor
                   s.addToggle((t) =>
                     t
                       .setValue(enabled)
-                      .setDisabled(info.isBuiltin)
+                      .setDisabled(pkg.isBuiltin)
                       .onChange(async (v) => {
                         setEnabled(v);
                         await updateSettings({ enabled: v });
@@ -82,7 +94,7 @@ export function ExtensionListItem({ info, isCore }: { info: ExtensionInfo; isCor
                 }
               />
               <div className="typstmate-extension-footer">
-                {info.scope.map((s) => (
+                {pkg.scope.map((s: any) => (
                   <Icon
                     key={s}
                     icon={s === 'markdown' ? ICONS.Pencil : ICONS.TypstStroke}
@@ -96,55 +108,63 @@ export function ExtensionListItem({ info, isCore }: { info: ExtensionInfo; isCor
         }
         isVertical={true}
       >
-        {info.settings.length > 0 && (
+        {pkg.settings.length > 0 && (
           <div className="typstmate-extension-settings-panel" onClick={(e) => e.stopPropagation()}>
-            {info.settings.map((item) => {
+            {pkg.settings.map((item: any) => {
               const val = values[item.key] ?? item.defaultValue;
 
               return (
                 <Setting
                   key={item.key}
                   build={(s) => {
-                    s.setName(item.title).setDesc(item.description);
                     switch (item.type) {
                       case 'toggle':
-                        s.addToggle((t) => t.setValue(!!val).onChange((v) => updateValue(item.key, v)));
+                        s.setName(item.title).setDesc(item.description);
+                        s.addToggle((t) => t.setValue(!!val).onChange((v: any) => updateValue(item.key, v)));
                         break;
                       case 'slider':
+                        s.setName(item.title).setDesc(item.description);
                         s.addSlider((sl) =>
                           sl
-                            .setLimits(item.min, item.max, item.step)
+                            .setLimits(item.min!, item.max!, item.step!)
                             .setValue(val as number)
                             .setDynamicTooltip()
-                            .onChange((v) => updateValue(item.key, v)),
+                            .onChange((v: any) => updateValue(item.key, v)),
                         );
                         break;
                       case 'dropdown':
+                        s.setName(item.title).setDesc(item.description);
                         s.addDropdown((d) => {
                           const options = Object.fromEntries(
-                            item.options.map((opt) => [
+                            item.options!.map((opt: any) => [
                               typeof opt === 'string' ? opt : opt.value,
                               typeof opt === 'string' ? opt : opt.label,
                             ]),
                           );
                           d.addOptions(options)
                             .setValue(val as string)
-                            .onChange((v) => updateValue(item.key, v));
+                            .onChange((v: any) => updateValue(item.key, v));
                         });
                         break;
                       case 'text':
+                        s.setName(item.title).setDesc(item.description);
                         s.addText((t) =>
                           t
                             .setValue(val as string)
-                            .onChange((v) => updateValue(item.key, v))
+                            .onChange((v: any) => updateValue(item.key, v))
                             .inputEl.classList.add('typstmate-ext-text-input'),
                         );
                         break;
                       case 'keymap':
+                        s.setName(item.title).setDesc(item.description);
                         render(
-                          <KeyRecorder value={val as string} onChange={(v) => updateValue(item.key, v)} />,
+                          <KeyRecorder value={val as string} onChange={(v: any) => updateValue(item.key, v)} />,
                           s.controlEl,
                         );
+                        break;
+                      case 'header':
+                        s.settingEl.classList.add('typstmate-ext-setting-header');
+                        s.setName(item.title);
                         break;
                     }
                   }}

@@ -34,5 +34,6 @@ export type InterpolationValues = Record<string, string | number>;
 export type TranslationKey = Parameters<typeof i18n.t>[0];
 
 export const t = i18n.t;
+export type TFunction = typeof t;
 
 export { tFragment } from './fragment';

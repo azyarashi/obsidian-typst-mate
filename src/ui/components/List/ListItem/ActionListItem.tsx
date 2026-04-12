@@ -1,4 +1,4 @@
-import type { ActionDef } from '@/libs/action';
+import type { Action } from '@/libs/action';
 import { ButtonComponent } from '../../obsidian/components';
 import { ListItem } from './index';
 
@@ -10,7 +10,7 @@ export function ActionListItem({
   onToggle,
   onDelete,
 }: {
-  action: ActionDef;
+  action: Action;
   isOpen?: boolean;
   onToggle?: () => void;
   onDelete?: () => void;

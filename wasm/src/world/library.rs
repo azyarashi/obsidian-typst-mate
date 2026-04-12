@@ -1,5 +1,3 @@
-use std::str::FromStr;
-
 use typst::foundations::{
     Content, Element, NativeElement, Property, Recipe, Selector, Smart, Style, Styles,
     Transformation, Value, func,
@@ -24,13 +22,6 @@ pub fn build_library(fontsize: f64) -> Library {
     let fontsize_abs = Abs::pt(fontsize / 1.25);
     let fontsize_val = Value::Length(Length::from(fontsize_abs));
     library.global.scope_mut().define("fontsize", fontsize_val);
-
-    // #let CURSOR = text(fill: rgb("#44f"))[▮]
-    let cursor_elem = TextElem::new("▮".into());
-    let cursor_paint = Paint::Solid(Color::from_str("#44f").unwrap());
-    let cursor_style = Style::Property(Property::new(TextElem::fill, cursor_paint));
-    let cursor_val = Value::Content(Content::new(cursor_elem).styled(cursor_style));
-    library.global.scope_mut().define("CURSOR", cursor_val);
 
     library.global.scope_mut().define_func::<boxed>();
     library.math.scope_mut().define_func::<boxed>();

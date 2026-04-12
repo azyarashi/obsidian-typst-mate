@@ -1,14 +1,14 @@
 import SHORTCUTS_DATA from '@/data/actions/long-press.json';
 import TYPE_DATA from '@/data/actions/type.json';
-import type { ActionDef } from '@/libs/action';
+import type { Action } from '@/libs/action';
 
-export const DEFAULT_ACTIONS: ActionDef[] = [
+export const DEFAULT_ACTIONS: Action[] = [
   // type
   ...TYPE_DATA,
 
   // long-press
   ...Object.entries(SHORTCUTS_DATA).map(
-    ([key, data]): ActionDef => ({
+    ([key, data]): Action => ({
       id: `Long Press ${key}`,
       contexts: ['Math'],
       trigger: {

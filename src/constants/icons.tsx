@@ -1,5 +1,5 @@
-import { addIcon, getIcon, removeIcon } from 'obsidian';
-import type { JSX } from 'preact';
+import { addIcon, getIcon } from 'obsidian';
+import { type JSX, render } from 'preact';
 
 /**
  * @see https://docs.obsidian.md/Plugins/User+interface/Icons
@@ -28,13 +28,17 @@ const TYPST_SVG_STROKE = (
 const typstFill = 'typst-fill';
 const typstStroke = 'typst-stroke';
 
-addIcon(typstFill, TYPST_SVG_FILL.toString());
-addIcon(typstStroke, TYPST_SVG_STROKE.toString());
+const svgContainer = document.createElement('div');
 
-export function removeIcons() {
-  removeIcon(typstFill);
-  removeIcon(typstStroke);
-}
+render(TYPST_SVG_FILL, svgContainer);
+addIcon(typstFill, svgContainer.innerHTML);
+render(null, svgContainer);
+
+render(TYPST_SVG_STROKE, svgContainer);
+addIcon(typstStroke, svgContainer.innerHTML);
+render(null, svgContainer);
+
+svgContainer.remove();
 
 const getIconAttributes = (icon: SVGSVGElement) =>
   [...icon.attributes].reduce<Record<string, string>>((attributes, attr) => {
@@ -52,15 +56,16 @@ const getIconAsJSX = (iconId: string): JSX.Element => {
   return <svg {...getIconAttributes(icon)} dangerouslySetInnerHTML={{ __html: icon.innerHTML }} />;
 };
 
-export const ICONS: Record<string, JSX.Element> = {
+export const ICONS = {
   TypstFill: TYPST_SVG_FILL,
   TypstStroke: TYPST_SVG_STROKE,
+  Markdown: getIconAsJSX('pen-line'),
+  None: <></>,
 
   // 一般
   Settings: getIconAsJSX('settings'),
   LayoutSidePanel: getIconAsJSX('check'), // TODO
   Check: getIconAsJSX('check'),
-  None: getIconAsJSX('check'), // TODO
   ExpandVertically: getIconAsJSX('expand-vertically'),
   Info: getIconAsJSX('info'),
   Cross: getIconAsJSX('cross'),
@@ -68,6 +73,20 @@ export const ICONS: Record<string, JSX.Element> = {
   Trash: getIconAsJSX('trash'),
   Plus: getIconAsJSX('plus'),
   AlignLeft: getIconAsJSX('align-left'),
+
+  // 拡張機能
+  /** Codeblock Preview / Inline Preview */
+  ScanEye: getIconAsJSX('scan-eye'),
+  /** Debugger */
+  Bug: getIconAsJSX('bug'),
+
+  /** Autocomplete */
+  Terminal: getIconAsJSX('terminal'),
+  /** Formatter */
+  Sticker: getIconAsJSX('sticker'),
+
+  /** Vim */
+  Vim: getIconAsJSX('command'),
 
   ReplaceAll: getIconAsJSX('replace-all'),
   MoveHorizontal: getIconAsJSX('move-horizontal'),
@@ -92,7 +111,6 @@ export const ICONS: Record<string, JSX.Element> = {
   Keyboard: getIconAsJSX('keyboard'),
 
   Activity: getIconAsJSX('activity'),
-  Bug: getIconAsJSX('bug'),
   AlertTriangle: getIconAsJSX('alert-triangle'),
   Rainbow: getIconAsJSX('rainbow'),
   ExternalLink: getIconAsJSX('external-link'),

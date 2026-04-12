@@ -7,28 +7,28 @@ import { DefaultNewProcessor, type Processor, type ProcessorKind, type Processor
 import { ProcessorItem } from './processorItem';
 
 export function ProcessorsContainer<K extends ProcessorKind>({ kind }: { kind: K }) {
-  const [, setTick] = useState(0);
-  const forceUpdate = () => setTick((t) => t + 1);
-
-  const processors = settingsManager.settings.processor[kind].processors as ProcessorOfKind<K>[];
+  // Use state to track processors for reliable UI updates
+  const [processors, setProcessors] = useState<ProcessorOfKind<K>[]>([
+    ...settingsManager.settings.processor[kind].processors,
+  ] as ProcessorOfKind<K>[]);
 
   const { updateItem, deleteItem, moveItem } = useSortableList<ProcessorOfKind<K>>({
     items: processors,
     onSave: async (newProcessors) => {
+      setProcessors(newProcessors);
       (settingsManager.settings.processor[kind] as { processors: ProcessorOfKind<K>[] }).processors = newProcessors;
       await settingsManager.saveSettings();
     },
-    onUpdateState: forceUpdate,
   });
 
   const handleAdd = async () => {
-    const newProcessor = DefaultNewProcessor[kind] as ProcessorOfKind<K>;
-    getSortableUuid(newProcessor as Processor);
-
+    // Spread DefaultNewProcessor to avoid mutating the original template
+    const newProcessor = { ...(DefaultNewProcessor[kind] as ProcessorOfKind<K>) };
     const newProcessors = [newProcessor, ...processors];
+
+    setProcessors(newProcessors);
     (settingsManager.settings.processor[kind] as { processors: ProcessorOfKind<K>[] }).processors = newProcessors;
     await settingsManager.saveSettings();
-    forceUpdate();
   };
 
   return (
@@ -40,7 +40,9 @@ export function ProcessorsContainer<K extends ProcessorKind>({ kind }: { kind: K
             .setDesc(tFragment(`settings.processors.${kind}ProcessorDesc`))
         }
       />
-      <button onClick={handleAdd}>{t('settings.processors.addProcessorButton')}</button>
+      <button className="typstmate-button is-primary" onClick={handleAdd} style={{ marginBottom: 'var(--size-4-2)' }}>
+        {t('settings.processors.addProcessorButton')}
+      </button>
       <List
         items={processors}
         renderItem={(processor, index) => {

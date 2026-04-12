@@ -16,7 +16,10 @@ import { typstTextCore } from './extensions/TypstCore';
 
 export function buildTypstTextExtensions() {
   const extensions: Extension[] = [
+    viewTracker('typst'),
     typstTextCore,
+    diagnosticsState,
+    ...extensionManager.buildExtensions('typst'),
 
     EditorView.lineWrapping,
 
@@ -35,18 +38,11 @@ export function buildTypstTextExtensions() {
       ...standardKeymap,
     ]),
 
-    // Diagnostics state (always-on, required by linterExtension)
-    diagnosticsState,
-
     highlightTrailingWhitespace(),
 
     lineNumbers(),
     highlightActiveLineGutter(),
     highlightActiveLine(),
-    viewTracker('typst'),
-
-    // Managed extensions (Compartment-wrapped, includes linter & syntax highlight)
-    ...extensionManager.buildExtensions('typst'),
   ];
 
   return extensions.filter((ext) => !Array.isArray(ext) || (Array.isArray(ext) && ext.length !== 0));

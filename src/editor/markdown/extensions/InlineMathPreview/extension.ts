@@ -1,0 +1,83 @@
+import { type EditorView, type PluginValue, ViewPlugin, type ViewUpdate } from '@codemirror/view';
+import { getActiveRegion } from '@/editor/shared/utils/core';
+import { calculatePopupPosition } from '@/editor/shared/utils/position';
+
+import './InlineMathPreview.css';
+
+class InlinePreviewPlugin implements PluginValue {
+  container: HTMLElement;
+  lastContent: string = '';
+
+  constructor(public view: EditorView) {
+    this.container = document.createElement('div');
+    this.container.addClasses(['typstmate-inlinemathpreview', 'typstmate-temporary']);
+    this.container.hide();
+
+    this.container.addEventListener('mousedown', (event) => {
+      event.preventDefault();
+    });
+
+    document.body.appendChild(this.container);
+  }
+
+  update(update: ViewUpdate) {
+    if (!update.view.hasFocus) {
+      this.hide();
+      return;
+    }
+
+    if (update.docChanged || update.selectionSet) {
+      const region = getActiveRegion(update.view);
+      if (!region || region.kind !== 'inline') {
+        this.hide();
+        return;
+      }
+
+      const content = update.state.sliceDoc(region.from, region.to);
+      if (content.startsWith('\\ref') || content.startsWith('{} \\ref')) {
+        this.hide();
+        return;
+      }
+
+      this.view.requestMeasure({
+        read: () => {
+          try {
+            return calculatePopupPosition(this.view, region.from, region.to);
+          } catch {
+            return null;
+          }
+        },
+        write: (pos) => {
+          if (pos) this.render(pos, content, region.from + region.skip);
+          else this.hide();
+        },
+      });
+    }
+  }
+
+  render(pos: { x: number; y: number }, content: string, regionFrom: number) {
+    if (!window.MathJax) return;
+    if (this.lastContent === content) return;
+    this.lastContent = content;
+    this.container.dataset.regionFrom = regionFrom.toString();
+
+    const html = window.MathJax.tex2chtml(content, { display: false });
+    this.container.replaceChildren(html);
+
+    this.container.style.setProperty('--preview-left', `${pos.x}px`);
+    this.container.style.setProperty('--preview-top', `${pos.y}px`);
+    this.container.show();
+  }
+
+  hide() {
+    this.container.hide();
+    this.lastContent = '';
+    delete this.container.dataset.regionFrom;
+  }
+
+  destroy() {
+    this.container.remove();
+  }
+}
+
+export const inlinePreviewExtension = ViewPlugin.fromClass(InlinePreviewPlugin);

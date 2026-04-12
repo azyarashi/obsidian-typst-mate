@@ -2,24 +2,21 @@ import { getSortableUuid, List, useSortableList } from '@components/List/ListCon
 import { debounce } from 'obsidian';
 import { useState } from 'preact/hooks';
 import { extensionManager, settingsManager } from '@/libs';
-import { type ActionDef, ActionTypes, TriggerTypes } from '@/libs/action';
+import { type Action, ActionContexts, ActionTypes, TriggerTypes } from '@/libs/action';
 import { ActionItem } from './actionItem';
 
 export function ActionListContainer() {
-  const [, setTick] = useState(0);
-  const forceUpdate = () => setTick((t) => t + 1);
+  // Use state to track actions for reliable UI updates
+  const [actions, setActions] = useState<Action[]>([...settingsManager.settings.actions]);
 
-  const actions = settingsManager.settings.actions;
-
-  const { updateItem, deleteItem, moveItem } = useSortableList<ActionDef>({
+  const { updateItem, deleteItem, moveItem } = useSortableList<Action>({
     items: actions,
-    onSave: async (newActions: ActionDef[]) => {
+    onSave: async (newActions: Action[]) => {
+      setActions(newActions);
       settingsManager.settings.actions = newActions;
       await settingsManager.saveSettings();
-      // Ensure the editor picks up the new actions
       extensionManager.reconfigure('typst-mate-action');
     },
-    onUpdateState: forceUpdate,
   });
 
   const [filterQuery, setFilterQuery] = useState(settingsManager.settings.settingsStates.actionFilter.query);
@@ -28,6 +25,9 @@ export function ActionListContainer() {
   );
   const [activeActions, setActiveActions] = useState<string[]>(
     settingsManager.settings.settingsStates.actionFilter.actions || [],
+  );
+  const [activeContexts, setActiveContexts] = useState<string[]>(
+    settingsManager.settings.settingsStates.actionFilter.contexts || [],
   );
 
   const debouncedSaveQuery = debounce(async (q: string) => {
@@ -52,6 +52,50 @@ export function ActionListContainer() {
     settingsManager.settings.settingsStates.actionFilter.actions = newActions;
     await settingsManager.saveSettings();
   };
+
+  const toggleContextFilter = async (type: string) => {
+    const newContexts = activeContexts.includes(type)
+      ? activeContexts.filter((c) => c !== type)
+      : [...activeContexts, type];
+    setActiveContexts(newContexts);
+    settingsManager.settings.settingsStates.actionFilter.contexts = newContexts;
+    await settingsManager.saveSettings();
+  };
+
+  const filteredActions = actions.filter((a) => {
+    const query = filterQuery.toLowerCase();
+    const triggerType = a.trigger.t;
+    const triggerValue = a.trigger.v.toLowerCase();
+
+    const actionType = a.action.t;
+    const actionValue = a.action.v.toLowerCase();
+
+    // Search query check
+    if (
+      query &&
+      !a.id.toLowerCase().includes(query) &&
+      !triggerType.toLowerCase().includes(query) &&
+      !triggerValue.includes(query) &&
+      !actionType.toLowerCase().includes(query) &&
+      !actionValue.includes(query)
+    ) {
+      return false;
+    }
+
+    // Trigger type filter check
+    if (activeTriggers.length > 0 && !activeTriggers.includes(triggerType)) return false;
+
+    // Action type filter check
+    if (activeActions.length > 0 && !activeActions.includes(actionType)) return false;
+
+    // Context filter check
+    if (activeContexts.length > 0) {
+      const hasAnyContext = a.contexts.some((c) => activeContexts.includes(c));
+      if (!hasAnyContext) return false;
+    }
+
+    return true;
+  });
 
   return (
     <div className="typstmate-action-list-container">
@@ -98,41 +142,25 @@ export function ActionListContainer() {
             ))}
           </div>
         </div>
+
+        <div className="typstmate-ext-chip-group">
+          <span className="typstmate-ext-filter-label">Context</span>
+          <div className="typstmate-ext-chips">
+            {ActionContexts.map((c) => (
+              <button
+                key={c}
+                className={`typstmate-ext-chip ${activeContexts.includes(c) ? 'is-active' : ''}`}
+                onClick={() => toggleContextFilter(c)}
+              >
+                <span>{c}</span>
+              </button>
+            ))}
+          </div>
+        </div>
       </div>
 
       <List
-        items={actions.filter((a) => {
-          const query = filterQuery.toLowerCase();
-          const triggerType = a.trigger.t;
-          const triggerValue = a.trigger.v.toLowerCase();
-
-          const actionType = a.action.t;
-          const actionValue = a.action.v.toLowerCase();
-
-          // Search query check
-          if (
-            query &&
-            !a.id.toLowerCase().includes(query) &&
-            !triggerType.toLowerCase().includes(query) &&
-            !triggerValue.includes(query) &&
-            !actionType.toLowerCase().includes(query) &&
-            !actionValue.includes(query)
-          ) {
-            return false;
-          }
-
-          // Trigger type filter check
-          if (activeTriggers.length > 0 && !activeTriggers.includes(triggerType)) {
-            return false;
-          }
-
-          // Action type filter check
-          if (activeActions.length > 0 && !activeActions.includes(actionType)) {
-            return false;
-          }
-
-          return true;
-        })}
+        items={filteredActions}
         renderItem={(action, _index) => (
           <ActionItem
             key={getSortableUuid(action)}
@@ -149,14 +177,17 @@ export function ActionListContainer() {
         <button
           className="typstmate-button is-primary"
           onClick={async () => {
-            actions.push({
-              id: `new-action-${crypto.randomUUID().slice(0, 8)}`,
+            const newAction: Action = {
+              id: `new-action-${Math.random().toString(36).slice(2, 10)}`,
               contexts: ['Markdown', 'MathJax', 'Markup', 'Code', 'Math', 'Opaque'],
               trigger: { t: 'type', v: '' },
               action: { t: 'snippet', v: '' },
-            });
+            };
+            const newActions = [...actions, newAction];
+            setActions(newActions);
+            settingsManager.settings.actions = newActions;
             await settingsManager.saveSettings();
-            forceUpdate();
+            extensionManager.reconfigure('typst-mate-action');
           }}
         >
           <span>Add action</span>

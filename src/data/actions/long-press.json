@@ -1,86 +1,86 @@
 {
   "!": {
-    "content": "cancel(#CURSOR)",
+    "content": "cancel(#.0)",
     "category": "Cancel"
   },
   "l": {
-    "content": "lr(#CURSOR)",
+    "content": "lr(#.0)",
     "category": "Left/Right"
   },
   "a": {
-    "content": "abs(#CURSOR)",
+    "content": "abs(#.0)",
     "category": "Left/Right"
   },
   "n": {
-    "content": "norm(#CURSOR)",
+    "content": "norm(#.0)",
     "category": "Left/Right"
   },
   "f": {
-    "content": "floor(#CURSOR)",
+    "content": "floor(#.0)",
     "category": "Left/Right"
   },
   "c": {
-    "content": "ceil(#CURSOR)",
+    "content": "ceil(#.0)",
     "category": "Left/Right"
   },
   "e": {
-    "content": "round(#CURSOR)",
+    "content": "round(#.0)",
     "category": "Left/Right"
   },
   "2": {
-    "content": "sqrt(#CURSOR)",
+    "content": "sqrt(#.0)",
     "category": "Roots"
   },
   "3": {
-    "content": "root(3, #CURSOR)",
+    "content": "root(3, #.0)",
     "category": "Roots"
   },
   "^": {
-    "content": "stretch(#CURSOR)^\"\"",
+    "content": "stretch(#.0)^\"#.1\"",
     "category": "Stretch"
   },
   "_": {
-    "content": "stretch(#CURSOR)_\"\"",
+    "content": "stretch(#.0)_\"#.1\"",
     "category": "Stretch"
   },
   "u": {
-    "content": "upright(#CURSOR)",
+    "content": "upright(#.0)",
     "category": "Styles"
   },
   "b": {
-    "content": "bold(#CURSOR)",
+    "content": "bold(#.0)",
     "category": "Styles"
   },
   "U": {
-    "content": "underbrace(#CURSOR, \"\")",
+    "content": "underbrace(#.0, \"#.1\")",
     "category": "Under/Over"
   },
   "O": {
-    "content": "overbrace(#CURSOR, \"\")",
+    "content": "overbrace(#.0, \"#.1\")",
     "category": "Under/Over"
   },
   "s": {
-    "content": "sans(#CURSOR)",
+    "content": "sans(#.0)",
     "category": "Variants"
   },
   "F": {
-    "content": "frak(#CURSOR)",
+    "content": "frak(#.0)",
     "category": "Variants"
   },
   "M": {
-    "content": "mono(#CURSOR)",
+    "content": "mono(#.0)",
     "category": "Variants"
   },
   "B": {
-    "content": "bb(#CURSOR)",
+    "content": "bb(#.0)",
     "category": "Variants"
   },
   "C": {
-    "content": "cal(#CURSOR)",
+    "content": "cal(#.0)",
     "category": "Variants"
   },
   "S": {
-    "content": "scr(#CURSOR)",
+    "content": "scr(#.0)",
     "category": "Variants"
   }
 }

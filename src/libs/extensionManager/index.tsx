@@ -16,22 +16,26 @@ export type EditorContext = 'markdown' | 'typst';
 export const ALL_TAGS = ['core', 'action', 'decoration', 'ui', 'completion', 'navigation'] as const;
 export const ALL_SCOPES = ['markdown', 'typst'] as const;
 
-export interface ExtensionInfo {
+export interface ExtensionPackage {
   // UI
-  name: string;
-  icon: ComponentChildren;
-  description: string;
-  tags: Tag[];
+  readonly name: string;
+  readonly icon: ComponentChildren;
+  readonly description: string | DocumentFragment;
+  readonly tags: readonly Tag[];
 
   // 設定
-  scope: EditorContext[];
-  settings: ExtensionSettingItem[];
+  readonly scope: readonly EditorContext[];
+  readonly settings: readonly ExtensionSettingItem[];
 
   // メタ
-  id: string;
-  isBuiltin: boolean;
-  displayOrder?: number;
+  readonly id: string;
+  readonly isBuiltin: boolean;
+  readonly isHidden?: boolean;
+  readonly defaultEnabled?: boolean;
+  readonly displayOrder?: number;
 }
+
+export type ExtensionPackageFn = () => ExtensionPackage;
 
 interface ManagedEntry {
   entry: ExtensionEntry<any>;
@@ -56,12 +60,13 @@ export class ExtensionManager implements Singleton {
     return this.settingsEditorFactory?.() ?? [];
   }
 
-  register(entry: ExtensionEntry<any>) {
-    const existing = this.entries.find((e) => e.entry.info.id === entry.info.id);
+  register(definition: () => ExtensionEntry<any>) {
+    const entry = definition();
+    const existing = this.entries.find((e) => e.entry.package.id === entry.package.id);
     if (existing) return;
 
     const compartments: Partial<Record<EditorContext, Compartment>> = {};
-    for (const ctx of entry.info.scope) compartments[ctx] = new Compartment();
+    for (const ctx of entry.package.scope) compartments[ctx] = new Compartment();
 
     this.entries.push({ entry, compartments });
   }
@@ -82,11 +87,11 @@ export class ExtensionManager implements Singleton {
   }
 
   private resolveExtension(entry: ExtensionEntry<any>, context: EditorContext): Extension {
-    const setting = settingsManager.settings.extensionSettings[context][entry.info.id];
-    const enabled = entry.info.isBuiltin || (setting ? setting.enabled : true);
+    const setting = settingsManager.settings.extensionSettings[context][entry.package.id];
+    const enabled = entry.package.isBuiltin || (setting ? setting.enabled : (entry.package.defaultEnabled ?? true));
     if (!enabled) return [];
 
-    const defaultValues = this.buildDefaultValues(entry.info.settings);
+    const defaultValues = this.buildDefaultValues(entry.package.settings);
     const values = {
       ...defaultValues,
       ...(setting?.values ?? {}),
@@ -96,16 +101,16 @@ export class ExtensionManager implements Singleton {
     return entryExt ?? [];
   }
 
-  private buildDefaultValues(items: ExtensionSettingItem[]): Record<string, unknown> {
+  private buildDefaultValues(items: readonly ExtensionSettingItem[]): Record<string, unknown> {
     const result: Record<string, unknown> = {};
-    for (const item of items) result[item.key] = item.defaultValue;
+    for (const item of items) if ('key' in item) result[item.key] = item.defaultValue;
     return result;
   }
 
   /* reconfigure */
 
   reconfigure(id: string) {
-    const managed = this.entries.find((e) => e.entry.info.id === id);
+    const managed = this.entries.find((e) => e.entry.package.id === id);
     if (!managed) return;
 
     for (const [ctx, compartment] of Object.entries(managed.compartments) as [EditorContext, Compartment][]) {
@@ -116,13 +121,13 @@ export class ExtensionManager implements Singleton {
   }
 
   reconfigureAll() {
-    for (const managed of this.entries) this.reconfigure(managed.entry.info.id);
+    for (const managed of this.entries) this.reconfigure(managed.entry.package.id);
   }
 
   /* entry */
 
   getEntry(id: string) {
-    return this.entries.find((m) => m.entry.info.id === id)?.entry ?? null;
+    return this.entries.find((m) => m.entry.package.id === id)?.entry ?? null;
   }
 
   getEntries() {

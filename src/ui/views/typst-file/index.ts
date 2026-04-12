@@ -5,6 +5,7 @@ import { formatterSettingsFacet } from '@/editor/shared/extensions';
 import { updateDiagnosticEffect } from '@/editor/shared/extensions/Diagnostic';
 import { buildTypstTextExtensions } from '@/editor/typst/build';
 import { jumpToPreviewTargetFacet } from '@/editor/typst/extensions/JumpToPreview';
+import { vimQuitFacet, vimSaveFacet } from '@/editor/typst/extensions/Vim';
 import { t } from '@/i18n';
 import { settingsManager, typstManager } from '@/libs';
 import { viewTracker } from '@/libs/extensionManager';
@@ -213,7 +214,7 @@ export class TypstFileView extends TextFileView {
       ...buildTypstTextExtensions(),
       viewTracker('typst'),
       jumpToPreviewTargetFacet.of({
-        jumpToPosition: async (position) => {
+        jumpToPosition: async (position: { page: number; x: number; y: number }) => {
           if (!this.linkedPreviewLeaf) return;
 
           const previewView = this.linkedPreviewLeaf.view;
@@ -227,6 +228,11 @@ export class TypstFileView extends TextFileView {
       }),
       EditorView.updateListener.of((update) => {
         if (update.docChanged) this.debouncedCompile();
+      }),
+      vimSaveFacet.of(() => this.requestSave()),
+      vimQuitFacet.of(() => {
+        if (this.linkedPreviewLeaf) this.linkedPreviewLeaf.detach();
+        this.leaf.detach();
       }),
     ];
   }

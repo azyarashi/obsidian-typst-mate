@@ -38,20 +38,26 @@ export function ExtensionsTab() {
   const filtered = useMemo(() => {
     const q = query.toLowerCase();
     return entries.filter((entry) => {
-      const { info } = entry;
-      if (q && !info.name.toLowerCase().includes(q) && !info.description.toLowerCase().includes(q)) return false;
-      if (activeTags.length > 0 && !activeTags.some((t) => info.tags.includes(t))) return false;
-      if (activeScopes.length > 0 && !activeScopes.some((s) => info.scope.includes(s))) return false;
+      const { package: pkg } = entry;
+      if (pkg.isHidden) return false;
+      if (
+        q &&
+        !pkg.name.toLowerCase().includes(q) &&
+        !(typeof pkg.description === 'string' && pkg.description.toLowerCase().includes(q))
+      )
+        return false;
+      if (activeTags.length > 0 && !activeTags.some((t) => pkg.tags.includes(t))) return false;
+      if (activeScopes.length > 0 && !activeScopes.some((s) => pkg.scope.includes(s))) return false;
       return true;
     });
   }, [query, activeTags, activeScopes, entries]);
 
   const normal = filtered
-    .filter((e) => !e.info.tags.includes('core'))
-    .sort((a, b) => (a.info.displayOrder ?? 0) - (b.info.displayOrder ?? 0));
+    .filter((e) => !e.package.tags.includes('core'))
+    .sort((a, b) => (a.package.displayOrder ?? 0) - (b.package.displayOrder ?? 0));
   const core = filtered
-    .filter((e) => e.info.tags.includes('core'))
-    .sort((a, b) => (a.info.displayOrder ?? 0) - (b.info.displayOrder ?? 0));
+    .filter((e) => e.package.tags.includes('core'))
+    .sort((a, b) => (a.package.displayOrder ?? 0) - (b.package.displayOrder ?? 0));
 
   return (
     <>
@@ -139,14 +145,14 @@ function ExtensionList({ normal, core }: { normal: ExtensionEntry<any>[]; core: 
       {normal.length === 0 && core.length === 0 && <p className="typstmate-ext-empty">No extensions match.</p>}
 
       {normal.map((entry) => (
-        <ExtensionListItem key={entry.info.id} info={entry.info} />
+        <ExtensionListItem key={entry.package.id} package={entry.package} />
       ))}
 
       {core.length > 0 && (
         <>
           {normal.length > 0 && <div className="typstmate-ext-core-divider" />}
           {core.map((entry) => (
-            <ExtensionListItem key={entry.info.id} info={entry.info} isCore />
+            <ExtensionListItem key={entry.package.id} package={entry.package} isCore />
           ))}
         </>
       )}

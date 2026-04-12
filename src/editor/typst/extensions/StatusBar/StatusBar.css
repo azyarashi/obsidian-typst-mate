@@ -1,0 +1,98 @@
+.cm-typstmate-status-bar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 2px 12px;
+  font-size: var(--font-ui-smaller);
+  font-family: var(--font-monospace-theme);
+  font-variant-numeric: tabular-nums;
+  color: var(--text-muted);
+  background-color: var(--background-secondary-alt);
+  border-top: 1px solid var(--background-modifier-border);
+  user-select: none;
+  pointer-events: auto;
+  opacity: 1;
+}
+
+/* Spacer pushes right-side items to the right */
+.cm-typstmate-status-bar-spacer {
+  flex: 1;
+}
+
+.cm-typstmate-status-bar-item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cm-typstmate-status-bar-kind {
+  min-width: 11ch;
+}
+
+.cm-typstmate-status-bar-mode {
+  min-width: 6ch;
+}
+
+.cm-typstmate-status-bar-pos {
+  min-width: 6ch;
+  justify-content: flex-end;
+}
+
+.cm-typstmate-status-bar-divider {
+  width: 1px;
+  height: 10px;
+  background-color: var(--background-modifier-border);
+}
+
+/* ── Vim left section ───────────────────────────────────────── */
+.cm-typstmate-status-bar-vim {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.cm-typstmate-status-bar-vim-mode {
+  font-weight: 700;
+  font-size: calc(var(--font-ui-smaller) - 0.5px);
+  letter-spacing: 0.08em;
+  padding: 1px 5px;
+  border-radius: 3px;
+  line-height: 1.4;
+  min-width: 7.5ch;
+  text-align: center;
+  box-sizing: border-box;
+}
+
+/* Mode colors */
+.vim-mode-normal {
+  color: hsl(140, 60%, 55%);
+  background: hsl(140, 40%, 18%);
+}
+.vim-mode-insert {
+  color: hsl(210, 80%, 68%);
+  background: hsl(210, 50%, 18%);
+}
+.vim-mode-visual {
+  color: hsl(280, 70%, 72%);
+  background: hsl(280, 40%, 18%);
+}
+.vim-mode-visual-line {
+  color: hsl(280, 70%, 72%);
+  background: hsl(280, 40%, 18%);
+}
+.vim-mode-visual-block {
+  color: hsl(280, 70%, 72%);
+  background: hsl(280, 40%, 18%);
+}
+.vim-mode-command-line {
+  color: hsl(40, 90%, 68%);
+  background: hsl(40, 45%, 18%);
+}
+
+.cm-typstmate-status-bar-vim-display {
+  color: var(--text-normal);
+  font-size: var(--font-ui-smaller);
+  min-width: 6ch;
+}

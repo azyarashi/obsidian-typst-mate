@@ -1,14 +1,25 @@
 import type { Extension } from '@codemirror/state';
 
 import type { EditorContext } from '..';
-import type { ExtensionInfo } from '.';
+import type { ExtensionPackage } from '.';
 
-export type ExtensionSettingItem = ToggleSetting | SliderSetting | TextSetting | DropdownSetting | KeymapSetting;
+export type ExtensionSettingItem =
+  | ToggleSetting
+  | SliderSetting
+  | TextSetting
+  | DropdownSetting
+  | KeymapSetting
+  | HeaderSetting;
+
+export interface HeaderSetting {
+  type: 'header';
+  title: string | DocumentFragment;
+}
 
 interface BaseSetting<T> {
   key: string;
-  title: string;
-  description: string;
+  title: string | DocumentFragment;
+  description: string | DocumentFragment;
   defaultValue: T;
 }
 
@@ -40,7 +51,9 @@ export interface KeymapSetting extends BaseSetting<string> {
  * ExtensionSettingItem の定義から設定値の型を推論します。
  */
 export type InferSettingsFromItems<T extends readonly ExtensionSettingItem[]> = {
-  [K in T[number]['key']]: Extract<T[number], { key: K }> extends BaseSetting<infer V> ? V : never;
+  [K in Extract<T[number], { key: string }>['key']]: Extract<T[number], { key: K }> extends BaseSetting<infer V>
+    ? V
+    : never;
 };
 
 /**
@@ -49,28 +62,37 @@ export type InferSettingsFromItems<T extends readonly ExtensionSettingItem[]> = 
 export type InferSettings<E> = E extends ExtensionEntry<infer S> ? S : never;
 
 /**
+ * ExtensionPackage を返す関数から設定値の型を推論します。
+ */
+export type InferSettingsFromPackage<P extends (...args: any[]) => { settings: readonly ExtensionSettingItem[] }> =
+  InferSettingsFromItems<ReturnType<P>['settings']>;
+
+/**
  * ExtensionManager に登録するエントリー。
  * factory は EditorContext に応じた Extension (or null) を返す。
  */
-export interface ExtensionEntry<Settings = Record<never, never>> {
-  info: ExtensionInfo;
+export interface ExtensionEntry<Settings = Record<string, any>> {
+  package: ExtensionPackage;
   factory: (context: EditorContext, settings: Settings) => Extension | null;
 }
 
 /**
  * ExtensionEntry を定義するためのヘルパー関数。
+ * 他のモジュールのロードタイミング（t() が未初期化の時）に実行されないよう、関数として定義する。
  */
-export function defineExtension<Settings extends Record<string, any> = any>() {
-  return <const T extends readonly ExtensionSettingItem[]>(entry: {
-    info: Omit<ExtensionInfo, 'settings'> & {
-      settings: T;
-    };
-    factory: (
-      context: EditorContext,
-      settings: [Settings] extends [any] ? InferSettingsFromItems<T> : Settings,
-    ) => Extension | null;
-  }): ExtensionEntry<[Settings] extends [any] ? InferSettingsFromItems<T> : Settings> => {
-    return entry as any;
+export function defineExtension<Settings extends Record<string, any> = never>() {
+  return <const T extends readonly ExtensionSettingItem[]>(
+    definition: () => {
+      package: Omit<ExtensionPackage, 'settings'> & {
+        settings: T;
+      };
+      factory: (
+        context: EditorContext,
+        settings: [Settings] extends [never] ? InferSettingsFromItems<T> : Settings,
+      ) => Extension | null;
+    },
+  ): (() => ExtensionEntry<[Settings] extends [never] ? InferSettingsFromItems<T> : Settings>) => {
+    return definition as any;
   };
 }
 

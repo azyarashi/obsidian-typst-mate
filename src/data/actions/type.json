@@ -8,7 +8,7 @@
     },
     "action": {
       "t": "snippet",
-      "v": "${} #CURSOR {}$"
+      "v": "${} #.0 {}$"
     }
   },
   {
@@ -20,11 +20,11 @@
     },
     "action": {
       "t": "snippet",
-      "v": "$$\n#CURSOR\n$$"
+      "v": "$$\n#.0\n$$"
     }
   },
   {
-    "id": "Enter Inline Math in Markup",
+    "id": "Enter Inline Math in Typst Markup",
     "contexts": ["Markup"],
     "trigger": {
       "t": "type",
@@ -32,11 +32,11 @@
     },
     "action": {
       "t": "snippet",
-      "v": "$#CURSOR$"
+      "v": "$#.0$"
     }
   },
   {
-    "id": "Enter Display Math in Markup",
+    "id": "Enter Display Math in Typst Markup",
     "contexts": ["Markup"],
     "trigger": {
       "t": "type",
@@ -44,7 +44,7 @@
     },
     "action": {
       "t": "snippet",
-      "v": "$ #CURSOR $"
+      "v": "$ #.0 $"
     }
   }
 ]

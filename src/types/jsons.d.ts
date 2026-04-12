@@ -9,7 +9,7 @@ declare module '@/data/actions/long-press.json' {
 }
 
 declare module '@/data/actions/type.json' {
-  const data: ActionDef[];
+  const data: Action[];
 
   export default data;
 }

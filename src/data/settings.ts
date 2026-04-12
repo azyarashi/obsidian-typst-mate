@@ -1,5 +1,5 @@
 import { SyntaxMode } from '@typstmate/typst-syntax';
-import type { ActionDef } from '@/libs/action';
+import type { Action } from '@/libs/action';
 import type { EditorContext, ExtensionSetting, Tag } from '@/libs/extensionManager';
 import {
   type CodeblockProcessor,
@@ -53,7 +53,7 @@ export interface Settings {
     };
   };
 
-  actions: ActionDef[];
+  actions: Action[];
   extensionSettings: Record<EditorContext, Record<string, ExtensionSetting>>;
 
   /* 内部設定 */
@@ -73,6 +73,7 @@ export interface Settings {
       query: string;
       triggers: string[];
       actions: string[];
+      contexts: string[];
     };
   };
 
@@ -262,6 +263,7 @@ export const DEFAULT_SETTINGS: Settings = {
       query: '',
       triggers: [],
       actions: [],
+      contexts: [],
     },
   },
 

@@ -1,0 +1,175 @@
+.typstmate-autocomplete {
+  position: fixed;
+  left: var(--preview-left, 0);
+  top: var(--preview-top, 0);
+  z-index: var(--layer-popover);
+  background: var(--background-secondary-alt);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  padding: 4px;
+  border-radius: 10px;
+  box-shadow:
+    0 10px 30px rgba(0, 0, 0, 0.25),
+    0 0 0 1px var(--background-modifier-border);
+  user-select: none;
+  transition: opacity 0.1s ease;
+  opacity: 0;
+  pointer-events: none;
+
+  display: flex;
+  flex-direction: column;
+  max-height: 320px;
+  min-width: 180px;
+  max-width: 500px;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.typstmate-autocomplete-suggesting .typstmate-autocomplete {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.typstmate-autocomplete .items {
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  scrollbar-width: thin;
+
+  z-index: var(--layer-menu);
+}
+
+.typstmate-autocomplete .items::-webkit-scrollbar {
+  width: 4px;
+}
+
+.typstmate-autocomplete .items::-webkit-scrollbar-thumb {
+  background-color: var(--background-modifier-border);
+  border-radius: 4px;
+}
+
+.typstmate-autocomplete .item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  padding: 6px 10px;
+  border-radius: 6px;
+  margin-bottom: 2px;
+  font-size: 0.9em;
+  line-height: 1.2;
+  transition: background-color 0.05s ease;
+  position: relative;
+
+  z-index: var(--layer-dragged-item);
+}
+
+.typstmate-autocomplete .item:last-child {
+  margin-bottom: 0;
+}
+
+.typstmate-autocomplete .item.selected {
+  background-color: var(--background-modifier-hover);
+  box-shadow: inset 0 0 0 1px var(--background-modifier-border-focus);
+}
+
+/* kind アイコン */
+.typstmate-autocomplete .item-kind {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.4em;
+  height: 1.4em;
+  opacity: 0.9;
+}
+
+.typstmate-autocomplete .item-kind svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* Color coding for different kinds */
+.typstmate-autocomplete .item-kind[data-kind="func"] {
+  color: #3b82f6;
+}
+.typstmate-autocomplete .item-kind[data-kind="type"] {
+  color: #8b5cf6;
+}
+.typstmate-autocomplete .item-kind[data-kind="param"] {
+  color: #f59e0b;
+}
+.typstmate-autocomplete .item-kind[data-kind="constant"] {
+  color: #d97706;
+}
+.typstmate-autocomplete .item-kind[data-kind="symbol"] {
+  color: #10b981;
+}
+.typstmate-autocomplete .item-kind[data-kind="syntax"] {
+  color: #ef4444;
+}
+.typstmate-autocomplete .item-kind[data-kind="label"] {
+  color: #06b6d4;
+}
+.typstmate-autocomplete .item-kind[data-kind="package"] {
+  color: #ec4899;
+}
+.typstmate-autocomplete .item-kind[data-kind="font"] {
+  color: #64748b;
+}
+.typstmate-autocomplete .item-kind[data-kind="path"] {
+  color: #475569;
+}
+
+/* Color swatch for constant completions with rgb() detail */
+.typstmate-autocomplete .item-color-swatch {
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  display: block;
+  border: 1.5px solid rgba(128, 128, 128, 0.3);
+  flex-shrink: 0;
+}
+
+/* Don't apply the default constant color when showing a swatch */
+.typstmate-autocomplete .item-kind.has-color-swatch {
+  color: var(--text-normal);
+}
+
+/* ラベル・シンボル */
+.typstmate-autocomplete .item-label {
+  font-family: var(--font-monospace);
+  font-weight: 500;
+  flex-shrink: 0;
+  color: var(--text-normal);
+}
+
+.typstmate-autocomplete .item-symbol {
+  font-size: 1.1em;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.2em;
+  color: var(--text-accent);
+}
+
+/* 詳細テキスト */
+.typstmate-autocomplete .item-detail {
+  color: var(--text-muted);
+  font-size: 0.85em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+  min-width: 0;
+  text-align: right;
+  opacity: 0.7;
+}
+
+/* 他のポップアップを隠す */
+body.typstmate-autocomplete-suggesting .typstmate-symbols,
+body.typstmate-autocomplete-suggesting .typstmate-snippets,
+body.typstmate-autocomplete-suggesting .typstmate-inlinemathpreview {
+  display: none !important;
+}

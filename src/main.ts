@@ -2,7 +2,6 @@ import { debounce, loadMathJax, Notice, Plugin, renderMath } from 'obsidian';
 
 import { initI18n, t } from '@/i18n';
 import { Status, TypstMate } from './api';
-import { removeIcons } from './constants';
 import { markdownExtensionEntries, sharedExtensionEntries, typstExtensionEntries } from './editor';
 // biome-ignore format: 可読性のため
 import { appUtils, crashTracker, editorHelper, extensionManager, fileManager, registerCommands, registerEvents, settingsManager, typstManager } from './libs';
@@ -17,7 +16,7 @@ export default class ObsidianTypstMate extends Plugin {
 
   private hasLoaded: boolean = true;
   private hasLoadedInProcess: boolean = false;
-  private detaches: (() => any | Promise<any>)[] = [removeIcons];
+  private detaches: (() => any | Promise<any>)[] = [];
 
   /* onload */
 

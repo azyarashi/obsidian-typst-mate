@@ -107,6 +107,8 @@
   },
 
   "notices": {
+    "commandNotFound": "コマンド {{id}} が見つかりませんでした",
+    "commandNotExecuted": "コマンド {{id}} が実行されませんでした",
     "unloadFailed": "プラグインのアンロード中にエラーが発生しました。",
     "alreadyRegisteredCodeblock": "登録済みのコードブロック言語です: {{id}}",
     "cachedSuccessfully": "キャッシュに成功しました！",
@@ -218,41 +220,112 @@
     "actions": {},
 
     "extensions": {
-      "complementSymbolWithUnicode": "シンボルを Unicode で補完する",
-      "complementSymbolWithUnicodeDesc": "入力されたシンボルを自動的に Unicode 等価物に置き換えます。",
-      "concealAndComplement": "非表示と補完",
-      "concealMathSymbols": "数式記号を非表示にする",
-      "concealMathSymbolsDesc": "エディタ上で数式記号を非表示（例: integral を ∫ に）にします。",
-      "disableBracketHighlight": "括弧のハイライトを無効にする",
-      "disableBracketHighlightDesc": "対応する括弧のハイライトを無効にします。",
-      "disableMacro": "マクロを無効にする",
-      "disableMacroDesc": "mk や dm などのデフォルトマクロを無効にします。",
-      "enableInlinePreview": "インラインプレビューを有効にする",
-      "enableInlinePreviewDesc": "インライン数式のライブプレビューを表示します。",
-      "enableRevealDelay": "数式記号の表示遅延を有効にする",
-      "enableRevealDelayDesc": "カーソルが近づいたときに、非表示にされている数式記号を表示するまでの遅延を追加します。",
-      "highlight": "ハイライト",
-      "inlinePreview": "インラインプレビュー",
-      "jumpOutsideBracket": "括弧の外にジャンプ",
-      "jumpOutsideBracketDesc": "カーソルが現在の括弧ペアの外にジャンプすることを許可します。",
-      "macro": "マクロ",
-      "moveToEndOfMathBlock": "終了前に数式ブロックの末尾に移動",
-      "moveToEndOfMathBlockDesc": "数式モードを終了するとき、まずカーソルをブロックの末尾に移動させます。",
-      "preferInlineExit": "単一行のディスプレイ数式でインライン終了を優先",
-      "preferInlineExitDesc": "ディスプレイ数式ブロックが1行に収まる場合、改行せずにインラインで終了します。",
-      "revealDelayDuration": "数式記号の表示遅延時間 (ms)",
-      "revealDelayDurationDesc": "記号のテキストを表示するまでの待機時間（ミリ秒）。",
-      "revealDelay": "数式記号の表示遅延",
-      "revealDelayDesc": "カーソルが近づいたときに、非表示にされている数式記号を表示するまでの遅延を追加します。",
-      "revertTabToDefault": "Tab キーをデフォルトに戻す",
-      "revertTabToDefaultDesc": "次のプレースホルダーへのジャンプではなく、Tab キーをデフォルトのインデント動作に戻します。",
-      "tabJump": "Tab ジャンプ",
-      "useObsidianTheme": "Obsidian テーマを使用",
-      "useObsidianThemeDesc": "Typst テーマの代わりに Obsidian テーマを使用します。再読み込みが必要です。",
-      "subTabs": {
-        "action": "アクション",
-        "decoration": "装飾",
-        "popup": "ポップアップ"
+      "codeblockPreview": {
+        "name": "コードブロックプレビュー",
+        "desc": "コードブロックの下部にプレビューを表示します"
+      },
+      "debugger": {
+        "name": "デバッガー",
+        "desc": ""
+      },
+      "inlinePreview": {
+        "name": "インラインプレビュー",
+        "desc": "インライン数式のプレビューを表示します"
+      },
+      "markdownCore": {
+        "name": "Markdown コア",
+        "desc": "Markdown エディターのコア機能"
+      },
+      "autocomplete": {
+        "name": "補完",
+        "desc": "変数やパッケージ, フォント情報などを補完します",
+        "complementSymbolWithUnicode.name": "symbol を Unicode 文字で補完する",
+        "complementSymbolWithUnicode.desc": "<link href=\"https://typst.app/docs/reference/foundations/symbol/\">symbol</link> を補完するとき, 対応する Unicode 文字に置き換えます"
+      },
+      "formatter": {
+        "name": "フォーマッター",
+        "desc": "<link href=\"https://typstyle-rs.github.io/typstyle/\">Typstyle</link> によるフォーマットを実行します",
+        "formatOnSave.name": "保存時のフォーマット",
+        "formatOnSave.desc": "保存時のフォーマット",
+        "typstyleHeader": "Typstyle の設定",
+        "tabSpaces.name": "タブスペース",
+        "tabSpaces.desc": "タブのスペース数",
+        "maxWidth.name": "最大幅",
+        "maxWidth.desc": "最大幅",
+        "blankLinesUpperBound.name": "空行の上限",
+        "blankLinesUpperBound.desc": "空行の上限",
+        "collapseMarkupSpaces.name": "マークアップスペースの結合",
+        "collapseMarkupSpaces.desc": "マークアップスペースの結合",
+        "reorderImportItems.name": "インポートアイテムの並べ替え",
+        "reorderImportItems.desc": "インポートアイテムの並べ替え",
+        "wrapText.name": "テキストの折り返し",
+        "wrapText.desc": "テキストの折り返し"
+      },
+      "jumpFromClick": {
+        "name": "クリックジャンプ",
+        "desc": "レンダリング結果をクリックしてコードに飛びます (Typst SVG のみ有効)"
+      },
+      "linter": {
+        "name": "リンター",
+        "desc": "エラーや警告を波線で表示します"
+      },
+      "pairHighlight": {
+        "name": "ペアハイライト",
+        "desc": "括弧などのペアをハイライトします"
+      },
+      "symbolConceal": {
+        "name": "記号をユニコード文字で表示",
+        "desc": "Math モード内の記号をユニコード文字で表示します",
+        "revealDelay.name": "数式記号の表示遅延",
+        "revealDelay.desc": "カーソルが近づいたときに、非表示にされている数式記号を表示するまでの遅延を追加します。"
+      },
+      "syntaxHighlight": {
+        "name": "シンタックスハイライト",
+        "desc": "シンタックスハイライト",
+        "useObsidianTheme.name": "Obsidian テーマを使用",
+        "useObsidianTheme.desc": "Typst テーマの代わりに Obsidian テーマを使用します。再読み込みが必要です。"
+      },
+      "tabJump": {
+        "name": "Tab ジャンプ",
+        "desc": "Tab キーでさまざまな場所にジャンプします.",
+        "jumpOutsideBracket.name": "括弧の外にジャンプ",
+        "jumpOutsideBracket.desc": "カーソルが現在の括弧ペアの外にジャンプすることを許可します。",
+        "moveToEndOfMathBlock.name": "終了前に数式ブロックの末尾に移動",
+        "moveToEndOfMathBlock.desc": "数式モードを終了するとき、まずカーソルをブロックの末尾に移動させます。",
+        "preferInlineExit.name": "単一行のディスプレイ数式でインライン終了を優先",
+        "preferInlineExit.desc": "ディスプレイ数式ブロックが1行に収まる場合、改行せずにインラインで終了します。",
+        "revertTabToDefault.name": "Tab キーをデフォルトに戻す",
+        "revertTabToDefault.desc": "次のプレースホルダーへのジャンプではなく、Tab キーをデフォルトのインデント動作に戻します。"
+      },
+      "tooltip": {
+        "name": "ツールチップ",
+        "desc": "ホバーしてツールチップを表示します"
+      },
+      "typstMateAction": {
+        "name": "TypstMate アクション",
+        "desc": "TypstMate のアクション",
+        "longPressDelayMs.name": "長押し遅延時間 (ms)",
+        "longPressDelayMs.desc": "長押し遅延時間 (ms)"
+      },
+      "errorLens": {
+        "name": "リンター(行末)",
+        "desc": "エラーや警告を行末に表示します"
+      },
+      "indentRainbow": {
+        "name": "インデントレインボー",
+        "desc": "インデントレインボー"
+      },
+      "jumpToPreview": {
+        "name": "ジャンプトゥプレビュー",
+        "desc": "ジャンプトゥプレビュー"
+      },
+      "vim": {
+        "name": "Vim",
+        "desc": "<link href=\"https://vimee.dev\">Vimee</link> による Vim キーバインドを有効にします"
+      },
+      "typstCore": {
+        "name": "Typst コア",
+        "desc": "Typst エディターの基本機能"
       }
     },
 

@@ -1,4 +1,4 @@
-export { ICONS, removeIcons } from './icons';
+export { ICONS } from './icons';
 export { supportedWatcherPlatforms } from './watcher';
 
 export const DEFAULT_FONT_SIZE = 16;

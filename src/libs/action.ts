@@ -7,7 +7,7 @@ export type TriggerType = (typeof TriggerTypes)[number];
 export const ActionTypes = ['snippet', 'script', 'command'] as const;
 export type ActionType = (typeof ActionTypes)[number];
 
-export interface ActionDef {
+export interface Action {
   id: string;
   contexts: ActionContext[];
   trigger: {
@@ -20,7 +20,7 @@ export interface ActionDef {
   };
 }
 
-export const newActionDef: ActionDef = {
+export const newAction: Action = {
   id: 'new-action',
   contexts: ['Markdown', 'Vim'],
   trigger: {

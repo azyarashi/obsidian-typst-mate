@@ -1,0 +1,14 @@
+import { ICONS } from '@/constants/icons';
+import { t } from '@/i18n';
+
+export const indentRainbowPackage = () =>
+  ({
+    id: 'indent-rainbow',
+    name: t('settings.extensions.indentRainbow.name'),
+    icon: ICONS.Rainbow,
+    description: t('settings.extensions.indentRainbow.desc'),
+    tags: ['decoration'],
+    scope: ['typst'],
+    isBuiltin: false,
+    settings: [],
+  }) as const;

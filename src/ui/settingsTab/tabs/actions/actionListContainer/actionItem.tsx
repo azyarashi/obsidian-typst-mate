@@ -2,9 +2,9 @@ import { IconS } from '@components/Icon';
 import { SortableItem } from '@components/List/ListContainer';
 import { DropdownComponent, TextAreaComponent, TextComponent } from '@components/obsidian/components';
 import {
+  type Action,
   type ActionContext,
   ActionContexts,
-  type ActionDef,
   type ActionType,
   CONTEXT_ICON_MAP,
   type TriggerType,
@@ -18,21 +18,21 @@ export function ActionItem({
   onDelete,
   onMove,
 }: {
-  action: ActionDef;
+  action: Action;
   uuid: string;
-  onUpdate: (uuid: string, partial: Partial<ActionDef>) => void;
+  onUpdate: (uuid: string, partial: Partial<Action>) => void;
   onDelete: (uuid: string) => void;
   onMove: (dragUuid: string, dropUuid: string, side: 'top' | 'bottom') => void;
 }) {
-  const handleUpdate = <T extends keyof ActionDef>(field: T, value: ActionDef[T]) => {
+  const handleUpdate = <T extends keyof Action>(field: T, value: Action[T]) => {
     onUpdate(uuid, { [field]: value });
   };
 
-  const handleUpdateTrigger = <T extends keyof ActionDef['trigger']>(field: T, value: ActionDef['trigger'][T]) => {
+  const handleUpdateTrigger = <T extends keyof Action['trigger']>(field: T, value: Action['trigger'][T]) => {
     handleUpdate('trigger', { ...action.trigger, [field]: value });
   };
 
-  const handleUpdateAction = <T extends keyof ActionDef['action']>(field: T, value: ActionDef['action'][T]) => {
+  const handleUpdateAction = <T extends keyof Action['action']>(field: T, value: Action['action'][T]) => {
     handleUpdate('action', { ...action.action, [field]: value });
   };
 
@@ -195,8 +195,15 @@ export function ActionItem({
                 textArea
                   .setValue(actionValue)
                   .setPlaceholder('...')
-                  .onChange((val: string) => handleUpdateAction('v', val));
+                  .onChange((val: string) => {
+                    handleUpdateAction('v', val);
+                    const lines = val.split('\n').length;
+                    textArea.inputEl.rows = Math.max(3, Math.min(20, lines));
+                  });
                 textArea.inputEl.onkeydown = preventEscClose;
+
+                const lines = actionValue.split('\n').length;
+                textArea.inputEl.rows = Math.max(3, Math.min(20, lines));
               }}
             />
           </div>

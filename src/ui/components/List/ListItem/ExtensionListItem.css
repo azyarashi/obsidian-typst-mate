@@ -60,3 +60,55 @@
   gap: var(--size-4-1);
   color: var(--text-muted);
 }
+
+.typstmate-extension-settings-panel {
+  padding-left: var(--size-4-4);
+  border-left: 2px solid var(--background-modifier-border);
+  margin-top: var(--size-4-2);
+  display: flex;
+  flex-direction: column;
+  gap: var(--size-4-1);
+}
+
+.typstmate-extension-settings-panel .setting-item {
+  border-top: none;
+  padding: var(--size-4-1) 0;
+}
+
+.typstmate-ext-setting-header {
+  padding: var(--size-4-4) 0 var(--size-4-2) !important;
+  border-top: none !important;
+}
+
+.typstmate-ext-setting-header .setting-item-info {
+  margin: 0 !important;
+  display: flex !important;
+  align-items: center;
+  width: 100%;
+  gap: var(--size-4-3);
+}
+
+.typstmate-ext-setting-header .setting-item-info::before,
+.typstmate-ext-setting-header .setting-item-info::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background-color: var(--background-modifier-border);
+}
+
+.typstmate-ext-setting-header .setting-item-name {
+  color: var(--text-muted);
+  font-size: var(--font-ui-smaller);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+}
+
+.typstmate-ext-setting-header .setting-item-description {
+  display: none;
+}
+
+.typstmate-ext-setting-header .setting-item-control {
+  display: none;
+}

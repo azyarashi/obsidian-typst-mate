@@ -5,18 +5,20 @@ import { formatterSettingsFacet } from '@/editor/shared/extensions';
 import { formatTypst } from '@/editor/shared/extensions/Formatter';
 import { getActiveRegion } from '@/editor/shared/utils/core';
 import { t } from '@/i18n';
+import { appUtils } from '../appUtils';
 
 export const formatTypstCommand: Command = {
   id: 'run-typstyle',
   name: t('commands.formatTypst'),
-  editorCallback: async (editor) => {
-    const view = editor.cm;
+  callback: async () => {
+    const view = appUtils.getActiveTypstView()?.view ?? appUtils.getActiveMarkdownView()?.editor.cm;
     if (!view) return;
 
     formatView(view);
   },
 };
 
+// TODO: カーソル位置の復元
 export async function formatView(view: EditorView) {
   const region = getActiveRegion(view);
   if (!region) return;
@@ -29,7 +31,6 @@ export async function formatView(view: EditorView) {
   const rawCode = view.state.sliceDoc(innerFrom, innerTo);
   if (rawCode.includes('// @typstyle off all') || rawCode.includes('/* @typstyle off all */')) return;
 
-  // 1. 各行の最小インデントを計算して削除
   let minIndent = 0;
   let deIndentedCode = rawCode;
   if (region.processor) {
@@ -43,7 +44,6 @@ export async function formatView(view: EditorView) {
     }
   }
 
-  // 2. フォーマット用のソース作成
   let prefix = '';
   let suffix = '';
   if (region.mode === SyntaxMode.Math) {
@@ -59,15 +59,10 @@ export async function formatView(view: EditorView) {
     const selection = view.state.selection.main;
     let range: [number, number] | undefined;
 
-    // 選択範囲がある場合、インデント削除後の座標に変換
     if (!selection.empty) {
       const selFrom = Math.max(selection.from, innerFrom) - innerFrom;
       const selTo = Math.min(selection.to, innerTo) - innerFrom;
 
-      // FIXME: 各行のインデント削除分を正確に計算するのは困難なため、
-      // 選択範囲がある場合は安全のためインデント削除機能をバイパスするか、
-      // あるいはブロック全体を整形対象にするのが無難です。
-      // ここではプロセッサがある場合は常にブロック全体（rangeなし）として扱います。
       if (!region.processor && selFrom < selTo) {
         range = [selFrom + prefix.length, selTo + prefix.length];
       }
@@ -75,20 +70,16 @@ export async function formatView(view: EditorView) {
 
     const result = await formatTypst(source, settings, range);
 
-    // 3. 結果の抽出
-    // フォーマッタが返した範囲 [resFrom, resTo] を元に戻す
     const resFrom = result.range[0];
     const resTo = result.range[1];
 
     let finalContent = result.content;
 
-    // Display数式の改行維持
     const isNeedLineBreak = region.kind === 'display' && deIndentedCode.startsWith('\n');
     if (isNeedLineBreak) {
       finalContent = `\n${finalContent.trim()}\n`;
     }
 
-    // prefix/suffix の重なりを削除
     let finalFrom = resFrom - prefix.length + innerFrom;
     let finalTo = resTo - prefix.length + innerFrom;
 

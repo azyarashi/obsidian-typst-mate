@@ -4,8 +4,6 @@ import type { EditorView } from '@codemirror/view';
 
 import type { Processor } from '@/libs/processor';
 
-import './Diagnostic.css';
-
 interface TypstDiagnostic extends Diagnostic {
   severity: 'error' | 'warning';
   hints: string[];
@@ -41,6 +39,5 @@ export const clearDiagnosticEffect = (view: EditorView) => {
   view.dispatch({
     effects: diagnosticsStateEffect.of(undefined),
   });
-  // TODO
   view.dispatch(setDiagnostics(view.state, []));
 };

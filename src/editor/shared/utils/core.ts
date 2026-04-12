@@ -47,3 +47,31 @@ export function getRegionAt(view: EditorView, cursor: number): ParsedRegion | nu
 
   return region ? parseRegion(view, region) : null;
 }
+
+/** https://github.com/vimeejs/vimee/blob/main/packages/plugin-codemirror/src/cursor.ts */
+export function offsetToCursor(content: string, offset: number) {
+  let remaining = offset;
+  const lines = content.split('\n');
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    if (line === undefined) continue;
+    if (remaining <= line.length) {
+      return { line: i, col: remaining };
+    }
+    remaining -= line.length + 1;
+  }
+  const lastLine = lines.length - 1;
+  const lastLineContent = lines[lastLine];
+  return { line: lastLine, col: lastLineContent?.length ?? 0 };
+}
+
+export function cursorToOffset(content: string, pos: { line: number; col: number }): number {
+  const lines = content.split('\n');
+  let offset = 0;
+  for (let i = 0; i < pos.line && i < lines.length; i++) {
+    const line = lines[i];
+    if (line !== undefined) offset += line.length + 1;
+  }
+  const targetLine = lines[pos.line];
+  return offset + Math.min(pos.col, targetLine?.length ?? 0);
+}

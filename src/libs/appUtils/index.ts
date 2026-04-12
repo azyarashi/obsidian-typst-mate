@@ -1,6 +1,7 @@
 import { type App, MarkdownView, type WorkspaceLeaf } from 'obsidian';
 import { BASE_COLOR_VAR } from '@/constants';
 import ObsidianTypstMate from '@/main';
+import { TypstFileView } from '@/ui';
 import { TypstToolsView } from '@/ui/views/typst-tools';
 import { settingsManager } from '../settingsManager';
 import { typstManager } from '../typstManager';
@@ -117,6 +118,10 @@ class AppUtils {
 
   getActiveMarkdownView() {
     return this.app.workspace.getActiveViewOfType(MarkdownView);
+  }
+
+  getActiveTypstView() {
+    return this.app.workspace.getActiveViewOfType(TypstFileView);
   }
 
   detach() {
