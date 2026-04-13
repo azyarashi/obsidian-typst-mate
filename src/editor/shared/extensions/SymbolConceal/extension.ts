@@ -82,7 +82,7 @@ export class SymbolConcealPlugin {
     const region = getActiveRegion(view);
     const settings = view.state.facet(this.settingsFacet);
 
-    if (!region?.tree || !settings?.enabled) {
+    if (!region?.tree) {
       this.decorations = Decoration.none;
       this.clearTimer();
       this.hoveredSymbolPos = -1;
@@ -107,12 +107,16 @@ export class SymbolConcealPlugin {
     const traverse = (node: LinkedNode) => {
       const kind = node.kind();
       const isMatchable =
-        kind === SyntaxKind.MathIdent || kind === SyntaxKind.FieldAccess || kind === SyntaxKind.MathText;
+        kind === SyntaxKind.MathIdent ||
+        kind === SyntaxKind.FieldAccess ||
+        kind === SyntaxKind.MathText ||
+        kind === SyntaxKind.Ident;
 
       if (isMatchable) {
         const fullText = node.node.intoText();
         const text = fullText.trim();
-        const sym = SYMBOL_MAP.get(text);
+        let sym = SYMBOL_MAP.get(text);
+        if (!sym && text.startsWith('sym.')) sym = SYMBOL_MAP.get(text.slice(4));
 
         if (sym) {
           const startWhitespace = fullText.length - fullText.trimStart().length;

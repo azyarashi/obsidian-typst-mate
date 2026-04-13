@@ -3,12 +3,13 @@ import { Prec } from '@codemirror/state';
 import { type EditorView, keymap, type PluginValue, ViewPlugin, type ViewUpdate } from '@codemirror/view';
 import { setIcon } from 'obsidian';
 import type { CompletionKindSer, CompletionSer } from '@/../pkg/typst_wasm';
-import { settingsManager, typstManager } from '@/libs';
-import { EditorContextFacet } from '@/libs/extensionManager';
+import SYMBOLS_BY_NAME from '@/data/symbols.json';
+import { typstManager } from '@/libs';
 import { format } from '@/ui/elements/Typst';
 import { getActiveRegion, type ParsedRegion } from '../../utils/core';
 import { calculatePopupPosition } from '../../utils/position';
 import { type SymbolData, searchSymbols } from '../../utils/symbolSearcher';
+import { autocompleteSettingsFacet } from './package';
 
 import './Autocomplete.css';
 
@@ -227,30 +228,51 @@ class AutocompletePlugin implements PluginValue {
         const symbols = searchSymbols(query);
 
         localCompletions = symbols.map((sym: SymbolData) => {
-          const context = view.state.facet(EditorContextFacet);
-          const mathConcealSettings = settingsManager.settings.extensionSettings[context]?.['math-symbol-conceal'];
-          const complementWithUnicode =
-            (mathConcealSettings?.values?.complementWithUnicode as boolean | undefined) ?? false;
-
-          let applyText = complementWithUnicode ? sym.sym || sym.name : sym.name;
-          if (!['op', 'Large'].includes(sym.mathClass)) applyText += ' ';
-
           return {
             kind: 'symbol' as CompletionKindSer,
             symbol: sym.sym,
             label: `\\${sym.latexName}`,
             detail: sym.name,
-            apply: applyText,
+            apply: sym.name,
           };
         });
       }
     }
 
+    const autocompleteSettings = view.state.facet(autocompleteSettingsFacet);
+    const useUnicodeSymbols = autocompleteSettings?.useUnicodeSymbols ?? false;
+
+    const processCompletion = (item: CompletionSer): CompletionSer => {
+      if (!useUnicodeSymbols || (item.kind !== 'symbol' && item.kind !== 'constant')) {
+        if (item.label.startsWith('\\') && item.apply) {
+          const symData = (SYMBOLS_BY_NAME as any)[item.detail || ''];
+          if (symData && !['op', 'Large'].includes(symData.mathClass)) return { ...item, apply: `${item.apply} ` };
+        }
+        return item;
+      }
+
+      let symbol = item.symbol;
+      if (!symbol) {
+        const label = item.label.startsWith('sym.') ? item.label.slice(4) : item.label;
+        const symData = (SYMBOLS_BY_NAME as any)[label] || (SYMBOLS_BY_NAME as any)[item.detail || ''];
+        if (symData?.sym) symbol = symData.sym;
+      }
+
+      if (symbol) {
+        return {
+          ...item,
+          symbol,
+          apply: symbol,
+        };
+      }
+      return item;
+    };
+
     if (localCompletions.length > 0) {
-      this.allCandidates = [...localCompletions, ...wasmCompletions];
+      this.allCandidates = [...localCompletions, ...wasmCompletions].map(processCompletion);
       this.from = Math.min(localFrom, wasmFrom);
     } else {
-      this.allCandidates = wasmCompletions;
+      this.allCandidates = wasmCompletions.map(processCompletion);
       this.from = wasmFrom;
     }
 

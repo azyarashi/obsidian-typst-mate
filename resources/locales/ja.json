@@ -239,8 +239,8 @@
       "autocomplete": {
         "name": "補完",
         "desc": "変数やパッケージ, フォント情報などを補完します",
-        "complementSymbolWithUnicode.name": "symbol を Unicode 文字で補完する",
-        "complementSymbolWithUnicode.desc": "<link href=\"https://typst.app/docs/reference/foundations/symbol/\">symbol</link> を補完するとき, 対応する Unicode 文字に置き換えます"
+        "useUnicodeSymbols.name": "symbol を Unicode 文字で補完する",
+        "useUnicodeSymbols.desc": "<link href=\"https://typst.app/docs/reference/foundations/symbol/\">symbol</link> を補完するとき, 対応する Unicode 文字に置き換えます"
       },
       "formatter": {
         "name": "フォーマッター",

@@ -1,6 +1,7 @@
+import { Facet } from '@codemirror/state';
 import { ICONS } from '@/constants/icons';
 import { t, tFragment } from '@/i18n';
-import type { ExtensionPackageFn } from '@/libs/extensionManager';
+import type { ExtensionPackageFn, InferSettingsFromPackage } from '@/libs/extensionManager';
 
 export const autocompletePackage: ExtensionPackageFn = () => ({
   id: 'autocomplete',
@@ -12,11 +13,17 @@ export const autocompletePackage: ExtensionPackageFn = () => ({
   isBuiltin: false,
   settings: [
     {
-      key: 'complementWithUnicode',
+      key: 'useUnicodeSymbols',
       type: 'toggle',
-      title: t('settings.extensions.autocomplete.complementSymbolWithUnicode.name'),
-      description: tFragment('settings.extensions.autocomplete.complementSymbolWithUnicode.desc'),
+      title: t('settings.extensions.autocomplete.useUnicodeSymbols.name'),
+      description: tFragment('settings.extensions.autocomplete.useUnicodeSymbols.desc'),
       defaultValue: false,
     },
   ],
+} as const);
+
+export type AutocompleteSettings = InferSettingsFromPackage<typeof autocompletePackage>;
+
+export const autocompleteSettingsFacet = Facet.define<AutocompleteSettings, AutocompleteSettings>({
+  combine: (values) => values[0]!,
 });
