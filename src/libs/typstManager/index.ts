@@ -52,8 +52,6 @@ export class TypstManager implements Singleton {
   }
 
   async prepareWasm() {
-    crashTracker.updateCrashStatus(true);
-
     const adapter = this.plugin.app.vault.adapter;
 
     const main = {
@@ -154,8 +152,6 @@ export class TypstManager implements Singleton {
 
     const { settings } = settingsManager;
 
-    TypstMate.update(Status.InitializingWasm);
-
     if (settings.enableBackgroundRendering) {
       this.worker = new WasmWorker();
 
@@ -193,7 +189,6 @@ export class TypstManager implements Singleton {
 
   async prepareAssets() {
     try {
-      TypstMate.update(Status.PreparingAssets);
       const fontPaths = await fileManager.collectFonts();
       const fonts = (
         await Promise.all(
@@ -209,33 +204,26 @@ export class TypstManager implements Singleton {
 
       const files = await this.collectTagFiles();
 
-      const result = this.wasm.store({
+      await this.wasm.store({
         fonts,
         sources,
         files,
       });
-      if (result instanceof Promise) {
-        result.then(() => {
-          this.ready = true;
-          TypstMate.update(Status.Ready);
-          crashTracker.updateCrashStatus(false);
 
-          const waitingElements = document.querySelectorAll('.typstmate-waiting');
-          for (const el of waitingElements) {
-            const content = el.textContent!;
+      this.ready = true;
+      TypstMate.update(Status.Ready);
+      crashTracker.updateCrashStatus(false);
 
-            const file = this.plugin.app.workspace.getActiveFile();
-            const ndir = file?.parent ? ctxToNDir(file.path) : '/';
-            const npath = file?.path;
+      const waitingElements = document.querySelectorAll('.typstmate-waiting');
+      for (const el of waitingElements) {
+        const content = el.textContent!;
 
-            el.empty();
-            this.render(content, el, el.getAttribute('kind')!, ndir, npath);
-          }
-        });
-      } else {
-        this.ready = true;
-        TypstMate.update(Status.Ready);
-        crashTracker.updateCrashStatus(false);
+        const file = this.plugin.app.workspace.getActiveFile();
+        const ndir = file?.parent ? ctxToNDir(file.path) : '/';
+        const npath = file?.path;
+
+        el.empty();
+        this.render(content, el, el.getAttribute('kind')!, ndir, npath);
       }
     } catch (e) {
       TypstMate.update(Status.Error);
