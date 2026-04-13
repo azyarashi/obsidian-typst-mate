@@ -81,13 +81,14 @@ class AutocompletePlugin implements PluginValue {
 
   /** True while we are mid-dispatch to ignore re-entrant update() calls. */
   private isApplyingCompletion = false;
+  private isCycling = false;
 
   private readonly onMouseMoveCapture = (e: MouseEvent) => this.handleMouseMove(e);
   private readonly onMouseDownCapture = (e: MouseEvent) => this.handleMouseDown(e);
   private readonly onKeyDownCapture = (e: KeyboardEvent) => {
     if (!this.isActive) return;
     if (['ArrowUp', 'ArrowDown', 'Tab', 'Enter', 'Escape'].includes(e.key)) {
-      if (this.handleKeyAction(e.key)) {
+      if (this.handleKeyAction(e.key, e)) {
         e.preventDefault();
         e.stopPropagation();
         e.stopImmediatePropagation();
@@ -172,6 +173,7 @@ class AutocompletePlugin implements PluginValue {
         if (!isSimple) return; // non-simple → don't trigger fresh autocomplete
         // Simple change below `from`: fall through for fresh autocomplete
       } else {
+        this.isCycling = false; // Reset cycling on manual typing
         this.to = cursor;
         this.filterAndRender(update.view, cursor);
         return;
@@ -198,6 +200,7 @@ class AutocompletePlugin implements PluginValue {
   private async triggerAutocomplete(view: EditorView, cursor: number, region: ParsedRegion) {
     this.allCandidates = [];
     this.candidates = [];
+    this.selectedIndex = -1;
     this.hasState = false;
 
     const regionInnerStart = region.from + region.skip;
@@ -289,6 +292,8 @@ class AutocompletePlugin implements PluginValue {
       this.from = wasmFrom;
     }
 
+    this.allCandidates = this.allCandidates.filter((c) => !(c.kind === 'constant' && c.label === 'WIDTH'));
+
     this.allCandidates.sort((a, b) => {
       const score = (x: CompletionSer) => (x.kind === 'func' || x.kind === 'constant' ? 1 : 0);
       return score(b) - score(a);
@@ -308,6 +313,15 @@ class AutocompletePlugin implements PluginValue {
   }
 
   private filterAndRender(view: EditorView, cursor: number) {
+    if (this.isCycling) {
+      // While cycling with Tab, we don't want to filter based on the newly inserted text
+      this.hasState = true;
+      if (!this.isActive) this.showUI();
+      this.scheduleRender(view, cursor);
+      return;
+    }
+
+    this.selectedIndex = -1;
     const query = view.state.sliceDoc(this.from, cursor).toLowerCase();
 
     let filtered: CompletionSer[];
@@ -328,7 +342,7 @@ class AutocompletePlugin implements PluginValue {
     if (filtered.length === 1 && filtered[0]!.label.toLowerCase() === query) {
       this.candidates = filtered;
       this.hasState = true;
-      this.hideUI();
+      if (!this.isCycling && !this.isActive) this.hideUI();
       return;
     }
 
@@ -359,12 +373,16 @@ class AutocompletePlugin implements PluginValue {
 
   // ── Rendering ─────────────────────────────────────────────────────────────
 
-  private render(position: { x: number; y: number }) {
+  private render(position: { x: number; y: number; isTop: boolean }) {
     this.container.style.setProperty('--preview-left', `${position.x}px`);
     this.container.style.setProperty('--preview-top', `${position.y}px`);
+    this.container.classList.toggle('is-top', position.isTop);
 
     this.items.replaceChildren();
-    this.selectedIndex = -1;
+
+    if (this.selectedIndex === -1) {
+      this.selectedIndex = position.isTop ? this.candidates.length - 1 : 0;
+    }
 
     for (const [index, item] of this.candidates.entries()) {
       const el = document.createElement('div');
@@ -410,10 +428,11 @@ class AutocompletePlugin implements PluginValue {
         el.appendChild(detailEl);
       }
 
+      if (index === this.selectedIndex) el.classList.add('selected');
       this.items.appendChild(el);
     }
 
-    if (this.candidates.length > 0) this.updateSelection(0);
+    if (this.candidates.length > 0) this.scrollSelectedIntoView();
   }
 
   private updateSelection(newIndex: number) {
@@ -458,7 +477,9 @@ class AutocompletePlugin implements PluginValue {
     this.hideUI();
     this.allCandidates = [];
     this.candidates = [];
+    this.selectedIndex = -1;
     this.hasState = false;
+    this.isCycling = false;
   }
 
   // ── Mouse handlers ────────────────────────────────────────────────────────
@@ -490,12 +511,12 @@ class AutocompletePlugin implements PluginValue {
    * Tab – insert the candidate's text and continue narrowing.
    * If the query already matches the candidate exactly, finalizes (execute).
    */
-  private complete(item: CompletionSer) {
+  private complete(item: CompletionSer, isCycling = false) {
     const apply = item.apply ?? item.label;
     const { text } = resolveApply(apply);
 
     const currentQuery = this.view.state.sliceDoc(this.from, this.to);
-    if (currentQuery === text) {
+    if (!isCycling && currentQuery === text) {
       this.execute(item);
       return;
     }
@@ -531,7 +552,7 @@ class AutocompletePlugin implements PluginValue {
 
   // ── Keyboard handler ──────────────────────────────────────────────────────
 
-  handleKeyAction(key: string): boolean {
+  handleKeyAction(key: string, e?: KeyboardEvent): boolean {
     if (!this.isActive || this.candidates.length === 0) return false;
 
     switch (key) {
@@ -551,8 +572,25 @@ class AutocompletePlugin implements PluginValue {
         return true;
       }
       case 'Tab': {
-        const target = this.candidates[this.selectedIndex] ?? this.candidates[0];
-        if (target) this.complete(target);
+        const len = this.candidates.length;
+        let nextIndex = this.selectedIndex < 0 ? 0 : this.selectedIndex;
+
+        if (e?.shiftKey) {
+          nextIndex = (nextIndex - 1 + len) % len;
+        } else {
+          const currentText = this.view.state.sliceDoc(this.from, this.to);
+          const currentApply = this.candidates[nextIndex]?.apply ?? this.candidates[nextIndex]?.label;
+          const targetText = currentApply ? resolveApply(currentApply).text : '';
+          if (currentText === targetText) nextIndex = (nextIndex + 1) % len;
+        }
+
+        this.updateSelection(nextIndex);
+        this.scrollSelectedIntoView();
+        const target = this.candidates[this.selectedIndex];
+        if (target) {
+          this.isCycling = true;
+          this.complete(target, true);
+        }
         return true;
       }
       case 'Enter': {

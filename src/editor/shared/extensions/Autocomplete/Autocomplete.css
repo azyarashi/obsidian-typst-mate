@@ -25,6 +25,10 @@
   box-sizing: border-box;
 }
 
+.typstmate-autocomplete.is-top {
+  transform: translateY(-100%);
+}
+
 .typstmate-autocomplete-suggesting .typstmate-autocomplete {
   opacity: 1;
   pointer-events: all;
