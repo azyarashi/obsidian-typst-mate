@@ -28,6 +28,13 @@
 
 .cm-typstmate-status-bar-kind {
   min-width: 11ch;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.cm-typstmate-status-bar-kind:hover {
+  background-color: var(--background-modifier-hover);
+  color: var(--text-normal);
 }
 
 .cm-typstmate-status-bar-mode {
