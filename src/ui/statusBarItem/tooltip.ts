@@ -1,6 +1,6 @@
 import type { MarkdownView } from 'obsidian';
 import type { TypstMate } from '@/api';
-import { diagnosticsState } from '@/editor/shared/extensions/Diagnostic';
+import { diagnosticsState } from '@/editor/shared/extensions/Linter/extension';
 import { t } from '@/i18n';
 
 export function getStatusBarTooltip({

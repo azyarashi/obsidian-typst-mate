@@ -2,7 +2,7 @@ import { Compartment, EditorState } from '@codemirror/state';
 import { EditorView } from '@codemirror/view';
 import { debounce, type Menu, TextFileView, TFile, type View, type WorkspaceLeaf } from 'obsidian';
 import { formatterSettingsFacet } from '@/editor/shared/extensions';
-import { updateDiagnosticEffect } from '@/editor/shared/extensions/Diagnostic';
+import { updateDiagnosticEffect } from '@/editor/shared/extensions/Linter/extension';
 import { buildTypstTextExtensions } from '@/editor/typst/build';
 import { jumpToPreviewTargetFacet } from '@/editor/typst/extensions/JumpToPreview';
 import { vimQuitFacet, vimSaveFacet } from '@/editor/typst/extensions/Vim';

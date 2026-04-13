@@ -2,7 +2,7 @@ import { MarkdownView } from 'obsidian';
 import type { ComponentChildren } from 'preact';
 import { Status, type TypstMate } from '@/api';
 import { ICONS } from '@/constants/icons';
-import { diagnosticsState } from '@/editor/shared/extensions/Diagnostic';
+import { diagnosticsState } from '@/editor/shared/extensions/Linter/extension';
 import { appUtils, settingsManager } from '@/libs';
 import { DiagnosticModal } from '@/ui/modals/diagnostic';
 import { showStatusBarMenu } from './menu';

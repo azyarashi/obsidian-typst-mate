@@ -1,6 +1,6 @@
 import { MarkdownView, Menu, type MenuItem, Notice } from 'obsidian';
 import { DEFAULT_FONT_SIZE } from '@/constants';
-import { updateDiagnosticEffect } from '@/editor/shared/extensions/Diagnostic';
+import { updateDiagnosticEffect } from '@/editor/shared/extensions/Linter/extension';
 import { getActiveRegion } from '@/editor/shared/utils/core';
 import { t } from '@/i18n';
 import { appUtils, settingsManager, typstManager } from '@/libs';

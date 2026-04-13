@@ -10,7 +10,7 @@ import {
   keymap,
   lineNumbers,
 } from '@codemirror/view';
-import { diagnosticsState } from '@/editor/shared/extensions/Diagnostic';
+import { diagnosticsState } from '@/editor/shared/extensions/Linter/extension';
 import { extensionManager, viewTracker } from '@/libs/extensionManager';
 import { typstTextCore } from './extensions/TypstCore';
 

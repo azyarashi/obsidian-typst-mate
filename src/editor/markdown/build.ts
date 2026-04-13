@@ -1,6 +1,6 @@
 import type { Extension } from '@codemirror/state';
 import { extensionManager, viewTracker } from '@/libs/extensionManager';
-import { diagnosticsState } from '../shared/extensions/Diagnostic';
+import { diagnosticsState } from '../shared/extensions/Linter/extension';
 import { markdownCore } from './extensions/MarkdownCore';
 
 export function buildExtension() {
