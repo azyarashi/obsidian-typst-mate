@@ -23,24 +23,31 @@ export enum CodeblockStyling {
 }
 export type Styling = InlineStyling | DisplayStyling | CodeblockStyling;
 
-export interface ProcessorBase<Styling> {
+export interface ProcessorBase<S extends Styling> {
   id: string;
   renderingEngine: RenderingEngine;
   format: string;
-  styling: Styling;
+  styling: S;
   useReplaceAll?: boolean;
-  fitToNoteWidth?: boolean;
-  noPreamble?: boolean;
   syntaxMode?: SyntaxMode;
 }
 
-export type InlineProcessor = ProcessorBase<InlineStyling>;
-export type DisplayProcessor = ProcessorBase<DisplayStyling>;
-export type CodeblockProcessor = ProcessorBase<CodeblockStyling>;
+export type InlineProcessor = ProcessorBase<InlineStyling> & {
+  noPreamble?: boolean;
+};
+export type DisplayProcessor = ProcessorBase<DisplayStyling> & {
+  fitToNoteWidth?: boolean;
+  noPreamble?: boolean;
+};
+export type CodeblockProcessor = ProcessorBase<CodeblockStyling> & {
+  fitToNoteWidth?: boolean;
+  noPreamble?: boolean;
+};
+export type ExcalidrawProcessor = ProcessorBase<CodeblockStyling>;
 
-export type Processor = InlineProcessor | DisplayProcessor | CodeblockProcessor;
+export type Processor = InlineProcessor | DisplayProcessor | CodeblockProcessor | ExcalidrawProcessor;
 
-export const ProcessorKindTokens = ['inline', 'display', 'codeblock'] as const;
+export const ProcessorKindTokens = ['inline', 'display', 'codeblock', 'excalidraw'] as const;
 export type ProcessorKind = (typeof ProcessorKindTokens)[number];
 
 export type ProcessorOfKind<K extends ProcessorKind> = K extends 'inline'
@@ -49,7 +56,21 @@ export type ProcessorOfKind<K extends ProcessorKind> = K extends 'inline'
     ? DisplayProcessor
     : K extends 'codeblock'
       ? CodeblockProcessor
-      : never;
+      : K extends 'excalidraw'
+        ? ExcalidrawProcessor
+        : never;
+
+/** Type guard for processors that support 'fitToNoteWidth' */
+export type ProcessorWithFit = DisplayProcessor | CodeblockProcessor;
+export function hasFitToNoteWidth(kind: ProcessorKind): kind is 'display' | 'codeblock' {
+  return kind === 'display' || kind === 'codeblock';
+}
+
+/** Type guard for processors that support 'noPreamble' */
+export type ProcessorWithPreamble = InlineProcessor | DisplayProcessor | CodeblockProcessor;
+export function hasNoPreamble(kind: ProcessorKind): kind is 'inline' | 'display' | 'codeblock' {
+  return kind !== 'excalidraw';
+}
 
 export const DefaultNewInlineProcessor: InlineProcessor = {
   id: 'new',
@@ -57,7 +78,6 @@ export const DefaultNewInlineProcessor: InlineProcessor = {
   format: '#set page(margin: (x: 0pt, y: 0.3125em))\n${CODE}$',
   styling: InlineStyling.Inline,
   useReplaceAll: false,
-  fitToNoteWidth: false,
   noPreamble: false,
   syntaxMode: SyntaxMode.Math,
 };
@@ -81,9 +101,18 @@ export const DefaultNewCodeblockProcessor: CodeblockProcessor = {
   noPreamble: false,
   syntaxMode: SyntaxMode.Markup,
 };
+export const DefaultNewExcalidrawProcessor: ExcalidrawProcessor = {
+  id: 'new',
+  renderingEngine: RenderingEngine.TypstSVG,
+  format: '#set page(margin: 0.5em)\n${CODE}$',
+  styling: CodeblockStyling.BlockCenter,
+  useReplaceAll: false,
+  syntaxMode: SyntaxMode.Markup,
+};
 
 export const DefaultNewProcessor: Record<ProcessorKind, Processor> = {
-  inline: DefaultNewInlineProcessor,
-  display: DefaultNewDisplayProcessor,
-  codeblock: DefaultNewCodeblockProcessor,
+  inline: DefaultNewInlineProcessor as Processor,
+  display: DefaultNewDisplayProcessor as Processor,
+  codeblock: DefaultNewCodeblockProcessor as Processor,
+  excalidraw: DefaultNewExcalidrawProcessor as Processor,
 } as const;

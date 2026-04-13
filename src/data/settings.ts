@@ -51,6 +51,9 @@ export interface Settings {
     codeblock: {
       processors: CodeblockProcessor[];
     };
+    excalidraw: {
+      processors: CodeblockProcessor[];
+    };
   };
 
   actions: Action[];
@@ -132,7 +135,6 @@ export const DEFAULT_SETTINGS: Settings = {
           ].join('\n'),
           styling: InlineStyling.Inline,
           useReplaceAll: false,
-          fitToNoteWidth: false,
           noPreamble: false,
           syntaxMode: SyntaxMode.Markup,
         },
@@ -142,7 +144,6 @@ export const DEFAULT_SETTINGS: Settings = {
           format: '',
           styling: InlineStyling.Inline,
           useReplaceAll: false,
-          fitToNoteWidth: false,
           noPreamble: false,
           syntaxMode: SyntaxMode.Opaque,
         },
@@ -152,7 +153,6 @@ export const DEFAULT_SETTINGS: Settings = {
           format: '#set page(margin: (x: 0pt, y: 0.3125em))\n#math.equation($ {CODE} $, block: false)',
           styling: InlineStyling.Inline,
           useReplaceAll: false,
-          fitToNoteWidth: false,
           noPreamble: false,
           syntaxMode: SyntaxMode.Math,
         },
@@ -162,7 +162,6 @@ export const DEFAULT_SETTINGS: Settings = {
           format: '#set page(margin: (x: 0pt, y: 0.3125em))\n${CODE}$',
           styling: InlineStyling.Inline,
           useReplaceAll: false,
-          fitToNoteWidth: false,
           noPreamble: false,
           syntaxMode: SyntaxMode.Math,
         },
@@ -235,6 +234,9 @@ export const DEFAULT_SETTINGS: Settings = {
           syntaxMode: SyntaxMode.Markup,
         },
       ],
+    },
+    excalidraw: {
+      processors: [],
     },
   },
 

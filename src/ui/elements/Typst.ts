@@ -124,15 +124,13 @@ export function format(source: string, kind: ProcessorKind, processor: Processor
     processor.renderingEngine === RenderingEngine.TypstHTML ? settings.preambleHtml : settings.preambleSvg;
 
   formatted = `${typstManager.preamble}\n${formatted}${kind === 'inline' && processor.renderingEngine === RenderingEngine.TypstSVG ? '#text(size:0pt)[mnomnomno]' : ''}`;
-  formatted = (processor.noPreamble ?? false) ? formatted : `${preamble}\n${formatted}`;
+  const noPreamble = 'noPreamble' in processor ? (processor.noPreamble ?? false) : false;
+  formatted = noPreamble ? formatted : `${preamble}\n${formatted}`;
 
   let offset =
-    -processor.format.indexOf('{CODE}') -
-    ((processor.noPreamble ?? false) ? 0 : preamble.length + 1) -
-    typstManager.preamble.length -
-    1;
+    -processor.format.indexOf('{CODE}') - (noPreamble ? 0 : preamble.length + 1) - typstManager.preamble.length - 1;
 
-  if (processor.fitToNoteWidth ?? false) {
+  if ('fitToNoteWidth' in processor && processor.fitToNoteWidth) {
     const width = appUtils.getNoteWidth();
     formatted = `#let WIDTH = ${width}\n${formatted}`;
     offset -= 14 + width.length;

@@ -14,13 +14,6 @@ export const tabJumpPackage = () =>
     isBuiltin: false,
     settings: [
       {
-        key: 'jumpKey',
-        type: 'keymap',
-        title: t('settings.extensions.tabJump'),
-        description: 'Tab',
-        defaultValue: 'Tab',
-      },
-      {
         key: 'revertTabToDefault',
         type: 'toggle',
         title: t('settings.extensions.tabJump.revertTabToDefault.name'),

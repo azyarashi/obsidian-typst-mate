@@ -1,20 +1,31 @@
 import { IconS } from '@components/Icon';
 import { SortableItem } from '@components/List/ListContainer';
 import { Setting } from '@components/obsidian/Setting';
-import { SyntaxMode } from '@typstmate/typst-syntax';
+import { parse, SyntaxMode } from '@typstmate/typst-syntax';
+import { EditorState } from '@codemirror/state';
+import { EditorView } from '@codemirror/view';
+import { debounce } from 'obsidian';
 import type { ComponentChildren } from 'preact';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'preact/hooks';
 import { ICONS } from '@/constants/icons';
 import { t, tFragment } from '@/i18n';
 import {
   CodeblockStyling,
   DisplayStyling,
+  hasFitToNoteWidth,
+  hasNoPreamble,
   InlineStyling,
   type ProcessorKind,
+  type ProcessorOfKind,
+  type ProcessorWithFit,
+  type ProcessorWithPreamble,
   RenderingEngine,
   type Processor as TypstProcessor,
 } from '@/libs/processor';
+import { getMiniEditorExtensions } from '@/ui/modals/miniEditor';
+import { getModeAndKind } from '@/utils/typstSyntax';
 
-export function ProcessorItem({
+export function ProcessorItem<K extends ProcessorKind>({
   kind,
   processor,
   uuid,
@@ -24,26 +35,129 @@ export function ProcessorItem({
   onDelete,
   onMove,
 }: {
-  kind: ProcessorKind;
-  processor: TypstProcessor;
+  kind: K;
+  processor: ProcessorOfKind<K>;
   uuid: string;
   index: number;
-  processors: TypstProcessor[];
+  processors: ProcessorOfKind<K>[];
   onUpdate: (uuid: string, partial: Partial<TypstProcessor>) => void;
   onDelete: (uuid: string) => void;
   onMove: (dragUuid: string, dropUuid: string, side: 'top' | 'bottom') => void;
 }) {
   const isFixed = kind !== 'codeblock' && processor.id === '' && index === processors.length - 1;
 
-  const handleUpdate = <T extends keyof TypstProcessor>(field: T, value: TypstProcessor[T]) => {
-    onUpdate(uuid, { [field]: value });
-  };
+  const [isDetecting, setIsDetecting] = useState(false);
+  const [isEditorActive, setIsEditorActive] = useState(false);
+  const editorRef = useRef<HTMLDivElement>(null);
+  const viewRef = useRef<EditorView | null>(null);
+
+  const processorRef = useRef(processor);
+  processorRef.current = processor;
+
+  const handleUpdate = useCallback(
+    <T extends keyof ProcessorOfKind<K>>(field: T, value: ProcessorOfKind<K>[T]) => {
+      const partial: Partial<TypstProcessor> = { [field]: value };
+      if (field === 'renderingEngine' && value === RenderingEngine.MathJax) {
+        partial.syntaxMode = SyntaxMode.Opaque;
+      }
+      onUpdate(uuid, partial);
+    },
+    [onUpdate, uuid],
+  );
+
+  const handleUpdateRef = useRef(handleUpdate);
+  handleUpdateRef.current = handleUpdate;
+
+  // Sync syntaxMode when format changes
+  const debouncedDetect = useMemo(
+    () =>
+      debounce((format: string) => {
+        const p = processorRef.current;
+        if (p.renderingEngine === RenderingEngine.MathJax) {
+          if (p.syntaxMode !== SyntaxMode.Opaque) {
+            (handleUpdateRef.current as (field: 'syntaxMode', value: SyntaxMode) => void)(
+              'syntaxMode',
+              SyntaxMode.Opaque,
+            );
+          }
+          return;
+        }
+
+        setIsDetecting(true);
+        try {
+          const codeIndex = format.indexOf('{CODE}');
+          const defaultMode = kind === 'inline' || kind === 'display' ? SyntaxMode.Math : SyntaxMode.Markup;
+
+          if (codeIndex === -1) {
+            // Revert to default if {CODE} is missing
+            if (p.syntaxMode !== defaultMode) {
+              (handleUpdateRef.current as (field: 'syntaxMode', value: SyntaxMode) => void)('syntaxMode', defaultMode);
+            }
+            return;
+          }
+
+          const dummy = format.slice(0, codeIndex) + format.slice(codeIndex + 6);
+          const tree = parse(dummy);
+          const { mode } = getModeAndKind(tree, codeIndex, defaultMode);
+
+          if (mode !== undefined && mode !== null && mode !== p.syntaxMode) {
+            (handleUpdateRef.current as (field: 'syntaxMode', value: SyntaxMode) => void)(
+              'syntaxMode',
+              mode as SyntaxMode,
+            );
+          }
+        } catch (e) {
+          console.warn('TypstMate: Mode detection failed', e);
+        } finally {
+          setIsDetecting(false);
+        }
+      }, 500),
+    [kind],
+  );
+
+  useEffect(() => {
+    debouncedDetect(processor.format);
+  }, [processor.format, debouncedDetect]);
+
+  // CM6 instantiation
+  useEffect(() => {
+    if (isEditorActive && editorRef.current) {
+      if (viewRef.current) {
+        viewRef.current.destroy();
+        viewRef.current = null;
+      }
+      const state = EditorState.create({
+        doc: processor.format,
+        extensions: [
+          ...getMiniEditorExtensions(processor.renderingEngine),
+          EditorView.updateListener.of((update) => {
+            if (update.docChanged) {
+              handleUpdateRef.current('format', update.state.doc.toString() as ProcessorOfKind<K>['format']);
+            }
+          }),
+        ],
+      });
+      viewRef.current = new EditorView({
+        state,
+        parent: editorRef.current,
+      });
+      viewRef.current.focus();
+    }
+  }, [isEditorActive, processor.renderingEngine]);
+
+  // Cleanup CM6
+  useEffect(() => {
+    return () => {
+      viewRef.current?.destroy();
+      viewRef.current = null;
+    };
+  }, []);
 
   const isError =
     (processor.id === '' && index !== processors.length - 1 && kind !== 'codeblock') ||
     (processor.id !== '' && processors.some((p, i) => i !== index && p.id === processor.id));
 
-  const preventAccordion = (e: MouseEvent | Event | any) => {
+  const preventAccordion = (e: MouseEvent | Event) => {
     e.preventDefault();
     e.stopPropagation();
   };
@@ -99,7 +213,9 @@ export function ProcessorItem({
           </label>
           <label>
             <select
-              onChange={(e) => handleUpdate('styling', (e.target as HTMLSelectElement).value as any)}
+              onChange={(e) =>
+                handleUpdate('styling', (e.target as HTMLSelectElement).value as ProcessorOfKind<K>['styling'])
+              }
               onClick={preventAccordion}
               onKeyDown={preventAccordion}
             >
@@ -129,7 +245,7 @@ export function ProcessorItem({
                   </option>
                 </>
               )}
-              {kind === 'codeblock' && (
+              {(kind === 'codeblock' || kind === 'excalidraw') && (
                 <>
                   <option value={CodeblockStyling.Block} selected={processor.styling === CodeblockStyling.Block}>
                     {t('settings.processors.stylingOptions.block')}
@@ -158,52 +274,78 @@ export function ProcessorItem({
             icon={ICONS.ReplaceAll}
             title={t('settings.processors.iconTooltips.useReplaceAll')}
             isActive={processor.useReplaceAll ?? false}
-            onClick={() => handleUpdate('useReplaceAll', !(processor.useReplaceAll ?? false))}
+            onClick={() => {
+              (handleUpdate as (field: 'useReplaceAll', value: boolean) => void)(
+                'useReplaceAll',
+                !(processor.useReplaceAll ?? false),
+              );
+            }}
           />
-          {kind !== 'inline' && (
+          {hasFitToNoteWidth(kind) && (
             <IconS
               icon={ICONS.MoveHorizontal}
               title={t('settings.processors.iconTooltips.fitToNoteWidth')}
-              isActive={processor.fitToNoteWidth ?? false}
-              onClick={() => handleUpdate('fitToNoteWidth', !(processor.fitToNoteWidth ?? false))}
+              isActive={(processor as ProcessorWithFit).fitToNoteWidth ?? false}
+              onClick={() => {
+                const p = processor as ProcessorWithFit;
+                (handleUpdate as (field: 'fitToNoteWidth', value: boolean) => void)(
+                  'fitToNoteWidth',
+                  !(p.fitToNoteWidth ?? false),
+                );
+              }}
+            />
+          )}
+          {hasNoPreamble(kind) && (
+            <IconS
+              icon={ICONS.FileX}
+              title={t('settings.processors.iconTooltips.noPreamble')}
+              isActive={(processor as ProcessorWithPreamble).noPreamble ?? false}
+              onClick={() => {
+                const p = processor as ProcessorWithPreamble;
+                (handleUpdate as (field: 'noPreamble', value: boolean) => void)('noPreamble', !(p.noPreamble ?? false));
+              }}
             />
           )}
           <IconS
-            icon={ICONS.FileX}
-            title={t('settings.processors.iconTooltips.noPreamble')}
-            isActive={processor.noPreamble ?? false}
-            onClick={() => handleUpdate('noPreamble', !(processor.noPreamble ?? false))}
-          />
-          <IconS
-            icon={getSyntaxModeIcon(kind, processor.syntaxMode)}
-            title={(() => {
-              switch (processor.syntaxMode) {
-                case SyntaxMode.Markup:
-                  return t('settings.processors.iconTooltips.syntaxModeMarkup');
-                case SyntaxMode.Math:
-                  return t('settings.processors.iconTooltips.syntaxModeMath');
-                case SyntaxMode.Code:
-                  return t('settings.processors.iconTooltips.syntaxModeCode');
-                case SyntaxMode.Opaque:
-                  return t('settings.processors.iconTooltips.syntaxModeOpaque');
-                default:
-                  return kind !== 'codeblock'
-                    ? t('settings.processors.iconTooltips.syntaxModeMath')
-                    : t('settings.processors.iconTooltips.syntaxModeMarkup');
-              }
-            })()}
+            icon={isDetecting ? ICONS.Loading : getSyntaxModeIcon(kind, processor.syntaxMode)}
+            className={isDetecting ? 'typstmate-spinner' : ''}
+            title={
+              isDetecting
+                ? t('settings.processors.iconTooltips.syntaxModeAnalyzing')
+                : (() => {
+                    switch (processor.syntaxMode) {
+                      case SyntaxMode.Markup:
+                        return t('settings.processors.iconTooltips.syntaxModeMarkup');
+                      case SyntaxMode.Math:
+                        return t('settings.processors.iconTooltips.syntaxModeMath');
+                      case SyntaxMode.Code:
+                        return t('settings.processors.iconTooltips.syntaxModeCode');
+                      case SyntaxMode.Opaque:
+                        return t('settings.processors.iconTooltips.syntaxModeOpaque');
+                      default:
+                        return kind !== 'codeblock' && kind !== 'excalidraw'
+                          ? t('settings.processors.iconTooltips.syntaxModeMath')
+                          : t('settings.processors.iconTooltips.syntaxModeMarkup');
+                    }
+                  })()
+            }
             onClick={() => {}}
           />
         </>
       }
       mainField={
-        <textarea
-          value={processor.format}
-          placeholder={t('settings.processors.formatPlaceholder')}
-          onChange={(e) => handleUpdate('format', (e.target as HTMLTextAreaElement).value)}
-          onClick={preventAccordion}
-          className="typstmate-textarea"
-        />
+        isEditorActive ? (
+          <div ref={editorRef} className="typstmate-mini-editor" onClick={preventAccordion} />
+        ) : (
+          <textarea
+            value={processor.format}
+            placeholder={t('settings.processors.formatPlaceholder')}
+            onFocus={() => setIsEditorActive(true)}
+            onClick={preventAccordion}
+            className="typstmate-textarea"
+            readOnly
+          />
+        )
       }
       detailsContent={
         <>
@@ -213,32 +355,42 @@ export function ProcessorItem({
                 .setName(tFragment('settings.processors.useReplaceAllName'))
                 .setDesc(tFragment('settings.processors.useReplaceAllDesc'))
                 .addToggle((t) => {
-                  t.setValue(processor.useReplaceAll ?? false).onChange((v) => handleUpdate('useReplaceAll', v));
+                  t.setValue(processor.useReplaceAll ?? false).onChange((v) =>
+                    handleUpdate('useReplaceAll' as keyof ProcessorOfKind<K>, v as ProcessorOfKind<K>['useReplaceAll']),
+                  );
                 })
             }
           />
-          {(kind === 'display' || kind === 'codeblock') && (
+          {hasFitToNoteWidth(kind) && (
             <Setting
               build={(s) =>
                 s
                   .setName(tFragment('settings.processors.fitToNoteWidthName'))
                   .setDesc(tFragment('settings.processors.fitToNoteWidthDesc'))
                   .addToggle((t) => {
-                    t.setValue(processor.fitToNoteWidth ?? false).onChange((v) => handleUpdate('fitToNoteWidth', v));
+                    const p = processor as ProcessorWithFit;
+                    t.setValue(p.fitToNoteWidth ?? false).onChange((v) => {
+                      (handleUpdate as (field: 'fitToNoteWidth', value: boolean) => void)('fitToNoteWidth', v);
+                    });
                   })
               }
             />
           )}
-          <Setting
-            build={(s) =>
-              s
-                .setName(tFragment('settings.processors.noPreambleName'))
-                .setDesc(tFragment('settings.processors.noPreambleDesc'))
-                .addToggle((t) => {
-                  t.setValue(processor.noPreamble ?? false).onChange((v) => handleUpdate('noPreamble', v));
-                })
-            }
-          />
+          {hasNoPreamble(kind) && (
+            <Setting
+              build={(s) =>
+                s
+                  .setName(tFragment('settings.processors.noPreambleName'))
+                  .setDesc(tFragment('settings.processors.noPreambleDesc'))
+                  .addToggle((t) => {
+                    const p = processor as ProcessorWithPreamble;
+                    t.setValue(p.noPreamble ?? false).onChange((v) => {
+                      (handleUpdate as (field: 'noPreamble', value: boolean) => void)('noPreamble', v);
+                    });
+                  })
+              }
+            />
+          )}
         </>
       }
     />
@@ -256,6 +408,6 @@ function getSyntaxModeIcon(kind: ProcessorKind, syntaxMode?: SyntaxMode): Compon
     case SyntaxMode.Opaque:
       return ICONS.CircleDashed;
     default:
-      return kind === 'codeblock' ? ICONS.Heading1 : ICONS.SquareFunction;
+      return kind === 'codeblock' || kind === 'excalidraw' ? ICONS.Heading1 : ICONS.SquareFunction;
   }
 }

@@ -11,6 +11,7 @@ export const features = {
   node: false,
   watcher: false,
   queryLocalFonts: false,
+  excalidraw: false,
 };
 
 if (Platform.isDesktop) {

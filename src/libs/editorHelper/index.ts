@@ -41,7 +41,8 @@ export class EditorHelper implements Singleton {
     () => {
       const svgs = document.querySelectorAll('typstmate-svg') as NodeListOf<TypstSVGElement> | undefined;
       if (!svgs) return;
-      for (const svg of svgs) if (svg.processor?.fitToNoteWidth) svg.render();
+      for (const svg of svgs)
+        if (svg.processor && 'fitToNoteWidth' in svg.processor && svg.processor.fitToNoteWidth) svg.render();
     },
     100,
     true,
