@@ -141,6 +141,19 @@ class AutocompletePlugin implements PluginValue {
     const isSimple =
       changeCount === 1 && insertedLen <= 1 && deletedLen <= 1 && !(insertedLen === 0 && deletedLen === 0);
 
+    // ── Abort if typing digits in math mode ──────────────────────────────
+    if (update.docChanged && isSimple && insertedLen === 1) {
+      let text = '';
+      update.changes.iterChanges((_fA, _tA, _fB, _tB, inserted) => (text = inserted.toString()));
+      if (/[0-9]/.test(text)) {
+        const region = getActiveRegion(update.view);
+        if ((region?.activeMode ?? region?.mode) === SyntaxMode.Math) {
+          this.reset();
+          return;
+        }
+      }
+    }
+
     // ── Active popup: narrow on each keystroke ───────────────────────────
     if (this.isActive) {
       if (!isSimple || cursor < this.from) {
