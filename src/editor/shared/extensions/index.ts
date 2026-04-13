@@ -19,13 +19,13 @@ import { tooltipEntry } from './Tooltip/index';
 import { typstMateActionEntry } from './TypstMateAction/index';
 
 export const sharedExtensionEntries: (() => ExtensionEntry<any>)[] = [
+  autocompleteEntry,
   syntaxHighlightEntry,
   linterEntry,
   symbolConcealEntry,
   pairHighlightEntry,
   tabJumpEntry,
   jumpFromClickEntry,
-  autocompleteEntry,
   tooltipEntry,
   typstMateActionEntry,
   formatterEntry,

@@ -83,6 +83,16 @@ class AutocompletePlugin implements PluginValue {
 
   private readonly onMouseMoveCapture = (e: MouseEvent) => this.handleMouseMove(e);
   private readonly onMouseDownCapture = (e: MouseEvent) => this.handleMouseDown(e);
+  private readonly onKeyDownCapture = (e: KeyboardEvent) => {
+    if (!this.isActive) return;
+    if (['ArrowUp', 'ArrowDown', 'Tab', 'Enter', 'Escape'].includes(e.key)) {
+      if (this.handleKeyAction(e.key)) {
+        e.preventDefault();
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+      }
+    }
+  };
 
   constructor(public view: EditorView) {
     this.container = document.createElement('div');
@@ -91,6 +101,8 @@ class AutocompletePlugin implements PluginValue {
     this.items = this.container.createDiv('items');
 
     document.body.appendChild(this.container);
+
+    window.addEventListener('keydown', this.onKeyDownCapture, true);
   }
 
   // ── Lifecycle ─────────────────────────────────────────────────────────────
@@ -163,6 +175,7 @@ class AutocompletePlugin implements PluginValue {
 
   destroy() {
     this.reset();
+    window.removeEventListener('keydown', this.onKeyDownCapture, true);
     this.container.remove();
   }
 
@@ -255,6 +268,7 @@ class AutocompletePlugin implements PluginValue {
     this.candidates = this.allCandidates;
     this.hasState = true;
 
+    if (!this.isActive) this.showUI();
     this.scheduleRender(view, cursor);
   }
 
@@ -285,6 +299,7 @@ class AutocompletePlugin implements PluginValue {
 
     this.candidates = filtered;
     this.hasState = true;
+    if (!this.isActive) this.showUI();
     this.scheduleRender(view, cursor);
   }
 
@@ -312,8 +327,6 @@ class AutocompletePlugin implements PluginValue {
   private render(position: { x: number; y: number }) {
     this.container.style.setProperty('--preview-left', `${position.x}px`);
     this.container.style.setProperty('--preview-top', `${position.y}px`);
-
-    if (!this.isActive) this.showUI();
 
     this.items.replaceChildren();
     this.selectedIndex = -1;
@@ -387,18 +400,19 @@ class AutocompletePlugin implements PluginValue {
   // ── UI visibility ─────────────────────────────────────────────────────────
 
   private showUI() {
+    if (this.isActive) return;
     this.isActive = true;
     document.body.classList.add('typstmate-autocomplete-suggesting');
-    document.addEventListener('mousemove', this.onMouseMoveCapture, true);
-    document.addEventListener('mousedown', this.onMouseDownCapture, true);
+    window.addEventListener('mousemove', this.onMouseMoveCapture, true);
+    window.addEventListener('mousedown', this.onMouseDownCapture, true);
   }
 
   private hideUI() {
     if (!this.isActive) return;
     this.isActive = false;
     document.body.classList.remove('typstmate-autocomplete-suggesting');
-    document.removeEventListener('mousemove', this.onMouseMoveCapture, true);
-    document.removeEventListener('mousedown', this.onMouseDownCapture, true);
+    window.removeEventListener('mousemove', this.onMouseMoveCapture, true);
+    window.removeEventListener('mousedown', this.onMouseDownCapture, true);
   }
 
   hide() {
