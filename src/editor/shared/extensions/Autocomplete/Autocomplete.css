@@ -89,8 +89,8 @@
 }
 
 .typstmate-autocomplete .item-kind svg {
-  width: 16px;
-  height: 16px;
+  width: var(--icon-s);
+  height: var(--icon-s);
 }
 
 /* Color coding for different kinds */

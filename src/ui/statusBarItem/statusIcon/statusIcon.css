@@ -9,8 +9,8 @@
 }
 
 .typstmate-status-bar-item-icon svg {
-  width: 16px;
-  height: 16px;
+  width: var(--icon-s);
+  height: var(--icon-s);
 }
 
 .typstmate-status-bar-item-error {
@@ -23,5 +23,5 @@
 }
 
 .typstmate-status-bar-item-error span {
-  font-size: 16px;
+  font-size: var(--icon-s);
 }
