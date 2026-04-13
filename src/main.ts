@@ -69,6 +69,7 @@ export default class ObsidianTypstMate extends Plugin {
       // detach は不要
 
       registerProtocolHandlers(this);
+      // detach は不要
 
       registerViews(this);
       // detach は不要
