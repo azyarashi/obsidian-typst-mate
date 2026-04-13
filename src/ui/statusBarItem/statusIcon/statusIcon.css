@@ -1,4 +1,4 @@
-.status-bar-item-icon {
+.typstmate-status-bar-item-icon {
   display: flex;
 
   height: 100%;
@@ -8,7 +8,12 @@
   justify-content: center;
 }
 
-.status-bar-item-error {
+.typstmate-status-bar-item-icon svg {
+  width: 16px;
+  height: 16px;
+}
+
+.typstmate-status-bar-item-error {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -17,35 +22,6 @@
   aspect-ratio: 1 / 1;
 }
 
-.status-bar-item-error span {
+.typstmate-status-bar-item-error span {
   font-size: 16px;
-}
-
-.typstmate-spinner-container {
-  display: flex;
-  align-items: center;
-  height: 100%;
-}
-
-.typstmate-spinner {
-  display: inline-block;
-
-  height: 100%;
-  aspect-ratio: 1 / 1;
-
-  border: 2px solid var(--text-muted);
-  border-top: 2px solid var(--text-accent);
-  border-radius: 50%;
-
-  box-sizing: border-box;
-  animation: typstmate-spin 1s linear infinite;
-}
-
-@keyframes typstmate-spin {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
 }

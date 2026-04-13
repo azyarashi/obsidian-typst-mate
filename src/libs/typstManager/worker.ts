@@ -171,6 +171,7 @@ export default class WasmAdapter {
     } else {
       fileMap.clear();
       packagesMap.clear();
+      obsidianResultsCache.clear();
     }
   }
 

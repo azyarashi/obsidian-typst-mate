@@ -1,4 +1,5 @@
 .typstmate-status-bar-item {
+  padding: 0 var(--size-2-2);
   cursor: pointer;
 }
 

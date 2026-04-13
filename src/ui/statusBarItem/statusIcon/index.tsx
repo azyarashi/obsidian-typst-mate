@@ -22,7 +22,7 @@ export function StatusIcon({
 }) {
   return (
     <div
-      className={`status-bar-item-icon ${className || ''} ${onClick ? 'is-clickable' : ''}`}
+      className={`typstmate-status-bar-item-icon ${className || ''} ${onClick ? 'is-clickable' : ''}`}
       style={{ color }}
       onClick={(e) => {
         if (onClick) {
@@ -38,7 +38,7 @@ export function StatusIcon({
 export function CurrentStatusIcon({ status, rendering }: { status: Status; rendering: typeof TypstMate.rendering }) {
   if (status === Status.Error) {
     return (
-      <div className="status-bar-item-error" onClick={(e) => showStatusBarMenu(e)}>
+      <div className="typstmate-status-bar-item-error" onClick={(e) => showStatusBarMenu(e)}>
         <span>⚠</span>
       </div>
     );
@@ -51,10 +51,8 @@ export function CurrentStatusIcon({ status, rendering }: { status: Status; rende
 
   if (isRendering) {
     return (
-      <div className="typstmate-spinner-container" onClick={(e) => showStatusBarMenu(e)}>
-        <div className="status-bar-item-icon">
-          <div className="typstmate-spinner" />
-        </div>
+      <div onClick={(e) => showStatusBarMenu(e)}>
+        <StatusIcon icon={ICONS.Loading} />
       </div>
     );
   }

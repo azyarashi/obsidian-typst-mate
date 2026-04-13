@@ -1,32 +1,26 @@
 import { Menu } from 'obsidian';
 import { TypstMate } from '@/api';
 import { t } from '@/i18n';
-import { appUtils, settingsManager } from '@/libs';
+import { appUtils, settingsManager, typstManager } from '@/libs';
 
 export function showStatusBarMenu(event: MouseEvent) {
   const menu = new Menu();
 
   menu.addItem((item) => {
-    item
-      .setTitle(t('commands.openTypstTools'))
-      .setIcon('layout-side-panel')
-      .onClick(() => appUtils.openTypstTools(true));
+    item.setTitle(t('commands.openTypstTools')).onClick(() => appUtils.openTypstTools(true));
   });
 
   menu.addItem((item) => {
     const enabled = settingsManager.settings.enableBackgroundRendering;
-    item
-      .setTitle(t('commands.toggleBackgroundRendering'))
-      .setIcon(enabled ? 'check' : 'none')
-      .onClick(async () => {
-        settingsManager.settings.enableBackgroundRendering = !enabled;
-        await settingsManager.saveSettings();
-        await appUtils.reloadPlugin(false);
-      });
+    item.setTitle(t('commands.toggleBackgroundRendering')).onClick(async () => {
+      settingsManager.settings.enableBackgroundRendering = !enabled;
+      await settingsManager.saveSettings();
+      await appUtils.reloadPlugin(false);
+    });
   });
 
   menu.addItem((item) => {
-    item.setTitle(t('settings.renderer.fitToNoteWidthProfile')).setIcon('expand-vertically');
+    item.setTitle(t('settings.renderer.fitToNoteWidthProfile'));
 
     const currentProfile = settingsManager.settings.fitToNoteWidthProfile;
     const submenu = item.setSubmenu();
@@ -34,7 +28,6 @@ export function showStatusBarMenu(event: MouseEvent) {
     submenu.addItem((subItem) => {
       subItem
         .setTitle('Live')
-        .setIcon(currentProfile === 'Live' ? 'check' : 'none')
         .setDisabled(currentProfile === 'Live')
         .onClick(async () => {
           settingsManager.settings.fitToNoteWidthProfile = 'Live';
@@ -48,7 +41,6 @@ export function showStatusBarMenu(event: MouseEvent) {
       submenu.addItem((subItem) => {
         subItem
           .setTitle(profile.name)
-          .setIcon(currentProfile === profile.name ? 'check' : 'none')
           .setDisabled(currentProfile === profile.name)
           .onClick(async () => {
             settingsManager.settings.fitToNoteWidthProfile = profile.name;
@@ -62,10 +54,20 @@ export function showStatusBarMenu(event: MouseEvent) {
   menu.addSeparator();
 
   menu.addItem((item) => {
-    item
-      .setTitle(`Typst Mate v${TypstMate.version} on Typst ${TypstMate.typstVersion}`)
-      .setIcon('info')
-      .setDisabled(true);
+    item.setTitle(t('commands.refreshView')).onClick(() => appUtils.refreshView());
+  });
+
+  menu.addItem((item) => {
+    item.setTitle(t('commands.refreshWasm')).onClick(async () => {
+      await typstManager.refreshWasm();
+      appUtils.refreshView();
+    });
+  });
+
+  menu.addSeparator();
+
+  menu.addItem((item) => {
+    item.setTitle(`Typst Mate v${TypstMate.version} on Typst v${TypstMate.typstVersion}`).setDisabled(true);
   });
 
   menu.showAtMouseEvent(event);

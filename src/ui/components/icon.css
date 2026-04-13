@@ -8,6 +8,7 @@ div.typstmate-icon-s {
   opacity: var(--icon-opacity);
   border-radius: var(--clickable-icon-radius);
   transition: all 0.15s ease;
+  line-height: 1;
 }
 
 div.typstmate-icon-s:hover {

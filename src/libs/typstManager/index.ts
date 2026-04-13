@@ -516,6 +516,7 @@ export class TypstManager implements Singleton {
 
   async refreshWasm() {
     await this.wasm.free();
+    await this.wasm.clearCache();
     this.worker?.terminate();
     this.worker = undefined;
 

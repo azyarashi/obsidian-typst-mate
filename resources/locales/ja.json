@@ -12,7 +12,9 @@
     "replaceTexWithTypst": "TeX を Typst に変換する",
     "selectCurrentEquation": "現在の数式範囲を選択する",
     "toggleBackgroundRendering": "バックグラウンドレンダリングを切り替える",
-    "formatTypst": "Typst フォーマットを適用"
+    "formatTypst": "Typst フォーマットを適用",
+    "refreshWasm": "WASM を再初期化 (キャッシュクリア)",
+    "refreshView": "表示を更新"
   },
 
   "contextMenu": {

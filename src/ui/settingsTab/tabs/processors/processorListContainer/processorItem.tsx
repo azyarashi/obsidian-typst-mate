@@ -83,7 +83,6 @@ export function ProcessorItem<K extends ProcessorKind>({
           return;
         }
 
-        setIsDetecting(true);
         try {
           const codeIndex = format.indexOf('{CODE}');
           const defaultMode = kind === 'inline' || kind === 'display' ? SyntaxMode.Math : SyntaxMode.Markup;
@@ -115,9 +114,17 @@ export function ProcessorItem<K extends ProcessorKind>({
     [kind],
   );
 
+  const isFirstMount = useRef(true);
   useEffect(() => {
+    if (isFirstMount.current) {
+      isFirstMount.current = false;
+      return;
+    }
+    if (processor.renderingEngine === RenderingEngine.MathJax) return;
+
+    setIsDetecting(true);
     debouncedDetect(processor.format);
-  }, [processor.format, debouncedDetect]);
+  }, [processor.format, debouncedDetect, processor.renderingEngine]);
 
   // CM6 instantiation
   useEffect(() => {
