@@ -1,11 +1,3 @@
-/**
- * shared/extensions の ExtensionEntry 定義
- */
-
-export { formatterSettingsFacet } from './Formatter/package';
-export { symbolConcealSettingsFacet } from './SymbolConceal/package';
-export { tabJumpSettingsFacet } from './TabJump/package';
-
 import type { ExtensionEntry } from '@/libs/extensionManager';
 import { autocompleteEntry } from './Autocomplete/index';
 import { formatterEntry } from './Formatter/index';
@@ -17,6 +9,10 @@ import { syntaxHighlightEntry } from './SyntaxHighlight/index';
 import { tabJumpEntry } from './TabJump/index';
 import { tooltipEntry } from './Tooltip/index';
 import { typstMateActionEntry } from './TypstMateAction/index';
+
+export { formatterSettingsFacet } from './Formatter/package';
+export { symbolConcealSettingsFacet } from './SymbolConceal/package';
+export { tabJumpSettingsFacet } from './TabJump/package';
 
 export const sharedExtensionEntries: (() => ExtensionEntry<any>)[] = [
   autocompleteEntry,

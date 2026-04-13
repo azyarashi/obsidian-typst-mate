@@ -3,7 +3,7 @@ import { initI18n, t } from '@/i18n';
 import { Status, TypstMate } from './api';
 import { markdownExtensionEntries, sharedExtensionEntries, typstExtensionEntries } from './editor';
 // biome-ignore format: 可読性のため
-import { appUtils, crashTracker, editorHelper, extensionManager, fileManager, registerCommands, registerEvents, settingsManager, typstManager } from './libs';
+import { appUtils, crashTracker, editorHelper, extensionManager, fileManager, registerCommands, registerEvents, registerProtocolHandlers, settingsManager, typstManager } from './libs';
 import { buildTypstMiniEditorExtensions } from './libs/editorHelper/miniEditor';
 import { applyAllPatches, detachAllPatches } from './libs/patches';
 import { hideStatusBarItem, registerEmbeds, registerViews, SettingsTab, setStatusBarItem } from './ui';
@@ -67,6 +67,8 @@ export default class ObsidianTypstMate extends Plugin {
 
       this.addSettingTab(new SettingsTab(this.app, this));
       // detach は不要
+
+      registerProtocolHandlers(this);
 
       registerViews(this);
       // detach は不要

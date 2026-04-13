@@ -28,7 +28,7 @@ fn wikilink(args: &mut Args) -> SourceResult<Value> {
     let body: Option<Content> = args.eat()?;
 
     let encoded_target: String = js_sys::encode_uri_component(linktext.as_str()).into();
-    let wikilink_uri = format!("typstmate://openLinkText?linktext={encoded_target}");
+    let wikilink_uri = format!("obsidian://openLinkText?linktext={encoded_target}");
 
     let content = if let Some(body) = body {
         body

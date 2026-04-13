@@ -8,6 +8,7 @@ import ObsidianTypstMate from '@/main';
 import type { GitHubAsset, PackageAsset } from '@/types/global';
 import type { Singleton } from '@/types/singleton';
 import type { PackageSpec } from '@/types/typst';
+import { filterWithExtensions } from './utils';
 
 /**
  * Path conventions:
@@ -33,8 +34,8 @@ export class FileManager implements Singleton {
   wasmNPath!: string;
   watcherNPath!: string;
   fontsDirNPath!: string;
-  packagesDirNPath!: string;
 
+  packagesDirNPath!: string;
   packagesDirPaths!: string[];
 
   async init(plugin: ObsidianTypstMate) {
@@ -288,6 +289,43 @@ export class FileManager implements Singleton {
     } catch {
       return [];
     }
+  }
+
+  async collectFonts() {
+    const { files } = await this.adapter.list(this.fontsDirNPath);
+    const fontFiles = filterWithExtensions(files, ['font', 'ttf', 'ttc', 'otf', 'otc']);
+
+    return fontFiles;
+  }
+
+  async collectPackages(path: string, isSystem: boolean): Promise<PackageSpec[]> {
+    const listFolders = isSystem
+      ? async (dir: string) =>
+          (await fs?.promises.readdir(dir, { withFileTypes: true }))
+            ?.filter((f) => f.isDirectory())
+            .map((f) => f.name) ?? []
+      : async (dir: string) => (await this.adapter.list(dir)).folders;
+
+    const specs: PackageSpec[] = [];
+
+    const namespaceFolders = await listFolders(path);
+    for (const namespaceFolder of namespaceFolders) {
+      const namespace = namespaceFolder.split('/').pop()!;
+
+      const nameFolders = await listFolders(namespaceFolder);
+      for (const nameFolder of nameFolders) {
+        const name = nameFolder.split('/').pop()!;
+
+        const versionFolders = await listFolders(nameFolder);
+        for (const versionFolder of versionFolders) {
+          const version = versionFolder.split('/').pop()!;
+
+          specs.push({ namespace, name, version });
+        }
+      }
+    }
+
+    return specs;
   }
 
   async detach() {

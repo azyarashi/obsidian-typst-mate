@@ -194,14 +194,7 @@ export class TypstManager implements Singleton {
   async prepareAssets() {
     try {
       TypstMate.update(Status.PreparingAssets);
-      const fontPaths = (await this.plugin.app.vault.adapter.list(fileManager.fontsDirNPath)).files.filter(
-        (file) =>
-          file.endsWith('.font') ||
-          file.endsWith('.otf') ||
-          file.endsWith('.otc') ||
-          file.endsWith('.ttf') ||
-          file.endsWith('.ttc'),
-      );
+      const fontPaths = await fileManager.collectFonts();
       const fonts = (
         await Promise.all(
           fontPaths.map((fontPath) =>

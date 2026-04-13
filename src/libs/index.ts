@@ -14,5 +14,6 @@ export { typstManager, extarctCMMath, ctxToNDir } from './typstManager';
 
 export { registerEvents } from './events';
 export { registerCommands } from './commands';
+export { registerProtocolHandlers } from './protocolHandlers';
 
 export type { EditorContext } from './extensionManager';

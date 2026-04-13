@@ -21,33 +21,11 @@ export function LocalPackageList() {
       if (!fs.existsSync(p)) continue;
 
       try {
-        const namespaces = fs.readdirSync(p);
-        for (const namespace of namespaces) {
-          const namespacePath = path.join(p, namespace);
-          if (!fs.statSync(namespacePath).isDirectory() || namespace.endsWith('preview')) continue;
-
-          const names = fs.readdirSync(namespacePath);
-          for (const name of names) {
-            const namePath = path.join(namespacePath, name);
-            if (!fs.statSync(namePath).isDirectory()) continue;
-
-            const versions = fs.readdirSync(namePath);
-            for (const version of versions) {
-              const versionPath = path.join(namePath, version);
-              if (!fs.statSync(versionPath).isDirectory()) continue;
-
-              const versionPattern = /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/;
-              if (!versionPattern.test(version)) continue;
-
-              specs.push({
-                namespace,
-                name,
-                version,
-                path: p,
-              });
-            }
-          }
-        }
+        const specs = (await fileManager.collectPackages(p, true)).map((spec) => ({
+          ...spec,
+          path: p,
+        }));
+        setLocalPackages(specs);
       } catch (e) {
         console.error('Failed to list local packages:', e);
       }

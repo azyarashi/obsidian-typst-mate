@@ -2,19 +2,20 @@ import { type EditorView, ViewPlugin } from '@codemirror/view';
 import { editorHelper } from '@/libs';
 import type TypstElement from '@/ui/elements/Typst';
 import { getRegionAt, type ParsedRegion } from '../../utils/core';
-import { executeTypstMateURI } from './uri';
+import { handleTypstMateURI } from './uri';
 
 class JumpFromClickPluginValue {
   constructor(public view: EditorView) {}
 
   async jumpTo(jump: any, event: MouseEvent, context?: TypstElement) {
     if (jump.type === 'url') {
-      if (jump.url.startsWith('typstmate://')) {
-        const uri = URL.parse(jump.url);
-        if (!uri) return;
-        executeTypstMateURI(uri, event, context);
-        return;
-      } else window.open(jump.url);
+      const uri = URL.parse(jump.url);
+      if (!uri) return;
+
+      const handledUri = handleTypstMateURI(uri, event, context);
+      if (handledUri === false) window.open(jump.url);
+      else if (handledUri instanceof URL) window.open(handledUri);
+
       return;
     }
 
