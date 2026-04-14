@@ -36,15 +36,6 @@
     "diagnostic": {
       "hintPrefix": "ヒント: {{hint}}"
     },
-    "excalidraw": {
-      "code": "コード",
-      "heading": "Excalidraw",
-      "previewPlaceholder": "上の入力欄にコードを入力すると、プレビューが表示されます",
-      "processorId": "プロセッサ ID",
-      "buttons": {
-        "add": "追加"
-      }
-    },
     "exportTool": {
       "customTimestamp": "カスタムタイムスタンプ",
       "customTimestampDesc": "カスタムの作成日時を設定します。",
@@ -85,20 +76,13 @@
       "extractBodyDesc": "HTML の <body> タグの中身のみを書き出します。"
     },
     "font": {
-      "copyFontFamilyName": "フォントファミリー名をコピー",
+      "copyFontFamilyName": "ファミリー名をコピー",
       "labels": {
         "style": "スタイル: {{value}}",
         "weight": "ウェイト: {{value}}",
         "stretch": "ストレッチ: {{value}}",
         "flags": "フラグ: {{value}}"
       }
-    },
-    "processorExt": {
-      "disableSymbolSuggest": "シンボルの補完を無効化",
-      "fitToNoteWidth": "ノートの幅に合わせる",
-      "fitToNoteWidthDesc": "コードの冒頭に <code>WIDTH</code> という長さを宣言する行を追加します",
-      "usePreamble": "プリアンブルを使用",
-      "useReplaceAll": "置換をすべて使用"
     },
     "templateSelect": {
       "heading": "テンプレートを選択",
@@ -109,6 +93,7 @@
   },
 
   "notices": {
+    "failedToOpenTypstTools": "Typst ツールを開けませんでした。",
     "commandNotFound": "コマンド {{id}} が見つかりませんでした",
     "commandNotExecuted": "コマンド {{id}} が実行されませんでした",
     "unloadFailed": "プラグインのアンロード中にエラーが発生しました。",
@@ -222,7 +207,28 @@
       "deleteProcessorButton": "このプロセッサーを削除する"
     },
 
-    "actions": {},
+    "actions": {
+      "contexts": {
+        "Markdown": "Markdown",
+        "MathJax": "MathJax",
+        "Markup": "マークアップ",
+        "Code": "コード",
+        "Math": "数式",
+        "Opaque": "解析なし",
+        "Vim": "Vim ノーマル"
+      },
+      "triggers": {
+        "hotkey": "ホットキー",
+        "long-press": "長押し",
+        "type": "入力",
+        "regex": "正規表現"
+      },
+      "actionTypes": {
+        "snippet": "スニペット",
+        "script": "スクリプト",
+        "command": "コマンド"
+      }
+    },
 
     "extensions": {
       "codeblockPreview": {
@@ -261,8 +267,8 @@
         "blankLinesUpperBound.desc": "空行の上限",
         "collapseMarkupSpaces.name": "マークアップスペースの結合",
         "collapseMarkupSpaces.desc": "マークアップスペースの結合",
-        "reorderImportItems.name": "インポートアイテムの並べ替え",
-        "reorderImportItems.desc": "インポートアイテムの並べ替え",
+        "reorderImportItems.name": "import 文の並べ替え",
+        "reorderImportItems.desc": "import 文の並べ替え",
         "wrapText.name": "テキストの折り返し",
         "wrapText.desc": "テキストの折り返し"
       },

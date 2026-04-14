@@ -1,5 +1,6 @@
 import { type App, MarkdownView, type WorkspaceLeaf } from 'obsidian';
 import { BASE_COLOR_VAR } from '@/constants';
+import { t } from '@/i18n';
 import ObsidianTypstMate from '@/main';
 import { TextFileView, type Tool, TypstFileView, TypstPreviewView, TypstToolsView } from '@/ui/views';
 import { settingsManager } from '../settingsManager';
@@ -62,14 +63,27 @@ class AppUtils {
   }
 
   async openTypstTools(active = false, tool?: Tool) {
-    let leaf: WorkspaceLeaf | null | undefined;
-    [leaf] = this.app.workspace.getLeavesOfType(TypstToolsView.viewtype);
-    if (!leaf) leaf = this.app.workspace.getLeftLeaf(false);
-    if (!leaf) return; // TODO
+    const leaf = await this.getOrCreateLeftLeaf();
+    if (!leaf) {
+      new Notice(t('notices.failedToOpenTypstTools'));
+      return;
+    }
 
     await leaf.setViewState({ type: TypstToolsView.viewtype, active });
+
     if (active) this.app.workspace.revealLeaf(leaf);
     if (tool) (leaf.view as TypstToolsView).openTool(tool);
+  }
+
+  private async getOrCreateLeftLeaf(): Promise<WorkspaceLeaf | null> {
+    let [leaf] = this.app.workspace.getLeavesOfType(TypstToolsView.viewtype);
+    if (leaf) return leaf;
+
+    leaf = this.app.workspace.getLeftLeaf(false) ?? undefined;
+    if (leaf) return leaf;
+
+    this.app.workspace.leftSidebarToggleButtonEl?.click();
+    return this.app.workspace.getLeftLeaf(false);
   }
 
   async refreshView(app?: App) {
