@@ -14,7 +14,7 @@ import type { Singleton } from '@/types/singleton';
 import TypstHTMLElement from '@/ui/elements/HTML';
 import TypstSVGElement from '@/ui/elements/SVG';
 import type TypstElement from '@/ui/elements/Typst';
-import type { TypstFileView, TypstPreviewView } from '@/ui/views';
+import { TypstFileView, type TypstPreviewView } from '@/ui/views';
 import { overwriteCustomElements } from '@/utils/custromElementRegistry';
 import { expandHierarchicalTags } from '@/utils/tags';
 import type WasmAdapter from './worker';
@@ -47,12 +47,11 @@ export class TypstManager implements Singleton {
 
   async init(plugin: ObsidianTypstMate) {
     this.plugin = plugin;
-    this.ready = false;
-    this.updateNoteWidth();
   }
 
   async prepareWasm() {
-    const adapter = this.plugin.app.vault.adapter;
+    const { settings } = settingsManager;
+    const { adapter } = this.plugin.app.vault;
 
     const main = {
       notice(message: string, duration?: number) {
@@ -60,9 +59,7 @@ export class TypstManager implements Singleton {
       },
 
       readBinary: async (p: string) => {
-        if (features.node && path?.isAbsolute(p)) {
-          if (fs) return (await fs.promises.readFile(p)).buffer as ArrayBuffer;
-        }
+        if (features.node && path?.isAbsolute(p)) if (fs) return (await fs.promises.readFile(p)).buffer as ArrayBuffer;
         return await adapter.readBinary(p);
       },
 
@@ -75,7 +72,6 @@ export class TypstManager implements Singleton {
        */
       async fetchPackage(pkgKey: string): Promise<ArrayBuffer> {
         const [namespace, name, version] = pkgKey.split('/');
-
         if (namespace !== 'preview') throw ErrorCode.PackageErrorNotFound;
 
         const res = await requestUrl({
@@ -107,50 +103,29 @@ export class TypstManager implements Singleton {
         let target: any = null;
         let parent: any = null;
 
-        // Determine starting root
         if (parts[0] === 'app') {
           target = this.plugin.app;
           parts.shift();
-        } else if (parts[0] && parts[0] in Obsidian) {
-          target = Obsidian;
-        } else if (parts[0] && parts[0] in this.plugin.app) {
-          target = this.plugin.app;
-        } else {
-          target = Obsidian;
-        }
+        } else if (parts[0] && parts[0] in Obsidian) target = Obsidian;
+        else if (parts[0] && parts[0] in this.plugin.app) target = this.plugin.app;
+        else target = Obsidian;
 
-        // Traverse remaining path
         for (const part of parts) {
           parent = target;
-          if (target && part in target) {
-            target = target[part];
-          } else {
-            return undefined;
-          }
+          if (target && part in target) target = target[part];
+          else return undefined;
         }
 
         let result: any;
-        if (args === null) {
-          // Raw getter
-          result = target;
-        } else if (typeof target === 'function') {
-          // Method call
-          result = target.apply(parent, args);
-        } else {
-          // Property access with (unexpected) args
-          result = target;
-        }
+        if (args === null) result = target;
+        else if (typeof target === 'function') result = target.apply(parent, args);
+        else result = target;
 
-        // Final serialization check for Comlink boundary
-        if (typeof result === 'function') {
-          return '<function>';
-        }
+        if (typeof result === 'function') return '<function>';
 
         return result;
       },
     };
-
-    const { settings } = settingsManager;
 
     if (settings.enableBackgroundRendering) {
       this.worker = new WasmWorker();
@@ -188,46 +163,41 @@ export class TypstManager implements Singleton {
   }
 
   async prepareAssets() {
-    try {
-      const fontPaths = await fileManager.collectFonts();
-      const fonts = (
-        await Promise.all(
-          fontPaths.map((fontPath) =>
-            this.plugin.app.vault.adapter.readBinary(fontPath).catch(() => {
-              new Notice(t('notices.failedToLoadFont', { name: fontPath.split('/').pop() ?? 'undefined' }));
-            }),
-          ),
-        )
-      ).filter((font) => font !== undefined);
+    const fontPaths = await fileManager.collectFonts();
+    const fonts = (
+      await Promise.all(
+        fontPaths.map((fontPath) =>
+          this.plugin.app.vault.adapter.readBinary(fontPath).catch(() => {
+            new Notice(t('notices.failedToLoadFont', { name: fontPath.split('/').pop() ?? 'undefined' }));
+          }),
+        ),
+      )
+    ).filter((font) => font !== undefined);
 
-      const sources: Map<string, Uint8Array> = new Map();
+    const sources: Map<string, Uint8Array> = new Map();
 
-      const files = await this.collectTagFiles();
+    const files = await this.collectTagFiles();
 
-      await this.wasm.store({
-        fonts,
-        sources,
-        files,
-      });
+    await this.wasm.store({
+      fonts,
+      sources,
+      files,
+    });
 
-      this.ready = true;
-      TypstMate.update(Status.Ready);
-      crashTracker.updateCrashStatus(false);
+    this.ready = true;
+    TypstMate.update(Status.Ready);
+    crashTracker.updateCrashStatus(false);
 
-      const waitingElements = document.querySelectorAll('.typstmate-waiting');
-      for (const el of waitingElements) {
-        const content = el.textContent!;
+    const waitingElements = document.querySelectorAll('.typstmate-waiting');
+    for (const el of waitingElements) {
+      const content = el.textContent!;
 
-        const file = this.plugin.app.workspace.getActiveFile();
-        const ndir = file?.parent ? ctxToNDir(file.path) : '/';
-        const npath = file?.path;
+      const file = this.plugin.app.workspace.getActiveFile();
+      const ndir = file?.parent ? ctxToNDir(file.path) : '/';
+      const npath = file?.path;
 
-        el.empty();
-        this.render(content, el, el.getAttribute('kind')!, ndir, npath);
-      }
-    } catch (e) {
-      TypstMate.update(Status.Error);
-      throw e;
+      el.empty();
+      this.render(content, el, el.getAttribute('kind')!, ndir, npath);
     }
   }
 
@@ -235,6 +205,7 @@ export class TypstManager implements Singleton {
     overwriteCustomElements('typstmate-svg', TypstSVGElement);
     overwriteCustomElements('typstmate-html', TypstHTMLElement);
 
+    // TODO
     this.registerCodeblockProcessors();
 
     for (const lang of ['typ', 'typc', 'typm']) {
@@ -344,7 +315,7 @@ export class TypstManager implements Singleton {
     const svgs = document.querySelectorAll('typstmate-svg, typstmate-html') as NodeListOf<TypstElement>;
     for (const svg of svgs) svg.render();
 
-    for (const leaf of this.plugin.app.workspace.getLeavesOfType('typst-file')) {
+    for (const leaf of this.plugin.app.workspace.getLeavesOfType(TypstFileView.viewtype)) {
       const view = leaf.view as TypstFileView;
       view.debouncedCompile();
     }
@@ -502,22 +473,25 @@ export class TypstManager implements Singleton {
     this.currentNoteWidth = undefined;
   }
 
-  async refreshWasm() {
+  private async clearWasm() {
     await this.wasm.free();
     await this.wasm.clearCache();
     this.worker?.terminate();
     this.worker = undefined;
+  }
+
+  async refreshWasm() {
+    await this.clearWasm();
 
     await this.prepareWasm();
     await this.prepareAssets();
-    this.rerenderAll();
   }
 
   async detach() {
     (this as any).plugin = undefined;
-    await this.wasm.free();
-    this.worker?.terminate();
     this.beforeElement = undefined;
+
+    await this.clearWasm();
   }
 }
 
