@@ -20,7 +20,8 @@
         "noStaticElementInteractions": "off",
         "useButtonType": "off",
         "useSemanticElements": "off",
-        "noSvgWithoutTitle": "off"
+        "noSvgWithoutTitle": "off",
+        "useIframeTitle": "off"
       },
       "style": {
         "noNonNullAssertion": "off"

@@ -3,9 +3,9 @@ import type ObsidianTypstMate from '@/main';
 import { TextFileView } from './text-file';
 import { isTypstFileView, TypstFileView } from './typst-file';
 import { TypstPreviewView } from './typst-preview';
-import { TypstToolsView } from './typst-tools';
+import { type Tool, TypstToolsView } from './typst-tools';
 
-export { isTypstFileView, TextFileView, TypstFileView, TypstPreviewView, TypstToolsView };
+export { isTypstFileView, TextFileView, type Tool, TypstFileView, TypstPreviewView, TypstToolsView };
 
 export function registerViews(plugin: ObsidianTypstMate) {
   plugin.registerView(TextFileView.viewtype, (leaf) => new TextFileView(leaf, plugin));

@@ -1,11 +1,13 @@
 import { IconS } from '@components/Icon';
 import { SortableItem } from '@components/List/ListContainer';
 import { DropdownComponent, TextAreaComponent, TextComponent } from '@components/obsidian/components';
+import { t } from '@/i18n';
 import {
   type Action,
   type ActionContext,
   ActionContexts,
   type ActionType,
+  ActionTypes,
   CONTEXT_ICON_MAP,
   type TriggerType,
   TriggerTypes,
@@ -96,7 +98,9 @@ export function ActionItem({
             build={(dropdown) => {
               dropdown.selectEl.id = triggerId;
               dropdown
-                .addOptions(Object.fromEntries(TriggerTypes.map((t) => [t, t])))
+                .addOptions(
+                  Object.fromEntries(TriggerTypes.map((trig) => [trig, t(`settings.actions.triggers.${trig}`)])),
+                )
                 .setValue(triggerType)
                 .onChange((val: string) => handleUpdateTrigger('t', val as TriggerType));
             }}
@@ -162,7 +166,7 @@ export function ActionItem({
         <IconS
           key={context}
           icon={CONTEXT_ICON_MAP[context]}
-          title={context}
+          title={t(`settings.actions.contexts.${context}`)}
           isActive={action.contexts.includes(context)}
           onClick={() => toggleContext(context)}
         />
@@ -178,11 +182,9 @@ export function ActionItem({
               build={(dropdown) => {
                 dropdown.selectEl.id = actionId;
                 dropdown
-                  .addOptions({
-                    snippet: 'snippet',
-                    script: 'script',
-                    command: 'command',
-                  })
+                  .addOptions(
+                    Object.fromEntries(ActionTypes.map((act) => [act, t(`settings.actions.actionTypes.${act}`)])),
+                  )
                   .setValue(actionType)
                   .onChange((val: string) => handleUpdateAction('t', val as ActionType));
               }}

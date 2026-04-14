@@ -1,6 +1,7 @@
 import { getSortableUuid, List, useSortableList } from '@components/List/ListContainer';
 import { debounce } from 'obsidian';
 import { useState } from 'preact/hooks';
+import { t } from '@/i18n';
 import { appUtils, extensionManager, settingsManager } from '@/libs';
 import {
   type Action,
@@ -125,13 +126,13 @@ export function ActionListContainer() {
         <div className="typstmate-ext-chip-group">
           <span className="typstmate-ext-filter-label">Trigger</span>
           <div className="typstmate-ext-chips">
-            {TriggerTypes.map((t) => (
+            {TriggerTypes.map((trig) => (
               <button
-                key={t}
-                className={`typstmate-ext-chip ${activeTriggers.includes(t) ? 'is-active' : ''}`}
-                onClick={() => toggleTriggerFilter(t)}
+                key={trig}
+                className={`typstmate-ext-chip ${activeTriggers.includes(trig) ? 'is-active' : ''}`}
+                onClick={() => toggleTriggerFilter(trig)}
               >
-                <span>{t}</span>
+                <span>{t(`settings.actions.triggers.${trig}`)}</span>
               </button>
             ))}
           </div>
@@ -140,13 +141,13 @@ export function ActionListContainer() {
         <div className="typstmate-ext-chip-group">
           <span className="typstmate-ext-filter-label">Action</span>
           <div className="typstmate-ext-chips">
-            {ActionTypes.map((a) => (
+            {ActionTypes.map((act) => (
               <button
-                key={a}
-                className={`typstmate-ext-chip ${activeActions.includes(a) ? 'is-active' : ''}`}
-                onClick={() => toggleActionFilter(a)}
+                key={act}
+                className={`typstmate-ext-chip ${activeActions.includes(act) ? 'is-active' : ''}`}
+                onClick={() => toggleActionFilter(act)}
               >
-                <span>{a}</span>
+                <span>{t(`settings.actions.actionTypes.${act}`)}</span>
               </button>
             ))}
           </div>
@@ -161,7 +162,7 @@ export function ActionListContainer() {
                 className={`typstmate-ext-chip ${activeContexts.includes(c) ? 'is-active' : ''}`}
                 onClick={() => toggleContextFilter(c)}
               >
-                <span>{c}</span>
+                <span>{t(`settings.actions.contexts.${c}`)}</span>
               </button>
             ))}
           </div>
