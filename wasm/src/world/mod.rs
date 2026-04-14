@@ -13,11 +13,11 @@ pub mod library;
 pub mod state;
 
 use self::library::build_library;
-use self::state::{CALL_OBSIDIAN, PENDING};
+use self::state::PENDING;
 
 use typst::foundations::{Bytes, Datetime};
 
-use typst::syntax::{FileId, Source, VirtualPath, package::PackageSpec};
+use typst::syntax::{FileId, Source, VirtualPath, package::PackageSpec as TypstPackageSpec};
 use typst::text::{Font, FontBook};
 use typst::{
     Library, World,
@@ -27,6 +27,7 @@ use typst::{
 
 use typst_ide::IdeWorld;
 
+use crate::serde::package::PackageSpec;
 use crate::vfs::FileSlot;
 
 pub struct WasmWorld {
@@ -41,7 +42,7 @@ pub struct WasmWorld {
     read_package_file: SendWrapper<js_sys::Function>,
     download_package: SendWrapper<js_sys::Function>,
 
-    packages: FxHashSet<PackageSpec>,
+    packages: FxHashSet<TypstPackageSpec>,
 }
 
 impl WasmWorld {
@@ -50,10 +51,7 @@ impl WasmWorld {
         read_package_file: js_sys::Function,
         download_package: js_sys::Function,
         fontsize: f64,
-        call_obsidian: js_sys::Function,
     ) -> Self {
-        *CALL_OBSIDIAN.lock().unwrap() = Some(SendWrapper::new(call_obsidian));
-
         // ファイルシステムを設定
         let main = FileId::new(None, VirtualPath::new("main.typ"));
         let mut slots = FxHashMap::default();
@@ -113,7 +111,7 @@ impl WasmWorld {
         m.insert(file_id, FileSlot::new_from_bytes(file_id, bytes));
     }
 
-    pub fn add_package_file(&mut self, spec: PackageSpec, vpath: &str, bytes: Vec<u8>) {
+    pub fn add_package_file(&mut self, spec: TypstPackageSpec, vpath: &str, bytes: Vec<u8>) {
         let mut m = self.slots.lock().unwrap();
         let file_id = FileId::new(Some(spec.clone()), VirtualPath::new(vpath));
         m.insert(file_id, FileSlot::new_from_bytes(file_id, bytes));
@@ -121,7 +119,7 @@ impl WasmWorld {
         self.packages.insert(spec);
     }
 
-    pub fn list_packages(&self) -> Vec<PackageSpec> {
+    pub fn list_packages(&self) -> Vec<TypstPackageSpec> {
         self.packages.iter().cloned().collect()
     }
 
@@ -136,7 +134,7 @@ impl WasmWorld {
         PENDING.swap(false, Ordering::Relaxed)
     }
 
-    fn map_js_err(&self, e: JsValue, path: &str, spec: Option<&PackageSpec>) -> FileError {
+    fn map_js_err(&self, e: JsValue, path: &str, spec: Option<&TypstPackageSpec>) -> FileError {
         if let Some(value) = e.as_f64() {
             return match value as i64 {
                 0 => {
@@ -149,7 +147,7 @@ impl WasmWorld {
                 12 => FileError::IsDirectory,
                 13 => FileError::NotSource,
                 14 => FileError::InvalidUtf8,
-                15 => FileError::Other(Some("other file error".into())),
+                15 => FileError::Other(Some("unknown file error".into())),
 
                 20 => FileError::Package(PackageError::NotFound(
                     spec.ok_or_else(|| FileError::Other(Some("package spec missing".into())))
@@ -168,7 +166,7 @@ impl WasmWorld {
                 23 => FileError::Package(PackageError::MalformedArchive(Some(
                     "invalid package format".into(),
                 ))),
-                24 => FileError::Package(PackageError::Other(Some("other package error".into()))),
+                24 => FileError::Package(PackageError::Other(Some("unknown package error".into()))),
 
                 _ => FileError::Other(Some("unexpected error".into())),
             };
@@ -176,8 +174,6 @@ impl WasmWorld {
         FileError::Other(e.as_string().map(Into::into))
     }
 
-    /// JS 側の `readFile(path)` コールバックを呼び出す。
-    /// 通常ファイル専用。`@` プレフィックスなし。
     fn call_read_file_result(&self, path: String) -> FileResult<Bytes> {
         self.read_file
             .call1(&JsValue::NULL, &path.clone().into())
@@ -191,17 +187,17 @@ impl WasmWorld {
             })
     }
 
-    /// JS 側の `readPackageFile(pkgKey, vpath)` コールバックを呼び出す。
-    /// ローカルキャッシュ参照専用。`pkgKey` = `"ns/name/ver"`、`vpath` = `"lib.typ"` など。
     fn call_read_package_file_result(
         &self,
-        pkg_key: String,
         vpath: String,
-        spec: &PackageSpec,
+        spec: &TypstPackageSpec,
     ) -> FileResult<Bytes> {
-        let display_path = format!("@{}/{}", pkg_key, vpath);
+        let pkg_spec_ser = PackageSpec::from(spec);
+        let pkg_spec_js = serde_wasm_bindgen::to_value(&pkg_spec_ser).unwrap();
+
+        let display_path = format!("@{}/{}", spec, vpath);
         self.read_package_file
-            .call2(&JsValue::NULL, &pkg_key.into(), &vpath.into())
+            .call2(&JsValue::NULL, &pkg_spec_js, &vpath.into())
             .map_err(|e| self.map_js_err(e, &display_path, Some(spec)))
             .and_then(|v| {
                 if let Some(u8arr) = v.dyn_ref::<js_sys::Uint8Array>() {
@@ -212,11 +208,11 @@ impl WasmWorld {
             })
     }
 
-    /// JS 側の `downloadPackage(pkgKey)` コールバックを呼び出す。
-    /// JS 側は pendingPromises に Promise を追加し void を返す。
-    fn request_download(&self, spec: &PackageSpec) -> FileResult<Bytes> {
-        let pkg_key = format!("{}/{}/{}", spec.namespace, spec.name, spec.version);
-        match self.download_package.call1(&JsValue::NULL, &pkg_key.into()) {
+    fn request_download(&self, spec: &TypstPackageSpec) -> FileResult<Bytes> {
+        let pkg_spec_ser = PackageSpec::from(spec);
+        let pkg_spec_js = serde_wasm_bindgen::to_value(&pkg_spec_ser).unwrap();
+
+        match self.download_package.call1(&JsValue::NULL, &pkg_spec_js) {
             Ok(_) => {
                 PENDING.store(true, Ordering::Relaxed);
                 Err(FileError::Other(Some("pending async load".into())))
@@ -243,9 +239,8 @@ impl WasmWorld {
                 //   まず readPackageFile でローカルキャッシュを参照し、
                 //   NotFound なら downloadPackage でネットワーク取得を要求する。
                 //   @ プレフィックスや path 組み立ては JS 側の責務。
-                let pkg_key = format!("{}/{}/{}", spec.namespace, spec.name, spec.version);
                 let vpath = id.vpath().as_rootless_path().to_str().unwrap().to_string();
-                match self.call_read_package_file_result(pkg_key, vpath, &spec) {
+                match self.call_read_package_file_result(vpath, &spec) {
                     Err(FileError::NotFound(_)) => self.request_download(&spec),
                     other => other,
                 }
@@ -341,7 +336,7 @@ impl IdeWorld for WasmWorld {
         self
     }
 
-    fn packages(&self) -> &[(PackageSpec, Option<typst::ecow::EcoString>)] {
+    fn packages(&self) -> &[(TypstPackageSpec, Option<typst::ecow::EcoString>)] {
         &[]
     }
 

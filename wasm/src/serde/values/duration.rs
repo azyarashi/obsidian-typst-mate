@@ -1,10 +1,10 @@
 use serde::Serialize;
 use tsify::Tsify;
 
-use typst::foundations::Duration;
+use typst::foundations::Duration as TypstDuration;
 
 #[derive(Serialize, Tsify)]
-pub struct DurationSer {
+pub struct Duration {
     pub seconds: f64,
     pub minutes: f64,
     pub hours: f64,
@@ -13,9 +13,9 @@ pub struct DurationSer {
     pub weeks: f64,
 }
 
-impl From<&Duration> for DurationSer {
-    fn from(duration: &Duration) -> Self {
-        DurationSer {
+impl From<&TypstDuration> for Duration {
+    fn from(duration: &TypstDuration) -> Self {
+        Duration {
             seconds: duration.seconds(),
             minutes: duration.minutes(),
             hours: duration.hours(),

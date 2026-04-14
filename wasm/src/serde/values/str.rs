@@ -1,16 +1,16 @@
 use serde::Serialize;
 use tsify::Tsify;
 
-use typst::foundations::Str;
+use typst::foundations::Str as TypstStr;
 
 #[derive(Serialize, Tsify)]
-pub struct StrSer {
+pub struct Str {
     pub value: String,
 }
 
-impl From<&Str> for StrSer {
-    fn from(str_: &Str) -> Self {
-        StrSer {
+impl From<&TypstStr> for Str {
+    fn from(str_: &TypstStr) -> Self {
+        Str {
             value: str_.to_string(),
         }
     }

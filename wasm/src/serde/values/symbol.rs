@@ -1,16 +1,16 @@
 use serde::Serialize;
 use tsify::Tsify;
 
-use typst::foundations::Symbol;
+use typst::foundations::Symbol as TypstSymbol;
 
 #[derive(Serialize, Tsify)]
-pub struct SymbolSer {
+pub struct Symbol {
     char: String,
 }
 
-impl From<&Symbol> for SymbolSer {
-    fn from(symbol: &Symbol) -> Self {
-        SymbolSer {
+impl From<&TypstSymbol> for Symbol {
+    fn from(symbol: &TypstSymbol) -> Self {
+        Symbol {
             char: symbol.get().to_string(),
         }
     }

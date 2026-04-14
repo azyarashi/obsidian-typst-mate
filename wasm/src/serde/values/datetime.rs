@@ -1,10 +1,10 @@
 use serde::Serialize;
 use tsify::Tsify;
 
-use typst::foundations::Datetime;
+use typst::foundations::Datetime as TypstDatetime;
 
 #[derive(Serialize, Tsify)]
-pub struct DatetimeSer {
+pub struct Datetime {
     pub year: i32,
     pub month: u8,
     pub day: u8,
@@ -16,9 +16,9 @@ pub struct DatetimeSer {
     pub weekday: String,
 }
 
-impl From<&Datetime> for DatetimeSer {
-    fn from(datetime: &Datetime) -> Self {
-        DatetimeSer {
+impl From<&TypstDatetime> for Datetime {
+    fn from(datetime: &TypstDatetime) -> Self {
+        Datetime {
             year: datetime.year().unwrap_or(0),
             month: datetime.month().unwrap_or(0),
             day: datetime.day().unwrap_or(0),

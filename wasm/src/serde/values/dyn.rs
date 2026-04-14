@@ -4,13 +4,13 @@ use tsify::Tsify;
 use typst::foundations::Dynamic;
 
 #[derive(Serialize, Tsify)]
-pub struct DynSer {
+pub struct Dyn {
     pub repr: String,
 }
 
-impl From<&Dynamic> for DynSer {
+impl From<&Dynamic> for Dyn {
     fn from(v: &Dynamic) -> Self {
-        DynSer {
+        Dyn {
             repr: format!("{:?}", v),
         }
     }

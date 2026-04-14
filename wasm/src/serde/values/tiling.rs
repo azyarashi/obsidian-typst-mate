@@ -1,17 +1,16 @@
 use serde::Serialize;
 use tsify::Tsify;
 
-use typst::{foundations::Repr, visualize::Tiling};
+use typst::{foundations::Repr, visualize::Tiling as TypstTiling};
 
-// TODO
 #[derive(Serialize, Tsify)]
-pub struct TilingSer {
-    repr: String,
+pub struct Tiling {
+    pub repr: String,
 }
 
-impl From<&Tiling> for TilingSer {
-    fn from(tiling: &Tiling) -> Self {
-        TilingSer {
+impl From<&TypstTiling> for Tiling {
+    fn from(tiling: &TypstTiling) -> Self {
+        Tiling {
             repr: tiling.repr().to_string(),
         }
     }

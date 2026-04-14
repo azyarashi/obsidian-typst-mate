@@ -1,4 +1,4 @@
-import type { DefinitionSer, JumpSer, OriginSer, StrSer, ValueSer } from '@/../pkg/typst_wasm';
+import type { Definition, Jump, Str, Value } from '@/../pkg/typst_wasm';
 
 import { formatAngle } from './angle';
 import { formatArgs } from './args';
@@ -70,11 +70,11 @@ export function formatNone(): string {
   return '`none`';
 }
 
-export function formatStr(v: StrSer): string {
+export function formatStr(v: Str): string {
   return `**string:** \`"${v.value}"\``;
 }
 
-export function formatSpan(v: JumpSer): string {
+export function formatSpan(v: Jump): string {
   if (v.type === 'file') {
     const pkg = v.package ? ` (package: \`${v.package}\`)` : '';
     return `**definition:** points to \`${v.path}\`${pkg}`;
@@ -87,7 +87,7 @@ export function formatSpan(v: JumpSer): string {
   return '';
 }
 
-export function formatOrigin(v: DefinitionSer): string {
+export function formatOrigin(v: Definition): string {
   let text = `${v.value.type}`
 
   const origin = v.origin;
@@ -108,11 +108,11 @@ export function formatOrigin(v: DefinitionSer): string {
   return text;
 }
 
-export function formatDefinition(v: DefinitionSer): string {
+export function formatDefinition(v: Definition): string {
   return formatDefinitionValue(v.value);
 }
 
-export function formatDefinitionValue(v: ValueSer | { type: 'span'; value: JumpSer }): string {
+export function formatDefinitionValue(v: Value | { type: 'span'; value: Jump }): string {
   switch (v.type) {
     case 'Angle': return formatAngle(v.value);
     case 'Args': return formatArgs(v.value);

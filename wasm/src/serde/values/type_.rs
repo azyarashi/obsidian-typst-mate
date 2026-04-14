@@ -1,17 +1,17 @@
 use serde::Serialize;
 use tsify::Tsify;
 
-use typst::foundations::Type;
+use typst::foundations::Type as TypstType;
 
 #[derive(Serialize, Tsify)]
-pub struct TypeSer {
-    title: String,
-    docs: String,
+pub struct Type {
+    pub title: String,
+    pub docs: String,
 }
 
-impl From<&Type> for TypeSer {
-    fn from(type_: &Type) -> Self {
-        TypeSer {
+impl From<&TypstType> for Type {
+    fn from(type_: &TypstType) -> Self {
+        Type {
             title: type_.title().to_string(),
             docs: type_.docs().to_string(),
         }

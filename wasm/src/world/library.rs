@@ -8,7 +8,6 @@ use typst::text::{FontList, SmallcapsElem, TextElem};
 use typst::visualize::{Color, Paint, Stroke};
 use typst::{Feature, Features, Library, LibraryExt};
 
-pub mod obsidian;
 pub mod tylax;
 pub mod typstmate;
 
@@ -26,7 +25,6 @@ pub fn build_library(fontsize: f64) -> Library {
     library.global.scope_mut().define_func::<boxed>();
     library.math.scope_mut().define_func::<boxed>();
 
-    obsidian::setup(&mut library);
     typstmate::setup(&mut library);
     tylax::setup(&mut library);
 

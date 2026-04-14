@@ -1,30 +1,40 @@
 use std::ops::Range;
 
 use serde::Serialize;
+use tsify::Tsify;
 
 use typst::{
     World, WorldExt,
-    diag::{Severity, SourceDiagnostic},
+    diag::{Severity, SourceDiagnostic as TypstDiagnostic},
 };
 
-#[derive(Serialize)]
-pub struct TraceSer {
-    span: Range<usize>,
-    point: String,
+#[derive(Serialize, Tsify)]
+#[serde(rename_all = "camelCase")]
+pub struct Trace {
+    pub span: Range<usize>,
+    pub point: String,
 }
 
-#[derive(Serialize)]
-pub struct SourceDiagnosticSer {
-    pub severity: String,
+#[derive(Serialize, Tsify)]
+#[serde(rename_all = "lowercase")]
+pub enum DiagnosticSeverity {
+    Error,
+    Warning,
+}
+
+#[derive(Serialize, Tsify)]
+#[serde(rename_all = "camelCase")]
+pub struct Diagnostic {
+    pub severity: DiagnosticSeverity,
     pub from: usize,
     pub to: usize,
     pub message: String,
-    pub trace: Vec<TraceSer>,
+    pub trace: Vec<Trace>,
     pub hints: Vec<String>,
 }
 
-impl SourceDiagnosticSer {
-    pub fn from_diag<W>(diag: &SourceDiagnostic, world: &W) -> Self
+impl Diagnostic {
+    pub fn from_diag<W>(diag: &TypstDiagnostic, world: &W) -> Self
     where
         W: World,
     {
@@ -39,10 +49,10 @@ impl SourceDiagnosticSer {
             None => (0, 0),
         };
 
-        SourceDiagnosticSer {
+        Diagnostic {
             severity: match diag.severity {
-                Severity::Error => "error".to_string(),
-                Severity::Warning => "warning".to_string(),
+                Severity::Error => DiagnosticSeverity::Error,
+                Severity::Warning => DiagnosticSeverity::Warning,
             },
             from,
             to,
@@ -50,7 +60,7 @@ impl SourceDiagnosticSer {
             trace: diag
                 .trace
                 .iter()
-                .map(|t| TraceSer {
+                .map(|t| Trace {
                     span: world.range(t.span).unwrap_or(Range { start: 0, end: 0 }),
                     point: t.v.to_string(),
                 })

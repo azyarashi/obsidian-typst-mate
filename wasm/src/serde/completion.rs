@@ -1,17 +1,17 @@
 use serde::Serialize;
 use tsify::Tsify;
-use typst_ide::{Completion, CompletionKind};
+use typst_ide::{Completion as TypstCompletion, CompletionKind as TypstCompletionKind};
 
 #[derive(Serialize, Tsify)]
 #[serde(rename_all = "camelCase")]
-pub struct CompletionResultSer {
+pub struct CompletionResult {
     pub from: usize,
-    pub completions: Vec<CompletionSer>,
+    pub completions: Vec<Completion>,
 }
 
 #[derive(Debug, Clone, Copy, Serialize, Tsify, PartialEq, Eq)]
 #[serde(rename_all = "lowercase")]
-pub enum CompletionKindSer {
+pub enum CompletionKind {
     Func,
     Type,
     Param,
@@ -24,30 +24,39 @@ pub enum CompletionKindSer {
     Syntax,
 }
 
+impl From<TypstCompletionKind> for CompletionKind {
+    fn from(kind: TypstCompletionKind) -> Self {
+        match kind {
+            TypstCompletionKind::Syntax => Self::Syntax,
+            TypstCompletionKind::Func => Self::Func,
+            TypstCompletionKind::Type => Self::Type,
+            TypstCompletionKind::Param => Self::Param,
+            TypstCompletionKind::Constant => Self::Constant,
+            TypstCompletionKind::Path => Self::Path,
+            TypstCompletionKind::Package => Self::Package,
+            TypstCompletionKind::Label => Self::Label,
+            TypstCompletionKind::Font => Self::Font,
+            TypstCompletionKind::Symbol(_) => Self::Symbol,
+        }
+    }
+}
+
 #[derive(Serialize, Tsify)]
 #[serde(rename_all = "camelCase")]
-pub struct CompletionSer {
-    pub kind: CompletionKindSer,
+pub struct Completion {
+    pub kind: CompletionKind,
     pub label: String,
-
     pub detail: Option<String>,
     pub symbol: Option<String>,
     pub apply: Option<String>,
 }
 
-impl CompletionSer {
-    pub fn from_completion(c: Completion) -> Self {
-        let (kind, symbol) = match &c.kind {
-            CompletionKind::Syntax => (CompletionKindSer::Syntax, None),
-            CompletionKind::Func => (CompletionKindSer::Func, None),
-            CompletionKind::Type => (CompletionKindSer::Type, None),
-            CompletionKind::Param => (CompletionKindSer::Param, None),
-            CompletionKind::Constant => (CompletionKindSer::Constant, None),
-            CompletionKind::Path => (CompletionKindSer::Path, None),
-            CompletionKind::Package => (CompletionKindSer::Package, None),
-            CompletionKind::Label => (CompletionKindSer::Label, None),
-            CompletionKind::Font => (CompletionKindSer::Font, None),
-            CompletionKind::Symbol(s) => (CompletionKindSer::Symbol, Some(s.to_string())),
+impl Completion {
+    pub fn from_completion(c: TypstCompletion) -> Self {
+        let kind = CompletionKind::from(c.kind.clone());
+        let symbol = match &c.kind {
+            TypstCompletionKind::Symbol(s) => Some(s.to_string()),
+            _ => None,
         };
 
         Self {

@@ -1,33 +1,41 @@
 use ecow::EcoVec;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use serde_wasm_bindgen::to_value;
 use wasm_bindgen::JsValue;
 
 use typst::{diag::SourceDiagnostic, ecow};
 
-use crate::serde::diagnostic::SourceDiagnosticSer;
+use crate::serde::diagnostic::Diagnostic;
 use crate::world::WasmWorld;
 
 use tsify::Tsify;
 
-#[derive(Serialize, Tsify)]
+#[derive(Deserialize, Tsify)]
 #[serde(rename_all = "camelCase")]
-pub struct PngrResultSer {
-    #[tsify(type = "Uint8Array[]")]
-    pub images: Vec<Vec<u8>>,
-    pub diags: Vec<SourceDiagnosticSer>,
+pub struct PngOptions {
+    pub ppi: f32,
+    #[tsify(optional)]
+    pub page_ranges: Option<String>,
 }
 
-pub fn pngr(
+#[derive(Serialize, Tsify)]
+#[serde(rename_all = "camelCase")]
+pub struct PngExportResult {
+    #[tsify(type = "Uint8Array[]")]
+    pub images: Vec<Vec<u8>>,
+    pub diags: Vec<Diagnostic>,
+}
+
+pub fn pnge(
     images: Vec<Vec<u8>>,
     diags: EcoVec<SourceDiagnostic>,
     world: &WasmWorld,
 ) -> Result<JsValue, JsValue> {
-    let result = PngrResultSer {
+    let result = PngExportResult {
         images,
         diags: diags
             .iter()
-            .map(|d| SourceDiagnosticSer::from_diag(d, world))
+            .map(|d| Diagnostic::from_diag(d, world))
             .collect(),
     };
     Ok(to_value(&result)?)

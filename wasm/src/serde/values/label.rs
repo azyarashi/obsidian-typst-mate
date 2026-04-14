@@ -1,16 +1,16 @@
 use serde::Serialize;
 use tsify::Tsify;
 
-use typst::foundations::Label;
+use typst::foundations::Label as TypstLabel;
 
 #[derive(Serialize, Tsify)]
-pub struct LabelSer {
+pub struct Label {
     pub name: String,
 }
 
-impl From<&Label> for LabelSer {
-    fn from(label: &Label) -> Self {
-        LabelSer {
+impl From<&TypstLabel> for Label {
+    fn from(label: &TypstLabel) -> Self {
+        Label {
             name: label.resolve().as_str().to_string(),
         }
     }

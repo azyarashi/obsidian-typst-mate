@@ -3,19 +3,19 @@ use std::collections::BTreeMap;
 use serde::Serialize;
 use tsify::Tsify;
 
-use typst::foundations::Dict;
+use typst::foundations::Dict as TypstDict;
 
-use crate::serde::values::ValueSer;
+use crate::serde::values::Value;
 
 #[derive(Serialize, Tsify)]
-pub struct DictSer(pub BTreeMap<String, ValueSer>);
+pub struct Dict(pub BTreeMap<String, Value>);
 
-impl From<&Dict> for DictSer {
-    fn from(dict: &Dict) -> Self {
+impl From<&TypstDict> for Dict {
+    fn from(dict: &TypstDict) -> Self {
         let mut map = BTreeMap::new();
         for (key, value) in dict.iter() {
-            map.insert(key.to_string(), ValueSer::from(value));
+            map.insert(key.to_string(), Value::from(value));
         }
-        DictSer(map)
+        Dict(map)
     }
 }

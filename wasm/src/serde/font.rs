@@ -1,11 +1,11 @@
 use serde::Serialize;
 use tsify::Tsify;
 
-use typst::text::{FontInfo, FontStyle};
+use typst::text::{FontInfo as TypstFontInfo, FontStyle};
 
 #[derive(Serialize, Tsify)]
 #[serde(rename_all = "camelCase")]
-pub struct FontVariantSer {
+pub struct FontVariant {
     pub style: String,
     pub weight: u16,
     pub stretch: u16,
@@ -13,18 +13,18 @@ pub struct FontVariantSer {
 
 #[derive(Serialize, Tsify)]
 #[serde(rename_all = "camelCase")]
-pub struct FontInfoSer {
+pub struct FontInfo {
     pub family: String,
-    pub variant: FontVariantSer,
+    pub variant: FontVariant,
     pub flags: u32,
     pub coverage: Vec<u32>,
 }
 
-impl From<&FontInfo> for FontInfoSer {
-    fn from(info: &FontInfo) -> Self {
-        FontInfoSer {
+impl From<&TypstFontInfo> for FontInfo {
+    fn from(info: &TypstFontInfo) -> Self {
+        FontInfo {
             family: info.family.clone(),
-            variant: FontVariantSer {
+            variant: FontVariant {
                 style: match info.variant.style {
                     FontStyle::Normal => "Normal".into(),
                     FontStyle::Italic => "Italic".into(),

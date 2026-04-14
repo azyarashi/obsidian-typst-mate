@@ -1,19 +1,19 @@
 use serde::Serialize;
 use tsify::Tsify;
 
-use typst::foundations::Array;
+use typst::foundations::Array as TypstArray;
 
-use crate::serde::values::ValueSer;
+use crate::serde::values::Value;
 
 #[derive(Serialize, Tsify)]
-pub struct ArraySer {
-    pub elements: Vec<ValueSer>,
+pub struct Array {
+    pub elements: Vec<Value>,
 }
 
-impl From<&Array> for ArraySer {
-    fn from(array: &Array) -> Self {
-        ArraySer {
-            elements: array.iter().map(|v| ValueSer::from(v)).collect(),
+impl From<&TypstArray> for Array {
+    fn from(array: &TypstArray) -> Self {
+        Array {
+            elements: array.iter().map(|v| Value::from(v)).collect(),
         }
     }
 }

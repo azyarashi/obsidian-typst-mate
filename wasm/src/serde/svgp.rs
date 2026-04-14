@@ -5,16 +5,16 @@ use wasm_bindgen::JsValue;
 
 use typst::{diag::SourceDiagnostic, ecow};
 
-use crate::serde::diagnostic::SourceDiagnosticSer;
+use crate::serde::diagnostic::Diagnostic;
 use crate::world::WasmWorld;
 
 use tsify::Tsify;
 
 #[derive(Serialize, Tsify)]
 #[serde(rename_all = "camelCase")]
-pub struct SvgpResultSer {
+pub struct SvgpResult {
     pub svgp: Vec<String>,
-    pub diags: Vec<SourceDiagnosticSer>,
+    pub diags: Vec<Diagnostic>,
 }
 
 pub fn svgp(
@@ -22,11 +22,11 @@ pub fn svgp(
     diags: EcoVec<SourceDiagnostic>,
     world: &WasmWorld,
 ) -> Result<JsValue, JsValue> {
-    let result = SvgpResultSer {
+    let result = SvgpResult {
         svgp,
         diags: diags
             .iter()
-            .map(|d| SourceDiagnosticSer::from_diag(d, world))
+            .map(|d| Diagnostic::from_diag(d, world))
             .collect(),
     };
     Ok(to_value(&result)?)

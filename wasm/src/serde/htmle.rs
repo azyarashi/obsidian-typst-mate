@@ -1,32 +1,39 @@
 use ecow::EcoVec;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use serde_wasm_bindgen::to_value;
 use wasm_bindgen::JsValue;
 
 use typst::{diag::SourceDiagnostic, ecow};
 
-use crate::serde::diagnostic::SourceDiagnosticSer;
+use crate::serde::diagnostic::Diagnostic;
 use crate::world::WasmWorld;
 
 use tsify::Tsify;
 
-#[derive(Serialize, Tsify)]
+#[derive(Deserialize, Tsify)]
 #[serde(rename_all = "camelCase")]
-pub struct HtmlResultSer {
-    pub html: String,
-    pub diags: Vec<SourceDiagnosticSer>,
+pub struct HtmlOptions {
+    #[tsify(optional)]
+    pub extract_body: Option<bool>,
 }
 
-pub fn html(
+#[derive(Serialize, Tsify)]
+#[serde(rename_all = "camelCase")]
+pub struct HtmlExportResult {
+    pub html: String,
+    pub diags: Vec<Diagnostic>,
+}
+
+pub fn htmle(
     html: String,
     diags: EcoVec<SourceDiagnostic>,
     world: &WasmWorld,
 ) -> Result<JsValue, JsValue> {
-    let result = HtmlResultSer {
+    let result = HtmlExportResult {
         html,
         diags: diags
             .iter()
-            .map(|d| SourceDiagnosticSer::from_diag(d, world))
+            .map(|d| Diagnostic::from_diag(d, world))
             .collect(),
     };
     Ok(to_value(&result)?)

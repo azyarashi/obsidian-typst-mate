@@ -1,17 +1,16 @@
 use serde::Serialize;
 use tsify::Tsify;
 
-use typst::{foundations::Repr, visualize::Gradient};
+use typst::{foundations::Repr, visualize::Gradient as TypstGradient};
 
-// TODO
 #[derive(Serialize, Tsify)]
-pub struct GradientSer {
+pub struct Gradient {
     pub repr: String,
 }
 
-impl From<&Gradient> for GradientSer {
-    fn from(gradient: &Gradient) -> Self {
-        GradientSer {
+impl From<&TypstGradient> for Gradient {
+    fn from(gradient: &TypstGradient) -> Self {
+        Gradient {
             repr: gradient.repr().to_string(),
         }
     }

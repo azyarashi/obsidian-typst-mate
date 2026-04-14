@@ -1,5 +1,5 @@
-import type { VersionSer } from '@/../pkg/typst_wasm';
+import type { Version } from '@/../pkg/typst_wasm';
 
-export function formatVersion(val: VersionSer): string {
+export function formatVersion(val: Version): string {
   return `**version:** \`${val.version}\``;
 }

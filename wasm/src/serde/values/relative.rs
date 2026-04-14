@@ -3,18 +3,18 @@ use tsify::Tsify;
 
 use typst::layout::{Length, Rel};
 
-use crate::serde::values::RatioSer;
+use crate::serde::values::Ratio;
 
 #[derive(Serialize, Tsify)]
-pub struct RelativeSer {
+pub struct Relative {
     #[serde(flatten)]
-    pub ratio: RatioSer,
+    pub ratio: Ratio,
 }
 
-impl From<&Rel<Length>> for RelativeSer {
+impl From<&Rel<Length>> for Relative {
     fn from(relative: &Rel<Length>) -> Self {
-        RelativeSer {
-            ratio: RatioSer::from(&relative.rel),
+        Relative {
+            ratio: Ratio::from(&relative.rel),
         }
     }
 }

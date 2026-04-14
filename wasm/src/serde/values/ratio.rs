@@ -1,18 +1,18 @@
 use serde::Serialize;
 use tsify::Tsify;
 
-use typst::layout::Ratio;
+use typst::layout::Ratio as TypstRatio;
 
 #[derive(Serialize, Tsify)]
-pub struct RatioSer {
+pub struct Ratio {
     pub percentage: String,
 }
 
-impl From<&Ratio> for RatioSer {
-    fn from(ratio: &Ratio) -> Self {
+impl From<&TypstRatio> for Ratio {
+    fn from(ratio: &TypstRatio) -> Self {
         let value = ratio.get();
 
-        RatioSer {
+        Ratio {
             percentage: format!("{:.3}%", (value * 100.0).round() / 100.0),
         }
     }

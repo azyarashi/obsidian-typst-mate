@@ -1,7 +1,7 @@
 use serde::Serialize;
 use tsify::Tsify;
 
-use typst::foundations::Value;
+use typst::foundations::Value as TypstValue;
 
 pub mod angle;
 pub mod args;
@@ -29,100 +29,100 @@ pub mod tiling;
 pub mod type_;
 pub mod version;
 
-pub use angle::AngleSer;
-pub use args::ArgsSer;
-pub use array::ArraySer;
-pub use bytes::BytesSer;
-pub use color::ColorSer;
-pub use content::ContentSer;
-pub use datetime::DatetimeSer;
-pub use decimal::DecimalSer;
-pub use dict::DictSer;
-pub use duration::DurationSer;
-pub use r#dyn::DynSer;
-pub use fraction::FrSer;
-pub use func::FuncSer;
-pub use gradient::GradientSer;
-pub use label::LabelSer;
-pub use length::LengthSer;
-pub use module::ModuleSer;
-pub use ratio::RatioSer;
-pub use relative::RelativeSer;
-pub use str::StrSer;
-pub use styles::StylesSer;
-pub use symbol::SymbolSer;
-pub use tiling::TilingSer;
-pub use type_::TypeSer;
-pub use version::VersionSer;
+pub use angle::Angle;
+pub use args::Args;
+pub use array::Array;
+pub use bytes::Bytes;
+pub use color::Color;
+pub use content::Content;
+pub use datetime::Datetime;
+pub use decimal::Decimal;
+pub use dict::Dict;
+pub use duration::Duration;
+pub use r#dyn::Dyn;
+pub use fraction::Fr;
+pub use func::Func;
+pub use gradient::Gradient;
+pub use label::Label;
+pub use length::Length;
+pub use module::Module;
+pub use ratio::Ratio;
+pub use relative::Relative;
+pub use str::Str;
+pub use styles::Styles;
+pub use symbol::Symbol;
+pub use tiling::Tiling;
+pub use type_::Type;
+pub use version::Version;
 
 #[derive(Serialize, Tsify)]
 #[serde(tag = "type", content = "value")]
-pub enum ValueSer {
+pub enum Value {
     None,
     Auto,
     Bool(bool),
     Int(i64),
     Float(f64),
-    Length(LengthSer),
-    Angle(AngleSer),
-    Ratio(RatioSer),
-    Relative(RelativeSer),
-    Fraction(FrSer),
-    Color(ColorSer),
-    Gradient(GradientSer),
-    Tiling(TilingSer),
-    Symbol(SymbolSer),
-    Version(VersionSer),
-    Str(StrSer),
-    Bytes(BytesSer),
-    Label(LabelSer),
-    Datetime(DatetimeSer),
-    Decimal(DecimalSer),
-    Duration(DurationSer),
-    Content(ContentSer),
-    Styles(StylesSer),
-    Array(ArraySer),
-    Dict(DictSer),
-    Func(FuncSer),
-    Args(ArgsSer),
-    Type(TypeSer),
-    Module(ModuleSer),
-    Dyn(DynSer),
+    Length(Length),
+    Angle(Angle),
+    Ratio(Ratio),
+    Relative(Relative),
+    Fraction(Fr),
+    Color(Color),
+    Gradient(Gradient),
+    Tiling(Tiling),
+    Symbol(Symbol),
+    Version(Version),
+    Str(Str),
+    Bytes(Bytes),
+    Label(Label),
+    Datetime(Datetime),
+    Decimal(Decimal),
+    Duration(Duration),
+    Content(Content),
+    Styles(Styles),
+    Array(Array),
+    Dict(Dict),
+    Func(Func),
+    Args(Args),
+    Type(Type),
+    Module(Module),
+    Dyn(Dyn),
 }
 
-impl From<&Value> for ValueSer {
-    fn from(value: &Value) -> Self {
+impl From<&TypstValue> for Value {
+    fn from(value: &TypstValue) -> Self {
         match value {
-            Value::None => ValueSer::None,
-            Value::Auto => ValueSer::Auto,
-            Value::Bool(v) => ValueSer::Bool(*v),
-            Value::Int(v) => ValueSer::Int(*v),
-            Value::Float(v) => ValueSer::Float(*v),
-            Value::Length(v) => ValueSer::Length(LengthSer::from(v)),
-            Value::Angle(v) => ValueSer::Angle(AngleSer::from(v)),
-            Value::Ratio(v) => ValueSer::Ratio(RatioSer::from(v)),
-            Value::Relative(v) => ValueSer::Relative(RelativeSer::from(v)),
-            Value::Fraction(v) => ValueSer::Fraction(FrSer::from(v)),
-            Value::Color(v) => ValueSer::Color(ColorSer::from(v)),
-            Value::Gradient(v) => ValueSer::Gradient(GradientSer::from(v)),
-            Value::Tiling(v) => ValueSer::Tiling(TilingSer::from(v)),
-            Value::Symbol(v) => ValueSer::Symbol(SymbolSer::from(v)),
-            Value::Version(v) => ValueSer::Version(VersionSer::from(v)),
-            Value::Str(v) => ValueSer::Str(StrSer::from(v)),
-            Value::Bytes(v) => ValueSer::Bytes(BytesSer::from(v)),
-            Value::Label(v) => ValueSer::Label(LabelSer::from(v)),
-            Value::Datetime(v) => ValueSer::Datetime(DatetimeSer::from(v)),
-            Value::Decimal(v) => ValueSer::Decimal(DecimalSer::from(v)),
-            Value::Duration(v) => ValueSer::Duration(DurationSer::from(v)),
-            Value::Content(v) => ValueSer::Content(ContentSer::from(v)),
-            Value::Styles(v) => ValueSer::Styles(StylesSer::from(v)),
-            Value::Array(v) => ValueSer::Array(ArraySer::from(v)),
-            Value::Dict(v) => ValueSer::Dict(DictSer::from(v)),
-            Value::Func(v) => ValueSer::Func(FuncSer::from(v)),
-            Value::Args(v) => ValueSer::Args(ArgsSer::from(v)),
-            Value::Type(v) => ValueSer::Type(TypeSer::from(v)),
-            Value::Module(v) => ValueSer::Module(ModuleSer::from(v)),
-            Value::Dyn(v) => ValueSer::Dyn(DynSer::from(v)),
+            TypstValue::None => Value::None,
+            TypstValue::Auto => Value::Auto,
+            TypstValue::Bool(v) => Value::Bool(*v),
+            TypstValue::Int(v) => Value::Int(*v),
+            TypstValue::Float(v) => Value::Float(*v),
+            TypstValue::Length(v) => Value::Length(Length::from(v)),
+            TypstValue::Angle(v) => Value::Angle(Angle::from(v)),
+            TypstValue::Ratio(v) => Value::Ratio(Ratio::from(v)),
+            TypstValue::Relative(v) => Value::Relative(Relative::from(v)),
+            TypstValue::Fraction(v) => Value::Fraction(Fr::from(v)),
+            TypstValue::Color(v) => Value::Color(Color::from(v)),
+            TypstValue::Gradient(v) => Value::Gradient(Gradient::from(v)),
+            TypstValue::Tiling(v) => Value::Tiling(Tiling::from(v)),
+            TypstValue::Symbol(v) => Value::Symbol(Symbol::from(v)),
+            TypstValue::Version(v) => Value::Version(Version::from(v)),
+            TypstValue::Str(v) => Value::Str(Str::from(v)),
+            TypstValue::Bytes(v) => Value::Bytes(Bytes::from(v)),
+            TypstValue::Label(v) => Value::Label(Label::from(v)),
+            TypstValue::Datetime(v) => Value::Datetime(Datetime::from(v)),
+            TypstValue::Decimal(v) => Value::Decimal(Decimal::from(v)),
+            TypstValue::Duration(v) => Value::Duration(Duration::from(v)),
+            TypstValue::Content(v) => Value::Content(Content::from(v)),
+            TypstValue::Styles(v) => Value::Styles(Styles::from(v)),
+            TypstValue::Array(v) => Value::Array(Array::from(v)),
+            TypstValue::Dict(v) => Value::Dict(Dict::from(v)),
+            TypstValue::Func(v) => Value::Func(Func::from(v)),
+            TypstValue::Args(v) => Value::Args(Args::from(v)),
+            TypstValue::Type(v) => Value::Type(Type::from(v)),
+            TypstValue::Module(v) => Value::Module(Module::from(v)),
+            TypstValue::Dyn(v) => Value::Dyn(Dyn::from(v)),
         }
     }
 }

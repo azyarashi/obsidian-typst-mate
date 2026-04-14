@@ -1,34 +1,32 @@
 use ecow::EcoVec;
 use serde::Serialize;
-
 use serde_wasm_bindgen::to_value;
 use wasm_bindgen::JsValue;
 
 use typst::{diag::SourceDiagnostic, ecow};
 
-use crate::serde::diagnostic::SourceDiagnosticSer;
+use crate::serde::diagnostic::Diagnostic;
 use crate::world::WasmWorld;
 
 use tsify::Tsify;
 
 #[derive(Serialize, Tsify)]
 #[serde(rename_all = "camelCase")]
-pub struct PdfrResultSer {
-    #[tsify(type = "Uint8Array")]
-    pub pdf: Vec<u8>,
-    pub diags: Vec<SourceDiagnosticSer>,
+pub struct HtmlResult {
+    pub html: String,
+    pub diags: Vec<Diagnostic>,
 }
 
-pub fn pdfr(
-    pdf: Vec<u8>,
+pub fn htmlm(
+    html: String,
     diags: EcoVec<SourceDiagnostic>,
     world: &WasmWorld,
 ) -> Result<JsValue, JsValue> {
-    let result = PdfrResultSer {
-        pdf,
+    let result = HtmlResult {
+        html,
         diags: diags
             .iter()
-            .map(|d| SourceDiagnosticSer::from_diag(d, world))
+            .map(|d| Diagnostic::from_diag(d, world))
             .collect(),
     };
     Ok(to_value(&result)?)
