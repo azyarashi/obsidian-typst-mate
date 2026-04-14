@@ -35,8 +35,8 @@ export class FileManager implements Singleton {
   watcherNPath!: string;
   fontsDirNPath!: string;
 
-  packagesDirNPath!: string;
-  packagesDirPaths!: string[];
+  vaultPackagesDirNPath!: string;
+  localPackagesDirPaths!: string[];
 
   async init(plugin: ObsidianTypstMate) {
     this.plugin = plugin;
@@ -51,9 +51,9 @@ export class FileManager implements Singleton {
     this.watcherNPath = `${this.pluginDirNPath}/watcher-${TypstMate.version}.js`;
 
     this.fontsDirNPath = `${this.pluginDirNPath}/fonts`;
-    this.packagesDirNPath = `${this.pluginDirNPath}/packages`;
+    this.vaultPackagesDirNPath = `${this.pluginDirNPath}/packages`;
 
-    this.setPackagesDirPaths();
+    if (features.node) this.setLocalPackagesDirPath();
 
     // TODO
     if (features.node && this.adapter instanceof FileSystemAdapter) {
@@ -62,35 +62,38 @@ export class FileManager implements Singleton {
     }
   }
 
-  private setPackagesDirPaths() {
-    this.packagesDirPaths = [
-      Platform.isMobileApp ? this.packagesDirNPath : `${this.baseDirPath}/${this.packagesDirNPath}`,
-    ];
+  /**
+   * 1. vault
+   * 2. data
+   * 3. cache
+   * @see https://github.com/typst/packages
+   */
+  private setLocalPackagesDirPath() {
+    const homedir = os!.homedir();
 
-    let packagesDirPath: string | undefined;
+    const dataDirsCandidates: string[] = [];
     switch (true) {
-      case Platform.isMobileApp: {
-        // ! iOS/iPadOS でも Platform.isMacOS が true になる
-        break;
-      }
-      case Platform.isWin: {
-        const localAppDataPath = process.env.LOCALAPPDATA ?? path!.join(os!.homedir(), 'AppData', 'Local');
-        packagesDirPath = path!.join(localAppDataPath, 'typst', 'packages');
+      case Platform.isLinux: {
+        dataDirsCandidates.push(process.env.XDG_DATA_HOME ?? path!.join(homedir, '.local', 'share'));
+        dataDirsCandidates.push(process.env.XDG_CACHE_HOME ?? path!.join(homedir, '.cache'));
         break;
       }
       case Platform.isMacOS: {
-        const applicationSupportPath = path!.join(os!.homedir(), 'Library', 'Application Support');
-        packagesDirPath = path!.join(applicationSupportPath, 'typst', 'packages');
+        dataDirsCandidates.push(path!.join(homedir, 'Library', 'Application Support'));
+        dataDirsCandidates.push(path!.join(homedir, 'Library', 'Caches'));
         break;
       }
-      case Platform.isLinux: {
-        const localSharePath = path!.join(os!.homedir(), '.local', 'share');
-        packagesDirPath = path!.join(localSharePath, 'typst', 'packages');
+      case Platform.isWin: {
+        dataDirsCandidates.push(process.env.APPDATA ?? path!.join(homedir, 'AppData', 'Roaming'));
+        dataDirsCandidates.push(process.env.LOCALAPPDATA ?? path!.join(homedir, 'AppData', 'Local'));
+
         break;
       }
     }
 
-    if (packagesDirPath && fs?.existsSync(packagesDirPath)) this.packagesDirPaths.push(packagesDirPath);
+    this.localPackagesDirPaths = dataDirsCandidates
+      .map((dirPath) => path!.join(dirPath, 'typst', 'packages'))
+      .filter((path) => fs?.existsSync(path));
   }
 
   async ensureWasm(files: string[]) {
