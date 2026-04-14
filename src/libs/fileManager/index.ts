@@ -47,9 +47,6 @@ export class FileManager implements Singleton {
 
     this.pluginDirNPath = `${this.plugin.app.vault.configDir}/plugins/${ObsidianTypstMate.id}`;
 
-    const manifestPath = `${this.pluginDirNPath}/manifest.json`;
-    TypstMate.version = JSON.parse(await this.adapter.read(manifestPath)).version;
-
     this.wasmNPath = `${this.pluginDirNPath}/typst-${TypstMate.version}.wasm`;
     this.watcherNPath = `${this.pluginDirNPath}/watcher-${TypstMate.version}.js`;
 

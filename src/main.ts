@@ -35,6 +35,7 @@ export default class ObsidianTypstMate extends Plugin {
     } else crashTracker.updateCrashStatus(true);
 
     if (window.TypstMate !== undefined) this.hasLoadedInProcess = true;
+    TypstMate.version = this.manifest.version;
 
     try {
       // * appUtils
