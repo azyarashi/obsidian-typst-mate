@@ -1,8 +1,6 @@
 import { MarkdownView, Menu, type MenuItem, Notice } from 'obsidian';
 import { DEFAULT_FONT_SIZE } from '@/constants';
-import type { TypstDiagnostic } from '@/editor/shared/extensions/Linter/extension';
 import { updateDiagnosticEffect } from '@/editor/shared/extensions/Linter/extension';
-import { getActiveRegion } from '@/editor/shared/utils/core';
 import { t } from '@/i18n';
 import { appUtils, settingsManager, typstManager } from '@/libs';
 import { type Processor, type ProcessorKind, RenderingEngine } from '@/libs/processor';
@@ -52,62 +50,53 @@ export default abstract class TypstElement extends HTMLElement {
     return formatted;
   }
 
-  handleError(err: WasmDiagnostic[]) {
-    this.isErr = true;
+  handleError(diags: WasmDiagnostic[]) {
     typstManager.beforeKind = this.kind;
+    if (diags.length === 0) return;
+    const diag = diags[0]!;
+    this.isErr = true;
 
     const view = appUtils.app.workspace.getActiveFileView();
-    if (view instanceof MarkdownView)
+    if (view instanceof MarkdownView) {
       setTimeout(() => {
         updateDiagnosticEffect(view.editor.cm, {
-          diagnostics: err,
+          diagnostics: diags,
           processor: this.processor,
           noDiag: this.noDiag,
           offset: this.offset,
         });
       }, 0);
-
-    if (view instanceof MarkdownView) {
-      const region = getActiveRegion(view.editor.cm);
-      if (region) {
-        this.innerHTML = this.innerHTML.replaceAll('--typst-base-color', '--text-faint');
-        return;
-      }
     }
+    this.innerHTML = this.innerHTML.replaceAll('--typst-base-color', '--text-faint');
+
     const diagEl = document.createElement('span');
     diagEl.className = 'typstmate-error';
+    diagEl.textContent = `${diag.message}${diag.hints.length !== 0 ? ` ${t('common.hintsCount', { count: diag.hints.length })}` : ''}`;
 
-    diagEl.textContent = `${err[0]?.message}${err[0]?.hints.length !== 0 ? ` ${t('common.hintsCount', { count: err[0]?.hints.length ?? 0 })}` : ''}`;
+    diagEl.addEventListener('mouseenter', () => {
+      const view = appUtils.app.workspace.getActiveViewOfType(MarkdownView);
+      if (!view) return;
 
-    if (err[0]) {
-      diagEl.addEventListener('mouseenter', () => {
-        const view = appUtils.app.workspace.getActiveViewOfType(MarkdownView);
-        if (!view) return;
+      const linterEl = renderDiagnosticMessage({ diagnostic: diag });
 
-        const tooltip = renderDiagnosticMessage(view.editor.cm, err[0] as unknown as TypstDiagnostic, this.source);
-        tooltip.style.position = 'fixed';
-        tooltip.style.zIndex = 'var(--layer-popover)';
-        tooltip.style.pointerEvents = 'all'; // Enable clicks for the button
+      const updatePosition = () => {
+        const rect = diagEl.getBoundingClientRect();
+        linterEl.style.left = `${rect.left}px`;
+        linterEl.style.top = `${rect.bottom}px`;
+      };
 
-        const updatePosition = () => {
-          const rect = diagEl.getBoundingClientRect();
-          tooltip.style.left = `${rect.left}px`;
-          tooltip.style.top = `${rect.bottom + 8}px`;
-        };
+      updatePosition();
+      document.body.appendChild(linterEl);
 
-        updatePosition();
-        document.body.appendChild(tooltip);
-
-        const onMouseLeave = (e: MouseEvent) => {
-          if (tooltip.contains(e.relatedTarget as Node)) return;
-          tooltip.remove();
-          diagEl.removeEventListener('mouseleave', onMouseLeave);
-          tooltip.removeEventListener('mouseleave', onMouseLeave);
-        };
-        diagEl.addEventListener('mouseleave', onMouseLeave);
-        tooltip.addEventListener('mouseleave', onMouseLeave);
-      });
-    }
+      const onMouseLeave = (e: MouseEvent) => {
+        if (linterEl.contains(e.relatedTarget as Node)) return;
+        linterEl.remove();
+        diagEl.removeEventListener('mouseleave', onMouseLeave);
+        linterEl.removeEventListener('mouseleave', onMouseLeave);
+      };
+      diagEl.addEventListener('mouseleave', onMouseLeave);
+      linterEl.addEventListener('mouseleave', onMouseLeave);
+    });
 
     this.replaceChildren(diagEl);
   }

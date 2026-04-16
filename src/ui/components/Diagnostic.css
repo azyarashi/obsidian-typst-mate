@@ -1,5 +1,16 @@
+.typstmate-diag-severity-error {
+  --severity-color: var(--text-error);
+}
+.typstmate-diag-severity-warning {
+  --severity-color: var(--text-warning);
+}
+
 .typstmate-diag {
-  max-width: 350px;
+  position: fixed;
+  z-index: var(--layer-tooltip);
+  pointer-events: all;
+
+  max-width: var(--popover-width);
   padding: var(--size-4-2);
 
   background-color: var(--background-secondary);
@@ -9,19 +20,16 @@
   color: var(--text-normal);
 
   border-radius: var(--radius-m);
-  border-left: var(--size-4-1) solid var(--interactive-accent);
+  border-left: var(--size-4-1) solid var(--severity-color);
+
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .typstmate-diag-message {
+  color: var(--severity-color);
   font-size: var(--font-ui-medium);
   font-weight: bold;
-}
-
-.typstmate-diag-severity-error {
-  color: var(--text-error);
-}
-.typstmate-diag-severity-warning {
-  color: var(--text-warning);
 }
 
 .typstmate-diag-hint-label {

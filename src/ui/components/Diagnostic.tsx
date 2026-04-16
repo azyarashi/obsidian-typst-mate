@@ -5,19 +5,21 @@ import type { TypstDiagnostic } from '@/editor/shared/extensions/Linter/extensio
 
 import './Diagnostic.css';
 
-export function Diagnostic({ view, diagnostic, doc }: { view: EditorView; diagnostic: TypstDiagnostic; doc?: string }) {
+type DiagnosticProps = { diagnostic: TypstDiagnostic; state?: { doc: string; view: EditorView } };
+
+export function Diagnostic({ diagnostic, state }: DiagnosticProps) {
   const { severity, message, hints } = diagnostic;
 
   const extraHints: JSX.Element[] = [];
   // TODO: 次のバージョンでおそらく変わる
-  if (doc) {
+  if (state) {
     if (
       message === 'expected expression' &&
       diagnostic.from === diagnostic.to &&
-      doc.slice(diagnostic.from - 1, diagnostic.to) === '#'
+      state.doc.slice(diagnostic.from - 1, diagnostic.to) === '#'
     ) {
       const extra = EXTRA_HINTS.ExpectedExpressionAfterHash ?? [];
-      extraHints.push(...extra.map((fn) => fn(view, doc, diagnostic.from, diagnostic.to)));
+      extraHints.push(...extra.map((fn) => fn(state.view, state.doc, diagnostic.from, diagnostic.to)));
     }
   }
 
@@ -25,7 +27,7 @@ export function Diagnostic({ view, diagnostic, doc }: { view: EditorView; diagno
 
   return (
     <>
-      <div className={`typstmate-diag-message typstmate-diag-severity-${severity}`}>
+      <div className={`typstmate-diag-message`}>
         {severity === 'error' ? `Error: ${message}` : `Warning: ${message}`}
       </div>
 
@@ -48,9 +50,9 @@ export function Diagnostic({ view, diagnostic, doc }: { view: EditorView; diagno
   );
 }
 
-export function renderDiagnosticMessage(view: EditorView, diagnostic: TypstDiagnostic, doc?: string): HTMLElement {
+export function renderDiagnosticMessage(props: DiagnosticProps): HTMLElement {
   const container = document.createElement('div');
-  container.className = 'typstmate-diag';
-  render(<Diagnostic view={view} diagnostic={diagnostic} doc={doc} />, container);
+  container.className = `typstmate-diag typstmate-diag-severity-${props.diagnostic.severity}`;
+  render(<Diagnostic {...props} />, container);
   return container;
 }

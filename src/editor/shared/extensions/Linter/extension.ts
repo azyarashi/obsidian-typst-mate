@@ -69,9 +69,8 @@ function computeDiagnostics(view: EditorView, result: TypstMateResult): Diagnost
       hints: diag.hints,
       trace: diag.trace,
       renderMessage: () =>
-        renderDiagnosticMessage(
-          view,
-          {
+        renderDiagnosticMessage({
+          diagnostic: {
             severity: diag.severity,
             message: diag.message,
             hints: diag.hints,
@@ -79,8 +78,8 @@ function computeDiagnostics(view: EditorView, result: TypstMateResult): Diagnost
             from,
             to,
           } as TypstDiagnostic,
-          view.state.doc.toString(),
-        ),
+          state: { view, doc: view.state.doc.toString() },
+        }),
     } as TypstDiagnostic;
   });
 

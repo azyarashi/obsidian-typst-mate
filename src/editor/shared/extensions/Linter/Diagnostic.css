@@ -1,15 +1,12 @@
+/** @see https://code.haverbeke.berlin/codemirror/lint/src/commit/50a00ca77ca4f2608025acce9e0a004e343c0f90/src/lint.ts */
 .cm-diagnostic:has(.typstmate-diag) {
-  background: none !important;
-  border: none !important;
   padding: 0 !important;
-  margin: 0 !important;
+  margin-left: 0 !important;
 }
 
-.typstmate-diag {
-  background-color: var(--background-secondary);
+.cm-diagnostic-error:has(.typstmate-diag) {
+  border-left: none !important;
 }
-
-.typstmate-diag-hints {
-  margin-top: 4px;
-  color: var(--text-normal);
+.cm-diagnostic-warning:has(.typstmate-diag) {
+  border-left: none !important;
 }
