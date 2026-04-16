@@ -1,0 +1,48 @@
+.typstmate-diag {
+  max-width: 350px;
+  padding: var(--size-4-2);
+
+  background-color: var(--background-secondary);
+  border: 1px solid var(--background-modifier-border);
+
+  font-family: var(--font-interface);
+  color: var(--text-normal);
+
+  border-radius: var(--radius-m);
+  border-left: var(--size-4-1) solid var(--interactive-accent);
+}
+
+.typstmate-diag-message {
+  font-size: var(--font-ui-medium);
+}
+
+.typstmate-diag-severity-error {
+  color: var(--text-error);
+}
+.typstmate-diag-severity-warning {
+  color: var(--text-warning);
+}
+
+.typstmate-diag-hint-label {
+  font-size: var(--font-ui-small);
+  color: var(--text-muted);
+
+  margin-top: var(--size-2-2);
+}
+
+.typstmate-diag-hints {
+  display: flex;
+  flex-direction: column;
+  gap: var(--size-4-2);
+}
+
+.typstmate-diag-hint {
+  font-size: var(--font-ui-small);
+  color: var(--text-muted);
+  display: flex;
+  gap: var(--size-4-1);
+}
+
+.typstmate-diag-hint-arrow {
+  flex-shrink: 0;
+}

@@ -25,10 +25,6 @@ class ErrorLensWidget extends WidgetType {
     span.className = `cm-error-lens-widget cm-error-lens-widget-${this.diag.severity}`;
     span.textContent = this.diag.message;
 
-    let title = this.diag.message;
-    if (this.diag.hints?.length) title += `\n\nHints:\n${this.diag.hints.join('\n')}`;
-    span.title = title;
-
     return span;
   }
 }

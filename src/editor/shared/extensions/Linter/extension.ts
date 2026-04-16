@@ -4,12 +4,12 @@ import { type EditorView, ViewPlugin, type ViewUpdate } from '@codemirror/view';
 import { TypstMate } from '@/api';
 import type { Processor } from '@/libs/processor';
 import type { Diagnostic as WasmDiagnostic } from '@/libs/typstManager/worker';
-import { renderDiagnosticMessage } from '@/ui/elements/diagnostics';
+import { renderDiagnosticMessage } from '@/ui/components/Diagnostic';
 import { getActiveRegion } from '../../utils/core';
 
 import './Diagnostic.css';
 
-interface TypstDiagnostic extends WasmDiagnostic, Diagnostic {
+export interface TypstDiagnostic extends WasmDiagnostic, Diagnostic {
   severity: 'error' | 'warning';
   hints: string[];
 }
@@ -66,13 +66,22 @@ function computeDiagnostics(view: EditorView, result: TypstMateResult): Diagnost
       to,
       message: diag.message,
       severity: diag.severity,
+      hints: diag.hints,
+      trace: diag.trace,
       renderMessage: () =>
-        renderDiagnosticMessage({
-          severity: diag.severity,
-          message: diag.message,
-          hints: diag.hints,
-        }),
-    } as Diagnostic;
+        renderDiagnosticMessage(
+          view,
+          {
+            severity: diag.severity,
+            message: diag.message,
+            hints: diag.hints,
+            trace: diag.trace,
+            from,
+            to,
+          } as TypstDiagnostic,
+          view.state.doc.toString(),
+        ),
+    } as TypstDiagnostic;
   });
 
   const uniqueDiags: Diagnostic[] = [];

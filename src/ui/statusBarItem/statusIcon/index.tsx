@@ -4,7 +4,6 @@ import { Status, type TypstMate } from '@/api';
 import { ICONS } from '@/constants/icons';
 import { diagnosticsState } from '@/editor/shared/extensions/Linter/extension';
 import { appUtils, settingsManager } from '@/libs';
-import { DiagnosticModal } from '@/ui/modals/diagnostic';
 import { showStatusBarMenu } from './menu';
 
 import './statusIcon.css';
@@ -69,7 +68,8 @@ export function CurrentStatusIcon({ status, rendering }: { status: Status; rende
             if (activeView) {
               const state = activeView.editor.cm.state.field(diagnosticsState, false);
               if (state?.diagnostics) {
-                new DiagnosticModal(appUtils.app, state.diagnostics).open();
+                // TODO
+                // new DiagnosticModal(appUtils.app, state.diagnostics).open();
               }
             }
           }}

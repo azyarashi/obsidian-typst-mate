@@ -1,12 +1,13 @@
 import { MarkdownView, Menu, type MenuItem, Notice } from 'obsidian';
 import { DEFAULT_FONT_SIZE } from '@/constants';
+import type { TypstDiagnostic } from '@/editor/shared/extensions/Linter/extension';
 import { updateDiagnosticEffect } from '@/editor/shared/extensions/Linter/extension';
 import { getActiveRegion } from '@/editor/shared/utils/core';
 import { t } from '@/i18n';
 import { appUtils, settingsManager, typstManager } from '@/libs';
 import { type Processor, type ProcessorKind, RenderingEngine } from '@/libs/processor';
-import type { BaseResult, Diagnostic } from '@/libs/typstManager/worker';
-import { DiagnosticModal } from '../modals/diagnostic';
+import type { BaseResult, Diagnostic as WasmDiagnostic } from '@/libs/typstManager/worker';
+import { renderDiagnosticMessage } from '@/ui/components/Diagnostic';
 
 import './Typst.css';
 
@@ -51,7 +52,7 @@ export default abstract class TypstElement extends HTMLElement {
     return formatted;
   }
 
-  handleError(err: Diagnostic[]) {
+  handleError(err: WasmDiagnostic[]) {
     this.isErr = true;
     typstManager.beforeKind = this.kind;
 
@@ -78,8 +79,35 @@ export default abstract class TypstElement extends HTMLElement {
 
     diagEl.textContent = `${err[0]?.message}${err[0]?.hints.length !== 0 ? ` ${t('common.hintsCount', { count: err[0]?.hints.length ?? 0 })}` : ''}`;
 
-    if (err[0]?.hints.length !== 0)
-      diagEl.addEventListener('click', () => new DiagnosticModal(appUtils.app, err).open());
+    if (err[0]) {
+      diagEl.addEventListener('mouseenter', () => {
+        const view = appUtils.app.workspace.getActiveViewOfType(MarkdownView);
+        if (!view) return;
+
+        const tooltip = renderDiagnosticMessage(view.editor.cm, err[0] as unknown as TypstDiagnostic, this.source);
+        tooltip.style.position = 'fixed';
+        tooltip.style.zIndex = 'var(--layer-popover)';
+        tooltip.style.pointerEvents = 'all'; // Enable clicks for the button
+
+        const updatePosition = () => {
+          const rect = diagEl.getBoundingClientRect();
+          tooltip.style.left = `${rect.left}px`;
+          tooltip.style.top = `${rect.bottom + 8}px`;
+        };
+
+        updatePosition();
+        document.body.appendChild(tooltip);
+
+        const onMouseLeave = (e: MouseEvent) => {
+          if (tooltip.contains(e.relatedTarget as Node)) return;
+          tooltip.remove();
+          diagEl.removeEventListener('mouseleave', onMouseLeave);
+          tooltip.removeEventListener('mouseleave', onMouseLeave);
+        };
+        diagEl.addEventListener('mouseleave', onMouseLeave);
+        tooltip.addEventListener('mouseleave', onMouseLeave);
+      });
+    }
 
     this.replaceChildren(diagEl);
   }

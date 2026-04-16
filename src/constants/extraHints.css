@@ -1,0 +1,18 @@
+.typstmate-button-link {
+  all: unset;
+  display: inline;
+
+  color: var(--link-external-color) !important;
+  text-decoration: var(--link-external-decoration) !important;
+
+  background: none !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0;
+  cursor: pointer;
+}
+
+.typstmate-button-link:hover {
+  color: var(--link-external-color-hover) !important;
+  text-decoration: var(--link-external-decoration-hover) !important;
+}
