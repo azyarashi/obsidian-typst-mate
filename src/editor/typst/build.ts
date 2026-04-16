@@ -12,12 +12,14 @@ import {
 } from '@codemirror/view';
 import { diagnosticsState } from '@/editor/shared/extensions/Linter/extension';
 import { extensionManager, viewTracker } from '@/libs/extensionManager';
+import { typstTextViewTheme } from './extensions/Theme';
 import { typstTextCore } from './extensions/TypstCore';
 
 export function buildTypstTextExtensions() {
   const extensions: Extension[] = [
     viewTracker('typst'),
     typstTextCore,
+    typstTextViewTheme,
     diagnosticsState,
     ...extensionManager.buildExtensions('typst'),
 

@@ -1,8 +1,8 @@
 import { EditorView } from '@codemirror/view';
 
 export const typstTextViewTheme = EditorView.theme({
-  '.cm-activeLine': { backgroundColor: 'var(--background-primary-alt) !important' },
-  '.cm-activeLineGutter': { backgroundColor: 'var(--background-primary-alt) !important' },
+  '.cm-activeLine': { backgroundColor: 'var(--background-secondary) !important' },
+  '.cm-activeLineGutter': { backgroundColor: 'var(--background-secondary) !important' },
   '.cm-selectionMatch': { backgroundColor: 'var(--text-highlight-bg) !important' },
   '.cm-gutters': {
     backgroundColor: 'transparent',
@@ -11,6 +11,9 @@ export const typstTextViewTheme = EditorView.theme({
     fontSize: 'var(--font-ui-smaller)',
     fontVariant: 'tabular-nums',
   },
-  '.cm-lineNumbers .cm-gutterElement': { color: 'var(--text-faint) !important' },
+  '.cm-lineNumbers .cm-gutterElement': {
+    color: 'var(--text-faint) !important',
+    backgroundColor: 'var(--background-primary-alt) !important',
+  },
   '.cm-content': { caretColor: 'var(--text-normal) !important' },
 });
