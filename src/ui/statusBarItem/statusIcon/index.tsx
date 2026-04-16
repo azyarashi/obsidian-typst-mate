@@ -1,9 +1,7 @@
-import { MarkdownView } from 'obsidian';
-import type { ComponentChildren } from 'preact';
+import type { ComponentChildren, JSX } from 'preact';
 import { Status, type TypstMate } from '@/api';
 import { ICONS } from '@/constants/icons';
-import { diagnosticsState } from '@/editor/shared/extensions/Linter/extension';
-import { appUtils, settingsManager } from '@/libs';
+import { settingsManager } from '@/libs';
 import { showStatusBarMenu } from './menu';
 
 import './statusIcon.css';
@@ -35,52 +33,21 @@ export function StatusIcon({
 }
 
 export function CurrentStatusIcon({ status, rendering }: { status: Status; rendering: typeof TypstMate.rendering }) {
-  if (status === Status.Error) {
-    return (
-      <div className="typstmate-status-bar-item-error" onClick={(e) => showStatusBarMenu(e)}>
-        <span>⚠</span>
-      </div>
-    );
-  }
-
-  const activeView = appUtils.app.workspace.getActiveViewOfType(MarkdownView);
+  const failedToLoad = Status.Ready < status;
   const hasError = rendering.hasError;
   const isRendering = rendering.isRendering;
-  const icon = settingsManager.settings.enableBackgroundRendering ? ICONS.TypstStroke : ICONS.TypstFill;
+  const shouldWarn = failedToLoad || hasError;
 
-  if (isRendering) {
-    return (
-      <div onClick={(e) => showStatusBarMenu(e)}>
-        <StatusIcon icon={ICONS.Loading} />
-      </div>
-    );
-  }
-
-  if (hasError) {
-    return (
-      <div style={{ display: 'flex', alignItems: 'center', height: '100%' }} onClick={(e) => showStatusBarMenu(e)}>
-        <StatusIcon
-          icon={ICONS.Cross}
-          className="mod-clickable"
-          color="var(--text-error)"
-          onClick={(e) => {
-            e?.stopPropagation();
-            if (activeView) {
-              const state = activeView.editor.cm.state.field(diagnosticsState, false);
-              if (state?.diagnostics) {
-                // TODO
-                // new DiagnosticModal(appUtils.app, state.diagnostics).open();
-              }
-            }
-          }}
-        />
-      </div>
-    );
-  }
+  let icon: JSX.Element;
+  if (failedToLoad) icon = ICONS.AlertTriangle;
+  else if (isRendering) icon = ICONS.Loading;
+  else if (hasError) icon = ICONS.Cross;
+  else if (settingsManager.settings.enableBackgroundRendering) icon = ICONS.TypstStroke;
+  else icon = ICONS.TypstFill;
 
   return (
     <div onClick={(e) => showStatusBarMenu(e)}>
-      <StatusIcon icon={icon} />
+      <StatusIcon icon={icon} color={shouldWarn ? 'var(--text-error)' : undefined} />
     </div>
   );
 }

@@ -1,8 +1,7 @@
-import { MarkdownView, setTooltip } from 'obsidian';
+import { setTooltip } from 'obsidian';
 import { render } from 'preact';
 import { useEffect, useState } from 'preact/hooks';
 import { Status, TypstMate } from '@/api';
-import { appUtils } from '@/libs';
 import { ProgressBar } from './progressBar';
 import { CurrentStatusIcon } from './statusIcon';
 import { getStatusBarTooltip } from './tooltip';
@@ -37,18 +36,14 @@ export function StatusBarItem({ containerEl }: { containerEl: HTMLElement }) {
   }, []);
 
   const { status, rendering } = state;
-
-  const activeView = appUtils.app?.workspace ? appUtils.app.workspace.getActiveViewOfType(MarkdownView) : null;
-  const tooltip = getStatusBarTooltip({ rendering, activeView });
+  const isReady = status === Status.Ready;
+  const hasLoaded = Status.Ready <= status;
+  const tooltip = isReady ? getStatusBarTooltip({ rendering }) : Status[status];
 
   useEffect(() => {
     containerEl.setAttribute('data-tooltip-position', 'top');
     setTooltip(containerEl, tooltip);
   }, [tooltip, containerEl]);
 
-  if (status < Status.Ready) {
-    return <ProgressBar status={status} />;
-  }
-
-  return <CurrentStatusIcon status={status} rendering={rendering} />;
+  return hasLoaded ? <CurrentStatusIcon status={status} rendering={rendering} /> : <ProgressBar status={status} />;
 }
