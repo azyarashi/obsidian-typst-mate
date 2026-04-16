@@ -1,7 +1,7 @@
 import type { EditorView } from '@codemirror/view';
 import type { JSX } from 'preact';
 
-import './extra.css';
+import './extraHints.css';
 
 export type ExtraHint = (view: EditorView, doc: string, from: number, to: number) => JSX.Element;
 

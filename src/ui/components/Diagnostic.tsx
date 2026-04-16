@@ -26,7 +26,7 @@ export function Diagnostic({ view, diagnostic, doc }: { view: EditorView; diagno
   return (
     <>
       <div className={`typstmate-diag-message typstmate-diag-severity-${severity}`}>
-        {severity === 'error' ? <strong>Error: {message}</strong> : <em>Warning: {message}</em>}
+        {severity === 'error' ? `Error: ${message}` : `Warning: ${message}`}
       </div>
 
       {0 < allHints.length && (
