@@ -16,7 +16,7 @@ export function getStatusBarTooltip({
   let tooltip = 'Typst Mate';
 
   if (isRendering) {
-    tooltip = t('settings.status.renderingPath', { path: rendering.path?.split('/').pop() || '' });
+    tooltip = rendering.message ?? '';
   } else if (hasError) {
     if (activeView) {
       const state = activeView.editor.cm.state.field(diagnosticsState, false);

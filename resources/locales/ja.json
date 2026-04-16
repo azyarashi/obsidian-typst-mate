@@ -139,8 +139,7 @@
       "downloadingWasm": "Typst コンパイラ (Wasm) をダウンロード中...",
       "initializingWasm": "Typst コンパイラを初期化中...",
       "preparingAssets": "フォントとパッケージを準備中...",
-      "error": "Typst コンパイラの初期化に失敗しました",
-      "renderingPath": "レンダリング中: {{path}}"
+      "error": "Typst コンパイラの初期化に失敗しました"
     },
     "processors": {
       "headerName": "Processor",

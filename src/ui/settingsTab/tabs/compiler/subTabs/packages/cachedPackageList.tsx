@@ -1,8 +1,8 @@
 import { Setting } from '@components/obsidian/Setting';
 import { Notice, Platform } from 'obsidian';
+import type { PackageSpec } from '@/../pkg/typst_wasm';
 import { t } from '@/i18n';
 import { appUtils, fileManager } from '@/libs';
-import type { PackageSpec } from '@/types/typst';
 
 interface CachedPackageListProps {
   packages: PackageSpec[];
@@ -11,7 +11,7 @@ interface CachedPackageListProps {
 
 export function CachedPackageList({ packages, onRefresh }: CachedPackageListProps) {
   const handleRemove = async (spec: PackageSpec) => {
-    const pkgPath = `${fileManager.packagesDirNPath}/${spec.namespace}/${spec.name}/${spec.version}`;
+    const pkgPath = `${fileManager.vaultPackagesDirNPath}/${spec.namespace}/${spec.name}/${spec.version}`;
     try {
       await appUtils.app.vault.adapter.remove(pkgPath);
       await onRefresh();
@@ -31,7 +31,7 @@ export function CachedPackageList({ packages, onRefresh }: CachedPackageListProp
               button.setTooltip(t('settings.compiler.packages.tooltips.openFolder'));
               button.setIcon('folder');
               button.onClick(async () => {
-                window.open(`file://${fileManager.baseDirPath}/${fileManager.packagesDirNPath}`);
+                window.open(`file://${fileManager.baseDirPath}/${fileManager.vaultPackagesDirNPath}`);
               });
             });
           }

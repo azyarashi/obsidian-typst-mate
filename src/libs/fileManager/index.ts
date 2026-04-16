@@ -1,5 +1,14 @@
 import type { WatcherSubscription } from '@typst-mate/watcher';
-import { type DataAdapter, FileSystemAdapter, Notice, Platform, requestUrl, type TFile, type TFolder } from 'obsidian';
+import {
+  type DataAdapter,
+  type FileSystemAdapter,
+  Notice,
+  Platform,
+  requestUrl,
+  type TFile,
+  type TFolder,
+} from 'obsidian';
+import type { PackageSpec } from '@/../pkg/typst_wasm';
 import { TypstMate } from '@/api';
 import { t } from '@/i18n';
 import { settingsManager } from '@/libs';
@@ -7,7 +16,6 @@ import { features, fs, loadWatcher, os, path, watcher } from '@/libs/features';
 import ObsidianTypstMate from '@/main';
 import type { GitHubAsset, PackageAsset } from '@/types/global';
 import type { Singleton } from '@/types/singleton';
-import type { PackageSpec } from '@/types/typst';
 import { filterWithExtensions } from './utils';
 
 /**
@@ -36,7 +44,7 @@ export class FileManager implements Singleton {
   fontsDirNPath!: string;
 
   vaultPackagesDirNPath!: string;
-  localPackagesDirPaths!: string[];
+  localPackagesDirPaths: string[] = [];
 
   async init(plugin: ObsidianTypstMate) {
     this.plugin = plugin;
@@ -53,11 +61,9 @@ export class FileManager implements Singleton {
     this.fontsDirNPath = `${this.pluginDirNPath}/fonts`;
     this.vaultPackagesDirNPath = `${this.pluginDirNPath}/packages`;
 
-    if (features.node) this.setLocalPackagesDirPath();
-
-    // TODO
-    if (features.node && this.adapter instanceof FileSystemAdapter) {
-      const pluginFullPath = this.adapter.getFullPath(this.pluginDirNPath);
+    if (features.node) {
+      this.setLocalPackagesDirPath();
+      const pluginFullPath = (this.adapter as FileSystemAdapter).getFullPath(this.pluginDirNPath);
       loadWatcher(pluginFullPath, TypstMate.version!, settingsManager.settings.linuxLibc);
     }
   }
@@ -182,32 +188,21 @@ export class FileManager implements Singleton {
     new Notice(t('notices.assetDownloaded', { asset: filename }));
   }
 
-  async readPackage(_spec: PackageSpec): Promise<undefined> {
-    return;
-  }
-
-  async downloadPackage(_spec: PackageSpec): Promise<undefined> {
-    return;
-  }
-
-  async writePackage(path: string, files: PackageAsset) {
-    // TODO: DesktopApp では ローカルにデフォルトでインストール
+  async writePackage(spec: PackageSpec, files: PackageAsset) {
+    const packageDirNPath = `${this.vaultPackagesDirNPath}/${spec.namespace}/${spec.name}/${spec.version}`;
     // ディレクトリ
-    for (const file of files.filter((f) => f.type === '5')) {
-      await this.adapter.mkdir(`${this.packagesDirNPath}/${path}/${file.name}`);
+    for (const folder of files.filter((f) => f.type === '5')) {
+      await this.adapter.mkdir(`${packageDirNPath}/${folder.name}`);
     }
 
     // ファイル
     for (const file of files.filter((f) => f.type === '0')) {
-      await this.adapter.writeBinary(`${this.packagesDirNPath}/${path}/${file.name}`, file.buffer);
+      await this.adapter.writeBinary(`${packageDirNPath}/${file.name}`, file.buffer);
     }
 
     // シンボリックリンク
     for (const file of files.filter((f) => f.type === '2')) {
-      await this.adapter.copy(
-        `${this.packagesDirNPath}/${path}/${file.name}`,
-        `${this.packagesDirNPath}/${path}/${file.linkname}`,
-      );
+      await this.adapter.copy(`${packageDirNPath}/${file.name}`, `${packageDirNPath}/${file.linkname}`);
     }
   }
 
@@ -226,7 +221,7 @@ export class FileManager implements Singleton {
   }
 
   async tryCreateDirs() {
-    const dirPaths = [this.fontsDirNPath, this.packagesDirNPath];
+    const dirPaths = [this.fontsDirNPath, this.vaultPackagesDirNPath];
     await Promise.allSettled(dirPaths.map((dirPath) => this.adapter.mkdir(dirPath)));
   }
 
@@ -278,7 +273,10 @@ export class FileManager implements Singleton {
     for (const subscription of this.watcherSubscriptions) await subscription.unsubscribe();
     this.watcherSubscriptions = [];
 
-    this.watcherSubscriptions = await watcher.subscribe(this.packagesDirPaths, callback);
+    this.watcherSubscriptions = await watcher.subscribe(
+      [this.vaultPackagesDirNPath, ...this.localPackagesDirPaths],
+      callback,
+    );
   }
 
   async getLoadImportedFonts(): Promise<string[]> {

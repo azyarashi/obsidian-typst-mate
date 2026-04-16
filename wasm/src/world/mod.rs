@@ -104,6 +104,7 @@ impl WasmWorld {
         m.insert(file_id, FileSlot::new_from_text(file_id, text));
     }
 
+    #[allow(dead_code)]
     pub fn add_file_bytes(&self, vpath: VirtualPath, bytes: Vec<u8>) {
         let mut m = self.slots.lock().unwrap();
         let file_id = FileId::new(None, vpath);
@@ -111,6 +112,7 @@ impl WasmWorld {
         m.insert(file_id, FileSlot::new_from_bytes(file_id, bytes));
     }
 
+    #[allow(dead_code)]
     pub fn add_package_file(&mut self, spec: TypstPackageSpec, vpath: &str, bytes: Vec<u8>) {
         let mut m = self.slots.lock().unwrap();
         let file_id = FileId::new(Some(spec.clone()), VirtualPath::new(vpath));

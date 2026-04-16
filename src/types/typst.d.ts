@@ -1,11 +1,4 @@
-/**
- * - version: `{major}.{minor}.{patch}`
- */
-export interface PackageSpec {
-  namespace: string;
-  name: string;
-  version: string;
-}
+import type { PackageSpec } from '@/../pkg/typst_wasm';
 
 export interface PackageSpecWithPath extends PackageSpec {
   path: string;

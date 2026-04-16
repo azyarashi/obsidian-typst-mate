@@ -1,5 +1,5 @@
-import type { TypeSer } from '@/../pkg/typst_wasm';
+import type { Type } from '@/../pkg/typst_wasm';
 
-export function formatType(type_: TypeSer): string {
+export function formatType(type_: Type): string {
   return type_.docs;
 }

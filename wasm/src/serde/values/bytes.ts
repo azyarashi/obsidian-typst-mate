@@ -1,5 +1,5 @@
-import type { BytesSer } from '@/../pkg/typst_wasm';
+import type { Bytes } from '@/../pkg/typst_wasm';
 
-export function formatBytes(val: BytesSer): string {
+export function formatBytes(val: Bytes): string {
   return `**bytes:** \`${val.length} bytes\``;
 }

@@ -32,7 +32,7 @@ export function showStatusBarMenu(event: MouseEvent) {
         .onClick(async () => {
           settingsManager.settings.fitToNoteWidthProfile = 'Live';
           await settingsManager.saveSettings();
-          await appUtils.reloadPlugin(false);
+          await typstManager.rerenderAll();
         });
     });
 
@@ -45,7 +45,7 @@ export function showStatusBarMenu(event: MouseEvent) {
           .onClick(async () => {
             settingsManager.settings.fitToNoteWidthProfile = profile.name;
             await settingsManager.saveSettings();
-            await appUtils.reloadPlugin(false);
+            await typstManager.rerenderAll();
           });
       });
     }

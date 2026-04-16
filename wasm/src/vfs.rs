@@ -22,6 +22,7 @@ impl FileSlot {
         }
     }
 
+    #[allow(dead_code)]
     pub fn new_from_bytes(id: FileId, bytes: Vec<u8>) -> Self {
         let bytes_result = Ok(Bytes::new(bytes.clone()));
         let source_result = match std::str::from_utf8(&bytes) {

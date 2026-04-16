@@ -12,13 +12,10 @@ use wasm_bindgen::prelude::*;
 
 use typst::{
     World,
-    diag::Warned,
+    diag::{SourceResult, Warned},
     foundations::{Bytes, Module, Version as TypstVersion},
     layout::{Abs, PageRanges, PagedDocument, Point},
-    syntax::{
-        FileId, Side, VirtualPath,
-        package::{PackageSpec, PackageVersion},
-    },
+    syntax::{FileId, Side, VirtualPath},
     text::FontInfo,
 };
 
@@ -67,18 +64,7 @@ impl Wasm {
         }
     }
 
-    pub fn store(
-        &mut self,
-        fonts: Vec<ArrayBuffer>,
-        packages: JsValue,
-        files: JsValue,
-    ) -> Result<(), JsValue> {
-        let sources_serde: FxHashMap<String, Vec<u8>> = serde_wasm_bindgen::from_value(packages)
-            .map_err(|e| JsValue::from_str(&format!("failed to deserialize sources: {}", e)))?;
-
-        let files: FxHashMap<String, String> = serde_wasm_bindgen::from_value(files)
-            .map_err(|e| JsValue::from_str(&format!("failed to deserialize files: {}", e)))?;
-
+    pub fn store(&mut self, fonts: Vec<ArrayBuffer>, files: JsValue) -> Result<(), JsValue> {
         for f in fonts.iter() {
             let u8arr = Uint8Array::new(&f);
             let mut vec = vec![0u8; u8arr.length() as usize];
@@ -87,39 +73,8 @@ impl Wasm {
             self.world.add_font(Bytes::new(vec));
         }
 
-        // ソース
-        for (rpath, bytes) in sources_serde {
-            if rpath.starts_with('@') {
-                // unwrap は TS 側で保証
-                let p = rpath.strip_prefix('@').unwrap();
-
-                let mut p_parts = p.splitn(4, '/');
-                let namespace = p_parts.next().unwrap();
-                let name = p_parts.next().unwrap();
-                let version_str = p_parts.next().unwrap();
-                let vpath = p_parts.next().unwrap();
-
-                let mut v_parts = version_str.split('.');
-                let major: u32 = v_parts.next().unwrap().parse().unwrap();
-                let minor: u32 = v_parts.next().unwrap().parse().unwrap();
-                let patch: u32 = v_parts.next().unwrap().parse().unwrap();
-
-                let spec = PackageSpec {
-                    namespace: namespace.into(),
-                    name: name.into(),
-                    version: PackageVersion {
-                        major,
-                        minor,
-                        patch,
-                    },
-                };
-
-                self.world.add_package_file(spec, vpath, bytes);
-            } else {
-                self.world.add_file_bytes(VirtualPath::new(rpath), bytes);
-            }
-        }
-
+        let files: FxHashMap<String, String> = serde_wasm_bindgen::from_value(files)
+            .map_err(|e| JsValue::from_str(&format!("failed to deserialize files: {}", e)))?;
         for (path, text) in files {
             self.world.add_file_text(VirtualPath::new(path), text);
         }
@@ -129,6 +84,16 @@ impl Wasm {
 
     pub fn set_offset(&mut self, offset: f64) {
         self.offset = offset;
+    }
+
+    fn export_result<T>(&self, result: SourceResult<T>) -> Result<T, JsValue> {
+        result.map_err(|errs| {
+            let diags: Vec<diagnostic::Diagnostic> = errs
+                .iter()
+                .map(|d| diagnostic::Diagnostic::from_diag(d, &self.world))
+                .collect();
+            to_value(&diags).unwrap_or(JsValue::NULL)
+        })
     }
 }
 
@@ -402,50 +367,42 @@ impl Wasm {
         }
         let Warned { output, warnings } = typst::compile::<PagedDocument>(&mut self.world);
 
-        match output {
-            Ok(mut document) => {
-                if document.pages.is_empty() {
-                    return Err(JsValue::from_str("document has no pages"));
-                }
+        let document = self.export_result(output)?;
 
-                let page = &mut document.pages[0];
-                if None == page.fill_or_transparent() {
-                    page.fill = typst::foundations::Smart::Custom(None);
-                };
-                let frame = &page.frame;
-                let descent = if kind == "inline" {
-                    (match utils::find_baseline(frame, Abs::zero()) {
-                        Some(b) => (b - frame.height()).to_pt(),
-                        None => -frame.height().to_pt(),
-                    }) + self.offset
-                } else {
-                    0.0
-                };
-
-                let svg = typst_svg::svg(&page)
-                    .replace("#000000", "var(--typst-base-color)")
-                    .replacen(
-                        "<svg class",
-                        format!(
-                            "<svg style=\"overflow: visible; vertical-align: {:.2}pt;\" class",
-                            descent
-                        )
-                        .as_str(),
-                        1,
-                    );
-
-                self.last_document = Some(document);
-
-                Ok(svgm::svgm(svg, warnings, &self.world)?.unchecked_into())
-            }
-            Err(errs) => {
-                let diags: Vec<diagnostic::Diagnostic> = errs
-                    .iter()
-                    .map(|d| diagnostic::Diagnostic::from_diag(d, &self.world))
-                    .collect();
-                Err(to_value(&diags).unwrap_or(JsValue::NULL))
-            }
+        if document.pages.is_empty() {
+            return Err(JsValue::from_str("document has no pages"));
         }
+
+        let mut document = document;
+        let page = &mut document.pages[0];
+        if None == page.fill_or_transparent() {
+            page.fill = typst::foundations::Smart::Custom(None);
+        };
+        let frame = &page.frame;
+        let descent = if kind == "inline" {
+            (match utils::find_baseline(frame, Abs::zero()) {
+                Some(b) => (b - frame.height()).to_pt(),
+                None => -frame.height().to_pt(),
+            }) + self.offset
+        } else {
+            0.0
+        };
+
+        let svg = typst_svg::svg(&page)
+            .replace("#000000", "var(--typst-base-color)")
+            .replacen(
+                "<svg class",
+                format!(
+                    "<svg style=\"overflow: visible; vertical-align: {:.2}pt;\" class",
+                    descent
+                )
+                .as_str(),
+                1,
+            );
+
+        self.last_document = Some(document);
+
+        Ok(svgm::svgm(svg, warnings, &self.world)?.unchecked_into())
     }
 
     pub fn htmlm(
@@ -466,28 +423,10 @@ impl Wasm {
         let Warned { output, warnings } =
             typst::compile::<typst_html::HtmlDocument>(&mut self.world);
 
-        match output {
-            Ok(document) => match typst_html::html(&document) {
-                Ok(html_str) => {
-                    let body = Wasm::extract_body(&html_str).unwrap_or(&html_str);
-                    Ok(htmlm::htmlm(body.to_string(), warnings, &self.world)?.unchecked_into())
-                }
-                Err(errs) => {
-                    let diags: Vec<diagnostic::Diagnostic> = errs
-                        .iter()
-                        .map(|d| diagnostic::Diagnostic::from_diag(d, &self.world))
-                        .collect();
-                    Err(to_value(&diags).unwrap_or(JsValue::NULL))
-                }
-            },
-            Err(errs) => {
-                let diags: Vec<diagnostic::Diagnostic> = errs
-                    .iter()
-                    .map(|d| diagnostic::Diagnostic::from_diag(d, &self.world))
-                    .collect();
-                Err(to_value(&diags).unwrap_or(JsValue::NULL))
-            }
-        }
+        let document = self.export_result(output)?;
+        let html_str = self.export_result(typst_html::html(&document))?;
+        let body = Wasm::extract_body(&html_str).unwrap_or(&html_str);
+        Ok(htmlm::htmlm(body.to_string(), warnings, &self.world)?.unchecked_into())
     }
 }
 
@@ -496,27 +435,17 @@ impl Wasm {
 impl Wasm {
     pub fn svgp(&mut self, path: &str, code: &str) -> Result<JsSvgpResult, JsValue> {
         self.update_source(VirtualPath::new(path), code);
-        self.world.update_now();
         let Warned { output, warnings } = typst::compile::<PagedDocument>(&mut self.world);
 
-        match output {
-            Ok(mut document) => {
-                let mut svgs = Vec::new();
-                for page in &mut document.pages {
-                    let svg = typst_svg::svg(page);
-                    svgs.push(svg);
-                }
-                self.last_document = Some(document);
-                Ok(svgp::svgp(svgs, warnings, &self.world)?.unchecked_into())
-            }
-            Err(errs) => {
-                let diags: Vec<diagnostic::Diagnostic> = errs
-                    .iter()
-                    .map(|d| diagnostic::Diagnostic::from_diag(d, &self.world))
-                    .collect();
-                Err(to_value(&diags).unwrap_or(JsValue::NULL))
-            }
+        let mut document = self.export_result(output)?;
+
+        let mut svgs = Vec::new();
+        for page in &mut document.pages {
+            let svg = typst_svg::svg(page);
+            svgs.push(svg);
         }
+        self.last_document = Some(document);
+        Ok(svgp::svgp(svgs, warnings, &self.world)?.unchecked_into())
     }
 }
 
@@ -541,74 +470,53 @@ impl Wasm {
         self.update_source(VirtualPath::new(path), code);
         let Warned { output, warnings } = typst::compile::<PagedDocument>(&mut self.world);
 
-        match output {
-            Ok(mut document) => {
-                document.info.title.get_or_insert_with(|| filename.into());
+        let mut document = self.export_result(output)?;
+        document.info.title.get_or_insert_with(|| filename.into());
 
-                let mut options = typst_pdf::PdfOptions::default();
-                options.tagged = options_ser.tagged;
-                if let Some(ident) = &options_ser.ident {
-                    options.ident = typst::foundations::Smart::Custom(ident.as_str());
-                }
+        let mut options = typst_pdf::PdfOptions::default();
+        options.tagged = options_ser.tagged;
+        if let Some(ident) = &options_ser.ident {
+            options.ident = typst::foundations::Smart::Custom(ident.as_str());
+        }
 
-                if !options_ser.standards.is_empty() {
-                    options.standards = typst_pdf::PdfStandards::new(&options_ser.standards)
-                        .map_err(|e| JsValue::from_str(&e))?;
-                }
+        if !options_ser.standards.is_empty() {
+            options.standards = typst_pdf::PdfStandards::new(&options_ser.standards)
+                .map_err(|e| JsValue::from_str(&e))?;
+        }
 
-                if let Some(timestamp) = options_ser.timestamp {
-                    use chrono::{Datelike, FixedOffset, TimeZone, Timelike, Utc};
-                    let offset_min = options_ser.offset.unwrap_or(0);
-                    let tz = FixedOffset::east_opt(offset_min * 60)
-                        .unwrap_or(FixedOffset::east_opt(0).unwrap());
-                    if let Some(dt) = Utc.timestamp_opt(timestamp, 0).single() {
-                        let local_dt = dt.with_timezone(&tz);
-                        let datetime = typst::foundations::Datetime::from_ymd_hms(
-                            local_dt.year(),
-                            local_dt.month() as u8,
-                            local_dt.day() as u8,
-                            local_dt.hour() as u8,
-                            local_dt.minute() as u8,
-                            local_dt.second() as u8,
-                        );
-                        if let Some(datetime) = datetime {
-                            if options_ser.offset.is_some() {
-                                options.timestamp =
-                                    typst_pdf::Timestamp::new_local(datetime, offset_min);
-                            } else {
-                                options.timestamp = Some(typst_pdf::Timestamp::new_utc(datetime));
-                            }
-                        }
+        if let Some(timestamp) = options_ser.timestamp {
+            use chrono::{Datelike, FixedOffset, TimeZone, Timelike, Utc};
+            let offset_min = options_ser.offset.unwrap_or(0);
+            let tz =
+                FixedOffset::east_opt(offset_min * 60).unwrap_or(FixedOffset::east_opt(0).unwrap());
+            if let Some(dt) = Utc.timestamp_opt(timestamp, 0).single() {
+                let local_dt = dt.with_timezone(&tz);
+                let datetime = typst::foundations::Datetime::from_ymd_hms(
+                    local_dt.year(),
+                    local_dt.month() as u8,
+                    local_dt.day() as u8,
+                    local_dt.hour() as u8,
+                    local_dt.minute() as u8,
+                    local_dt.second() as u8,
+                );
+                if let Some(datetime) = datetime {
+                    if options_ser.offset.is_some() {
+                        options.timestamp = typst_pdf::Timestamp::new_local(datetime, offset_min);
+                    } else {
+                        options.timestamp = Some(typst_pdf::Timestamp::new_utc(datetime));
                     }
                 }
-
-                if let Some(page_ranges) = &options_ser.page_ranges {
-                    if let Some(ranges) = utils::parse_page_ranges(page_ranges) {
-                        options.page_ranges = Some(ranges);
-                    }
-                }
-
-                match typst_pdf::pdf(&document, &options) {
-                    Ok(pdf_data) => {
-                        Ok(pdfe::pdfe(pdf_data, warnings, &self.world)?.unchecked_into())
-                    }
-                    Err(errs) => {
-                        let diags: Vec<diagnostic::Diagnostic> = errs
-                            .iter()
-                            .map(|d| diagnostic::Diagnostic::from_diag(d, &self.world))
-                            .collect();
-                        Err(to_value(&diags).unwrap_or(JsValue::NULL))
-                    }
-                }
-            }
-            Err(errs) => {
-                let diags: Vec<diagnostic::Diagnostic> = errs
-                    .iter()
-                    .map(|d| diagnostic::Diagnostic::from_diag(d, &self.world))
-                    .collect();
-                Err(to_value(&diags).unwrap_or(JsValue::NULL))
             }
         }
+
+        if let Some(page_ranges) = &options_ser.page_ranges {
+            if let Some(ranges) = utils::parse_page_ranges(page_ranges) {
+                options.page_ranges = Some(ranges);
+            }
+        }
+
+        let pdf_data = self.export_result(typst_pdf::pdf(&document, &options))?;
+        Ok(pdfe::pdfe(pdf_data, warnings, &self.world)?.unchecked_into())
     }
 
     pub fn svge(
@@ -624,32 +532,22 @@ impl Wasm {
         self.update_source(VirtualPath::new(path), code);
         let Warned { output, warnings } = typst::compile::<PagedDocument>(&mut self.world);
 
-        match output {
-            Ok(document) => {
-                let page_ranges: Option<PageRanges> = options_ser
-                    .page_ranges
-                    .as_ref()
-                    .and_then(|s| utils::parse_page_ranges(s));
-                let mut svgs = Vec::new();
-                for (i, page) in document.pages.iter().enumerate() {
-                    if let Some(ranges) = &page_ranges {
-                        if !ranges.includes_page_index(i) {
-                            continue;
-                        }
-                    }
-                    let svg = typst_svg::svg(page);
-                    svgs.push(svg);
+        let document = self.export_result(output)?;
+        let page_ranges: Option<PageRanges> = options_ser
+            .page_ranges
+            .as_ref()
+            .and_then(|s| utils::parse_page_ranges(s));
+        let mut svgs = Vec::new();
+        for (i, page) in document.pages.iter().enumerate() {
+            if let Some(ranges) = &page_ranges {
+                if !ranges.includes_page_index(i) {
+                    continue;
                 }
-                Ok(svge::svge(svgs, warnings, &self.world)?.unchecked_into())
             }
-            Err(errs) => {
-                let diags: Vec<diagnostic::Diagnostic> = errs
-                    .iter()
-                    .map(|d| diagnostic::Diagnostic::from_diag(d, &self.world))
-                    .collect();
-                Err(to_value(&diags).unwrap_or(JsValue::NULL))
-            }
+            let svg = typst_svg::svg(page);
+            svgs.push(svg);
         }
+        Ok(svge::svge(svgs, warnings, &self.world)?.unchecked_into())
     }
 
     pub fn pnge(
@@ -665,36 +563,26 @@ impl Wasm {
         self.update_source(VirtualPath::new(path), code);
         let Warned { output, warnings } = typst::compile::<PagedDocument>(&mut self.world);
 
-        match output {
-            Ok(document) => {
-                let ppi = options_ser.ppi;
-                let page_ranges: Option<PageRanges> = options_ser
-                    .page_ranges
-                    .as_ref()
-                    .and_then(|s| utils::parse_page_ranges(s));
-                let mut images = Vec::new();
-                for (i, page) in document.pages.iter().enumerate() {
-                    if let Some(ranges) = &page_ranges {
-                        if !ranges.includes_page_index(i) {
-                            continue;
-                        }
-                    }
-                    let pixmap = typst_render::render(page, ppi / 72.0);
-                    let png = pixmap
-                        .encode_png()
-                        .map_err(|e| JsValue::from_str(&e.to_string()))?;
-                    images.push(png);
+        let document = self.export_result(output)?;
+        let ppi = options_ser.ppi;
+        let page_ranges: Option<PageRanges> = options_ser
+            .page_ranges
+            .as_ref()
+            .and_then(|s| utils::parse_page_ranges(s));
+        let mut images = Vec::new();
+        for (i, page) in document.pages.iter().enumerate() {
+            if let Some(ranges) = &page_ranges {
+                if !ranges.includes_page_index(i) {
+                    continue;
                 }
-                Ok(pnge::pnge(images, warnings, &self.world)?.unchecked_into())
             }
-            Err(errs) => {
-                let diags: Vec<diagnostic::Diagnostic> = errs
-                    .iter()
-                    .map(|d| diagnostic::Diagnostic::from_diag(d, &self.world))
-                    .collect();
-                Err(to_value(&diags).unwrap_or(JsValue::NULL))
-            }
+            let pixmap = typst_render::render(page, ppi / 72.0);
+            let png = pixmap
+                .encode_png()
+                .map_err(|e| JsValue::from_str(&e.to_string()))?;
+            images.push(png);
         }
+        Ok(pnge::pnge(images, warnings, &self.world)?.unchecked_into())
     }
 
     pub fn htmle(
@@ -711,35 +599,17 @@ impl Wasm {
         let Warned { output, warnings } =
             typst::compile::<typst_html::HtmlDocument>(&mut self.world);
 
-        match output {
-            Ok(document) => match typst_html::html(&document) {
-                Ok(html_str) => {
-                    let html = if options_ser.extract_body.unwrap_or(true) {
-                        Wasm::extract_body(&html_str)
-                            .unwrap_or(&html_str)
-                            .trim()
-                            .to_string()
-                    } else {
-                        html_str
-                    };
-                    Ok(htmle::htmle(html, warnings, &self.world)?.unchecked_into())
-                }
-                Err(errs) => {
-                    let diags: Vec<diagnostic::Diagnostic> = errs
-                        .iter()
-                        .map(|d| diagnostic::Diagnostic::from_diag(d, &self.world))
-                        .collect();
-                    Err(to_value(&diags).unwrap_or(JsValue::NULL))
-                }
-            },
-            Err(errs) => {
-                let diags: Vec<diagnostic::Diagnostic> = errs
-                    .iter()
-                    .map(|d| diagnostic::Diagnostic::from_diag(d, &self.world))
-                    .collect();
-                Err(to_value(&diags).unwrap_or(JsValue::NULL))
-            }
-        }
+        let document = self.export_result(output)?;
+        let html_str = self.export_result(typst_html::html(&document))?;
+        let html = if options_ser.extract_body.unwrap_or(true) {
+            Wasm::extract_body(&html_str)
+                .unwrap_or(&html_str)
+                .trim()
+                .to_string()
+        } else {
+            html_str
+        };
+        Ok(htmle::htmle(html, warnings, &self.world)?.unchecked_into())
     }
 }
 

@@ -1,5 +1,5 @@
-import type { DynSer } from '@/../pkg/typst_wasm';
+import type { Dyn } from '@/../pkg/typst_wasm';
 
-export function formatDyn(v: DynSer): string {
+export function formatDyn(v: Dyn): string {
   return `**object:** \`${v.repr}\``;
 }

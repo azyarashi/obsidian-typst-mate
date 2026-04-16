@@ -1,5 +1,5 @@
-import type { TilingSer } from '@/../pkg/typst_wasm';
+import type { Tiling } from '@/../pkg/typst_wasm';
 
-export function formatTiling(val: TilingSer): string {
+export function formatTiling(val: Tiling): string {
   return `**tiling:** \`${val.repr}\``;
 }

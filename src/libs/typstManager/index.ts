@@ -1,12 +1,11 @@
 import { proxy, type Remote, wrap } from 'comlink';
-import * as Obsidian from 'obsidian';
 import { type CachedMetadata, getAllTags, MarkdownPreviewRenderer, Notice, requestUrl, type TFile } from 'obsidian';
 import { Status, TypstMate } from '@/api';
 import { DEFAULT_FONT_SIZE } from '@/constants';
 import { DEFAULT_SETTINGS, type Settings } from '@/data/settings';
 import { t } from '@/i18n';
 import { crashTracker, fileManager, settingsManager } from '@/libs';
-import { features, fs, path } from '@/libs/features';
+import { features } from '@/libs/features';
 import { type Processor, type ProcessorKind, RenderingEngine } from '@/libs/processor';
 import type ObsidianTypstMate from '@/main';
 import type { PackageAsset } from '@/types/global';
@@ -18,7 +17,7 @@ import { TypstFileView, type TypstPreviewView } from '@/ui/views';
 import { overwriteCustomElements } from '@/utils/custromElementRegistry';
 import { expandHierarchicalTags } from '@/utils/tags';
 import type WasmAdapter from './worker';
-import Wasm, { ErrorCode } from './worker';
+import Wasm, { ErrorCode, type PackageSpec } from './worker';
 import WasmWorker from './worker?worker&inline';
 
 import './index.css';
@@ -58,20 +57,19 @@ export class TypstManager implements Singleton {
         new Notice(message, duration);
       },
 
-      readBinary: async (p: string) => {
-        if (features.node && path?.isAbsolute(p)) if (fs) return (await fs.promises.readFile(p)).buffer as ArrayBuffer;
+      async readBinary(p: string) {
         return await adapter.readBinary(p);
       },
 
-      async writePackage(path: string, files: PackageAsset) {
-        await fileManager.writePackage(path, files);
+      async writePackage(spec: PackageSpec, files: PackageAsset) {
+        await fileManager.writePackage(spec, files);
       },
 
       /**
        * @see https://github.com/typst/typst/blob/main/crates/typst-kit/src/packages.rs
        */
-      async fetchPackage(pkgKey: string): Promise<ArrayBuffer> {
-        const [namespace, name, version] = pkgKey.split('/');
+      async fetchPackage(spec: PackageSpec): Promise<ArrayBuffer> {
+        const { namespace, name, version } = spec;
         if (namespace !== 'preview') throw ErrorCode.PackageErrorNotFound;
 
         const res = await requestUrl({
@@ -86,7 +84,7 @@ export class TypstManager implements Singleton {
         return res.arrayBuffer;
       },
 
-      updateStatus: (status: { isRendering: boolean; path?: string }) => {
+      updateStatus: (status: { isRendering: boolean; message?: string }) => {
         if (this.renderTimer) clearTimeout(this.renderTimer);
 
         if (status.isRendering) TypstMate.update(undefined, { ...TypstMate.rendering, ...status });
@@ -97,44 +95,26 @@ export class TypstManager implements Singleton {
           }, 250);
         }
       },
-
-      callObsidian: (name: string, args: any[] | null) => {
-        const parts = name.split('.');
-        let target: any = null;
-        let parent: any = null;
-
-        if (parts[0] === 'app') {
-          target = this.plugin.app;
-          parts.shift();
-        } else if (parts[0] && parts[0] in Obsidian) target = Obsidian;
-        else if (parts[0] && parts[0] in this.plugin.app) target = this.plugin.app;
-        else target = Obsidian;
-
-        for (const part of parts) {
-          parent = target;
-          if (target && part in target) target = target[part];
-          else return undefined;
-        }
-
-        let result: any;
-        if (args === null) result = target;
-        else if (typeof target === 'function') result = target.apply(parent, args);
-        else result = target;
-
-        if (typeof result === 'function') return '<function>';
-
-        return result;
-      },
     };
 
     if (settings.enableBackgroundRendering) {
       this.worker = new WasmWorker();
 
       const remote = wrap<typeof WasmAdapter>(this.worker);
-      this.wasm = await new remote(fileManager.packagesDirPaths, fileManager.baseDirPath, features.node);
+      this.wasm = await new remote(
+        fileManager.baseDirPath,
+        fileManager.vaultPackagesDirNPath,
+        fileManager.localPackagesDirPaths,
+        features,
+      );
       await this.wasm.setMain(proxy(main));
     } else {
-      this.wasm = new Wasm(fileManager.packagesDirPaths, fileManager.baseDirPath, features.node);
+      this.wasm = new Wasm(
+        fileManager.baseDirPath,
+        fileManager.vaultPackagesDirNPath,
+        fileManager.localPackagesDirPaths,
+        features,
+      );
       this.wasm.setMain(main);
     }
 
@@ -213,11 +193,12 @@ export class TypstManager implements Singleton {
         const npath = ctx.sourcePath;
 
         try {
-          const result = await this.wasm.htmlAsync(
-            `\`\`\`${lang}\n${source}\n\`\`\``,
+          // TODO
+          const result = await this.wasm.htmlmAsync(
             npath,
             'codeblock',
             `typstmate-${lang}`,
+            `\`\`\`${lang}\n${source}\n\`\`\``,
           );
           el.addClass('typstmate-codeblock-internal');
           if (result?.html) el.innerHTML = result.html;
@@ -311,9 +292,10 @@ export class TypstManager implements Singleton {
     }
   }
 
-  rerenderAll() {
-    const svgs = document.querySelectorAll('typstmate-svg, typstmate-html') as NodeListOf<TypstElement>;
-    for (const svg of svgs) svg.render();
+  async rerenderAll(elOnly = false) {
+    const els = document.querySelectorAll('typstmate-svg, typstmate-html') as NodeListOf<TypstElement>;
+    for (const el of els) await el.render();
+    if (elOnly) return;
 
     for (const leaf of this.plugin.app.workspace.getLeavesOfType(TypstFileView.viewtype)) {
       const view = leaf.view as TypstFileView;
@@ -392,7 +374,7 @@ export class TypstManager implements Singleton {
     if (this.beforeElement && this.beforeKind === kind && beforeId === processor.id)
       typstEl.replaceChildren(this.beforeElement.cloneNode(true));
 
-    typstEl.render();
+    settingsManager.settings.enableBackgroundRendering ? typstEl.render() : typstEl.renderSync();
 
     this.beforeElement = typstEl;
     return containerEl as HTMLElement;

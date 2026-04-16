@@ -1,5 +1,5 @@
-import type { RatioSer } from '@/../pkg/typst_wasm';
+import type { Ratio } from '@/../pkg/typst_wasm';
 
-export function formatRatio(val: RatioSer): string {
+export function formatRatio(val: Ratio): string {
   return `**ratio:** \`${val.percentage}\``;
 }

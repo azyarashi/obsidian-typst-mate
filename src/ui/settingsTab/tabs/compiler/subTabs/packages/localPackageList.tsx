@@ -15,22 +15,23 @@ export function LocalPackageList() {
   const handleList = async () => {
     if (!fs || !path) return;
 
-    const specs: PackageSpecWithPath[] = [];
-
-    for (const p of fileManager.packagesDirPaths) {
-      if (!fs.existsSync(p)) continue;
-
-      try {
-        const specs = (await fileManager.collectPackages(p, true)).map((spec) => ({
-          ...spec,
-          path: p,
-        }));
-        setLocalPackages(specs);
-      } catch (e) {
-        console.error('Failed to list local packages:', e);
-      }
+    // TODO
+    try {
+      const results = (
+        await Promise.all(
+          fileManager.localPackagesDirPaths.map(async (dirPath) => {
+            return (await fileManager.collectPackages(dirPath, true)).map((spec) => ({
+              ...spec,
+              path: dirPath,
+            }));
+          }),
+        )
+      ).flat();
+      setLocalPackages(results);
+    } catch (e) {
+      console.error('Failed to list local packages:', e);
     }
-    setLocalPackages(specs);
+
     setIsLoaded(true);
   };
 

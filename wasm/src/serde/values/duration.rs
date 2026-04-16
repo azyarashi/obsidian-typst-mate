@@ -4,7 +4,7 @@ use tsify::Tsify;
 use typst::foundations::Duration as TypstDuration;
 
 #[derive(Serialize, Tsify)]
-pub struct Duration {
+pub struct DurationValue {
     pub seconds: f64,
     pub minutes: f64,
     pub hours: f64,
@@ -13,9 +13,9 @@ pub struct Duration {
     pub weeks: f64,
 }
 
-impl From<&TypstDuration> for Duration {
+impl From<&TypstDuration> for DurationValue {
     fn from(duration: &TypstDuration) -> Self {
-        Duration {
+        DurationValue {
             seconds: duration.seconds(),
             minutes: duration.minutes(),
             hours: duration.hours(),

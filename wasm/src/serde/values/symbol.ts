@@ -1,5 +1,5 @@
-import type { SymbolSer } from '@/../pkg/typst_wasm';
+import type { Symbol } from '@/../pkg/typst_wasm';
 
-export function formatSymbol(val: SymbolSer): string {
+export function formatSymbol(val: Symbol): string {
   return `**symbol:** \`${val.char}\``;
 }

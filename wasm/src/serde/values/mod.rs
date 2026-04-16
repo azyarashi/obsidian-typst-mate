@@ -38,7 +38,7 @@ pub use content::Content;
 pub use datetime::Datetime;
 pub use decimal::Decimal;
 pub use dict::Dict;
-pub use duration::Duration;
+pub use duration::DurationValue;
 pub use r#dyn::Dyn;
 pub use fraction::Fr;
 pub use func::Func;
@@ -78,7 +78,7 @@ pub enum Value {
     Label(Label),
     Datetime(Datetime),
     Decimal(Decimal),
-    Duration(Duration),
+    Duration(DurationValue),
     Content(Content),
     Styles(Styles),
     Array(Array),
@@ -113,7 +113,7 @@ impl From<&TypstValue> for Value {
             TypstValue::Label(v) => Value::Label(Label::from(v)),
             TypstValue::Datetime(v) => Value::Datetime(Datetime::from(v)),
             TypstValue::Decimal(v) => Value::Decimal(Decimal::from(v)),
-            TypstValue::Duration(v) => Value::Duration(Duration::from(v)),
+            TypstValue::Duration(v) => Value::Duration(DurationValue::from(v)),
             TypstValue::Content(v) => Value::Content(Content::from(v)),
             TypstValue::Styles(v) => Value::Styles(Styles::from(v)),
             TypstValue::Array(v) => Value::Array(Array::from(v)),

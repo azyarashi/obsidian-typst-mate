@@ -1,10 +1,10 @@
-import type { FuncSer, ParamSer } from '@/../pkg/typst_wasm';
+import type { Func, Param } from '@/../pkg/typst_wasm';
 
-export function formatFunc(func: FuncSer): string {
+export function formatFunc(func: Func): string {
   let markdown = '';
   const tooltipData: Record<string, { types: string; default?: string }> = {};
 
-  const formatParamTypes = (p: ParamSer, index?: number) => {
+  const formatParamTypes = (p: Param, index?: number) => {
     const typesStr = p.types.map((t) => t.type).join(' | ');
     const defaultVal = p.default ? ` = ${p.default}` : '';
     const full = `type: ${typesStr}${defaultVal}`;

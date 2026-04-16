@@ -1,5 +1,5 @@
-import type { StylesSer } from '@/../pkg/typst_wasm';
+import type { Styles } from '@/../pkg/typst_wasm';
 
-export function formatStyles(val: StylesSer): string {
+export function formatStyles(val: Styles): string {
   return `**styles:** \`${val.repr}\``;
 }

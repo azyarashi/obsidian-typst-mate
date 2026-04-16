@@ -3,12 +3,13 @@ import { StateEffect, StateField } from '@codemirror/state';
 import { type EditorView, ViewPlugin, type ViewUpdate } from '@codemirror/view';
 import { TypstMate } from '@/api';
 import type { Processor } from '@/libs/processor';
+import type { Diagnostic as WasmDiagnostic } from '@/libs/typstManager/worker';
 import { renderDiagnosticMessage } from '@/ui/elements/diagnostics';
 import { getActiveRegion } from '../../utils/core';
 
 import './Diagnostic.css';
 
-interface TypstDiagnostic extends Diagnostic {
+interface TypstDiagnostic extends WasmDiagnostic, Diagnostic {
   severity: 'error' | 'warning';
   hints: string[];
 }

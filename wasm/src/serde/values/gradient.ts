@@ -1,5 +1,5 @@
-import type { GradientSer } from '@/../pkg/typst_wasm';
+import type { Gradient } from '@/../pkg/typst_wasm';
 
-export function formatGradient(val: GradientSer): string {
+export function formatGradient(val: Gradient): string {
   return `**gradient:** \`${val.repr}\``;
 }

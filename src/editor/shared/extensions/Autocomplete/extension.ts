@@ -2,7 +2,7 @@ import { SyntaxMode } from '@typstmate/typst-syntax';
 import { Prec } from '@codemirror/state';
 import { type EditorView, keymap, type PluginValue, ViewPlugin, type ViewUpdate } from '@codemirror/view';
 import { setIcon } from 'obsidian';
-import type { CompletionKindSer, CompletionSer } from '@/../pkg/typst_wasm';
+import type { Completion, CompletionKind } from '@/../pkg/typst_wasm';
 import SYMBOLS_BY_NAME from '@/data/symbols.json';
 import { typstManager } from '@/libs';
 import { format } from '@/ui/elements/Typst';
@@ -18,7 +18,7 @@ const symbolRegexForLatex =
 const placeholderRegex = /\$\{(?:\d+:)?([^}]*)}/g;
 const rgbDetailRegex = /^rgb\("#?([0-9a-fA-F]{3,8})"\)$/;
 
-const kindToIcon: Record<CompletionKindSer, string> = {
+const kindToIcon: Record<CompletionKind, string> = {
   func: 'function-square',
   type: 'box',
   param: 'at-sign',
@@ -61,8 +61,8 @@ class AutocompletePlugin implements PluginValue {
   private items: HTMLElement;
 
   // Completion state
-  allCandidates: CompletionSer[] = [];
-  candidates: CompletionSer[] = [];
+  allCandidates: Completion[] = [];
+  candidates: Completion[] = [];
   selectedIndex = -1;
 
   /** Start of the current completion range (position before the query text). */
@@ -216,7 +216,7 @@ class AutocompletePlugin implements PluginValue {
 
     const innerOffset = cursor - regionInnerStart - offset;
 
-    let wasmCompletions: CompletionSer[] = [];
+    let wasmCompletions: Completion[] = [];
     let wasmFrom = cursor;
 
     try {
@@ -229,7 +229,7 @@ class AutocompletePlugin implements PluginValue {
       // ignore WASM errors
     }
 
-    let localCompletions: CompletionSer[] = [];
+    let localCompletions: Completion[] = [];
     let localFrom = cursor;
 
     const mode = region.activeMode ?? region.mode;
@@ -245,7 +245,7 @@ class AutocompletePlugin implements PluginValue {
 
         localCompletions = symbols.map((sym: SymbolData) => {
           return {
-            kind: 'symbol' as CompletionKindSer,
+            kind: 'symbol' as CompletionKind,
             symbol: sym.sym,
             label: `\\${sym.latexName}`,
             detail: sym.name,
@@ -258,7 +258,7 @@ class AutocompletePlugin implements PluginValue {
     const autocompleteSettings = view.state.facet(autocompleteSettingsFacet);
     const useUnicodeSymbols = autocompleteSettings?.useUnicodeSymbols ?? false;
 
-    const processCompletion = (item: CompletionSer): CompletionSer => {
+    const processCompletion = (item: Completion): Completion => {
       if (!useUnicodeSymbols || (item.kind !== 'symbol' && item.kind !== 'constant')) {
         if (item.label.startsWith('\\') && item.apply) {
           const symData = (SYMBOLS_BY_NAME as any)[item.detail || ''];
@@ -295,7 +295,7 @@ class AutocompletePlugin implements PluginValue {
     this.allCandidates = this.allCandidates.filter((c) => !(c.kind === 'constant' && c.label === 'WIDTH'));
 
     this.allCandidates.sort((a, b) => {
-      const score = (x: CompletionSer) => (x.kind === 'func' || x.kind === 'constant' ? 1 : 0);
+      const score = (x: Completion) => (x.kind === 'func' || x.kind === 'constant' ? 1 : 0);
       return score(b) - score(a);
     });
 
@@ -324,7 +324,7 @@ class AutocompletePlugin implements PluginValue {
     this.selectedIndex = -1;
     const query = view.state.sliceDoc(this.from, cursor).toLowerCase();
 
-    let filtered: CompletionSer[];
+    let filtered: Completion[];
     if (query.length === 0) {
       filtered = this.allCandidates;
     } else {
@@ -402,7 +402,7 @@ class AutocompletePlugin implements PluginValue {
         kindEl.appendChild(swatch);
         kindEl.classList.add('has-color-swatch');
       } else {
-        setIcon(kindEl, kindToIcon[item.kind as CompletionKindSer] ?? 'info');
+        setIcon(kindEl, kindToIcon[item.kind as CompletionKind] ?? 'info');
       }
       el.appendChild(kindEl);
 
@@ -511,7 +511,7 @@ class AutocompletePlugin implements PluginValue {
    * Tab – insert the candidate's text and continue narrowing.
    * If the query already matches the candidate exactly, finalizes (execute).
    */
-  private complete(item: CompletionSer, isCycling = false) {
+  private complete(item: Completion, isCycling = false) {
     const apply = item.apply ?? item.label;
     const { text } = resolveApply(apply);
 
@@ -534,7 +534,7 @@ class AutocompletePlugin implements PluginValue {
    * Enter – finalize the selection and fully reset.
    * A fresh autocomplete will trigger naturally on the next keystroke.
    */
-  private execute(item: CompletionSer) {
+  private execute(item: Completion) {
     const apply = item.apply ?? item.label;
     const { text, cursor } = resolveApply(apply);
 

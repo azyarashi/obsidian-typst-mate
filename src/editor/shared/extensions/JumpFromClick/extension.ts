@@ -1,6 +1,6 @@
 import { type EditorView, ViewPlugin } from '@codemirror/view';
 import { editorHelper } from '@/libs';
-import type { JumpSer } from '@/libs/typstManager/worker';
+import type { Jump } from '@/libs/typstManager/worker';
 import type TypstElement from '@/ui/elements/Typst';
 import { getRegionAt, type ParsedRegion } from '../../utils/core';
 import { handleTypstMateURI } from './uri';
@@ -8,7 +8,7 @@ import { handleTypstMateURI } from './uri';
 class JumpFromClickPluginValue {
   constructor(public view: EditorView) {}
 
-  async jumpTo(jump: JumpSer, event: MouseEvent, context?: TypstElement) {
+  async jumpTo(jump: Jump, event: MouseEvent, context?: TypstElement) {
     switch (jump.type) {
       case 'file': {
         if (jump.pos === null || jump.pos === undefined) break;

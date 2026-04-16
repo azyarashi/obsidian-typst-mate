@@ -1,8 +1,8 @@
 import { Setting } from '@components/obsidian/Setting';
 import { useEffect, useState } from 'preact/hooks';
+import type { PackageSpec } from '@/../pkg/typst_wasm';
 import { t } from '@/i18n';
 import { fileManager } from '@/libs';
-import type { PackageSpec } from '@/types/typst';
 import { CachedPackageList } from './cachedPackageList';
 import { LocalPackageList } from './localPackageList';
 
@@ -10,7 +10,7 @@ export function PackagesListContainer() {
   const [cachedPackages, setCachedPackages] = useState<PackageSpec[]>([]);
 
   const loadCachedPackages = async () => {
-    const specs = await fileManager.collectPackages(fileManager.packagesDirNPath, false);
+    const specs = await fileManager.collectPackages(fileManager.vaultPackagesDirNPath, false);
     setCachedPackages(specs);
   };
 

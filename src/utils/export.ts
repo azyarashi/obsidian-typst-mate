@@ -1,11 +1,11 @@
 import { Notice, type TFile } from 'obsidian';
 import { t } from '@/i18n';
 import { ctxToNDir, typstManager } from '@/libs/typstManager';
-import type { HtmlOptionsSer, PdfOptionsSer, PngOptionsSer, SvgOptionsSer } from '@/libs/typstManager/worker';
+import type { HtmlOptions, PdfOptions, PngOptions, SvgOptions } from '@/libs/typstManager/worker';
 import type ObsidianTypstMate from '@/main';
 
-export type SvgExportOptions = SvgOptionsSer & { filenameTemplate: string };
-export type PngExportOptions = PngOptionsSer & { filenameTemplate: string };
+export type SvgExportOptions = SvgOptions & { filenameTemplate: string };
+export type PngExportOptions = PngOptions & { filenameTemplate: string };
 
 export type ExportFormat = 'pdf' | 'svg' | 'png' | 'html';
 
@@ -13,11 +13,11 @@ export async function exportToHtml(
   plugin: ObsidianTypstMate,
   file: TFile,
   content: string,
-  options: HtmlOptionsSer,
+  options: HtmlOptions,
   notice = true,
 ) {
   const ndir = ctxToNDir(file.path);
-  const result = await typstManager.wasm.htmlrAsync(ndir, file.name, content, options);
+  const result = await typstManager.wasm.htmleAsync(ndir, file.name, content, options);
   if (!result?.html) return;
 
   const html = result.html;
@@ -33,11 +33,11 @@ export async function exportToPdf(
   plugin: ObsidianTypstMate,
   file: TFile,
   content: string,
-  options: PdfOptionsSer,
+  options: PdfOptions,
   notice: boolean = true,
 ): Promise<string | undefined> {
   const ndir = ctxToNDir(file.path);
-  const result = await typstManager.wasm.pdfrAsync(ndir, file.name, content, options);
+  const result = await typstManager.wasm.pdfeAsync(ndir, file.name, content, options);
   if (!result?.pdf) return;
 
   const uint8Array = result.pdf instanceof Uint8Array ? result.pdf : new Uint8Array(result.pdf);
@@ -54,7 +54,7 @@ export async function exportToPdf(
 
 export async function exportToSvg(plugin: ObsidianTypstMate, file: TFile, content: string, options: SvgExportOptions) {
   const ndir = ctxToNDir(file.path);
-  const result = await typstManager.wasm.svgrAsync(ndir, file.name, content, options);
+  const result = await typstManager.wasm.svgeAsync(ndir, file.name, content, options);
   if (!result?.svgs) return;
 
   const total = result.svgs.length;
@@ -70,7 +70,7 @@ export async function exportToSvg(plugin: ObsidianTypstMate, file: TFile, conten
 
 export async function exportToPng(plugin: ObsidianTypstMate, file: TFile, content: string, options: PngExportOptions) {
   const ndir = ctxToNDir(file.path);
-  const result = await typstManager.wasm.pngrAsync(ndir, file.name, content, options);
+  const result = await typstManager.wasm.pngeAsync(ndir, file.name, content, options);
   if (!result?.images) return;
 
   const total = result.images.length;

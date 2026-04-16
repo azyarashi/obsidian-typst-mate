@@ -13,6 +13,7 @@ export const features = {
   queryLocalFonts: false,
   excalidraw: false,
 };
+export type Features = typeof features;
 
 if (Platform.isDesktop) {
   try {

@@ -24,6 +24,7 @@ export default abstract class TypstElement extends HTMLElement {
   protected isInitialized = false;
 
   abstract render(): Promise<this>;
+  abstract renderSync(): this;
 
   postProcess(result: BaseResult) {
     this.isErr = false;

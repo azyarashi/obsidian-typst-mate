@@ -17,7 +17,7 @@ pub struct Func {
 #[serde(rename_all = "camelCase")]
 pub struct Param {
     pub name: String,
-    pub desc: String,
+    pub docs: String,
     pub types: Vec<CastItem>,
     pub default: Option<String>,
     pub named: bool,
@@ -47,7 +47,7 @@ impl From<&TypstFunc> for Func {
                 .flatten()
                 .map(|p| Param {
                     name: p.name.to_string(),
-                    desc: p.docs.to_string(),
+                    docs: p.docs.to_string(),
                     types: cast_info_to_types(&p.input),
                     default: p.default.map(|f| f().repr().to_string()),
                     named: p.named,

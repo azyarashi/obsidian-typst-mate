@@ -3,7 +3,7 @@ import { BASE_COLOR_VAR } from '@/constants';
 import { jumpFromClickPlugin } from '@/editor/shared/extensions/JumpFromClick';
 import { t } from '@/i18n';
 import { appUtils, typstManager } from '@/libs';
-import { type Diagnostic, ErrorCode, type SvgResultSer } from '@/libs/typstManager/worker';
+import { type Diagnostic, ErrorCode, type SvgResult } from '@/libs/typstManager/worker';
 import TypstElement from './Typst';
 
 import './SVG.css';
@@ -112,10 +112,10 @@ export default class TypstSVGElement extends TypstElement {
     const formatted = this.format();
 
     try {
-      const result = await typstManager.wasm.svgAsync(formatted, this.ndir, this.kind, this.id);
+      // TODO
+      const result = await typstManager.wasm.svgmAsync(this.ndir, this.kind, this.id, formatted);
       this.postProcess(result);
     } catch (err) {
-      console.log(err);
       if (err === ErrorCode.Pending) return this; // Ignore pending as it will be retried internally
       this.handleError(err as Diagnostic[]);
     }
@@ -123,7 +123,21 @@ export default class TypstSVGElement extends TypstElement {
     return this;
   }
 
-  override postProcess(result: SvgResultSer) {
+  renderSync() {
+    const formatted = this.format();
+
+    try {
+      const result = typstManager.wasm.svgm(this.ndir, this.kind, this.id, formatted);
+      if (result instanceof Promise) result.then((r: SvgResult) => this.postProcess(r));
+      else this.postProcess(result);
+    } catch (err) {
+      this.handleError(err as Diagnostic[]);
+    }
+
+    return this;
+  }
+
+  override postProcess(result: SvgResult) {
     super.postProcess(result);
     this.innerHTML = result.svg;
   }
@@ -136,7 +150,7 @@ export default class TypstSVGElement extends TypstElement {
     const x = (event.clientX - rect.left) / (rect.width / svg.viewBox.baseVal.width);
     const y = (event.clientY - rect.top) / (rect.height / svg.viewBox.baseVal.height);
 
-    await typstManager.wasm.svgAsync(this.format(), this.ndir, this.kind, this.id); // フレーム生成のための副作用
+    await typstManager.wasm.svgmAsync(this.ndir, this.kind, this.id, this.format()); // フレーム生成のための副作用
 
     const result = await typstManager.wasm.jumpFromClickAsync(x, y);
     if (result) {

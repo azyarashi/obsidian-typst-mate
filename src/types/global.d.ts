@@ -1,6 +1,5 @@
 import type { Remote } from 'comlink';
 import type { App, DropdownComponent, MarkdownView, Modal, SliderComponent, TFile, ToggleComponent } from 'obsidian';
-
 import type { Status } from '@/api';
 import type WasmAdapter from '@/libs/typstManager/worker';
 import type { MarginType, PageSize } from '../../.vscode/print';
@@ -57,7 +56,7 @@ declare global {
 export interface RenderingStatus {
   isRendering: boolean;
   hasError: boolean;
-  path?: string;
+  message?: string;
 }
 
 export interface GitHubAsset {

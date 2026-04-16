@@ -28,10 +28,8 @@ export default class ObsidianTypstMate extends Plugin {
     this.detaches.unshift(async () => await settingsManager.detach());
     this.detaches.unshift(() => appUtils.refreshView(this.app));
 
-    if (crashTracker.shouldBlockStart) {
-      await this.blockStart();
-      return;
-    } else crashTracker.updateCrashStatus(true);
+    if (crashTracker.shouldBlockStart) return await this.blockStart();
+    else crashTracker.updateCrashStatus(true);
 
     if (window.TypstMate !== undefined) this.hasLoadedInProcess = true;
     TypstMate.version = this.manifest.version;
