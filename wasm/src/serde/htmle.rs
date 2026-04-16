@@ -12,14 +12,14 @@ use tsify::Tsify;
 
 #[derive(Deserialize, Tsify)]
 #[serde(rename_all = "camelCase")]
-pub struct HtmlOptions {
+pub struct HtmlEOptions {
     #[tsify(optional)]
     pub extract_body: Option<bool>,
 }
 
 #[derive(Serialize, Tsify)]
 #[serde(rename_all = "camelCase")]
-pub struct HtmlExportResult {
+pub struct HtmlEResult {
     pub html: String,
     pub diags: Vec<Diagnostic>,
 }
@@ -29,7 +29,7 @@ pub fn htmle(
     diags: EcoVec<SourceDiagnostic>,
     world: &WasmWorld,
 ) -> Result<JsValue, JsValue> {
-    let result = HtmlExportResult {
+    let result = HtmlEResult {
         html,
         diags: diags
             .iter()

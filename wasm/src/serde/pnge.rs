@@ -12,7 +12,7 @@ use tsify::Tsify;
 
 #[derive(Deserialize, Tsify)]
 #[serde(rename_all = "camelCase")]
-pub struct PngOptions {
+pub struct PngEOptions {
     pub ppi: f32,
     #[tsify(optional)]
     pub page_ranges: Option<String>,
@@ -20,7 +20,7 @@ pub struct PngOptions {
 
 #[derive(Serialize, Tsify)]
 #[serde(rename_all = "camelCase")]
-pub struct PngExportResult {
+pub struct PngEResult {
     #[tsify(type = "Uint8Array[]")]
     pub images: Vec<Vec<u8>>,
     pub diags: Vec<Diagnostic>,
@@ -31,7 +31,7 @@ pub fn pnge(
     diags: EcoVec<SourceDiagnostic>,
     world: &WasmWorld,
 ) -> Result<JsValue, JsValue> {
-    let result = PngExportResult {
+    let result = PngEResult {
         images,
         diags: diags
             .iter()

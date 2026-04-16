@@ -10,19 +10,19 @@ import init, {
   type FontInfo,
   type FormatOptions,
   type FormatResult,
-  type HtmlExportResult,
-  type HtmlOptions,
-  type HtmlResult,
+  type HtmlEOptions,
+  type HtmlEResult,
+  type HtmlMResult,
   type Jump,
   type PackageSpec,
-  type PdfExportResult,
-  type PdfOptions,
-  type PngExportResult,
-  type PngOptions,
-  type SvgExportResult,
-  type SvgOptions,
-  type SvgpResult,
-  type SvgResult,
+  type PdfEOptions,
+  type PdfEResult,
+  type PngEOptions,
+  type PngEResult,
+  type SvgEOptions,
+  type SvgEResult,
+  type SvgMResult,
+  type SvgPResult,
   type Tooltip,
   Wasm,
 } from '@/../pkg/typst_wasm.js';
@@ -35,19 +35,19 @@ export type {
   FontInfo,
   FormatOptions,
   FormatResult,
-  HtmlExportResult,
-  HtmlOptions,
-  HtmlResult,
+  HtmlEOptions,
+  HtmlEResult,
+  HtmlMResult,
   Jump,
   PackageSpec,
-  PdfExportResult,
-  PdfOptions,
-  PngExportResult,
-  PngOptions,
-  SvgExportResult,
-  SvgOptions,
-  SvgpResult,
-  SvgResult,
+  PdfEOptions,
+  PdfEResult,
+  PngEOptions,
+  PngEResult,
+  SvgEOptions,
+  SvgEResult,
+  SvgMResult,
+  SvgPResult,
   Tooltip,
 };
 
@@ -123,7 +123,7 @@ export default class WasmAdapter {
   store(args: Args): void {
     const files: Map<string, string> = new Map();
     if (args.files) for (const [p, t] of args.files) files.set(p, t);
-    this.wasm!.store(args.fonts ?? [], args.sources ?? [], files);
+    this.wasm!.store(args.fonts ?? [], files);
   }
 
   setOffset(offset: number): void {
@@ -439,81 +439,76 @@ export default class WasmAdapter {
 
   // * Markdown
 
-  svgm(ndir: string, kind: string, id: string, code: string): SvgResult | Promise<SvgResult> {
+  svgm(ndir: string, kind: string, id: string, code: string): SvgMResult | Promise<SvgMResult> {
     const path = this.getFullPath(ndir, `${kind}_${id}.typ`);
     return this.wasm!.svgm(path, code, kind, id);
   }
 
-  async svgmAsync(ndir: string, kind: string, id: string, code: string): Promise<SvgResult> {
+  async svgmAsync(ndir: string, kind: string, id: string, code: string): Promise<SvgMResult> {
     const path = this.getFullPath(ndir, `${kind}_${id}.typ`);
     return this.withStatus(path, () => this.compileWithRetry(() => this.wasm!.svgm(path, code, kind, id)));
   }
 
-  htmlm(ndir: string, kind: string, id: string, code: string): HtmlResult | Promise<HtmlResult> {
+  htmlm(ndir: string, kind: string, id: string, code: string): HtmlMResult | Promise<HtmlMResult> {
     const path = this.getFullPath(ndir, `${kind}_${id}.typ`);
     return this.wasm!.htmlm(path, code, kind, id);
   }
 
-  async htmlmAsync(ndir: string, kind: string, id: string, code: string): Promise<HtmlResult> {
+  async htmlmAsync(ndir: string, kind: string, id: string, code: string): Promise<HtmlMResult> {
     const path = this.getFullPath(ndir, `${kind}_${id}.typ`);
     return this.withStatus(path, () => this.compileWithRetry(() => this.wasm!.htmlm(path, code, kind, id)));
   }
 
   // * Preview
 
-  svgp(ndir: string, filename: string, code: string): SvgpResult | Promise<SvgpResult> {
+  svgp(ndir: string, filename: string, code: string): SvgPResult | Promise<SvgPResult> {
     const path = this.getFullPath(ndir, filename);
     return this.wasm!.svgp(path, code);
   }
 
-  async svgpAsync(ndir: string, filename: string, code: string): Promise<SvgpResult> {
+  async svgpAsync(ndir: string, filename: string, code: string): Promise<SvgPResult> {
     const path = this.getFullPath(ndir, filename);
     return this.withStatus(path, () => this.compileWithRetry(() => this.wasm!.svgp(path, code)));
   }
 
   // * Export
 
-  htmle(
-    ndir: string,
-    filename: string,
-    code: string,
-    options: HtmlOptions,
-  ): HtmlExportResult | Promise<HtmlExportResult> {
+  htmle(ndir: string, filename: string, code: string, options: HtmlEOptions): HtmlEResult | Promise<HtmlEResult> {
     const path = this.getFullPath(ndir, filename);
     return this.wasm!.htmle(path, code, options);
   }
 
-  async htmleAsync(ndir: string, filename: string, code: string, options: HtmlOptions): Promise<HtmlExportResult> {
+  async htmleAsync(ndir: string, filename: string, code: string, options: HtmlEOptions): Promise<HtmlEResult> {
     const path = this.getFullPath(ndir, filename);
     return this.withStatus(path, () => this.compileWithRetry(() => this.wasm!.htmle(path, code, options)));
   }
 
-  pdfe(ndir: string, filename: string, code: string, options: PdfOptions): PdfExportResult | Promise<PdfExportResult> {
+  pdfe(ndir: string, filename: string, code: string, options: PdfEOptions): PdfEResult | Promise<PdfEResult> {
     const path = this.getFullPath(ndir, filename);
     return this.wasm!.pdfe(path, code, options);
   }
 
-  async pdfeAsync(ndir: string, filename: string, code: string, options: PdfOptions): Promise<PdfExportResult> {
+  async pdfeAsync(ndir: string, filename: string, code: string, options: PdfEOptions): Promise<PdfEResult> {
     const path = this.getFullPath(ndir, filename);
     return this.withStatus(path, () => this.compileWithRetry(() => this.wasm!.pdfe(path, code, options)));
   }
 
-  svge(ndir: string, filename: string, code: string, options: SvgOptions): SvgExportResult | Promise<SvgExportResult> {
+  svge(ndir: string, filename: string, code: string, options: SvgEOptions): SvgEResult | Promise<SvgEResult> {
     const path = this.getFullPath(ndir, filename);
     return this.wasm!.svge(path, code, options);
   }
 
-  async svgeAsync(ndir: string, filename: string, code: string, options: SvgOptions): Promise<SvgExportResult> {
+  async svgeAsync(ndir: string, filename: string, code: string, options: SvgEOptions): Promise<SvgEResult> {
     const path = this.getFullPath(ndir, filename);
     return this.withStatus(path, () => this.compileWithRetry(() => this.wasm!.svge(path, code, options)));
   }
 
-  pnge(ndir: string, filename: string, code: string, options: PngOptions): PngExportResult | Promise<PngExportResult> {
+  pnge(ndir: string, filename: string, code: string, options: PngEOptions): PngEResult | Promise<PngEResult> {
     const path = this.getFullPath(ndir, filename);
     return this.wasm!.pnge(path, code, options);
   }
 
-  async pngeAsync(ndir: string, filename: string, code: string, options: PngOptions): Promise<PngExportResult> {
+  async pngeAsync(ndir: string, filename: string, code: string, options: PngEOptions): Promise<PngEResult> {
     const path = this.getFullPath(ndir, filename);
     return this.withStatus(path, () => this.compileWithRetry(() => this.wasm!.pnge(path, code, options)));
   }
@@ -523,7 +518,6 @@ expose(WasmAdapter, self);
 
 type Args = {
   fonts?: ArrayBuffer[];
-  sources?: Map<string, Uint8Array>;
   files?: Map<string, string>;
 };
 

@@ -154,15 +154,9 @@ export class TypstManager implements Singleton {
       )
     ).filter((font) => font !== undefined);
 
-    const sources: Map<string, Uint8Array> = new Map();
-
     const files = await this.collectTagFiles();
 
-    await this.wasm.store({
-      fonts,
-      sources,
-      files,
-    });
+    await this.wasm.store({ fonts, files });
 
     this.ready = true;
     TypstMate.update(Status.Ready);

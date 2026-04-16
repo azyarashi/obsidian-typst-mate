@@ -12,7 +12,7 @@ use tsify::Tsify;
 
 #[derive(Serialize, Tsify)]
 #[serde(rename_all = "camelCase")]
-pub struct HtmlResult {
+pub struct HtmlMResult {
     pub html: String,
     pub diags: Vec<Diagnostic>,
 }
@@ -22,7 +22,7 @@ pub fn htmlm(
     diags: EcoVec<SourceDiagnostic>,
     world: &WasmWorld,
 ) -> Result<JsValue, JsValue> {
-    let result = HtmlResult {
+    let result = HtmlMResult {
         html,
         diags: diags
             .iter()

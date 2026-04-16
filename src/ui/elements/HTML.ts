@@ -1,7 +1,7 @@
 import { type Menu, type MenuItem, Notice } from 'obsidian';
 import { t } from '@/i18n';
 import { typstManager } from '@/libs';
-import type { HtmlResult } from '@/libs/typstManager/worker';
+import type { HtmlMResult } from '@/libs/typstManager/worker';
 import TypstElement from './Typst';
 
 import './HTML.css';
@@ -31,7 +31,7 @@ export default class TypstHTMLElement extends TypstElement {
 
     try {
       const result = typstManager.wasm.htmlm(this.ndir, this.kind, this.id, formatted);
-      if (result instanceof Promise) result.then((r: HtmlResult) => this.postProcess(r));
+      if (result instanceof Promise) result.then((r: HtmlMResult) => this.postProcess(r));
       else if (result) this.postProcess(result);
     } catch (err) {
       this.handleError(err as any);
@@ -40,7 +40,7 @@ export default class TypstHTMLElement extends TypstElement {
     return this;
   }
 
-  override postProcess(result: HtmlResult) {
+  override postProcess(result: HtmlMResult) {
     super.postProcess(result);
     this.innerHTML = result.html;
   }

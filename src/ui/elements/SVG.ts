@@ -3,7 +3,7 @@ import { BASE_COLOR_VAR } from '@/constants';
 import { jumpFromClickPlugin } from '@/editor/shared/extensions/JumpFromClick';
 import { t } from '@/i18n';
 import { appUtils, typstManager } from '@/libs';
-import { type Diagnostic, ErrorCode, type SvgResult } from '@/libs/typstManager/worker';
+import { type Diagnostic, ErrorCode, type SvgMResult } from '@/libs/typstManager/worker';
 import TypstElement from './Typst';
 
 import './SVG.css';
@@ -128,7 +128,7 @@ export default class TypstSVGElement extends TypstElement {
 
     try {
       const result = typstManager.wasm.svgm(this.ndir, this.kind, this.id, formatted);
-      if (result instanceof Promise) result.then((r: SvgResult) => this.postProcess(r));
+      if (result instanceof Promise) result.then((r: SvgMResult) => this.postProcess(r));
       else this.postProcess(result);
     } catch (err) {
       this.handleError(err as Diagnostic[]);
@@ -137,7 +137,7 @@ export default class TypstSVGElement extends TypstElement {
     return this;
   }
 
-  override postProcess(result: SvgResult) {
+  override postProcess(result: SvgMResult) {
     super.postProcess(result);
     this.innerHTML = result.svg;
   }

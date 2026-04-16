@@ -1,7 +1,7 @@
 import { type App, Modal, Notice, Setting, type TFile } from 'obsidian';
 import { t } from '@/i18n';
 import { typstManager } from '@/libs';
-import type { HtmlOptions, PdfOptions } from '@/libs/typstManager/worker';
+import type { HtmlEOptions, PdfEOptions } from '@/libs/typstManager/worker';
 import type ObsidianTypstMate from '@/main';
 import {
   type ExportFormat,
@@ -15,10 +15,10 @@ import {
 
 export type ExportOptions = {
   format: ExportFormat;
-  pdf: PdfOptions;
+  pdf: PdfEOptions;
   svg: SvgExportOptions;
   png: PngExportOptions;
-  html: HtmlOptions;
+  html: HtmlEOptions;
 };
 
 export class ExportToolModal extends Modal {

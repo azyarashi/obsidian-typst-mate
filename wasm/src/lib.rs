@@ -356,7 +356,7 @@ impl Wasm {
         code: &str,
         kind: &str,
         id: &str,
-    ) -> Result<JsSvgResult, JsValue> {
+    ) -> Result<JsSvgMResult, JsValue> {
         if self.last_kind == kind && self.last_id == id {
             self.world.replace(code);
         } else {
@@ -411,7 +411,7 @@ impl Wasm {
         code: &str,
         kind: &str,
         id: &str,
-    ) -> Result<JsHtmlResult, JsValue> {
+    ) -> Result<JsHtmlMResult, JsValue> {
         if self.last_kind == kind && self.last_id == id {
             self.world.replace(code);
         } else {
@@ -433,7 +433,7 @@ impl Wasm {
 /// preview
 #[wasm_bindgen]
 impl Wasm {
-    pub fn svgp(&mut self, path: &str, code: &str) -> Result<JsSvgpResult, JsValue> {
+    pub fn svgp(&mut self, path: &str, code: &str) -> Result<JsSvgPResult, JsValue> {
         self.update_source(VirtualPath::new(path), code);
         let Warned { output, warnings } = typst::compile::<PagedDocument>(&mut self.world);
 
@@ -456,14 +456,14 @@ impl Wasm {
         &mut self,
         path: &str,
         code: &str,
-        options: JsPdfOptions,
-    ) -> Result<JsPdfExportResult, JsValue> {
+        options: JsPdfEOptions,
+    ) -> Result<JsPdfEResult, JsValue> {
         let filename: String = Path::new(path)
             .file_name()
             .and_then(|s| s.to_str())
             .unwrap_or("document")
             .to_string();
-        let options_ser: pdfe::PdfOptions = serde_wasm_bindgen::from_value(options.into())
+        let options_ser: pdfe::PdfEOptions = serde_wasm_bindgen::from_value(options.into())
             .map_err(|e| JsValue::from_str(&format!("failed to deserialize options: {}", e)))?;
 
         self.world.update_now();
@@ -519,44 +519,13 @@ impl Wasm {
         Ok(pdfe::pdfe(pdf_data, warnings, &self.world)?.unchecked_into())
     }
 
-    pub fn svge(
-        &mut self,
-        path: &str,
-        code: &str,
-        options: JsSvgOptions,
-    ) -> Result<JsSvgExportResult, JsValue> {
-        let options_ser: svge::SvgOptions = serde_wasm_bindgen::from_value(options.into())
-            .map_err(|e| JsValue::from_str(&format!("failed to deserialize options: {}", e)))?;
-
-        self.world.update_now();
-        self.update_source(VirtualPath::new(path), code);
-        let Warned { output, warnings } = typst::compile::<PagedDocument>(&mut self.world);
-
-        let document = self.export_result(output)?;
-        let page_ranges: Option<PageRanges> = options_ser
-            .page_ranges
-            .as_ref()
-            .and_then(|s| utils::parse_page_ranges(s));
-        let mut svgs = Vec::new();
-        for (i, page) in document.pages.iter().enumerate() {
-            if let Some(ranges) = &page_ranges {
-                if !ranges.includes_page_index(i) {
-                    continue;
-                }
-            }
-            let svg = typst_svg::svg(page);
-            svgs.push(svg);
-        }
-        Ok(svge::svge(svgs, warnings, &self.world)?.unchecked_into())
-    }
-
     pub fn pnge(
         &mut self,
         path: &str,
         code: &str,
-        options: JsPngOptions,
-    ) -> Result<JsPngExportResult, JsValue> {
-        let options_ser: pnge::PngOptions = serde_wasm_bindgen::from_value(options.into())
+        options: JsPngEOptions,
+    ) -> Result<JsPngEResult, JsValue> {
+        let options_ser: pnge::PngEOptions = serde_wasm_bindgen::from_value(options.into())
             .map_err(|e| JsValue::from_str(&format!("failed to deserialize options: {}", e)))?;
 
         self.world.update_now();
@@ -585,13 +554,44 @@ impl Wasm {
         Ok(pnge::pnge(images, warnings, &self.world)?.unchecked_into())
     }
 
+    pub fn svge(
+        &mut self,
+        path: &str,
+        code: &str,
+        options: JsSvgEOptions,
+    ) -> Result<JsSvgEResult, JsValue> {
+        let options_ser: svge::SvgEOptions = serde_wasm_bindgen::from_value(options.into())
+            .map_err(|e| JsValue::from_str(&format!("failed to deserialize options: {}", e)))?;
+
+        self.world.update_now();
+        self.update_source(VirtualPath::new(path), code);
+        let Warned { output, warnings } = typst::compile::<PagedDocument>(&mut self.world);
+
+        let document = self.export_result(output)?;
+        let page_ranges: Option<PageRanges> = options_ser
+            .page_ranges
+            .as_ref()
+            .and_then(|s| utils::parse_page_ranges(s));
+        let mut svgs = Vec::new();
+        for (i, page) in document.pages.iter().enumerate() {
+            if let Some(ranges) = &page_ranges {
+                if !ranges.includes_page_index(i) {
+                    continue;
+                }
+            }
+            let svg = typst_svg::svg(page);
+            svgs.push(svg);
+        }
+        Ok(svge::svge(svgs, warnings, &self.world)?.unchecked_into())
+    }
+
     pub fn htmle(
         &mut self,
         path: &str,
         code: &str,
-        options: JsHtmlOptions,
-    ) -> Result<JsHtmlExportResult, JsValue> {
-        let options_ser: htmle::HtmlOptions = serde_wasm_bindgen::from_value(options.into())
+        options: JsHtmlEOptions,
+    ) -> Result<JsHtmlEResult, JsValue> {
+        let options_ser: htmle::HtmlEOptions = serde_wasm_bindgen::from_value(options.into())
             .map_err(|e| JsValue::from_str(&format!("failed to deserialize options: {}", e)))?;
 
         self.world.update_now();
@@ -732,31 +732,34 @@ extern "C" {
     #[wasm_bindgen(typescript_type = "Jump[]")]
     pub type JsJumpArray;
 
-    #[wasm_bindgen(typescript_type = "PdfOptions")]
-    pub type JsPdfOptions;
-    #[wasm_bindgen(typescript_type = "SvgOptions")]
-    pub type JsSvgOptions;
-    #[wasm_bindgen(typescript_type = "PngOptions")]
-    pub type JsPngOptions;
-    #[wasm_bindgen(typescript_type = "HtmlOptions")]
-    pub type JsHtmlOptions;
+    #[wasm_bindgen(typescript_type = "SvgMResult")]
+    pub type JsSvgMResult;
+    #[wasm_bindgen(typescript_type = "HtmlMResult")]
+    pub type JsHtmlMResult;
+
+    #[wasm_bindgen(typescript_type = "SvgPResult")]
+    pub type JsSvgPResult;
+
+    #[wasm_bindgen(typescript_type = "PdfEOptions")]
+    pub type JsPdfEOptions;
+    #[wasm_bindgen(typescript_type = "PngEOptions")]
+    pub type JsPngEOptions;
+    #[wasm_bindgen(typescript_type = "SvgEOptions")]
+    pub type JsSvgEOptions;
+    #[wasm_bindgen(typescript_type = "HtmlEOptions")]
+    pub type JsHtmlEOptions;
     #[wasm_bindgen(typescript_type = "FormatOptions")]
     pub type JsFormatOptions;
     #[wasm_bindgen(typescript_type = "FormatResult")]
     pub type JsFormatResult;
 
-    #[wasm_bindgen(typescript_type = "PdfExportResult")]
-    pub type JsPdfExportResult;
-    #[wasm_bindgen(typescript_type = "SvgExportResult")]
-    pub type JsSvgExportResult;
-    #[wasm_bindgen(typescript_type = "PngExportResult")]
-    pub type JsPngExportResult;
-    #[wasm_bindgen(typescript_type = "HtmlExportResult")]
-    pub type JsHtmlExportResult;
-    #[wasm_bindgen(typescript_type = "HtmlResult")]
-    pub type JsHtmlResult;
-    #[wasm_bindgen(typescript_type = "SvgResult")]
-    pub type JsSvgResult;
-    #[wasm_bindgen(typescript_type = "SvgpResult")]
-    pub type JsSvgpResult;
+    #[wasm_bindgen(typescript_type = "PdfEResult")]
+    pub type JsPdfEResult;
+    #[wasm_bindgen(typescript_type = "PngEResult")]
+    pub type JsPngEResult;
+    #[wasm_bindgen(typescript_type = "SvgEResult")]
+    pub type JsSvgEResult;
+    #[wasm_bindgen(typescript_type = "HtmlEResult")]
+    pub type JsHtmlEResult;
+
 }

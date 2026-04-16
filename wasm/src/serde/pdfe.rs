@@ -13,7 +13,7 @@ use tsify::Tsify;
 
 #[derive(Deserialize, Tsify)]
 #[serde(rename_all = "camelCase")]
-pub struct PdfOptions {
+pub struct PdfEOptions {
     #[tsify(optional)]
     pub ident: Option<String>,
     #[tsify(optional)]
@@ -29,7 +29,7 @@ pub struct PdfOptions {
 
 #[derive(Serialize, Tsify)]
 #[serde(rename_all = "camelCase")]
-pub struct PdfExportResult {
+pub struct PdfEResult {
     #[tsify(type = "Uint8Array")]
     pub pdf: Vec<u8>,
     pub diags: Vec<Diagnostic>,
@@ -40,7 +40,7 @@ pub fn pdfe(
     diags: EcoVec<SourceDiagnostic>,
     world: &WasmWorld,
 ) -> Result<JsValue, JsValue> {
-    let result = PdfExportResult {
+    let result = PdfEResult {
         pdf,
         diags: diags
             .iter()

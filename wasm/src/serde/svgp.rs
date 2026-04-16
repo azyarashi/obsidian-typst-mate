@@ -12,7 +12,7 @@ use tsify::Tsify;
 
 #[derive(Serialize, Tsify)]
 #[serde(rename_all = "camelCase")]
-pub struct SvgpResult {
+pub struct SvgPResult {
     pub svgp: Vec<String>,
     pub diags: Vec<Diagnostic>,
 }
@@ -22,7 +22,7 @@ pub fn svgp(
     diags: EcoVec<SourceDiagnostic>,
     world: &WasmWorld,
 ) -> Result<JsValue, JsValue> {
-    let result = SvgpResult {
+    let result = SvgPResult {
         svgp,
         diags: diags
             .iter()
