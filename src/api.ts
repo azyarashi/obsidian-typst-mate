@@ -29,7 +29,7 @@ export enum Status {
  */
 export const TypstMate: NonNullable<typeof window.TypstMate> = {
   status: 0 as Status,
-  rendering: { isRendering: false, hasError: false, path: undefined },
+  rendering: { isRendering: false, hasError: false, message: undefined },
   isReady: () => TypstMate.status === Status.Ready,
   update: (status, rendering) => {
     if (status !== undefined) TypstMate.status = status;
