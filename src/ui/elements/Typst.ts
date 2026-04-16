@@ -71,7 +71,7 @@ export default abstract class TypstElement extends HTMLElement {
 
     const diagEl = document.createElement('span');
     diagEl.className = 'typstmate-error';
-    diagEl.textContent = `${diag.message}${diag.hints.length !== 0 ? ` ${t('common.hintsCount', { count: diag.hints.length })}` : ''}`;
+    diagEl.textContent = diag.message;
 
     diagEl.addEventListener('mouseenter', () => {
       const view = appUtils.app.workspace.getActiveViewOfType(MarkdownView);
