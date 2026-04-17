@@ -1,142 +1,7 @@
 {
   "common": {
-    "waiting": "プラグインの読み込みを待機中..."
-  },
-
-  "commands": {
-    "boxCurrentEquation": "数式を囲む",
-    "openTypstTools": "Typst ツールを開く",
-    "reloadTagFiles": "タグファイルを再読み込みする",
-    "renderToExcalidraw": "Excalidraw にレンダリングする",
-    "replaceTexWithTypst": "TeX を Typst に変換する",
-    "selectCurrentEquation": "現在の数式範囲を選択する",
-    "toggleBackgroundRendering": "バックグラウンドレンダリングを切り替える",
-    "formatTypst": "Typst フォーマットを適用",
-    "refreshWasm": "WASM を再初期化 (キャッシュクリア)",
-    "refreshView": "表示を更新"
-  },
-
-  "contextMenu": {
-    "copyAsImgTag": "img タグとしてコピー (Obsidian ノートに埋め込む用)",
-    "copyAsPngOpaque": "PNG (不透明) としてコピー",
-    "copyAsPngTransparent": "PNG (透明) としてコピー",
-    "copyAsHtml": "HTML としてコピー",
-    "copyAsScript": "スクリプトとしてコピー",
-    "copyAsSvgObsidian": "SVG (Obsidian テーマ) としてコピー",
-    "copyAsSvgTypst": "SVG (Typst デフォルト) としてコピー",
-    "newTypstFile": "Typst ファイルを作成",
-    "newTypstFileWithTemplate": "テンプレートから Typst ファイルを作成",
-    "openAsPreview": "プレビューとして開く",
-    "openAsText": "テキストとして開く",
-    "openWithDefaultApp": "デフォルトアプリで開く"
-  },
-
-  "modals": {
-    "diagnostic": {
-      "hintPrefix": "ヒント: {{hint}}"
-    },
-    "exportTool": {
-      "name": "エクスポート",
-      "format": {
-        "name": "ファイルフォーマット",
-        "options": {
-          "pdf": "PDF",
-          "png": "PNG",
-          "svg": "SVG",
-          "html": "HTML"
-        }
-      },
-      "common": {
-        "options": "オプション",
-        "pageRange.name": "ページ範囲",
-        "pageRange.desc": "ハイフンやカンマを利用して出力するページ範囲を指定できます.",
-        "pageRange.placeholder": "1-3, 5, 7-",
-        "output.name": "出力",
-        "output.desc": "ページ番号 <code>{p}</code> や 総ページ数 <code>{t}</code> を使用できます. ゼロ埋めされたページ番号には <code>{0p}</code> を使用してください."
-      },
-      "pdf": {
-        "name": "PDF オプション",
-        "tagged.name": "タグ付き PDF",
-        "tagged.desc": "アクセシビリティのメタデータを含めます",
-        "standards.name": "PDF 準拠規格",
-        "standards.desc": "特定の規格に準拠させます。",
-        "customTimestamp": "カスタムタイムスタンプ",
-        "customTimestampDesc": "カスタムの作成日時を設定します。",
-        "documentIdentifier": "ドキュメント識別子",
-        "documentIdentifierDesc": "ドキュメントの一意の識別子。"
-      },
-      "png": {
-        "name": "PNG オプション",
-        "ppi.name": "PPI",
-        "ppi.desc": "1 インチあたりのピクセル数. 高いほど高解像度になります."
-      },
-      "svg": {
-        "name": "SVG オプション"
-      },
-      "html": {
-        "name": "HTML オプション",
-        "extractBody": "body の中身を抽出",
-        "extractBodyDesc": "<code><body></code> タグの中身のみを出力します."
-      },
-      "buttons": {
-        "export": "出力"
-      }
-    },
-    "font": {
-      "copyFontFamilyName": "ファミリー名をコピー",
-      "labels": {
-        "style": "スタイル: {{value}}",
-        "weight": "ウェイト: {{value}}",
-        "stretch": "ストレッチ: {{value}}",
-        "flags": "フラグ: {{value}}"
-      }
-    },
-    "templateSelect": {
-      "heading": "テンプレートを選択",
-      "buttons": {
-        "select": "選択"
-      }
-    }
-  },
-
-  "notices": {
-    "failedToOpenTypstTools": "Typst ツールを開けませんでした。",
-    "commandNotFound": "コマンド {{id}} が見つかりませんでした",
-    "commandNotExecuted": "コマンド {{id}} が実行されませんでした",
-    "unloadFailed": "プラグインのアンロード中にエラーが発生しました。",
-    "alreadyRegisteredCodeblock": "登録済みのコードブロック言語です: {{id}}",
-    "cachedSuccessfully": "キャッシュに成功しました！",
-    "copied": "コピーしました！",
-    "copiedToClipboard": "クリップボードにコピーしました！",
-    "crashAutoDisabled": "[Typst Mate] 3回連続でクラッシュしたため、プラグインを自動的にオフにしました",
-    "downloadingAsset": "{{asset}} をダウンロード中...",
-    "downloadingWasm": "最新の wasm をダウンロード中...",
-    "exportFailed": "書き出しに失敗しました。詳細はコンソールを確認してください。",
-    "exportedPngImages": "{{count}} 枚の PNG 画像を書き出しました",
-    "exportedSvgPages": "{{count}} ページの SVG を書き出しました",
-    "exportedTo": "{{path}} に書き出しました",
-    "failedToCache": "キャッシュに失敗しました",
-    "failedToConvertSvgToPng": "SVG から PNG への変換に失敗しました",
-    "failedToLoadCache": "キャッシュの読み込みに失敗しました: {{name}}",
-    "failedToLoadFont": "フォントの読み込みに失敗しました: {{name}}",
-    "failedToRemove": "削除に失敗しました",
-    "filesUpdated": "ファイルが更新されました。",
-    "fontAlreadyImported": "フォントは既にインポートされています！",
-    "idAlreadyExists": "この ID は既に存在します。",
-    "idCannotBeEmpty": "ID を空にすることはできません",
-    "importedSuccessfully": "インポートに成功しました！",
-    "initFailed": "Typst の初期化に失敗しました。プロセッサ ID に記号が含まれていないか確認し、パッケージキャッシュの消去を試し、無効なフォントがインストールされていないか確認してください。",
-    "invalidNumberRevealDelay": "Reveal Delay の数値が無効です",
-    "noActiveRegion": "アクティブな範囲がありません",
-    "noActiveView": "アクティブなビューが見つかりません。",
-    "pluginReloaded": "プラグインを再読み込みしました。",
-    "removedSuccessfully": "正常に削除されました！",
-    "revealDelayMustBePositive": "Reveal Delay は 0 より大きい必要があります",
-    "snippetExecutionFailed": "スニペットの実行に失敗しました: {{error}}",
-    "templateDirNotExist": "テンプレートディレクトリが存在しません。インポートパスに `templates` ディレクトリを作成してください。",
-    "typstDirNotExist": "Typst ディレクトリが存在しません。高度な設定を確認してください。",
-    "assetDownloaded": "{{asset}} をダウンロードしました！",
-    "wasmDownloaded": "Wasm をダウンロードしました！"
+    "waiting": "プラグインの読み込みを待機中...",
+    "openTypstTools": "Typst ツールを開く"
   },
 
   "settings": {
@@ -219,12 +84,14 @@
         "hotkey": "ホットキー",
         "long-press": "長押し",
         "type": "入力",
-        "regex": "正規表現"
+        "regex": "正規表現",
+        "none": "なし"
       },
       "actionTypes": {
         "snippet": "スニペット",
         "script": "スクリプト",
-        "command": "コマンド"
+        "command": "コマンド",
+        "action": "アクション"
       }
     },
 
@@ -486,5 +353,142 @@
         "reload": "再読み込み"
       }
     }
+  },
+
+  "modals": {
+    "exportTool": {
+      "name": "エクスポート",
+      "format": {
+        "name": "ファイルフォーマット",
+        "options": {
+          "pdf": "PDF",
+          "png": "PNG",
+          "svg": "SVG",
+          "html": "HTML"
+        }
+      },
+      "common": {
+        "options": "オプション",
+        "pageRange.name": "ページ範囲",
+        "pageRange.desc": "ハイフンやカンマを利用して出力するページ範囲を指定できます.",
+        "pageRange.placeholder": "1-3, 5, 7-",
+        "output.name": "出力",
+        "output.desc": "ページ番号 <code>{p}</code> や 総ページ数 <code>{t}</code> を使用できます. ゼロ埋めされたページ番号には <code>{0p}</code> を使用してください."
+      },
+      "pdf": {
+        "name": "PDF オプション",
+        "tagged.name": "タグ付き PDF",
+        "tagged.desc": "アクセシビリティのメタデータを含めます",
+        "standards.name": "PDF 準拠規格",
+        "standards.desc": "特定の規格に準拠させます。",
+        "customTimestamp": "カスタムタイムスタンプ",
+        "customTimestampDesc": "カスタムの作成日時を設定します。",
+        "documentIdentifier": "ドキュメント識別子",
+        "documentIdentifierDesc": "ドキュメントの一意の識別子。"
+      },
+      "png": {
+        "name": "PNG オプション",
+        "ppi.name": "PPI",
+        "ppi.desc": "1 インチあたりのピクセル数. 高いほど高解像度になります."
+      },
+      "svg": {
+        "name": "SVG オプション"
+      },
+      "html": {
+        "name": "HTML オプション",
+        "extractBody": "body の中身を抽出",
+        "extractBodyDesc": "<code><body></code> タグの中身のみを出力します."
+      },
+      "buttons": {
+        "export": "出力"
+      }
+    },
+    "font": {
+      "copyFamilyName": "ファミリー名をコピー",
+      "labels": {
+        "style": "スタイル: {{value}}",
+        "weight": "ウェイト: {{value}}",
+        "stretch": "ストレッチ: {{value}}",
+        "flags": "OpenType フラグ: {{value}}"
+      }
+    },
+    "templateSelect": {
+      "heading": "テンプレートを選択",
+      "buttons": {
+        "select": "選択"
+      }
+    }
+  },
+
+  "notices": {
+    "failedToOpenTypstTools": "Typst ツールを開けませんでした。",
+    "commandNotFound": "コマンド {{id}} が見つかりませんでした",
+    "commandNotExecuted": "コマンド {{id}} が実行されませんでした",
+    "unloadFailed": "プラグインのアンロード中にエラーが発生しました。",
+    "alreadyRegisteredCodeblock": "登録済みのコードブロック言語です: {{id}}",
+    "cachedSuccessfully": "キャッシュに成功しました！",
+    "copied": "コピーしました！",
+    "copiedToClipboard": "クリップボードにコピーしました！",
+    "crashAutoDisabled": "[Typst Mate] 3回連続でクラッシュしたため、プラグインを自動的にオフにしました",
+    "downloadingAsset": "{{asset}} をダウンロード中...",
+    "downloadingWasm": "最新の wasm をダウンロード中...",
+    "exportFailed": "書き出しに失敗しました。詳細はコンソールを確認してください。",
+    "exportedPngImages": "{{count}} 枚の PNG 画像を書き出しました",
+    "exportedSvgPages": "{{count}} ページの SVG を書き出しました",
+    "exportedTo": "{{path}} に書き出しました",
+    "failedToCache": "キャッシュに失敗しました",
+    "failedToConvertSvgToPng": "SVG から PNG への変換に失敗しました",
+    "failedToLoadCache": "キャッシュの読み込みに失敗しました: {{name}}",
+    "failedToLoadFont": "フォントの読み込みに失敗しました: {{name}}",
+    "failedToRemove": "削除に失敗しました",
+    "filesUpdated": "ファイルが更新されました。",
+    "fontAlreadyImported": "フォントは既にインポートされています！",
+    "idAlreadyExists": "この ID は既に存在します。",
+    "idCannotBeEmpty": "ID を空にすることはできません",
+    "importedSuccessfully": "インポートに成功しました！",
+    "initFailed": "Typst の初期化に失敗しました。プロセッサ ID に記号が含まれていないか確認し、パッケージキャッシュの消去を試し、無効なフォントがインストールされていないか確認してください。",
+    "invalidNumberRevealDelay": "Reveal Delay の数値が無効です",
+    "noActiveRegion": "アクティブな範囲がありません",
+    "noActiveView": "アクティブなビューが見つかりません。",
+    "pluginReloaded": "プラグインを再読み込みしました。",
+    "removedSuccessfully": "正常に削除されました！",
+    "revealDelayMustBePositive": "Reveal Delay は 0 より大きい必要があります",
+    "snippetExecutionFailed": "スニペットの実行に失敗しました: {{error}}",
+    "templateDirNotExist": "テンプレートディレクトリが存在しません。インポートパスに `templates` ディレクトリを作成してください。",
+    "typstDirNotExist": "Typst ディレクトリが存在しません。高度な設定を確認してください。",
+    "assetDownloaded": "{{asset}} をダウンロードしました！",
+    "wasmDownloaded": "Wasm をダウンロードしました！"
+  },
+
+  "commands": {
+    "boxEquation": "数式をボックスで囲む",
+    "selectEquation": "現在の数式範囲を選択する",
+    "formatTypst": "Typstyle フォーマットを実行",
+    "reloadTagFiles": "タグファイルを再読み込みする",
+    "tex2typ": "ノート全体または選択範囲の数式を Typst に変換する",
+    "toggleBackgroundRendering": "バックグラウンドレンダリングを切り替える"
+  },
+
+  "statusBar": {
+    "toggleBackgroundRendering": "バックグラウンドレンダリングを切り替える",
+    "refreshWasm": "WASM を再初期化 (キャッシュクリア)",
+    "refreshView": "表示を更新"
+  },
+
+  "contextMenu": {
+    "copyAsImgTag": "img タグとしてコピー (Obsidian ノートに埋め込む用)",
+    "copyAsPngOpaque": "PNG (不透明) としてコピー",
+    "copyAsPngTransparent": "PNG (透明) としてコピー",
+    "copyAsHtml": "HTML としてコピー",
+    "copyAsScript": "スクリプトとしてコピー",
+    "copyAsSvgObsidian": "SVG (Obsidian テーマ) としてコピー",
+    "copyAsSvgTypst": "SVG (Typst デフォルト) としてコピー",
+
+    "newTypstFile": "Typst ファイルを作成",
+    "newTypstFileWithTemplate": "テンプレートから Typst ファイルを作成",
+
+    "openAsPreview": "プレビューとして開く",
+    "openAsText": "テキストとして開く",
+    "openWithDefaultApp": "デフォルトアプリで開く"
   }
 }

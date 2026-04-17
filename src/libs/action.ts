@@ -1,10 +1,10 @@
 export const ActionContexts = ['Markdown', 'MathJax', 'Markup', 'Code', 'Math', 'Opaque', 'Vim'] as const;
 export type ActionContext = (typeof ActionContexts)[number];
 
-export const TriggerTypes = ['hotkey', 'long-press', 'type', 'regex'] as const;
+export const TriggerTypes = ['hotkey', 'long-press', 'type', 'regex', 'none'] as const;
 export type TriggerType = (typeof TriggerTypes)[number];
 
-export const ActionTypes = ['snippet', 'script', 'command'] as const;
+export const ActionTypes = ['snippet', 'script', 'command', 'action'] as const;
 export type ActionType = (typeof ActionTypes)[number];
 
 export interface Action {
@@ -22,14 +22,14 @@ export interface Action {
 
 export const newAction: Action = {
   id: 'new-action',
-  contexts: ['Markdown', 'Vim'],
+  contexts: ['Math'],
   trigger: {
-    t: 'hotkey',
-    v: 'mod-alt-t',
+    t: 'type',
+    v: '(・ω・っ)3',
   },
   action: {
     t: 'snippet',
-    v: '#CURSOR',
+    v: '#.0',
   },
 };
 

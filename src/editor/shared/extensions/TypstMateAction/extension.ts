@@ -1,9 +1,9 @@
 import { type Extension, Prec } from '@codemirror/state';
 import { EditorView, ViewPlugin, type ViewUpdate } from '@codemirror/view';
-import type { Action } from '@/libs/action';
+import type { Action, ActionContext } from '@/libs/action';
 import { RenderingEngine } from '@/libs/processor';
 import { getActiveRegion } from '../../utils/core';
-import { checkActionContext, executeAction, executeActionEffect } from './actions';
+import { checkActionContext, executeAction, executeActionEffect, resolveActionContext } from './actions';
 
 export function buildActionExtensions(actions: Action[], longPressDelayMs: number): Extension[] {
   actions = actions.filter((a) => a.trigger?.t && a.trigger.v && a.action?.t && a.action.v && a.contexts?.length > 0);
@@ -17,7 +17,7 @@ export function buildActionExtensions(actions: Action[], longPressDelayMs: numbe
 class ActionInterceptorPluginValue {
   private longPressTimeout?: number;
   private pendingKey?: string;
-  private savedSelection?: { anchor: number; head: number; content: string };
+  private savedSelection?: { anchor: number; head: number; content: string; context: ActionContext };
 
   private static readonly BUFFER_SIZE = 64;
   private typeBuffer = '';
@@ -60,6 +60,8 @@ class ActionInterceptorPluginValue {
 
   handleKeyDown(e: KeyboardEvent): boolean {
     if (this.view.composing) return false;
+
+    const context = resolveActionContext(this.view);
     const { key, repeat, ctrlKey, metaKey, altKey, shiftKey } = e;
 
     if (ctrlKey || metaKey || altKey) {
@@ -73,7 +75,7 @@ class ActionInterceptorPluginValue {
       const hotkeyAction = this.hotkeyActions.find(
         (a) =>
           (a.trigger.v.toLowerCase() === hotkeyStr || a.trigger.v.toLowerCase() === `mod-${key.toLowerCase()}`) &&
-          checkActionContext(this.view, a),
+          checkActionContext(this.view, a, context),
       );
 
       if (hotkeyAction) {
@@ -85,7 +87,7 @@ class ActionInterceptorPluginValue {
 
         e.preventDefault();
         e.stopPropagation();
-        this.executeAction(hotkeyAction);
+        this.executeAction(context, hotkeyAction);
         return true;
       }
     } else if (key.length === 1) {
@@ -97,7 +99,7 @@ class ActionInterceptorPluginValue {
       const docMatchBuffer = this.view.state.sliceDoc(Math.max(0, head - lookback), head) + key;
 
       for (const action of this.inputActions) {
-        if (!checkActionContext(this.view, action)) continue;
+        if (!checkActionContext(this.view, action, context)) continue;
 
         const t = action.trigger.t;
         const v = action.trigger.v;
@@ -105,7 +107,7 @@ class ActionInterceptorPluginValue {
         if (t === 'type') {
           if (v && typeMatchBuffer.endsWith(v) && docMatchBuffer.endsWith(v)) {
             e.preventDefault();
-            this.executeAction(action, v.length - 1);
+            this.executeAction(context, action, v.length - 1);
             this.typeBuffer = '';
             return true;
           }
@@ -117,7 +119,7 @@ class ActionInterceptorPluginValue {
           if (match) {
             const matchedStr = match[0];
             e.preventDefault();
-            this.executeAction(action, matchedStr.length - 1, match);
+            this.executeAction(context, action, matchedStr.length - 1, match);
             this.typeBuffer = '';
             return true;
           }
@@ -130,7 +132,7 @@ class ActionInterceptorPluginValue {
     // long-press
     const selection = this.view.state.selection.main;
     const longPressActions = this.longPressActions.filter((a) => {
-      return a.trigger.v === key && checkActionContext(this.view, a);
+      return a.trigger.v === key && checkActionContext(this.view, a, context);
     });
 
     if (longPressActions.length === 0 || ctrlKey || metaKey || altKey || selection.empty) {
@@ -144,7 +146,7 @@ class ActionInterceptorPluginValue {
     if (repeat && this.longPressTimeout) return true;
 
     if (longPressActions.length > 0) {
-      this.startLongPressTimeout(key, selection, longPressActions[0]!);
+      this.startLongPressTimeout(context, key, selection, longPressActions[0]!);
     }
     e.preventDefault();
     return true;
@@ -154,7 +156,12 @@ class ActionInterceptorPluginValue {
     if (e.key === this.pendingKey && this.longPressTimeout) this.cancelLongPressAndInsertKey();
   }
 
-  private startLongPressTimeout(key: string, selection: { anchor: number; head: number }, action: Action) {
+  private startLongPressTimeout(
+    context: ActionContext,
+    key: string,
+    selection: { anchor: number; head: number },
+    action: Action,
+  ) {
     this.clearLongPressTimeout();
     this.pendingKey = key;
     const from = Math.min(selection.anchor, selection.head);
@@ -164,10 +171,11 @@ class ActionInterceptorPluginValue {
       anchor: selection.anchor,
       head: selection.head,
       content: this.view.state.sliceDoc(from, to),
+      context,
     };
 
     this.longPressTimeout = window.setTimeout(() => {
-      this.executeAction(action);
+      this.executeAction(context, action);
       this.clearLongPressTimeout();
     }, this.longPressDelay);
   }
@@ -190,9 +198,9 @@ class ActionInterceptorPluginValue {
     this.clearLongPressTimeout();
   }
 
-  private executeAction(action: Action, deleteLength?: number, match?: RegExpMatchArray) {
+  private executeAction(context: ActionContext, action: Action, deleteLength?: number, match?: RegExpMatchArray) {
     this.view.dispatch({
-      effects: executeActionEffect.of({ action, deleteLength, match }),
+      effects: executeActionEffect.of({ action, context, deleteLength, match }),
       userEvent: `action.${action.action.t}`,
       scrollIntoView: true,
     });
@@ -247,7 +255,7 @@ function buildActionDispatcherPlugin() {
       for (const effect of tr.effects) {
         if (effect.is(executeActionEffect)) {
           const value = effect.value;
-          executeAction(update.view, value.action, value.deleteLength, value.match);
+          executeAction(update.view, value.context, value.action, value.deleteLength, value.match);
         }
       }
     }
