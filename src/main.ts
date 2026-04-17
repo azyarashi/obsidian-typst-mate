@@ -13,7 +13,7 @@ import './ui/styles';
 export default class ObsidianTypstMate extends Plugin {
   static readonly id = 'typst-mate';
 
-  private hasLoaded: boolean = true;
+  private hasLoadedInVault: boolean = true;
   private hasLoadedInProcess: boolean = false;
   private detaches: (() => any | Promise<any>)[] = [];
 
@@ -82,7 +82,7 @@ export default class ObsidianTypstMate extends Plugin {
         this.onLayoutReady()
           .then(() => {
             TypstMate.update(Status.Ready);
-            if (!this.hasLoaded) appUtils.openTypstTools(true);
+            if (!this.hasLoadedInVault) appUtils.openTypstTools(true);
           })
           .catch((e) => {
             console.error('[TypstMate] Plugin.onLayoutReady failed', e);
@@ -131,7 +131,7 @@ export default class ObsidianTypstMate extends Plugin {
 
   private async onLayoutReady() {
     const list = await fileManager.adapter.list(fileManager.pluginDirNPath);
-    if (list.folders.length === 0) this.hasLoaded = false;
+    if (list.folders.length === 0) this.hasLoadedInVault = false;
 
     // * fileManager
     await fileManager.ensureWasm(list.files);
