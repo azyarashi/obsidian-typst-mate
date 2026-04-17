@@ -3,7 +3,13 @@
   "version": "1.0.0",
   "private": true,
   "main": "src/index.ts",
-  "dependencies": {
+  "devDependencies": {
     "@parcel/watcher": "^2.5.6"
+  },
+  "dependencies": {
+    "detect-libc": "^2.1.2",
+    "is-glob": "^4.0.3",
+    "node-addon-api": "^8.7.0",
+    "picomatch": "^4.0.4"
   }
 }
