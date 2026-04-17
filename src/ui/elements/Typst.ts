@@ -5,7 +5,6 @@ import { t } from '@/i18n';
 import { appUtils, settingsManager, typstManager } from '@/libs';
 import { type Processor, type ProcessorKind, RenderingEngine } from '@/libs/processor';
 import type { BaseResult, Diagnostic as WasmDiagnostic } from '@/libs/typstManager/worker';
-import { renderDiagnosticMessage } from '@/ui/components/Diagnostic';
 
 import './Typst.css';
 
@@ -70,33 +69,8 @@ export default abstract class TypstElement extends HTMLElement {
     this.innerHTML = this.innerHTML.replaceAll('--typst-base-color', '--text-faint');
 
     const diagEl = document.createElement('span');
-    diagEl.className = 'typstmate-error';
+    diagEl.className = 'typstmate-element-error typstmate-temporary';
     diagEl.textContent = diag.message;
-
-    diagEl.addEventListener('mouseenter', () => {
-      const view = appUtils.app.workspace.getActiveViewOfType(MarkdownView);
-      if (!view) return;
-
-      const linterEl = renderDiagnosticMessage({ diagnostic: diag });
-
-      const updatePosition = () => {
-        const rect = diagEl.getBoundingClientRect();
-        linterEl.style.left = `${rect.left}px`;
-        linterEl.style.top = `${rect.bottom}px`;
-      };
-
-      updatePosition();
-      document.body.appendChild(linterEl);
-
-      const onMouseLeave = (e: MouseEvent) => {
-        if (linterEl.contains(e.relatedTarget as Node)) return;
-        linterEl.remove();
-        diagEl.removeEventListener('mouseleave', onMouseLeave);
-        linterEl.removeEventListener('mouseleave', onMouseLeave);
-      };
-      diagEl.addEventListener('mouseleave', onMouseLeave);
-      linterEl.addEventListener('mouseleave', onMouseLeave);
-    });
 
     this.replaceChildren(diagEl);
   }

@@ -12,3 +12,9 @@ mjx-container {
 .math:has(+ .cm-widgetBuffer + .cm-em) {
   --typst-base-color: var(--italic-color);
 }
+
+.typstmate-element-error {
+  color: red;
+  background-color: yellow;
+  pointer-events: none;
+}
