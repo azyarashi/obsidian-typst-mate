@@ -20,7 +20,7 @@
 		"untar-sync": "^1.0.4"
 	},
 	"devDependencies": {
-		"@biomejs/biome": "^2.4.11",
+		"@biomejs/biome": "^2.4.12",
 		"@codemirror/autocomplete": "^6.20.1",
 		"@codemirror/commands": "^6.10.3",
 		"@codemirror/language": "^6.12.3",
@@ -29,21 +29,21 @@
 		"@codemirror/state": "^6.6.0",
 		"@codemirror/view": "^6.41.0",
 		"@types/bun": "^1.3.12",
-		"@typescript/native-preview": "^7.0.0-dev.20260412.1",
+		"@typescript/native-preview": "^7.0.0-dev.20260416.2",
 		"@zsviczian/excalidraw": "^0.18.0-88",
-		"autoprefixer": "^10.4.27",
+		"autoprefixer": "^10.5.0",
 		"builtin-modules": "^5.1.0",
 		"esbuild": "^0.28.0",
 		"obsidian": "^1.12.3",
 		"obsidian-typings": "^5.20.0",
 		"obsidian-excalidraw-plugin": "github:zsviczian/obsidian-excalidraw-plugin#master",
-		"postcss": "^8.5.9",
+		"postcss": "^8.5.10",
 		"vite": "^8.0.8",
 		"vite-plugin-static-copy": "^4.0.1"
 	},
 	"peerDependencies": {
-		"typescript": "^6.0.2",
-		"puppeteer": "^24.40.0"
+		"typescript": "^6.0.3",
+		"puppeteer": "^24.41.0"
 	},
 	"workspaces": [
 		"packages/*"
