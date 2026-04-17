@@ -1,6 +1,6 @@
 import { type EditorView, type PluginValue, ViewPlugin, type ViewUpdate } from '@codemirror/view';
 import { getActiveRegion } from '@/editor/shared/utils/core';
-import { calculatePopupPosition } from '@/editor/shared/utils/position';
+import { calculatePopOverPositionByFromAndTo } from '@/editor/shared/utils/position';
 
 import './InlineMathPreview.css';
 
@@ -39,38 +39,63 @@ class InlinePreviewPlugin implements PluginValue {
         return;
       }
 
+      if (!this.renderContent(content, region.from + region.skip)) {
+        return;
+      }
+
+      const isInitialRender = !this.container.isShown();
+      if (isInitialRender) {
+        this.container.style.opacity = '0';
+        this.container.show();
+      }
+
       this.view.requestMeasure({
         read: () => {
           try {
-            return calculatePopupPosition(this.view, region.from, region.to);
+            return calculatePopOverPositionByFromAndTo({
+              view: this.view,
+              from: region.from,
+              to: region.to,
+              above: true,
+              avoidOverlap: true,
+              popOverMaxWidth: this.container.offsetWidth,
+              popOverMaxHeight: this.container.offsetHeight,
+            });
           } catch {
             return null;
           }
         },
         write: (pos) => {
-          if (pos) this.render(pos, content, region.from + region.skip);
+          if (isInitialRender) {
+            this.container.style.opacity = '';
+          }
+          if (pos) this.applyPosition(pos);
           else this.hide();
         },
       });
     }
   }
 
-  render(pos: { x: number; y: number }, content: string, regionFrom: number) {
-    if (!window.MathJax) return;
-    if (this.lastContent === content) return;
+  renderContent(content: string, regionFrom: number): boolean {
+    if (!window.MathJax) return false;
+    if (this.lastContent === content && this.container.isShown()) return true;
     this.lastContent = content;
     this.container.dataset.regionFrom = regionFrom.toString();
 
     const html = window.MathJax.tex2chtml(content, { display: false });
     this.container.replaceChildren(html);
+    return true;
+  }
 
+  applyPosition(pos: { x: number; y: number; above: boolean }) {
+    this.container.classList.toggle('above', pos.above);
     this.container.style.setProperty('--preview-left', `${pos.x}px`);
     this.container.style.setProperty('--preview-top', `${pos.y}px`);
-    this.container.show();
   }
 
   hide() {
     this.container.hide();
+    this.container.style.opacity = '';
     this.lastContent = '';
     delete this.container.dataset.regionFrom;
   }

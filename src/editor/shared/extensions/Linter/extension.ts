@@ -106,6 +106,7 @@ function computeDiagnostics(view: EditorView, result: TypstMateResult): Diagnost
 
 export const linterExtension = [
   diagnosticsState,
+
   ViewPlugin.fromClass(
     class {
       constructor(readonly view: EditorView) {
@@ -129,9 +130,9 @@ export const linterExtension = [
 
         const computed = computeDiagnostics(this.view, result);
 
-        const hasError = computed.some((d) => d.severity === 'error');
-        if (TypstMate.rendering.hasError !== hasError)
-          TypstMate.update(undefined, { ...TypstMate.rendering, hasError });
+        const errorOne = computed.find((d) => d.severity === 'error');
+        if (errorOne) TypstMate.update(undefined, { isRendering: false, hasError: true, message: errorOne.message });
+        else TypstMate.update(undefined, { ...TypstMate.rendering, hasError: false });
 
         requestAnimationFrame(() => {
           this.view.dispatch(setDiagnostics(this.view.state, computed));

@@ -7,7 +7,7 @@ import SYMBOLS_BY_NAME from '@/data/symbols.json';
 import { typstManager } from '@/libs';
 import { format } from '@/ui/elements/Typst';
 import { getActiveRegion, type ParsedRegion } from '../../utils/core';
-import { calculatePopupPosition } from '../../utils/position';
+import { calculatePopOverPositionByCursor } from '../../utils/position';
 import { type SymbolData, searchSymbols } from '../../utils/symbolSearcher';
 import { autocompleteSettingsFacet } from './package';
 
@@ -47,14 +47,11 @@ function resolveApply(apply: string): { text: string; cursor: number } {
   return { text: result, cursor: cursorPos };
 }
 
-/** Returns a CSS hex color if the detail is an rgb() constant description. */
 function extractColor(detail?: string): string | null {
   if (!detail) return null;
   const m = detail.match(rgbDetailRegex);
   return m ? `#${m[1]}` : null;
 }
-
-// ─────────────────────────────────────────────────────────────────────────────
 
 class AutocompletePlugin implements PluginValue {
   private container: HTMLElement;
@@ -82,6 +79,7 @@ class AutocompletePlugin implements PluginValue {
   /** True while we are mid-dispatch to ignore re-entrant update() calls. */
   private isApplyingCompletion = false;
   private isCycling = false;
+  private lastPositionAbove = false;
 
   private readonly onMouseMoveCapture = (e: MouseEvent) => this.handleMouseMove(e);
   private readonly onMouseDownCapture = (e: MouseEvent) => this.handleMouseDown(e);
@@ -102,7 +100,7 @@ class AutocompletePlugin implements PluginValue {
 
     this.items = this.container.createDiv('items');
 
-    document.body.appendChild(this.container);
+    view.dom.appendChild(this.container);
 
     window.addEventListener('keydown', this.onKeyDownCapture, true);
   }
@@ -111,6 +109,11 @@ class AutocompletePlugin implements PluginValue {
 
   update(update: ViewUpdate) {
     if (this.isApplyingCompletion) return;
+
+    if (update.view.composing) {
+      if (this.isActive) this.reset();
+      return;
+    }
 
     if (!update.view.hasFocus || !update.state.selection.main.empty) {
       this.reset();
@@ -353,35 +356,38 @@ class AutocompletePlugin implements PluginValue {
   }
 
   private scheduleRender(view: EditorView, cursor: number) {
-    setTimeout(() => {
+    requestAnimationFrame(() => {
       if (view.state.selection.main.head !== cursor) return;
-      view.requestMeasure({
+
+      this.renderItems();
+      this.view.requestMeasure({
         read: () => {
           try {
-            return calculatePopupPosition(view, this.from, cursor);
+            return calculatePopOverPositionByCursor({
+              view,
+              cursor: this.from,
+              popOverMaxWidth: this.container.offsetWidth,
+              popOverMaxHeight: this.container.offsetHeight,
+            });
           } catch {
             return null;
           }
         },
         write: (position) => {
-          if (position) this.render(position);
+          if (position) this.applyPosition(position);
           else this.hideUI();
         },
       });
-    }, 0);
+    });
   }
 
   // ── Rendering ─────────────────────────────────────────────────────────────
 
-  private render(position: { x: number; y: number; isTop: boolean }) {
-    this.container.style.setProperty('--preview-left', `${position.x}px`);
-    this.container.style.setProperty('--preview-top', `${position.y}px`);
-    this.container.classList.toggle('is-top', position.isTop);
-
+  private renderItems() {
     this.items.replaceChildren();
 
     if (this.selectedIndex === -1) {
-      this.selectedIndex = position.isTop ? this.candidates.length - 1 : 0;
+      this.selectedIndex = this.lastPositionAbove ? this.candidates.length - 1 : 0;
     }
 
     for (const [index, item] of this.candidates.entries()) {
@@ -389,7 +395,7 @@ class AutocompletePlugin implements PluginValue {
       el.className = 'item';
       el.dataset.index = String(index);
 
-      // Kind icon — or a color swatch if the constant has an rgb() detail
+      // アイコン
       const kindEl = document.createElement('span');
       kindEl.className = 'item-kind';
       kindEl.dataset.kind = item.kind;
@@ -406,7 +412,7 @@ class AutocompletePlugin implements PluginValue {
       }
       el.appendChild(kindEl);
 
-      // Unicode symbol (math completions)
+      // Symbol 補完
       if (item.symbol) {
         const symEl = document.createElement('span');
         symEl.className = 'item-symbol';
@@ -414,13 +420,13 @@ class AutocompletePlugin implements PluginValue {
         el.appendChild(symEl);
       }
 
-      // Label
+      // ラベル
       const labelEl = document.createElement('span');
       labelEl.className = 'item-label';
       labelEl.textContent = item.label;
       el.appendChild(labelEl);
 
-      // Detail (suppressed for color swatches — the swatch speaks for itself)
+      // 詳細
       if (item.detail) {
         const detailEl = document.createElement('span');
         detailEl.className = 'item-detail';
@@ -430,6 +436,22 @@ class AutocompletePlugin implements PluginValue {
 
       if (index === this.selectedIndex) el.classList.add('selected');
       this.items.appendChild(el);
+    }
+  }
+
+  private applyPosition(position: { x: number; y: number; above: boolean }) {
+    this.lastPositionAbove = position.above;
+    const parentRect = this.view.dom.getBoundingClientRect();
+    const x = position.x - parentRect.left;
+    const y = position.y - parentRect.top;
+
+    this.container.style.setProperty('--preview-left', `${x}px`);
+    this.container.style.setProperty('--preview-top', `${y}px`);
+    this.container.classList.toggle('is-top', position.above);
+
+    if (this.selectedIndex === -1) {
+      this.selectedIndex = position.above ? this.candidates.length - 1 : 0;
+      (this.items.children[this.selectedIndex] as HTMLElement | undefined)?.classList.add('selected');
     }
 
     if (this.candidates.length > 0) this.scrollSelectedIntoView();
@@ -451,7 +473,7 @@ class AutocompletePlugin implements PluginValue {
     });
   }
 
-  // ── UI visibility ─────────────────────────────────────────────────────────
+  // UI
 
   private showUI() {
     if (this.isActive) return;
@@ -482,7 +504,7 @@ class AutocompletePlugin implements PluginValue {
     this.isCycling = false;
   }
 
-  // ── Mouse handlers ────────────────────────────────────────────────────────
+  // マウスイベント
 
   private handleMouseMove(e: MouseEvent) {
     if (!this.isActive) return;
@@ -505,12 +527,8 @@ class AutocompletePlugin implements PluginValue {
     }
   }
 
-  // ── Completion actions ────────────────────────────────────────────────────
+  // 補完
 
-  /**
-   * Tab – insert the candidate's text and continue narrowing.
-   * If the query already matches the candidate exactly, finalizes (execute).
-   */
   private complete(item: Completion, isCycling = false) {
     const apply = item.apply ?? item.label;
     const { text } = resolveApply(apply);
@@ -526,14 +544,9 @@ class AutocompletePlugin implements PluginValue {
     this.isApplyingCompletion = false;
 
     this.to = this.from + text.length;
-    // Re-filter immediately so the popup reflects the completed text
     this.filterAndRender(this.view, this.to);
   }
 
-  /**
-   * Enter – finalize the selection and fully reset.
-   * A fresh autocomplete will trigger naturally on the next keystroke.
-   */
   private execute(item: Completion) {
     const apply = item.apply ?? item.label;
     const { text, cursor } = resolveApply(apply);
@@ -550,7 +563,7 @@ class AutocompletePlugin implements PluginValue {
     this.view.focus();
   }
 
-  // ── Keyboard handler ──────────────────────────────────────────────────────
+  // キーイベント
 
   handleKeyAction(key: string, e?: KeyboardEvent): boolean {
     if (!this.isActive || this.candidates.length === 0) return false;

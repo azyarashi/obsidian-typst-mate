@@ -14,6 +14,8 @@ import { exportToPdf } from '@/utils/export';
 import { TypstPreviewView } from '../typst-preview';
 import { ExportToolModal } from './exportTool';
 
+import './typst-file.css';
+
 export class TypstFileView extends TextFileView {
   static viewtype = 'typst-file';
 
@@ -248,8 +250,7 @@ export class TypstFileView extends TextFileView {
     });
 
     this.view = new EditorView({ parent: this.contentEl, state: startState });
-    this.view.dom.style.height = '100%';
-    this.view.dom.style.stroke = 'none';
+    this.view.dom.addClass('typst-file-view');
 
     this.findAndLinkPreview();
 

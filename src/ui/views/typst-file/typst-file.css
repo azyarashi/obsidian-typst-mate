@@ -1,0 +1,8 @@
+.workspace-leaf-content[data-type="typst-file"] {
+  overflow: hidden;
+}
+
+.typst-file-view {
+  height: 100%;
+  stroke: none;
+}

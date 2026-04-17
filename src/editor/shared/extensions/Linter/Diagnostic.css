@@ -1,7 +1,13 @@
 /** @see https://code.haverbeke.berlin/codemirror/lint/src/commit/50a00ca77ca4f2608025acce9e0a004e343c0f90/src/lint.ts */
+.cm-tooltip-hover:has(.typstmate-diag) {
+  border: none !important;
+  background: none !important;
+  z-index: 9999 !important;
+}
+
 .cm-diagnostic:has(.typstmate-diag) {
+  margin: 0 !important;
   padding: 0 !important;
-  margin-left: 0 !important;
 }
 
 .cm-diagnostic-error:has(.typstmate-diag) {

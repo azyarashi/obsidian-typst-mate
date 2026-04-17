@@ -1,8 +1,8 @@
 .typstmate-autocomplete {
-  position: fixed;
+  position: absolute;
   left: var(--preview-left, 0);
   top: var(--preview-top, 0);
-  z-index: var(--layer-popover);
+  z-index: 999;
   background: var(--background-secondary-alt);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
@@ -18,9 +18,8 @@
 
   display: flex;
   flex-direction: column;
-  max-height: 320px;
-  min-width: 180px;
-  max-width: 500px;
+  max-height: var(--popover-max-height);
+  min-width: var(--popover-width);
   overflow: hidden;
   box-sizing: border-box;
 }
@@ -37,6 +36,8 @@
 .typstmate-autocomplete .items {
   display: flex;
   flex-direction: column;
+  align-items: stretch;
+  text-align: left;
   overflow-y: auto;
   scrollbar-width: thin;
 
