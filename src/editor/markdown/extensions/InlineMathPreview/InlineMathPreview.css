@@ -20,6 +20,6 @@
   pointer-events: none;
 }
 
-.typstmate-inlinemathpreview.is-top {
+.typstmate-inlinemathpreview.above {
   transform: translateY(-100%);
 }

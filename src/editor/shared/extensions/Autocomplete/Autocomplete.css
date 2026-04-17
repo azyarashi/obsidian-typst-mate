@@ -171,11 +171,3 @@
   text-align: right;
   opacity: 0.7;
 }
-
-/* 他のポップアップを隠す */
-body.typstmate-autocomplete-suggesting .typstmate-symbols,
-body.typstmate-autocomplete-suggesting .typstmate-snippets,
-body.typstmate-autocomplete-suggesting .typstmate-inlinemathpreview,
-body.typstmate-autocomplete-suggesting .suggestion-container {
-  display: none !important;
-}
