@@ -1,6 +1,7 @@
 import { MarkdownView, Menu, type MenuItem, Notice } from 'obsidian';
 import { DEFAULT_FONT_SIZE } from '@/constants';
 import { updateDiagnosticEffect } from '@/editor/shared/extensions/Linter/extension';
+import { getActiveRegion } from '@/editor/shared/utils/core';
 import { t } from '@/i18n';
 import { appUtils, settingsManager, typstManager } from '@/libs';
 import { type Processor, type ProcessorKind, RenderingEngine } from '@/libs/processor';
@@ -66,7 +67,13 @@ export default abstract class TypstElement extends HTMLElement {
         });
       }, 0);
     }
-    this.innerHTML = this.innerHTML.replaceAll('--typst-base-color', '--text-faint');
+    if (view instanceof MarkdownView) {
+      const region = getActiveRegion(view.editor.cm);
+      if (region) {
+        this.innerHTML = this.innerHTML.replaceAll('--typst-base-color', '--text-faint');
+        return;
+      }
+    }
 
     const diagEl = document.createElement('span');
     diagEl.className = 'typstmate-element-error typstmate-temporary';
