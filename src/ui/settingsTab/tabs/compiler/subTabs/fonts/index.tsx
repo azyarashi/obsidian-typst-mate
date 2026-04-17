@@ -10,7 +10,7 @@ export function FontListContainer() {
   const [importedFonts, setImportedFonts] = useState<string[]>([]);
 
   const loadImportedFonts = async () => {
-    const fonts = await fileManager.getLoadImportedFonts();
+    const fonts = await fileManager.collectFonts();
     setImportedFonts(fonts);
   };
 

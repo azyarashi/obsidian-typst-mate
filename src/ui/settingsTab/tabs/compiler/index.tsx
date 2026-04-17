@@ -2,9 +2,10 @@ import { type TabDefinition, Tabs } from '@components/Tabs';
 import { useState } from 'preact/hooks';
 import { t } from '@/i18n';
 import { settingsManager } from '@/libs';
-import { FontListContainer, PackagesListContainer } from '@/ui/settingsTab/tabs/compiler/subTabs';
+import { features } from '@/libs/features';
+import { FontListContainer, PackagesListContainer, WatcherListContainer } from '@/ui/settingsTab/tabs/compiler/subTabs';
 
-export type CompilerSubTab = 'packages' | 'fonts';
+export type CompilerSubTab = 'packages' | 'fonts' | 'watcher';
 
 export function CompilerTab() {
   const [activeSubTab, setActiveSubTabInternal] = useState<CompilerSubTab>(
@@ -28,6 +29,14 @@ export function CompilerTab() {
       renderContent: () => <FontListContainer />,
     },
   ];
+
+  if (features.node) {
+    subTabs.push({
+      id: 'watcher',
+      name: t('settings.compiler.subTabs.watcher'),
+      renderContent: () => <WatcherListContainer />,
+    });
+  }
 
   return <Tabs tabs={subTabs} activeTab={activeSubTab} onTabChange={onChangeSubTab} />;
 }

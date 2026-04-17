@@ -1,10 +1,9 @@
 import { Setting } from '@components/obsidian/Setting';
-import { debounce, Notice, Platform } from 'obsidian';
+import { debounce, Notice } from 'obsidian';
 import { useState } from 'preact/hooks';
 import { DEFAULT_SETTINGS } from '@/data/settings';
 import { t } from '@/i18n';
 import { appUtils, settingsManager, typstManager } from '@/libs';
-import { features } from '@/libs/features';
 
 export function AdvancedTab() {
   const [importPath, setImportPath] = useState(settingsManager.settings.importPath ?? DEFAULT_SETTINGS.importPath);
@@ -23,22 +22,6 @@ export function AdvancedTab() {
 
   return (
     <>
-      {/* Features Status */}
-      <Setting
-        build={(setting) => {
-          setting.setName(t('settings.advanced.features')).setDesc(t('settings.advanced.featuresDesc'));
-          setting.controlEl.createSpan({
-            text: `Node.js: ${features.node ? '✅' : '❌'}`,
-            cls: 'setting-item-description',
-          });
-          setting.controlEl.createSpan({ text: '  ' });
-          setting.controlEl.createSpan({
-            text: `Watcher: ${features.watcher ? '✅' : '❌'}`,
-            cls: 'setting-item-description',
-          });
-        }}
-      />
-
       {/* Import Path */}
       <Setting
         build={(setting) => {
@@ -74,49 +57,6 @@ export function AdvancedTab() {
               await settingsManager.saveSettings();
             }),
           )
-        }
-      />
-
-      {/* Linux Libc */}
-      {Platform.isLinux && (
-        <Setting
-          build={(setting) =>
-            setting
-              .setName(t('settings.advanced.linuxLibc'))
-              .setDesc(t('settings.advanced.linuxLibcDesc'))
-              .addDropdown((dropdown) =>
-                dropdown
-                  .addOptions({
-                    glibc: 'glibc',
-                    musl: 'musl',
-                  })
-                  .setValue(settingsManager.settings.linuxLibc)
-                  .onChange(async (v) => {
-                    settingsManager.settings.linuxLibc = v as 'glibc' | 'musl';
-                    await settingsManager.saveSettings();
-                    new Notice(t('notices.pluginReloaded'));
-                  }),
-              )
-          }
-        />
-      )}
-
-      {/* Watcher Extensions */}
-      <Setting
-        build={(setting) =>
-          setting
-            .setName(t('settings.advanced.watcherExtensions'))
-            .setDesc(t('settings.advanced.watcherExtensionsDesc'))
-            .addText((text) =>
-              text.setValue(settingsManager.settings.watcherExtensions.join(', ')).onChange(async (val) => {
-                const exts = val
-                  .split(',')
-                  .map((s) => s.trim().toLowerCase())
-                  .filter((s) => s.length > 0);
-                settingsManager.settings.watcherExtensions = exts;
-                await settingsManager.saveSettings();
-              }),
-            )
         }
       />
 

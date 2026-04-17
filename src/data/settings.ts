@@ -34,6 +34,7 @@ export interface Settings {
   fitToNoteWidthProfiles: WidthProfile[];
 
   /* Watcher の設定 */
+  enableWatcher: boolean;
   enablePackageWatch: boolean;
   watchExtensions: string[];
 
@@ -117,6 +118,7 @@ export const DEFAULT_SETTINGS: Settings = {
   ],
 
   /* Watcher の設定 */
+  enableWatcher: false,
   enablePackageWatch: true,
   // biome-ignore format: 可読性のため
   watchExtensions: ['typ', 'png', 'jpg', 'jpeg', 'gif', 'svg', 'pdf', 'webp', 'wasm', 'tmTheme', 'sublime-color-scheme'],
