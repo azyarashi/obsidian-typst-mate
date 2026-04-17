@@ -8,7 +8,6 @@ import { Preamble } from './preamble';
 import { ProcessorsContainer } from './processorListContainer';
 
 export function ProcessorsTab() {
-  // tabs
   const [activeProcessorKind, setActiveProcessorKindInternal] = useState<ProcessorKind>(
     settingsManager.settings.settingsStates.processorKindTab,
   );
@@ -40,7 +39,7 @@ export function ProcessorsTab() {
     <>
       <Setting
         build={(setting) =>
-          setting.setName(t('settings.processors.headerName')).setDesc(tFragment('settings.processors.headerDesc'))
+          setting.setName(t('settings.processors.name')).setDesc(tFragment('settings.processors.desc'))
         }
       />
       <Preamble />

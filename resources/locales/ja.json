@@ -1,6 +1,6 @@
 {
   "common": {
-    "error": "エラー"
+    "waiting": "プラグインの読み込みを待機中..."
   },
 
   "commands": {
@@ -36,43 +36,51 @@
       "hintPrefix": "ヒント: {{hint}}"
     },
     "exportTool": {
-      "customTimestamp": "カスタムタイムスタンプ",
-      "customTimestampDesc": "カスタムの作成日時を設定します。",
-      "documentIdentifier": "ドキュメント識別子",
-      "documentIdentifierDesc": "ドキュメントの一意の識別子。",
-      "filenameTemplate": "ファイル名テンプレート",
-      "filenameTemplateDesc": "ページのファイル名のテンプレート。{p}: ページ番号, {0p}: ゼロ埋めされたページ番号, {t}: 総ページ数。",
-      "format": "形式",
-      "heading": "Typst ドキュメントの書き出し",
-      "optionalPlaceholder": "オプション",
-      "pageRanges": "ページ範囲",
-      "pageRangesDesc": "カンマ区切りの範囲リスト。例: 1-3, 5, 7-",
-      "pageRangesPlaceholder": "例: 1-3, 5, 7-",
-      "pdfOptions": "PDF オプション",
-      "pngOptions": "PNG オプション",
-      "ppi": "PPI",
-      "ppiDesc": "1インチあたりのピクセル数。高い数値ほど高解像度になります (例: 72, 144, 300)。",
-      "standard": "標準",
-      "standardDesc": "PDF 標準への準拠を強制します。",
-      "svgOptions": "SVG オプション",
-      "taggedPdf": "タグ付き PDF",
-      "taggedPdfDesc": "アクセシビリティのメタデータを含めます。",
+      "name": "エクスポート",
+      "format": {
+        "name": "ファイルフォーマット",
+        "options": {
+          "pdf": "PDF",
+          "png": "PNG",
+          "svg": "SVG",
+          "html": "HTML"
+        }
+      },
+      "common": {
+        "options": "オプション",
+        "pageRange.name": "ページ範囲",
+        "pageRange.desc": "ハイフンやカンマを利用して出力するページ範囲を指定できます.",
+        "pageRange.placeholder": "1-3, 5, 7-",
+        "output.name": "出力",
+        "output.desc": "ページ番号 <code>{p}</code> や 総ページ数 <code>{t}</code> を使用できます. ゼロ埋めされたページ番号には <code>{0p}</code> を使用してください."
+      },
+      "pdf": {
+        "name": "PDF オプション",
+        "tagged.name": "タグ付き PDF",
+        "tagged.desc": "アクセシビリティのメタデータを含めます",
+        "standards.name": "PDF 準拠規格",
+        "standards.desc": "特定の規格に準拠させます。",
+        "customTimestamp": "カスタムタイムスタンプ",
+        "customTimestampDesc": "カスタムの作成日時を設定します。",
+        "documentIdentifier": "ドキュメント識別子",
+        "documentIdentifierDesc": "ドキュメントの一意の識別子。"
+      },
+      "png": {
+        "name": "PNG オプション",
+        "ppi.name": "PPI",
+        "ppi.desc": "1 インチあたりのピクセル数. 高いほど高解像度になります."
+      },
+      "svg": {
+        "name": "SVG オプション"
+      },
+      "html": {
+        "name": "HTML オプション",
+        "extractBody": "body の中身を抽出",
+        "extractBodyDesc": "<code><body></code> タグの中身のみを出力します."
+      },
       "buttons": {
-        "export": "書き出し"
-      },
-      "filenameTemplateDefaults": {
-        "png": "page-{0p}-of-{t}.png",
-        "svg": "page-{0p}-of-{t}.svg"
-      },
-      "formatOptions": {
-        "pdf": "PDF",
-        "png": "PNG (画像)",
-        "svg": "SVG",
-        "html": "HTML (ソース)"
-      },
-      "htmlOptions": "HTML オプション",
-      "extractBody": "body 内のみを抽出",
-      "extractBodyDesc": "HTML の <body> タグの中身のみを書き出します。"
+        "export": "出力"
+      }
     },
     "font": {
       "copyFontFamilyName": "ファミリー名をコピー",
@@ -132,24 +140,16 @@
   },
 
   "settings": {
-    "status": {
-      "pending": "準備中...",
-      "loadingMathJax": "MathJax を読み込み中...",
-      "downloadingWasm": "Typst コンパイラ (Wasm) をダウンロード中...",
-      "initializingWasm": "Typst コンパイラを初期化中...",
-      "preparingAssets": "フォントとパッケージを準備中...",
-      "error": "Typst コンパイラの初期化に失敗しました"
-    },
     "processors": {
-      "headerName": "Processor",
-      "headerDesc": "Processor とは, レンダリングエンジンやスタイル, フォーマットなどをまとめた環境のことです. 設定した id を接頭辞に利用することで切り替えられます. id が空白のものはデフォルトとして使用されます. フォーマット内で <code>{CODE}</code> と記された箇所に挿入されます. fontsize といった値で. また, <bold> id にはパスに使用される制御文字, すなわち <code>/</code>, <code>\\</code>, <code>:</code>, <code>.</code> が使用できないことに注意してください</bold>. スタイルやその他の詳細設定については, <link href=\"https://github.com/azyarashi/obsidian-typst-mate/blob/main/docs/processor/Processor.md\">Processor.md</link> を参照してください.",
+      "name": "プロセッサー",
+      "desc": "プロセッサーとは, レンダリングエンジンやスタイル, フォーマットなどをまとめた環境のことです. ノート中に入力した内容は, <code>{CODE}</code> の位置に挿入されます. <bold>id にはパスに使用される制御文字, すなわち <code>/</code>, <code>\\</code>, <code>:</code>, <code>.</code> が使用できないことに注意してください</bold>. スタイルやその他の詳細設定については, <link href=\"https://github.com/azyarashi/obsidian-typst-mate/blob/main/docs/processor/Processor.md\">Processor.md</link> を参照してください.",
 
-      "preambleName": "プリアンブル",
-      "preambleDesc": "各プロセッサの設定でオンオフを切り替えられます.",
+      "preamble.name": "プリアンブル",
+      "preamble.desc": "各プロセッサーの設定でオンオフを切り替えられます. <code>fontsize</code> など, プラグイン固有の値を使用できます.",
       "renderingEngineTabs": {
-        "typstSVG": "SVG",
-        "typstHTML": "HTML",
-        "mathjax": "MathJax"
+        "typstSvg": "SVG",
+        "typstHtml": "HTML",
+        "mathJax": "MathJax"
       },
 
       "kindTabs": {
@@ -159,9 +159,9 @@
         "excalidraw": "Excalidraw"
       },
       "inlineProcessor.name": "インライン数式 (<code>$id:...$</code> / <code>$...$</code>)",
-      "inlineProcessor.desc": "接頭辞が id の指定に相当しますが, id と数式の間は コロン(<code>:</code>) で区切る必要があります. <bold>インライン要素のみを期待します</bold>.",
+      "inlineProcessor.desc": "接頭辞が id の指定に相当しますが, id と数式の間は コロン(<code>:</code>) で区切る必要があります. <bold>インライン要素のみを期待します</bold>. 最も下にあるものがデフォルトとして使用されます.",
       "displayProcessor.name": "ディスプレイ数式 (<code>$$id...$$</code> / <code>$$...$$</code>)",
-      "displayProcessor.desc": "接頭辞が id の指定に相当します.",
+      "displayProcessor.desc": "接頭辞が id の指定に相当します. 最も下にあるものがデフォルトとして使用されます.",
       "codeblockProcessor.name": "コードブロック (<code>```id...```</code> / <code>~~~id...~~~</code>)",
       "codeblockProcessor.desc": "言語が id の指定に相当します. <bold>プラグインとの競合に注意してください</bold>. 変更が正しく反映されない場合は, <link href=\"obsidian://reload-typstmate\">プラグインをリロード</link>してください.",
       "excalidrawProcessor.name": "<link href=\"https://www.obsidianstats.com/plugins/obsidian-excalidraw-plugin\">Excalidraw</link>",
@@ -451,21 +451,16 @@
   },
 
   "views": {
-    "typstPreview": {
-      "waiting": "Typst を初期化中...",
-      "fitToPage": "ページに合わせる",
-      "buttons": {
-        "reset": "リセット"
-      }
-    },
     "typstText": {
-      "waiting": "Typst を初期化中...",
       "displayText": "Typst テキスト",
       "actions": {
-        "export": "書き出し",
-        "exportAsPdf": "PDF として書き出し",
-        "openAsPreview": "プレビューとして開く"
+        "openPreview": "プレビューを開く",
+        "exportAsPdf": "PDF として出力する",
+        "openExportTool": "エクスポートツールを開く"
       }
+    },
+    "typstPreview": {
+      "fitToPage": "表示をリセット"
     },
     "typstTools": {
       "displayText": "Typst ツール",

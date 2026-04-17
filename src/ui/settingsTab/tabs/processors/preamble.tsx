@@ -4,7 +4,7 @@ import { EditorState } from '@codemirror/state';
 import { EditorView } from '@codemirror/view';
 import { debounce } from 'obsidian';
 import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
-import { t } from '@/i18n';
+import { t, tFragment } from '@/i18n';
 import { extensionManager, settingsManager } from '@/libs';
 import { RenderingEngine } from '@/libs/processor';
 
@@ -92,17 +92,17 @@ export function Preamble() {
     const tabs: TabDefinition<RenderingEngine>[] = [
       {
         id: RenderingEngine.TypstSVG,
-        name: t('settings.processors.renderingEngineTabs.typstSVG'),
+        name: t('settings.processors.renderingEngineTabs.typstSvg'),
         renderContent: () => <></>,
       },
       {
         id: RenderingEngine.TypstHTML,
-        name: t('settings.processors.renderingEngineTabs.typstHTML'),
+        name: t('settings.processors.renderingEngineTabs.typstHtml'),
         renderContent: () => <></>,
       },
       {
         id: RenderingEngine.MathJax,
-        name: t('settings.processors.renderingEngineTabs.mathjax'),
+        name: t('settings.processors.renderingEngineTabs.mathJax'),
         renderContent: () => <></>,
       },
     ];
@@ -120,9 +120,12 @@ export function Preamble() {
       >
         <Setting
           build={(setting) =>
-            setting.setName(`${isOpen ? '▼' : '▶︎'} ${t('settings.processors.preambleName')}`).addButton((b) => {
-              b.setIcon('info');
-            })
+            setting
+              .setName(`${isOpen ? '▼' : '▶︎'} ${t('settings.processors.preamble.name')}`)
+              .addButton((b) => {
+                b.setIcon('info');
+              })
+              .setDesc(tFragment('settings.processors.preamble.desc'))
           }
         />
       </summary>

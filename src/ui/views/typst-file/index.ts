@@ -11,8 +11,8 @@ import { settingsManager, typstManager } from '@/libs';
 import { viewTracker } from '@/libs/extensionManager';
 import type ObsidianTypstMate from '@/main';
 import { exportToPdf } from '@/utils/export';
+import { ExportToolModal } from '../../modals/exportTool';
 import { TypstPreviewView } from '../typst-preview';
-import { ExportToolModal } from './exportTool';
 
 import './typst-file.css';
 
@@ -44,7 +44,7 @@ export class TypstFileView extends TextFileView {
     // 念の為 await
     await super.onload();
 
-    this.addAction('upload', t('views.typstText.actions.export'), () => {
+    this.addAction('upload', t('views.typstText.actions.exportAsPdf'), () => {
       if (!this.file) return;
       new ExportToolModal(this.app, this.plugin, this.file, this.view.state.doc.toString()).open();
     });
@@ -64,7 +64,7 @@ export class TypstFileView extends TextFileView {
       }
     });
 
-    this.addAction('eye', t('views.typstText.actions.openAsPreview'), async () => {
+    this.addAction('eye', t('views.typstText.actions.openPreview'), async () => {
       if (this.linkedPreviewLeaf && this.linkedPreviewLeaf.view instanceof TypstPreviewView) {
         this.app.workspace.revealLeaf(this.linkedPreviewLeaf);
         return;
@@ -199,7 +199,7 @@ export class TypstFileView extends TextFileView {
   private renderWaiting(): void {
     if (this.waitingEl) return;
     this.waitingEl = this.contentEl.createDiv('typstmate-waiting-banner');
-    this.waitingEl.createEl('span', { text: t('views.typstText.waiting') });
+    this.waitingEl.createEl('span', { text: t('common.waiting') });
   }
 
   private removeWaiting(): void {

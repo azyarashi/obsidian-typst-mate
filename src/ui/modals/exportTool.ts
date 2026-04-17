@@ -1,6 +1,6 @@
 import { type App, Modal, Notice, Setting, type TFile } from 'obsidian';
-import { t } from '@/i18n';
-import { typstManager } from '@/libs';
+import { t, tFragment } from '@/i18n';
+import { settingsManager, typstManager } from '@/libs';
 import type { HtmlEOptions, PdfEOptions } from '@/libs/typstManager/worker';
 import type ObsidianTypstMate from '@/main';
 import {
@@ -25,24 +25,7 @@ export class ExportToolModal extends Modal {
   plugin: ObsidianTypstMate;
   file: TFile;
   content: string;
-
-  options: ExportOptions = {
-    format: 'pdf',
-    pdf: {
-      tagged: true,
-      standards: [],
-    },
-    svg: {
-      filenameTemplate: '{p}.svg',
-    },
-    png: {
-      filenameTemplate: '{p}.png',
-      ppi: 288,
-    },
-    html: {
-      extractBody: true,
-    },
-  };
+  options: ExportOptions;
 
   constructor(app: App, plugin: ObsidianTypstMate, file: TFile, content: string) {
     super(app);
@@ -50,27 +33,57 @@ export class ExportToolModal extends Modal {
     this.file = file;
     this.content = content;
 
+    const { format, pdfTagged, pdfStandard, pngPpi, htmlExtractBody } = settingsManager.settings.exportStates;
+
+    this.options = {
+      format,
+      pdf: {
+        tagged: pdfTagged,
+        standards: pdfStandard ? [pdfStandard] : [],
+      },
+      svg: {
+        filenameTemplate: '{p}.svg',
+      },
+      png: {
+        filenameTemplate: '{p}.png',
+        ppi: pngPpi,
+      },
+      html: {
+        extractBody: htmlExtractBody,
+      },
+    };
+
     const baseName = this.file.name.slice(0, this.file.name.lastIndexOf('.'));
     this.options.svg.filenameTemplate = `${baseName}_{0p}.svg`;
     this.options.png.filenameTemplate = `${baseName}_{0p}.png`;
   }
 
+  saveSettings() {
+    settingsManager.settings.exportStates.format = this.options.format;
+    settingsManager.settings.exportStates.pdfTagged = this.options.pdf.tagged ?? true;
+    settingsManager.settings.exportStates.pdfStandard = this.options.pdf.standards[0] ?? '';
+    settingsManager.settings.exportStates.pngPpi = this.options.png.ppi;
+    settingsManager.settings.exportStates.htmlExtractBody = this.options.html.extractBody ?? true;
+    settingsManager.saveSettings();
+  }
+
   override onOpen() {
     const { contentEl } = this;
     contentEl.empty();
-    contentEl.createEl('h2', { text: t('modals.exportTool.heading') });
+    contentEl.createEl('h2', { text: t('modals.exportTool.name') });
 
-    new Setting(contentEl).setName(t('modals.exportTool.format')).addDropdown((dropdown) => {
+    new Setting(contentEl).setName(t('modals.exportTool.format.name')).addDropdown((dropdown) => {
       dropdown
         .addOptions({
-          pdf: t('modals.exportTool.formatOptions.pdf'),
-          svg: t('modals.exportTool.formatOptions.svg'),
-          png: t('modals.exportTool.formatOptions.png'),
-          html: t('modals.exportTool.formatOptions.html'),
+          pdf: t('modals.exportTool.format.options.pdf'),
+          svg: t('modals.exportTool.format.options.svg'),
+          png: t('modals.exportTool.format.options.png'),
+          html: t('modals.exportTool.format.options.html'),
         })
         .setValue(this.options.format)
         .onChange((value) => {
           this.options.format = value as ExportFormat;
+          this.saveSettings();
           this.render();
         });
     });
@@ -94,23 +107,24 @@ export class ExportToolModal extends Modal {
 
   renderOptions(contentEl: HTMLElement) {
     if (this.options.format === 'pdf') {
-      contentEl.createEl('h3', { text: t('modals.exportTool.pdfOptions') });
+      contentEl.createEl('h3', { text: t('modals.exportTool.pdf.name') });
 
       new Setting(contentEl)
-        .setName(t('modals.exportTool.taggedPdf'))
-        .setDesc(t('modals.exportTool.taggedPdfDesc'))
+        .setName(t('modals.exportTool.pdf.tagged.name'))
+        .setDesc(tFragment('modals.exportTool.pdf.tagged.desc'))
         .addToggle((toggle) => {
           toggle.setValue(this.options.pdf.tagged).onChange((value) => {
             this.options.pdf.tagged = value;
+            this.saveSettings();
           });
         });
 
       new Setting(contentEl)
-        .setName(t('modals.exportTool.documentIdentifier'))
-        .setDesc(t('modals.exportTool.documentIdentifierDesc'))
+        .setName(t('modals.exportTool.pdf.documentIdentifier'))
+        .setDesc(tFragment('modals.exportTool.pdf.documentIdentifierDesc'))
         .addText((text) => {
           text
-            .setPlaceholder(t('modals.exportTool.optionalPlaceholder'))
+            .setPlaceholder('...')
             .setValue(this.options.pdf.ident ?? '')
             .onChange((value) => {
               this.options.pdf.ident = value || undefined;
@@ -118,8 +132,8 @@ export class ExportToolModal extends Modal {
         });
 
       new Setting(contentEl)
-        .setName(t('modals.exportTool.standard'))
-        .setDesc(t('modals.exportTool.standardDesc'))
+        .setName(t('modals.exportTool.pdf.standards.name'))
+        .setDesc(tFragment('modals.exportTool.pdf.standards.desc'))
         .addDropdown(async (dropdown) => {
           const standards: Record<string, string> = await typstManager.wasm.get_pdf_standards();
           dropdown
@@ -127,12 +141,13 @@ export class ExportToolModal extends Modal {
             .setValue(this.options.pdf.standards[0] ?? '')
             .onChange((value) => {
               this.options.pdf.standards = value ? [value] : [];
+              this.saveSettings();
             });
         });
 
       new Setting(contentEl)
-        .setName(t('modals.exportTool.customTimestamp'))
-        .setDesc(t('modals.exportTool.customTimestampDesc'))
+        .setName(t('modals.exportTool.pdf.customTimestamp'))
+        .setDesc(tFragment('modals.exportTool.pdf.customTimestampDesc'))
         .addText((text) => {
           text.inputEl.type = 'datetime-local';
           if (this.options.pdf.timestamp) {
@@ -154,25 +169,25 @@ export class ExportToolModal extends Modal {
         });
 
       new Setting(contentEl)
-        .setName(t('modals.exportTool.pageRanges'))
-        .setDesc(t('modals.exportTool.pageRangesDesc'))
+        .setName(t('modals.exportTool.common.pageRange.name'))
+        .setDesc(tFragment('modals.exportTool.common.pageRange.desc'))
         .addText((text) => {
           text
-            .setPlaceholder(t('modals.exportTool.pageRangesPlaceholder'))
+            .setPlaceholder(t('modals.exportTool.common.pageRange.placeholder'))
             .setValue(this.options.pdf.pageRanges ?? '')
             .onChange((value) => {
               this.options.pdf.pageRanges = value || undefined;
             });
         });
     } else if (this.options.format === 'svg') {
-      contentEl.createEl('h3', { text: t('modals.exportTool.svgOptions') });
+      contentEl.createEl('h3', { text: t('modals.exportTool.svg.name') });
 
       new Setting(contentEl)
-        .setName(t('modals.exportTool.pageRanges'))
-        .setDesc(t('modals.exportTool.pageRangesDesc'))
+        .setName(t('modals.exportTool.common.pageRange.name'))
+        .setDesc(tFragment('modals.exportTool.common.pageRange.desc'))
         .addText((text) => {
           text
-            .setPlaceholder(t('modals.exportTool.pageRangesPlaceholder'))
+            .setPlaceholder(t('modals.exportTool.common.pageRange.placeholder'))
             .setValue(this.options.svg.pageRanges ?? '')
             .onChange((value) => {
               this.options.svg.pageRanges = value || undefined;
@@ -180,22 +195,22 @@ export class ExportToolModal extends Modal {
         });
 
       new Setting(contentEl)
-        .setName(t('modals.exportTool.filenameTemplate'))
-        .setDesc(t('modals.exportTool.filenameTemplateDesc'))
+        .setName(t('modals.exportTool.common.output.name'))
+        .setDesc(tFragment('modals.exportTool.common.output.desc'))
         .addText((text) => {
           text
-            .setPlaceholder(t('modals.exportTool.filenameTemplateDefaults.svg'))
+            .setPlaceholder('{p}.svg')
             .setValue(this.options.svg.filenameTemplate)
             .onChange((value) => {
               this.options.svg.filenameTemplate = value || '{p}.svg';
             });
         });
     } else if (this.options.format === 'png') {
-      contentEl.createEl('h3', { text: t('modals.exportTool.pngOptions') });
+      contentEl.createEl('h3', { text: t('modals.exportTool.png.name') });
 
       new Setting(contentEl)
-        .setName(t('modals.exportTool.ppi'))
-        .setDesc(t('modals.exportTool.ppiDesc'))
+        .setName(t('modals.exportTool.png.ppi.name'))
+        .setDesc(tFragment('modals.exportTool.png.ppi.desc'))
         .addText((text) => {
           text.inputEl.type = 'number';
           text
@@ -203,15 +218,16 @@ export class ExportToolModal extends Modal {
             .setValue(this.options.png.ppi.toString())
             .onChange((value) => {
               this.options.png.ppi = Number.parseInt(value, 10) || 144;
+              this.saveSettings();
             });
         });
 
       new Setting(contentEl)
-        .setName(t('modals.exportTool.pageRanges'))
-        .setDesc(t('modals.exportTool.pageRangesDesc'))
+        .setName(t('modals.exportTool.common.pageRange.name'))
+        .setDesc(tFragment('modals.exportTool.common.pageRange.desc'))
         .addText((text) => {
           text
-            .setPlaceholder(t('modals.exportTool.pageRangesPlaceholder'))
+            .setPlaceholder(t('modals.exportTool.common.pageRange.placeholder'))
             .setValue(this.options.png.pageRanges ?? '')
             .onChange((value) => {
               this.options.png.pageRanges = value || undefined;
@@ -219,25 +235,26 @@ export class ExportToolModal extends Modal {
         });
 
       new Setting(contentEl)
-        .setName(t('modals.exportTool.filenameTemplate'))
-        .setDesc(t('modals.exportTool.filenameTemplateDesc'))
+        .setName(t('modals.exportTool.common.output.name'))
+        .setDesc(tFragment('modals.exportTool.common.output.desc'))
         .addText((text) => {
           text
-            .setPlaceholder(t('modals.exportTool.filenameTemplateDefaults.png'))
+            .setPlaceholder('{p}.png')
             .setValue(this.options.png.filenameTemplate)
             .onChange((value) => {
               this.options.png.filenameTemplate = value || '{p}.png';
             });
         });
     } else if (this.options.format === 'html') {
-      contentEl.createEl('h3', { text: t('modals.exportTool.htmlOptions') });
+      contentEl.createEl('h3', { text: t('modals.exportTool.html.name') });
 
       new Setting(contentEl)
-        .setName(t('modals.exportTool.extractBody'))
-        .setDesc(t('modals.exportTool.extractBodyDesc'))
+        .setName(t('modals.exportTool.html.extractBody'))
+        .setDesc(tFragment('modals.exportTool.html.extractBodyDesc'))
         .addToggle((toggle) => {
           toggle.setValue(this.options.html.extractBody ?? true).onChange((value) => {
             this.options.html.extractBody = value;
+            this.saveSettings();
           });
         });
     }
@@ -260,7 +277,7 @@ export class ExportToolModal extends Modal {
           break;
       }
     } catch (e) {
-      console.error('Export failed:', e);
+      console.error('[TypstMate] ExportTool.export failed:', e);
       new Notice(t('notices.exportFailed'));
     }
   }

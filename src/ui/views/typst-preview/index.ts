@@ -98,7 +98,7 @@ export class TypstPreviewView extends TextFileView {
 
   private renderWaiting(): void {
     const container = this.contentEl.createDiv('typstmate-waiting-container');
-    container.createEl('span', { text: t('views.typstPreview.waiting') });
+    container.createEl('span', { text: t('common.waiting') });
   }
 
   override async onModify(file: TFile): Promise<void> {
@@ -223,8 +223,7 @@ export class TypstPreviewView extends TextFileView {
     const nextButton = this.controlsEl.createEl('button', { text: '→' });
     nextButton.addEventListener('click', () => this.goToNextPage());
 
-    const resetButton = this.controlsEl.createEl('button', { text: t('views.typstPreview.buttons.reset') });
-    resetButton.title = t('views.typstPreview.fitToPage');
+    const resetButton = this.controlsEl.createEl('button', { text: t('views.typstPreview.fitToPage') });
     resetButton.addEventListener('click', () => this.fitToPage(true));
 
     this.zoomSliderEl = this.controlsEl.createEl('input', {

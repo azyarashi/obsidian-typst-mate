@@ -14,6 +14,7 @@ import {
 import type { WidthProfile } from '@/libs/profile';
 import type { Tab } from '@/ui/settingsTab';
 import type { CompilerSubTab } from '@/ui/settingsTab/tabs/compiler';
+import type { ExportFormat } from '@/utils/export';
 import { DEFAULT_ACTIONS } from './actions/';
 
 /**
@@ -81,6 +82,13 @@ export interface Settings {
       actions: ActionType[];
       contexts: ActionContext[];
     };
+  };
+  exportStates: {
+    format: ExportFormat;
+    pdfTagged: boolean;
+    pdfStandard: string;
+    pngPpi: number;
+    htmlExtractBody: boolean;
   };
 
   snippets: any[];
@@ -274,6 +282,13 @@ export const DEFAULT_SETTINGS: Settings = {
       actions: [],
       contexts: [],
     },
+  },
+  exportStates: {
+    format: 'pdf',
+    pdfTagged: true,
+    pdfStandard: '',
+    pngPpi: 288,
+    htmlExtractBody: true,
   },
 
   version: '3.0.0',
