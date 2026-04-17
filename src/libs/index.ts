@@ -6,6 +6,7 @@ export { crashTracker } from '../utils/crashTracker';
 export { settingsManager } from './settingsManager';
 export { appUtils } from './appUtils';
 export { fileManager } from './fileManager';
+export { features, checkPluginFeatures } from './features';
 
 export { editorHelper } from './editorHelper';
 export { extensionManager, EditorContextFacet } from './extensionManager';
