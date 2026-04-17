@@ -33,11 +33,13 @@ export interface Settings {
   fitToNoteWidthProfile: string;
   fitToNoteWidthProfiles: WidthProfile[];
 
+  /* Watcher の設定 */
+  enablePackageWatch: boolean;
+  watchExtensions: string[];
+
   /* 高度な設定 */
   applyProcessorToMathJax: boolean;
   importPath: string;
-  linuxLibc: 'glibc' | 'musl';
-  watcherExtensions: string[];
   textViewExtensions: string[];
 
   /* その他の設定 */
@@ -114,11 +116,14 @@ export const DEFAULT_SETTINGS: Settings = {
     { name: 'Tabloid', width: '690pt' },
   ],
 
+  /* Watcher の設定 */
+  enablePackageWatch: true,
+  // biome-ignore format: 可読性のため
+  watchExtensions: ['typ', 'png', 'jpg', 'jpeg', 'gif', 'svg', 'pdf', 'webp', 'wasm', 'tmTheme', 'sublime-color-scheme'],
+
   /* 高度な設定 */
   applyProcessorToMathJax: false,
   importPath: 'typstmate',
-  linuxLibc: 'glibc',
-  watcherExtensions: ['typ'],
   textViewExtensions: ['html', 'toml'],
 
   /* その他の設定 */
@@ -266,11 +271,6 @@ export const DEFAULT_SETTINGS: Settings = {
       triggers: [],
       actions: [],
       contexts: [],
-    } as {
-      query: string;
-      triggers: TriggerType[];
-      actions: ActionType[];
-      contexts: ActionContext[];
     },
   },
 
