@@ -43,12 +43,12 @@ class DebugPlugin implements PluginValue {
       const localPos = cursor - innerStart;
       const typstPos = localPos - offset;
 
-      const { activeMode, activeKind } = region;
+      const { activeMode, activeKindRight } = region;
 
       data.push(
         { title: 'Processor', description: `${region.kind}${region.processor?.id ? `(${region.processor.id})` : ''}` },
         { title: 'Mode', description: activeMode !== null ? SyntaxMode[activeMode!] : 'Opaque' },
-        { title: 'Kind', description: activeKind !== null ? SyntaxKind[activeKind!] : 'End' },
+        { title: 'Kind', description: activeKindRight !== null ? SyntaxKind[activeKindRight!] : 'End' },
         { title: 'GlobalPos', description: cursor.toString() },
         { title: 'LocalPos', description: `${localPos} (+${region.skip})` },
         { title: 'TypstPos', description: typstPos.toString() },

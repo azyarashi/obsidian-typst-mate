@@ -64,8 +64,9 @@ export class TypstCorePluginValue implements PluginValue {
   }
 
   updateKindAndMode(cursor: number) {
-    const { kind, mode } = getModeAndKindFromRegion(this.activeRegion, cursor);
-    this.activeRegion.activeKind = kind;
+    const { kindLeft, kindRight, mode } = getModeAndKindFromRegion(this.activeRegion, cursor);
+    this.activeRegion.activeKindLeft = kindLeft;
+    this.activeRegion.activeKindRight = kindRight;
     this.activeRegion.activeMode = mode;
   }
 }

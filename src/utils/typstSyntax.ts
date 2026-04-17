@@ -5,7 +5,7 @@ export function getModeAndKind(
   node: SyntaxNode,
   cursor: number,
   mode: SyntaxMode,
-): { kind: SyntaxKind | null; mode: SyntaxMode | null } {
+): { kindLeft: SyntaxKind | null; kindRight: SyntaxKind | null; mode: SyntaxMode | null } {
   const linkedNode = LinkedNode.new(node);
   const leftNode = linkedNode.leafAt(cursor, Side.Before);
   const rightNode = linkedNode.leafAt(cursor, Side.After);
@@ -25,14 +25,14 @@ export function getModeAndKind(
   else if (SyntaxKind.isTerminator(syntaxKindLeft) || syntaxKindLeft === SyntaxKind.Dollar) mode = rightMode;
   else mode = leftMode;
 
-  return { kind: syntaxKindRight, mode };
+  return { kindLeft: syntaxKindLeft, kindRight: syntaxKindRight, mode };
 }
 
 export function getModeAndKindFromRegion(
   region: ParsedRegion | null,
   pos: number,
-): { kind: SyntaxKind | null; mode: SyntaxMode | null } {
-  if (!region?.tree) return { kind: null, mode: null };
+): { kindLeft: SyntaxKind | null; kindRight: SyntaxKind | null; mode: SyntaxMode | null } {
+  if (!region?.tree) return { kindLeft: null, kindRight: null, mode: null };
 
   const offset = region.from + region.skip;
   const relativePos = pos - offset;

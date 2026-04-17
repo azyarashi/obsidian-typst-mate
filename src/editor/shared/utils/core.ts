@@ -18,7 +18,8 @@ export interface ParsedRegion {
   /** top level mode */
   mode: SyntaxMode;
   tree?: SyntaxNode;
-  activeKind?: SyntaxKind | null;
+  activeKindLeft?: SyntaxKind | null;
+  activeKindRight?: SyntaxKind | null;
   activeMode?: SyntaxMode | null;
 }
 

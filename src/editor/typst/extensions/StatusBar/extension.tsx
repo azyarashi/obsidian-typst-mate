@@ -35,7 +35,7 @@ function StatusBarComp({ view }: { view: EditorView }) {
     }
   })();
 
-  const activeKind = region?.activeKind ?? null;
+  const activeKind = region?.activeKindRight ?? null;
   const activeMode = region?.activeMode ?? null;
 
   useEffect(() => {

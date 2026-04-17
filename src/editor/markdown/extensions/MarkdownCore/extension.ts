@@ -355,8 +355,9 @@ export class MarkdownCorePluginValue implements PluginValue {
         this.activeRegion.from + this.activeRegion.skip <= cursor &&
         cursor <= this.activeRegion.to
       ) {
-        const { kind, mode } = getModeAndKindFromRegion(this.activeRegion, cursor);
-        this.activeRegion.activeKind = kind;
+        const { kindLeft, kindRight, mode } = getModeAndKindFromRegion(this.activeRegion, cursor);
+        this.activeRegion.activeKindLeft = kindLeft;
+        this.activeRegion.activeKindRight = kindRight;
         this.activeRegion.activeMode = mode;
         return;
       }
@@ -379,9 +380,10 @@ export class MarkdownCorePluginValue implements PluginValue {
 
   updateActiveKindAndMode(cursor: number): boolean {
     if (!this.activeRegion) return false;
-    const { mode, kind } = getModeAndKindFromRegion(this.activeRegion, cursor);
+    const { mode, kindLeft, kindRight } = getModeAndKindFromRegion(this.activeRegion, cursor);
     this.activeRegion.activeMode = mode;
-    this.activeRegion.activeKind = kind;
+    this.activeRegion.activeKindLeft = kindLeft;
+    this.activeRegion.activeKindRight = kindRight;
     return true;
   }
 }
