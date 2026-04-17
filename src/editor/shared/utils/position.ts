@@ -63,7 +63,9 @@ export function calculatePopOverPositionByFromAndTo(
   if (above) x = startCoords.left;
   else if (avoidOverlap) x = lineStartCoords.left;
   else x = startCoords.left;
-  const spaceRight = window.innerWidth - (x + popOverMaxWidth);
+  const parentRect = view.dom.getBoundingClientRect();
+  const limitRight = Math.min(window.innerWidth, parentRect.right);
+  const spaceRight = limitRight - (x + popOverMaxWidth);
   if (spaceRight < 0) x += spaceRight;
   if (x < 0) x = 0;
 
@@ -103,7 +105,9 @@ export function calculatePopOverPositionByCursor(
 
   // x 座標を決定
   let x = coords.left;
-  const spaceRight = window.innerWidth - (x + popOverMaxWidth);
+  const parentRect = view.dom.getBoundingClientRect();
+  const limitRight = Math.min(window.innerWidth, parentRect.right);
+  const spaceRight = limitRight - (x + popOverMaxWidth);
   if (spaceRight < 0) x += spaceRight;
   if (x < 0) x = 0;
 

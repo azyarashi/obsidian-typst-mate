@@ -447,7 +447,7 @@ class AutocompletePlugin implements PluginValue {
 
     this.container.style.setProperty('--preview-left', `${x}px`);
     this.container.style.setProperty('--preview-top', `${y + 4}px`);
-    this.container.classList.toggle('is-top', position.above);
+    this.container.classList.toggle('above', position.above);
 
     if (this.selectedIndex === -1) {
       this.selectedIndex = position.above ? this.candidates.length - 1 : 0;
