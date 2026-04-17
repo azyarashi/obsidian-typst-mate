@@ -1,7 +1,6 @@
 {
   "common": {
-    "error": "エラー",
-    "hintsCount": "[{{count}} 件のヒント]"
+    "error": "エラー"
   },
 
   "commands": {
@@ -154,19 +153,19 @@
       },
 
       "kindTabs": {
-        "inline": "Inline Math",
-        "display": "Display Math",
-        "codeblock": "Codeblock",
+        "inline": "インライン数式",
+        "display": "ディスプレイ数式",
+        "codeblock": "コードブロック",
         "excalidraw": "Excalidraw"
       },
-      "inlineProcessorName": "Inline Math (<code>$id:...$</code> / <code>$...$</code>)",
-      "inlineProcessorDesc": "接頭辞が id の指定に相当しますが, id と数式の間は コロン(<code>:</code>) で区切る必要があります. インライン要素のみを期待します.",
-      "displayProcessorName": "Display Math (<code>$$id...$$</code> / <code>$$...$$</code>)",
-      "displayProcessorDesc": "接頭辞が id の指定に相当します.",
-      "codeblockProcessorName": "Codeblock (<code>```id...```</code> / <code>~~~id...~~~</code>)",
-      "codeblockProcessorDesc": "言語が id の指定に相当します.",
-      "excalidrawProcessorName": "Excalidraw",
-      "excalidrawProcessorDesc": "ノート内に埋め込まれた Excalidraw 用のレンダリングに使用されます。",
+      "inlineProcessor.name": "インライン数式 (<code>$id:...$</code> / <code>$...$</code>)",
+      "inlineProcessor.desc": "接頭辞が id の指定に相当しますが, id と数式の間は コロン(<code>:</code>) で区切る必要があります. <bold>インライン要素のみを期待します</bold>.",
+      "displayProcessor.name": "ディスプレイ数式 (<code>$$id...$$</code> / <code>$$...$$</code>)",
+      "displayProcessor.desc": "接頭辞が id の指定に相当します.",
+      "codeblockProcessor.name": "コードブロック (<code>```id...```</code> / <code>~~~id...~~~</code>)",
+      "codeblockProcessor.desc": "言語が id の指定に相当します. <bold>プラグインとの競合に注意してください</bold>. 変更が正しく反映されない場合は, <link href=\"obsidian://reload-typstmate\">プラグインをリロード</link>してください.",
+      "excalidrawProcessor.name": "<link href=\"https://www.obsidianstats.com/plugins/obsidian-excalidraw-plugin\">Excalidraw</link>",
+      "excalidrawProcessor.desc": "他のプラグインとは異なり, <bold>色は自動的に調整されません</bold>.",
 
       "addProcessorButton": "新規作成",
 
@@ -376,7 +375,26 @@
       },
       "subTabs": {
         "fonts": "フォント",
-        "packages": "パッケージ"
+        "packages": "パッケージ",
+        "watcher": "ファイル監視"
+      },
+      "watcher": {
+        "heading": "ファイル監視",
+        "desc": "ファイルの変更を検知して自動的に再レンダリングを行います。この機能はデスクトップ版でのみ有効です。",
+        "enableWatcher": {
+          "name": "ファイル監視を有効にする",
+          "desc": "現在開いているプロジェクトのファイルの変更を監視します。"
+        },
+        "enablePackageWatch": {
+          "name": "パッケージを監視する",
+          "desc": "インポートされたパッケージの変更を監視します。"
+        },
+        "watchExtensions": {
+          "name": "監視する拡張子",
+          "desc": "これらの拡張子が変更された場合にのみ、再レンダリングをトリガーします。（カンマ区切り）"
+        },
+        "activeSubscriptions": "有効な監視パス",
+        "unsubscribeAll": "すべて解除"
       }
     },
 
@@ -407,14 +425,8 @@
       "applyProcessorToMathJax": "プロセッサを MathJax に適用する",
       "enableMathjaxFallback": "MathJax フォールバックを有効にする",
       "enableMathjaxFallbackDesc": "パフォーマンス上の理由から推奨されません。有効にすると、<bold>Typst のエラー、警告、ヒントが利用できなくなります。</bold>",
-      "features": "有効な機能",
-      "featuresDesc": "プラットフォーム固有の機能（Node.js、ファイル監視）の状態。",
       "importPath": "Typst ファイルのインポートパス",
       "importPathDesc": "インポートする Typst ファイルを探す vault 内のディレクトリ。パスが存在しないか空の場合、この機能は無効になります。",
-      "linuxLibc": "Linux C 標準ライブラリ (libc)",
-      "linuxLibcDesc": "Linux ユーザーのみ。システムで使用されている libc の種類（glibc または musl）を選択してください。間違った方を選択すると、ファイル監視機能が利用できなくなります。",
-      "watcherExtensions": "監視する拡張子",
-      "watcherExtensionsDesc": "指定した拡張子のファイルが変更された場合にのみ、再レンダリングをトリガーします。（カンマ区切り）",
       "openDetails": "詳細を開く",
       "openSnippetManager": "スニペットマネージャーを開く",
       "openTypstToolsOnStartup": "起動時に Typst ツールを開く",

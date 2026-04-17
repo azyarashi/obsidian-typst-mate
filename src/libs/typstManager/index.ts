@@ -6,7 +6,7 @@ import { DEFAULT_SETTINGS, type Settings } from '@/data/settings';
 import { t } from '@/i18n';
 import { crashTracker, fileManager, settingsManager } from '@/libs';
 import { features } from '@/libs/features';
-import { type Processor, type ProcessorKind, RenderingEngine } from '@/libs/processor';
+import { type CodeblockProcessor, type Processor, type ProcessorKind, RenderingEngine } from '@/libs/processor';
 import type ObsidianTypstMate from '@/main';
 import type { PackageAsset } from '@/types/global';
 import type { Singleton } from '@/types/singleton';
@@ -259,31 +259,45 @@ export class TypstManager implements Singleton {
 
   // TODO
   registerCodeblockProcessors() {
+    // MarkdownPreviewRenderer.codeBlockPostProcessors
     for (const id of this.registeredCodeblockProcessorIds) MarkdownPreviewRenderer.unregisterCodeBlockPostProcessor(id);
     this.registeredCodeblockProcessorIds.clear();
 
-    for (const processor of settingsManager.settings.processor.codeblock?.processors ?? []) {
-      try {
-        this.plugin.registerMarkdownCodeBlockProcessor(processor.id, (source, el, ctx) => {
-          if (!this.ready) {
-            el.textContent = source;
-            el.addClass('typstmate-waiting');
-            el.setAttribute('kind', processor.id);
+    const codeblockProcessors = settingsManager.settings.processor.codeblock.processors;
+    for (const processor of codeblockProcessors) this.registerCodeblockProcessor(processor);
+  }
 
-            return Promise.resolve(el as HTMLElement);
-          }
+  registerCodeblockProcessor(processor: CodeblockProcessor) {
+    try {
+      this.plugin.registerMarkdownCodeBlockProcessor(processor.id, (source, el, ctx) => {
+        if (!this.ready) {
+          el.textContent = source;
+          el.addClass('typstmate-waiting');
+          el.setAttribute('kind', processor.id);
 
-          const npath = ctx.sourcePath;
-          const ndir = ctxToNDir(npath);
+          return Promise.resolve(el as HTMLElement);
+        }
 
-          return Promise.resolve(this.render(source, el, processor.id, ndir, npath));
-        });
+        const npath = ctx.sourcePath;
+        const ndir = ctxToNDir(npath);
 
-        this.registeredCodeblockProcessorIds.add(processor.id);
-      } catch {
-        new Notice(t('notices.alreadyRegisteredCodeblock', { id: processor.id }));
-      }
+        return Promise.resolve(this.render(source, el, processor.id, ndir, npath));
+      });
+
+      this.registeredCodeblockProcessorIds.add(processor.id);
+    } catch {
+      new Notice(t('notices.alreadyRegisteredCodeblock', { id: processor.id }));
     }
+  }
+
+  unregisterCodeblockProcessor(id: string) {
+    MarkdownPreviewRenderer.unregisterCodeBlockPostProcessor(id);
+    this.registeredCodeblockProcessorIds.delete(id);
+  }
+
+  renameCodeblockProcessor(oldId: string, newProcessor: CodeblockProcessor) {
+    this.unregisterCodeblockProcessor(oldId);
+    this.registerCodeblockProcessor(newProcessor);
   }
 
   async rerenderAll(elOnly = false) {
@@ -304,13 +318,13 @@ export class TypstManager implements Singleton {
 
   render(code: string, containerEl: Element, kind: string, ndir: string, npath?: string): HTMLElement {
     if (npath) {
-      const cache = this.plugin.app.metadataCache.getCache(npath);
-      if (cache) {
-        if ((kind === 'inline' || kind === 'display') && cache?.frontmatter?.['math-engine'] === 'mathjax')
+      const metadata = this.plugin.app.metadataCache.getCache(npath);
+      if (metadata) {
+        if ((kind === 'inline' || kind === 'display') && metadata?.frontmatter?.['math-engine'] === 'mathjax')
           return TypstMate.tex2chtml!(code, {
             display: kind !== 'inline',
           });
-        this.syncFileCache(cache);
+        this.syncFileCache(metadata);
       }
     } else {
       this.lastStateHash = '';
@@ -416,11 +430,11 @@ export class TypstManager implements Singleton {
     return files;
   }
 
-  syncFileCache(cache: CachedMetadata): boolean {
-    const imports: string[] = cache.frontmatter?.imports ?? [];
-    const definitions: string[] = cache.frontmatter?.definitions ?? [];
+  syncFileCache(metadata: CachedMetadata): boolean {
+    const imports: string[] = metadata.frontmatter?.imports ?? [];
+    const definitions: string[] = metadata.frontmatter?.definitions ?? [];
     const tags: string[] = [];
-    for (const tag of expandHierarchicalTags(getAllTags(cache) ?? [])) if (this.tagFiles.has(tag)) tags.push(tag);
+    for (const tag of expandHierarchicalTags(getAllTags(metadata) ?? [])) if (this.tagFiles.has(tag)) tags.push(tag);
 
     const currentHash = JSON.stringify([tags, imports, definitions]);
     if (currentHash === this.lastStateHash) return false;

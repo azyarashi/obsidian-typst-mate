@@ -410,7 +410,6 @@ export default class WasmAdapter {
     return compile();
   }
 
-  // TODO
   private withStatus<T>(message: string, fn: () => T): T {
     this.main.updateStatus({ isRendering: true, message });
 
