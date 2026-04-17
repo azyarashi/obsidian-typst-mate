@@ -1,4 +1,4 @@
-import { SyntaxMode } from '@typstmate/typst-syntax';
+import { SyntaxKind, SyntaxMode } from '@typstmate/typst-syntax';
 import { Prec } from '@codemirror/state';
 import { type EditorView, keymap, type PluginValue, ViewPlugin, type ViewUpdate } from '@codemirror/view';
 import { setIcon } from 'obsidian';
@@ -57,26 +57,19 @@ class AutocompletePlugin implements PluginValue {
   private container: HTMLElement;
   private items: HTMLElement;
 
-  // Completion state
+  isActive = false;
+
+  /** 補完の開始位置 */
+  from = 0;
+  /** 現在のカーソル または 最後に適用されたカーソルの位置 */
+  to = 0;
   allCandidates: Completion[] = [];
+  // フィルターされたもの
   candidates: Completion[] = [];
   selectedIndex = -1;
 
-  /** Start of the current completion range (position before the query text). */
-  from = 0;
-  /** End of the current completion range (current cursor / last applied cursor). */
-  to = 0;
-
-  /** Popup is visible. */
-  isActive = false;
-  /**
-   * Candidates are saved but the popup is hidden.
-   * Set after Tab (complete) or Enter (execute) so the next keystroke can
-   * resume filtering without a fresh WASM call.
-   */
   private hasState = false;
 
-  /** True while we are mid-dispatch to ignore re-entrant update() calls. */
   private isApplyingCompletion = false;
   private isCycling = false;
   private lastPositionAbove = false;
@@ -105,8 +98,6 @@ class AutocompletePlugin implements PluginValue {
     window.addEventListener('keydown', this.onKeyDownCapture, true);
   }
 
-  // ── Lifecycle ─────────────────────────────────────────────────────────────
-
   update(update: ViewUpdate) {
     if (this.isApplyingCompletion) return;
 
@@ -122,7 +113,6 @@ class AutocompletePlugin implements PluginValue {
 
     if (!update.docChanged && !update.selectionSet) return;
 
-    // Cursor moved without a doc change → abort
     if (!update.docChanged && update.selectionSet) {
       this.reset();
       return;
@@ -141,24 +131,31 @@ class AutocompletePlugin implements PluginValue {
       }
     });
 
-    // A "simple" change is exactly one character inserted or deleted.
     const isSimple =
       changeCount === 1 && insertedLen <= 1 && deletedLen <= 1 && !(insertedLen === 0 && deletedLen === 0);
 
-    // ── Abort if typing digits in math mode ──────────────────────────────
-    if (update.docChanged && isSimple && insertedLen === 1) {
-      let text = '';
-      update.changes.iterChanges((_fA, _tA, _fB, _tB, inserted) => (text = inserted.toString()));
-      if (/[0-9]/.test(text)) {
-        const region = getActiveRegion(update.view);
-        if ((region?.activeMode ?? region?.mode) === SyntaxMode.Math) {
-          this.reset();
-          return;
-        }
+    const region = getActiveRegion(update.view);
+    if (!region?.tree) {
+      this.reset();
+      return;
+    }
+
+    const mode = region.activeMode ?? region.mode;
+    const kindLeft = region.activeKindLeft;
+
+    if (kindLeft === SyntaxKind.Space || kindLeft === SyntaxKind.Hash) {
+      this.reset();
+      return;
+    }
+
+    if (mode === SyntaxMode.Math) {
+      if (kindLeft === SyntaxKind.MathText || kindLeft === SyntaxKind.Math || kindLeft === SyntaxKind.MathShorthand) {
+        this.reset();
+        return;
       }
     }
 
-    // ── Active popup: narrow on each keystroke ───────────────────────────
+    // 表示中
     if (this.isActive) {
       if (!isSimple || cursor < this.from) {
         this.reset();
@@ -169,25 +166,21 @@ class AutocompletePlugin implements PluginValue {
       return;
     }
 
-    // ── Hidden but saved state (after Tab or Enter): resume filtering ────
+    // 非表示中
     if (this.hasState) {
       if (cursor < this.from || !isSimple) {
         this.reset();
-        if (!isSimple) return; // non-simple → don't trigger fresh autocomplete
-        // Simple change below `from`: fall through for fresh autocomplete
+        if (!isSimple) return;
       } else {
-        this.isCycling = false; // Reset cycling on manual typing
+        this.isCycling = false;
         this.to = cursor;
         this.filterAndRender(update.view, cursor);
         return;
       }
     }
 
-    // ── Fresh autocomplete ────────────────────────────────────────────────
+    // 新規
     if (!isSimple) return;
-
-    const region = getActiveRegion(update.view);
-    if (!region?.tree) return;
 
     this.triggerAutocomplete(update.view, cursor, region);
   }
@@ -198,13 +191,14 @@ class AutocompletePlugin implements PluginValue {
     this.container.remove();
   }
 
-  // ── Core autocomplete ─────────────────────────────────────────────────────
+  // コアロジック
 
   private async triggerAutocomplete(view: EditorView, cursor: number, region: ParsedRegion) {
     this.allCandidates = [];
     this.candidates = [];
     this.selectedIndex = -1;
     this.hasState = false;
+    this.isCycling = false;
 
     const regionInnerStart = region.from + region.skip;
     const currentCode = view.state.sliceDoc(regionInnerStart, region.to);
@@ -228,9 +222,7 @@ class AutocompletePlugin implements PluginValue {
         wasmCompletions = raw.completions;
         wasmFrom = regionInnerStart + offset + raw.from;
       }
-    } catch {
-      // ignore WASM errors
-    }
+    } catch {}
 
     let localCompletions: Completion[] = [];
     let localFrom = cursor;
@@ -308,16 +300,11 @@ class AutocompletePlugin implements PluginValue {
     }
 
     this.to = cursor;
-    this.candidates = this.allCandidates;
-    this.hasState = true;
-
-    if (!this.isActive) this.showUI();
-    this.scheduleRender(view, cursor);
+    this.filterAndRender(view, cursor);
   }
 
   private filterAndRender(view: EditorView, cursor: number) {
     if (this.isCycling) {
-      // While cycling with Tab, we don't want to filter based on the newly inserted text
       this.hasState = true;
       if (!this.isActive) this.showUI();
       this.scheduleRender(view, cursor);
@@ -341,7 +328,6 @@ class AutocompletePlugin implements PluginValue {
       return;
     }
 
-    // Single exact match → keep state for next char but hide popup
     if (filtered.length === 1 && filtered[0]!.label.toLowerCase() === query) {
       this.candidates = filtered;
       this.hasState = true;
@@ -381,7 +367,7 @@ class AutocompletePlugin implements PluginValue {
     });
   }
 
-  // ── Rendering ─────────────────────────────────────────────────────────────
+  // 描画
 
   private renderItems() {
     this.items.replaceChildren();
@@ -586,6 +572,12 @@ class AutocompletePlugin implements PluginValue {
       }
       case 'Tab': {
         const len = this.candidates.length;
+        if (len === 1) {
+          const target = this.candidates[0];
+          if (target) this.execute(target);
+          return true;
+        }
+
         let nextIndex = this.selectedIndex < 0 ? 0 : this.selectedIndex;
 
         if (e?.shiftKey) {
