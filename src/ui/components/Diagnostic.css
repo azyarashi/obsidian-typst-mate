@@ -6,8 +6,7 @@
 }
 
 .typstmate-diag {
-  position: fixed;
-  z-index: var(--layer-tooltip);
+  position: relative;
   pointer-events: all;
 
   max-width: var(--popover-width);
