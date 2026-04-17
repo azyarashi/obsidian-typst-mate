@@ -48,7 +48,7 @@ export const clearDiagnosticEffect = (view: EditorView) => {
 
 // --- Linter Logic ---
 
-function computeDiagnostics(view: EditorView, result: TypstMateResult): Diagnostic[] {
+export function getMappedDiagnostics(view: EditorView, result: TypstMateResult): TypstDiagnostic[] {
   if (result.noDiag) return [];
 
   const region = getActiveRegion(view);
@@ -60,30 +60,10 @@ function computeDiagnostics(view: EditorView, result: TypstMateResult): Diagnost
   const mapped = result.diagnostics.map((diag) => {
     const from = Math.max(region.from, Math.min(diag.from + offset, docLength));
     const to = Math.max(region.from, Math.min(diag.to + offset, docLength));
-
-    return {
-      from,
-      to,
-      message: diag.message,
-      severity: diag.severity,
-      hints: diag.hints,
-      trace: diag.trace,
-      renderMessage: () =>
-        renderDiagnosticMessage({
-          diagnostic: {
-            severity: diag.severity,
-            message: diag.message,
-            hints: diag.hints,
-            trace: diag.trace,
-            from,
-            to,
-          } as TypstDiagnostic,
-          state: { view, doc: view.state.doc.toString() },
-        }),
-    } as TypstDiagnostic;
+    return { ...diag, from, to } as TypstDiagnostic;
   });
 
-  const uniqueDiags: Diagnostic[] = [];
+  const uniqueDiags: TypstDiagnostic[] = [];
   const seenStr = new Set<string>();
   const zeroWidthPos = new Set<number>();
 
@@ -102,6 +82,22 @@ function computeDiagnostics(view: EditorView, result: TypstMateResult): Diagnost
   }
 
   return uniqueDiags;
+}
+
+function computeDiagnostics(view: EditorView, result: TypstMateResult): Diagnostic[] {
+  const mapped = getMappedDiagnostics(view, result);
+
+  return mapped.map(
+    (diag) =>
+      ({
+        ...diag,
+        renderMessage: () =>
+          renderDiagnosticMessage({
+            diagnostic: diag,
+            state: { view, doc: view.state.doc.toString() },
+          }),
+      }) as Diagnostic,
+  );
 }
 
 export const linterExtension = [

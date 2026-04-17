@@ -2,22 +2,29 @@ import {
   Decoration,
   type DecorationSet,
   type EditorView,
+  hoverTooltip,
   ViewPlugin,
   type ViewUpdate,
   WidgetType,
 } from '@codemirror/view';
-import { diagnosticsState } from '@/editor/shared/extensions/Linter/extension';
-import { getActiveRegion } from '@/editor/shared/utils/core';
+import {
+  diagnosticsState,
+  getMappedDiagnostics,
+  type TypstDiagnostic,
+} from '@/editor/shared/extensions/Linter/extension';
+import { renderDiagnosticMessage } from '@/ui/components/Diagnostic';
 
 import './ErrorLens.css';
 
 class ErrorLensWidget extends WidgetType {
-  constructor(readonly diag: { message: string; severity: 'error' | 'warning'; hints: string[] }) {
+  constructor(readonly diag: TypstDiagnostic) {
     super();
   }
 
   override eq(other: ErrorLensWidget) {
-    return this.diag.message === other.diag.message && this.diag.severity === other.diag.severity;
+    return (
+      this.diag.message === other.diag.message && this.diag.from === other.diag.from && this.diag.to === other.diag.to
+    );
   }
 
   toDOM() {
@@ -35,57 +42,40 @@ function computeErrorLens(view: EditorView): DecorationSet {
     return Decoration.none;
   }
 
-  const region = getActiveRegion(view);
-  if (!region) return Decoration.none;
+  const mapped = getMappedDiagnostics(view, result);
+  const lineDiagnostics = new Map<number, TypstDiagnostic>();
 
-  const docLength = view.state.doc.length;
-  const lineDiagnostics = new Map<
-    number,
-    { message: string; severity: 'error' | 'warning'; hints: string[]; from: number; to: number }
-  >();
-
-  for (const diag of result.diagnostics) {
+  for (const diag of mapped) {
     try {
-      const from = Math.max(region.from, Math.min(diag.from, docLength));
-      const line = view.state.doc.lineAt(from);
+      const line = view.state.doc.lineAt(diag.from);
 
       if (line.text.trim() === '') continue;
 
-      const existing = lineDiagnostics.get(line.number);
-      if (!existing) {
-        lineDiagnostics.set(line.number, {
-          message: diag.message,
-          severity: diag.severity,
-          hints: diag.hints || [],
-          from: line.from,
-          to: line.to,
-        });
-      } else if (existing.severity !== 'error' && diag.severity === 'error') {
-        lineDiagnostics.set(line.number, { ...existing, message: diag.message, severity: diag.severity });
-      }
+      lineDiagnostics.set(line.number, diag);
     } catch {}
   }
 
   const decorations = [];
-  for (const diag of lineDiagnostics.values()) {
+  for (const [lineNo, diag] of lineDiagnostics.entries()) {
+    const line = view.state.doc.line(lineNo);
     decorations.push(
       Decoration.line({
         class: `cm-error-lens-line cm-error-lens-line-${diag.severity}`,
-      }).range(diag.from),
+      }).range(line.from),
     );
 
     decorations.push(
       Decoration.widget({
         widget: new ErrorLensWidget(diag),
         side: 1,
-      }).range(diag.to),
+      }).range(line.to),
     );
   }
 
   return Decoration.set(decorations, true);
 }
 
-export const errorLensExtension = ViewPlugin.fromClass(
+const errorLensPlugin = ViewPlugin.fromClass(
   class {
     decorations: DecorationSet;
 
@@ -106,3 +96,36 @@ export const errorLensExtension = ViewPlugin.fromClass(
     decorations: (v: any) => v.decorations,
   },
 );
+
+const errorLensHover = hoverTooltip((view, pos) => {
+  const line = view.state.doc.lineAt(pos);
+  if (pos !== line.to) return null;
+
+  const result = view.state.field(diagnosticsState, false);
+  if (!result || result.noDiag || !result.diagnostics || result.diagnostics.length === 0) return null;
+
+  const mapped = getMappedDiagnostics(view, result);
+
+  for (const diag of mapped) {
+    const diagLine = view.state.doc.lineAt(diag.from);
+
+    if (diagLine.number === line.number) {
+      if (diag.from <= pos && pos <= diag.to) return null;
+
+      return {
+        pos: line.to,
+        create(v) {
+          const dom = renderDiagnosticMessage({
+            diagnostic: diag,
+            state: { view: v, doc: v.state.doc.toString() },
+          });
+          return { dom };
+        },
+      };
+    }
+  }
+
+  return null;
+});
+
+export const errorLensExtension = [errorLensPlugin, errorLensHover];
