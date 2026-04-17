@@ -256,7 +256,7 @@ export class MarkdownCorePluginValue implements PluginValue {
         const cursor = update.state.selection.main.head;
         const newFrom = update.changes.mapPos(this.activeRegion.from, -1);
         const rawTo = this.activeRegion.to + this.activeRegion.skipEnd;
-        const newRawTo = update.changes.mapPos(Math.min(rawTo, update.changes.length), -1);
+        const newRawTo = update.changes.mapPos(Math.min(rawTo, update.changes.length), 1);
 
         if (newFrom <= cursor && cursor <= newRawTo) {
           const newRegion = parseRegion(
@@ -270,7 +270,7 @@ export class MarkdownCorePluginValue implements PluginValue {
           );
 
           if (newRegion) {
-            let reparsed = true;
+            let reparsed = false;
             if (this.activeRegion.tree) {
               let changesCount = 0;
               let lastChange: any = null;
