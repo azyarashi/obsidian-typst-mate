@@ -1,9 +1,3 @@
-.typstmate-error {
-  color: red;
-  background-color: yellow;
-  cursor: pointer;
-}
-
 /* inline */
 .typstmate-inline {
   display: inline-block;
