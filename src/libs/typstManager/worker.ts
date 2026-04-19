@@ -1,68 +1,29 @@
+// biome-ignore assist/source/organizeImports: 可読性のため
 import type fsModule from 'node:fs';
 import type pathModule from 'node:path';
 import { expose } from 'comlink';
 import type { TarFile } from 'untar-sync';
 import untar from 'untar-sync';
-import init, {
-  type CompletionResult,
-  type Definition,
-  type Diagnostic,
-  type FontInfo,
-  type FormatOptions,
-  type FormatResult,
-  type HtmlEOptions,
-  type HtmlEResult,
-  type HtmlMResult,
-  type Jump,
-  type PackageSpec,
-  type PdfEOptions,
-  type PdfEResult,
-  type PngEOptions,
-  type PngEResult,
-  type SvgEOptions,
-  type SvgEResult,
-  type SvgMResult,
-  type SvgPResult,
-  type Tooltip,
-  Wasm,
-} from '@/../pkg/typst_wasm.js';
+import init, { Wasm } from '@/../pkg/typst_wasm.js';
 import type { Features } from '../features';
 
-export type {
-  CompletionResult,
-  Definition,
-  Diagnostic,
-  FontInfo,
-  FormatOptions,
-  FormatResult,
-  HtmlEOptions,
-  HtmlEResult,
-  HtmlMResult,
-  Jump,
-  PackageSpec,
-  PdfEOptions,
-  PdfEResult,
-  PngEOptions,
-  PngEResult,
-  SvgEOptions,
-  SvgEResult,
-  SvgMResult,
-  SvgPResult,
-  Tooltip,
-};
+// wasm types
 
-export interface BaseResult {
-  diags: Diagnostic[];
-}
+// markdown
+import type { HtmlMResult, SvgMResult } from '@/../pkg/typst_wasm.js';
+// preview
+import type { SvgPResult } from '@/../pkg/typst_wasm.js';
+// export
+// biome-ignore format: 可読性のため
+import type { SvgEOptions, SvgEResult, HtmlEOptions, HtmlEResult, PdfEOptions, PdfEResult, PngEOptions, PngEResult } from '@/../pkg/typst_wasm.js';
+// その他
+import type { FontInfo, FormatOptions, FormatResult, PackageSpec } from '@/../pkg/typst_wasm.js';
 
-/**
- * Path: 絶対パス
- */
-type Path = string;
-type FileMap = Map<Path, Uint8Array | undefined>;
+export type VPath = string;
+type FileMap = Map<VPath, Uint8Array | undefined>;
 
 const fileMap: FileMap = new Map();
-const packagesMap: Map<Path, FileMap> = new Map();
+const packagesMap: Map<VPath, FileMap> = new Map();
 const obsidianResultsCache: Map<string, unknown> = new Map();
 
 export default class WasmAdapter {
@@ -460,55 +421,45 @@ export default class WasmAdapter {
 
   // * Preview
 
-  svgp(ndir: string, filename: string, code: string): SvgPResult | Promise<SvgPResult> {
-    const path = this.getFullPath(ndir, filename);
+  svgp(path: string, code: string): SvgPResult | Promise<SvgPResult> {
     return this.wasm!.svgp(path, code);
   }
 
-  async svgpAsync(ndir: string, filename: string, code: string): Promise<SvgPResult> {
-    const path = this.getFullPath(ndir, filename);
+  async svgpAsync(path: string, code: string): Promise<SvgPResult> {
     return this.withStatus(path, () => this.compileWithRetry(() => this.wasm!.svgp(path, code)));
   }
 
   // * Export
 
-  htmle(ndir: string, filename: string, code: string, options: HtmlEOptions): HtmlEResult | Promise<HtmlEResult> {
-    const path = this.getFullPath(ndir, filename);
+  htmle(path: string, code: string, options: HtmlEOptions): HtmlEResult | Promise<HtmlEResult> {
     return this.wasm!.htmle(path, code, options);
   }
 
-  async htmleAsync(ndir: string, filename: string, code: string, options: HtmlEOptions): Promise<HtmlEResult> {
-    const path = this.getFullPath(ndir, filename);
+  async htmleAsync(path: string, code: string, options: HtmlEOptions): Promise<HtmlEResult> {
     return this.withStatus(path, () => this.compileWithRetry(() => this.wasm!.htmle(path, code, options)));
   }
 
-  pdfe(ndir: string, filename: string, code: string, options: PdfEOptions): PdfEResult | Promise<PdfEResult> {
-    const path = this.getFullPath(ndir, filename);
+  pdfe(path: string, code: string, options: PdfEOptions): PdfEResult | Promise<PdfEResult> {
     return this.wasm!.pdfe(path, code, options);
   }
 
-  async pdfeAsync(ndir: string, filename: string, code: string, options: PdfEOptions): Promise<PdfEResult> {
-    const path = this.getFullPath(ndir, filename);
+  async pdfeAsync(path: string, code: string, options: PdfEOptions): Promise<PdfEResult> {
     return this.withStatus(path, () => this.compileWithRetry(() => this.wasm!.pdfe(path, code, options)));
   }
 
-  svge(ndir: string, filename: string, code: string, options: SvgEOptions): SvgEResult | Promise<SvgEResult> {
-    const path = this.getFullPath(ndir, filename);
+  svge(path: string, code: string, options: SvgEOptions): SvgEResult | Promise<SvgEResult> {
     return this.wasm!.svge(path, code, options);
   }
 
-  async svgeAsync(ndir: string, filename: string, code: string, options: SvgEOptions): Promise<SvgEResult> {
-    const path = this.getFullPath(ndir, filename);
+  async svgeAsync(path: string, code: string, options: SvgEOptions): Promise<SvgEResult> {
     return this.withStatus(path, () => this.compileWithRetry(() => this.wasm!.svge(path, code, options)));
   }
 
-  pnge(ndir: string, filename: string, code: string, options: PngEOptions): PngEResult | Promise<PngEResult> {
-    const path = this.getFullPath(ndir, filename);
+  pnge(path: string, code: string, options: PngEOptions): PngEResult | Promise<PngEResult> {
     return this.wasm!.pnge(path, code, options);
   }
 
-  async pngeAsync(ndir: string, filename: string, code: string, options: PngEOptions): Promise<PngEResult> {
-    const path = this.getFullPath(ndir, filename);
+  async pngeAsync(path: string, code: string, options: PngEOptions): Promise<PngEResult> {
     return this.withStatus(path, () => this.compileWithRetry(() => this.wasm!.pnge(path, code, options)));
   }
 }
@@ -528,30 +479,21 @@ export interface Main {
   fetchPackage(spec: PackageSpec): Promise<ArrayBuffer>;
 }
 
+/** https://docs.rs/typst/latest/typst/diag/enum.FileError.html */
 export enum ErrorCode {
+  /** ファイル読み込みなど */
   Pending = 0,
 
-  /** https://docs.rs/typst/latest/typst/diag/enum.FileError.html#variant.NotFound */
   FileErrorNotFound = 10,
-  /** https://docs.rs/typst/latest/typst/diag/enum.FileError.html#variant.AccessDenied */
   FileErrorAccessDenied,
-  /** https://docs.rs/typst/latest/typst/diag/enum.FileError.html#variant.IsDirectory */
   FileErrorIsDirectory,
-  /** https://docs.rs/typst/latest/typst/diag/enum.FileError.html#variant.NotSource */
   FileErrorNotSource,
-  /** https://docs.rs/typst/latest/typst/diag/enum.FileError.html#variant.InvalidUtf8 */
   FileErrorInvalidUtf8,
-  /** https://docs.rs/typst/latest/typst/diag/enum.FileError.html#variant.Other */
   FileErrorOther,
 
-  /** https://docs.rs/typst/latest/typst/diag/enum.PackageError.html#variant.NotFound */
   PackageErrorNotFound = 20,
-  /** https://docs.rs/typst/latest/typst/diag/enum.PackageError.html#variant.VersionNotFound */
   PackageErrorVersionNotFound,
-  /** https://docs.rs/typst/latest/typst/diag/enum.PackageError.html#variant.NetworkFailed */
   PackageErrorNetworkFailed,
-  /** https://docs.rs/typst/latest/typst/diag/enum.PackageError.html#variant.MalformedArchive */
   PackageErrorMalformedArchive,
-  /** https://docs.rs/typst/latest/typst/diag/enum.PackageError.html#variant.Other */
   PackageErrorOther,
 }

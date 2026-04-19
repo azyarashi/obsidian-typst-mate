@@ -1,9 +1,10 @@
 import { MarkdownView, type Menu, type MenuItem, Notice } from 'obsidian';
+import type { Diagnostic, SvgMResult } from '@/../pkg/typst_wasm';
 import { BASE_COLOR_VAR } from '@/constants';
 import { jumpFromClickPlugin } from '@/editor/shared/extensions/JumpFromClick';
 import { t } from '@/i18n';
 import { appUtils, typstManager } from '@/libs';
-import { type Diagnostic, ErrorCode, type SvgMResult } from '@/libs/typstManager/worker';
+import { ErrorCode } from '@/libs/typstManager/worker';
 import TypstElement from './Typst';
 
 import './SVG.css';
@@ -116,7 +117,7 @@ export default class TypstSVGElement extends TypstElement {
       const result = await typstManager.wasm.svgmAsync(this.ndir, this.kind, this.id, formatted);
       this.postProcess(result);
     } catch (err) {
-      if (err === ErrorCode.Pending) return this; // Ignore pending as it will be retried internally
+      if (err === ErrorCode.Pending) return this;
       this.handleError(err as Diagnostic[]);
     }
 

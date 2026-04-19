@@ -1,11 +1,11 @@
 import { MarkdownView, Menu, type MenuItem, Notice } from 'obsidian';
+import type { Diagnostic as WasmDiagnostic } from '@/../pkg/typst_wasm';
 import { DEFAULT_FONT_SIZE } from '@/constants';
 import { updateDiagnosticEffect } from '@/editor/shared/extensions/Linter/extension';
 import { getActiveRegion } from '@/editor/shared/utils/core';
 import { t } from '@/i18n';
 import { appUtils, settingsManager, typstManager } from '@/libs';
 import { type Processor, type ProcessorKind, RenderingEngine } from '@/libs/processor';
-import type { BaseResult, Diagnostic as WasmDiagnostic } from '@/libs/typstManager/worker';
 
 import './Typst.css';
 
@@ -25,7 +25,7 @@ export default abstract class TypstElement extends HTMLElement {
   abstract render(): Promise<this>;
   abstract renderSync(): this;
 
-  postProcess(result: BaseResult) {
+  postProcess(result: { diags: WasmDiagnostic[] }) {
     this.isErr = false;
 
     // ? キャンバスなどで呼ばれたとき用

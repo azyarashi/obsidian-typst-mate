@@ -1,5 +1,6 @@
 import { proxy, type Remote, wrap } from 'comlink';
 import { type CachedMetadata, getAllTags, MarkdownPreviewRenderer, Notice, requestUrl, type TFile } from 'obsidian';
+import type { PackageSpec } from '@/../pkg/typst_wasm';
 import { Status, TypstMate } from '@/api';
 import { DEFAULT_FONT_SIZE } from '@/constants';
 import { DEFAULT_SETTINGS, type Settings } from '@/data/settings';
@@ -17,7 +18,7 @@ import { TypstFileView, type TypstPreviewView } from '@/ui/views';
 import { overwriteCustomElements } from '@/utils/custromElementRegistry';
 import { expandHierarchicalTags } from '@/utils/tags';
 import type WasmAdapter from './worker';
-import Wasm, { ErrorCode, type PackageSpec } from './worker';
+import Wasm, { ErrorCode } from './worker';
 import WasmWorker from './worker?worker&inline';
 
 import './index.css';
@@ -432,7 +433,7 @@ export class TypstManager implements Singleton {
 
   syncFileCache(metadata: CachedMetadata): boolean {
     const imports: string[] = metadata.frontmatter?.imports ?? [];
-    const definitions: string[] = metadata.frontmatter?.definitions ?? [];
+    const definitions: string[] = metadata.frontmatter?.definitions ?? metadata.frontmatter?.lets ?? [];
     const tags: string[] = [];
     for (const tag of expandHierarchicalTags(getAllTags(metadata) ?? [])) if (this.tagFiles.has(tag)) tags.push(tag);
 

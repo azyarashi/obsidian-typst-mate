@@ -1,8 +1,10 @@
 import { Notice, type TFile } from 'obsidian';
 import { t } from '@/i18n';
-import { ctxToNDir, typstManager } from '@/libs/typstManager';
-import type { HtmlEOptions, PdfEOptions, PngEOptions, SvgEOptions } from '@/libs/typstManager/worker';
+import { fileManager } from '@/libs';
+import { path } from '@/libs/features';
+import { typstManager } from '@/libs/typstManager';
 import type ObsidianTypstMate from '@/main';
+import type { HtmlEOptions, PdfEOptions, PngEOptions, SvgEOptions } from '../../pkg/typst_wasm';
 
 export type SvgExportOptions = SvgEOptions & { filenameTemplate: string };
 export type PngExportOptions = PngEOptions & { filenameTemplate: string };
@@ -23,8 +25,8 @@ export async function exportToPdf(
   options: PdfEOptions,
   notice: boolean = true,
 ): Promise<string | undefined> {
-  const ndir = ctxToNDir(file.path);
-  const result = await typstManager.wasm.pdfeAsync(ndir, file.name, content, options);
+  const fullPath = path ? path.join(fileManager.baseDirPath, file.path) : file.path;
+  const result = await typstManager.wasm.pdfeAsync(fullPath, content, options);
   if (!result?.pdf) return;
 
   const buffer = arrayBufferLikeToArrayBuffer(result.pdf);
@@ -38,8 +40,8 @@ export async function exportToPdf(
 }
 
 export async function exportToPng(plugin: ObsidianTypstMate, file: TFile, content: string, options: PngExportOptions) {
-  const ndir = ctxToNDir(file.path);
-  const result = await typstManager.wasm.pngeAsync(ndir, file.name, content, options);
+  const fullPath = path ? path.join(fileManager.baseDirPath, file.path) : file.path;
+  const result = await typstManager.wasm.pngeAsync(fullPath, content, options);
   if (!result?.images) return;
 
   const total = result.images.length;
@@ -57,8 +59,8 @@ export async function exportToPng(plugin: ObsidianTypstMate, file: TFile, conten
 }
 
 export async function exportToSvg(plugin: ObsidianTypstMate, file: TFile, content: string, options: SvgExportOptions) {
-  const ndir = ctxToNDir(file.path);
-  const result = await typstManager.wasm.svgeAsync(ndir, file.name, content, options);
+  const fullPath = path ? path.join(fileManager.baseDirPath, file.path) : file.path;
+  const result = await typstManager.wasm.svgeAsync(fullPath, content, options);
   if (!result?.svgs) return;
 
   const total = result.svgs.length;
@@ -79,8 +81,8 @@ export async function exportToHtml(
   options: HtmlEOptions,
   notice = true,
 ) {
-  const ndir = ctxToNDir(file.path);
-  const result = await typstManager.wasm.htmleAsync(ndir, file.name, content, options);
+  const fullPath = path ? path.join(fileManager.baseDirPath, file.path) : file.path;
+  const result = await typstManager.wasm.htmleAsync(fullPath, content, options);
   if (!result?.html) return;
 
   const html = result.html;

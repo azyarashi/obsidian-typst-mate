@@ -1,7 +1,7 @@
 import { Component, type TFile } from 'obsidian';
 import type { EmbedComponent } from 'obsidian-typings';
-import { appUtils, typstManager } from '@/libs';
-import { ctxToNDir } from '@/libs/typstManager';
+import { appUtils, fileManager, typstManager } from '@/libs';
+import { path } from '@/libs/features';
 
 import './typst-embed.css';
 
@@ -25,9 +25,9 @@ export class TypstEmbedComponent extends Component implements EmbedComponent {
 
     try {
       const code = await appUtils.app.vault.read(this.file);
-      const ndir = ctxToNDir(this.file.path);
+      const fullPath = path ? path.join(fileManager.baseDirPath, this.file.path) : this.file.path;
 
-      const result = await typstManager.wasm.svgpAsync(ndir, this.file.name, code);
+      const result = await typstManager.wasm.svgpAsync(fullPath, code);
 
       this.containerEl.empty();
 
