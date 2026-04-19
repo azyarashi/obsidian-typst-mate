@@ -1,6 +1,6 @@
 import { type EditorView, ViewPlugin } from '@codemirror/view';
+import type { Jump } from '@/../pkg/typst_wasm';
 import { editorHelper } from '@/libs';
-import type { Jump } from '@/libs/typstManager/worker';
 import type TypstElement from '@/ui/elements/Typst';
 import { getRegionAt, type ParsedRegion } from '../../utils/core';
 import { handleTypstMateURI } from './uri';
