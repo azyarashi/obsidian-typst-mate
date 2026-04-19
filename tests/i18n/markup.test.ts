@@ -11,7 +11,7 @@ describe('parseMarkup', () => {
   });
 
   it('parses bold tag', () => {
-    expect(parseMarkup('<bold>important</bold>')).toEqual([{ type: 'bold', content: 'important' }]);
+    expect(parseMarkup('<b>important</b>')).toEqual([{ type: 'b', content: 'important' }]);
   });
 
   it('parses code tag', () => {
@@ -19,8 +19,8 @@ describe('parseMarkup', () => {
   });
 
   it('parses link tag with href', () => {
-    expect(parseMarkup('<link href="https://github.com/azyarashi/obsidian-typst-mate/">click here</link>')).toEqual([
-      { type: 'link', content: 'click here', href: 'https://github.com/azyarashi/obsidian-typst-mate/' },
+    expect(parseMarkup('<a href="https://github.com/azyarashi/obsidian-typst-mate/">click here</a>')).toEqual([
+      { type: 'a', content: 'click here', href: 'https://github.com/azyarashi/obsidian-typst-mate/' },
     ]);
   });
 
@@ -33,9 +33,9 @@ describe('parseMarkup', () => {
   });
 
   it('parses multiple tags in sequence', () => {
-    expect(parseMarkup('start <bold>A</bold> and <code>B</code> end')).toEqual([
+    expect(parseMarkup('start <b>A</b> and <code>B</code> end')).toEqual([
       { type: 'text', content: 'start ' },
-      { type: 'bold', content: 'A' },
+      { type: 'b', content: 'A' },
       { type: 'text', content: ' and ' },
       { type: 'code', content: 'B' },
       { type: 'text', content: ' end' },
@@ -43,15 +43,15 @@ describe('parseMarkup', () => {
   });
 
   it('does not parse mismatched tags', () => {
-    expect(parseMarkup('<bold>text</code>')).toEqual([{ type: 'text', content: '<bold>text</code>' }]);
+    expect(parseMarkup('<b>text</code>')).toEqual([{ type: 'text', content: '<b>text</code>' }]);
   });
 
   it('treats link without href as plain text content', () => {
-    expect(parseMarkup('<link>no href</link>')).toEqual([{ type: 'text', content: 'no href' }]);
+    expect(parseMarkup('<a>no href</a>')).toEqual([{ type: 'text', content: 'no href' }]);
   });
 
   it('treats nested tags as flat (inner markup becomes literal text)', () => {
-    expect(parseMarkup('<bold><code>nested</code></bold>')).toEqual([{ type: 'bold', content: '<code>nested</code>' }]);
+    expect(parseMarkup('<b><code>nested</code></b>')).toEqual([{ type: 'b', content: '<code>nested</code>' }]);
   });
 
   it('ignores non-whitelisted tags', () => {
@@ -59,8 +59,8 @@ describe('parseMarkup', () => {
   });
 
   it('does not capture extra attributes on whitelisted tags', () => {
-    expect(parseMarkup('<bold onmouseover="alert(1)">text</bold>')).toEqual([
-      { type: 'text', content: '<bold onmouseover="alert(1)">text</bold>' },
+    expect(parseMarkup('<b onmouseover="alert(1)">text</b>')).toEqual([
+      { type: 'text', content: '<b onmouseover="alert(1)">text</b>' },
     ]);
   });
 });
