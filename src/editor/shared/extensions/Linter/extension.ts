@@ -1,9 +1,9 @@
 import { type Diagnostic, setDiagnostics } from '@codemirror/lint';
 import { StateEffect, StateField } from '@codemirror/state';
 import { type EditorView, ViewPlugin, type ViewUpdate } from '@codemirror/view';
+import type { Diagnostic as WasmDiagnostic } from '@/../pkg/typst_wasm';
 import { TypstMate } from '@/api';
 import type { Processor } from '@/libs/processor';
-import type { Diagnostic as WasmDiagnostic } from '@/libs/typstManager/worker';
 import { renderDiagnosticMessage } from '@/ui/components/Diagnostic';
 import { getActiveRegion } from '../../utils/core';
 
