@@ -7,7 +7,7 @@
   "settings": {
     "processors": {
       "name": "プロセッサー",
-      "desc": "プロセッサーとは, レンダリングエンジンやスタイル, フォーマットなどをまとめた環境のことです. ノート中に入力した内容は, <code>{CODE}</code> の位置に挿入されます. <bold>id にはパスに使用される制御文字, すなわち <code>/</code>, <code>\\</code>, <code>:</code>, <code>.</code> が使用できないことに注意してください</bold>. スタイルやその他の詳細設定については, <link href=\"https://github.com/azyarashi/obsidian-typst-mate/blob/main/docs/processor/Processor.md\">Processor.md</link> を参照してください.",
+      "desc": "プロセッサーとは, レンダリングエンジンやスタイル, フォーマットなどをまとめた環境のことです. ノート中に入力した内容は, <code>{CODE}</code> の位置に挿入されます. <b>id にはパスに使用される制御文字, すなわち <code>/</code>, <code>\\</code>, <code>:</code>, <code>.</code> が使用できないことに注意してください</b>. スタイルやその他の詳細設定については, <a href=\"https://github.com/azyarashi/obsidian-typst-mate/blob/main/docs/processor/Processor.md\">Processor.md</a> を参照してください.",
 
       "preamble.name": "プリアンブル",
       "preamble.desc": "各プロセッサーの設定でオンオフを切り替えられます. <code>fontsize</code> など, プラグイン固有の値を使用できます.",
@@ -24,13 +24,14 @@
         "excalidraw": "Excalidraw"
       },
       "inlineProcessor.name": "インライン数式 (<code>$id:...$</code> / <code>$...$</code>)",
-      "inlineProcessor.desc": "接頭辞が id の指定に相当しますが, id と数式の間は コロン(<code>:</code>) で区切る必要があります. <bold>インライン要素のみを期待します</bold>. 最も下にあるものがデフォルトとして使用されます.",
+      "inlineProcessor.desc": "接頭辞が id の指定に相当しますが, id と数式の間は コロン(<code>:</code>) で区切る必要があります. <b>インライン要素のみを期待します</b>. 最も下にあるものがデフォルトとして使用されます.",
+      "inlineProcessor.desc.extra": " より良いタイピング体験のために, <a href=\"obsidian://show-plugin?id=inline-math\">No More Flickering Inline Math</a> の導入を<b>強く</b>推奨します.",
       "displayProcessor.name": "ディスプレイ数式 (<code>$$id...$$</code> / <code>$$...$$</code>)",
       "displayProcessor.desc": "接頭辞が id の指定に相当します. 最も下にあるものがデフォルトとして使用されます.",
       "codeblockProcessor.name": "コードブロック (<code>```id...```</code> / <code>~~~id...~~~</code>)",
-      "codeblockProcessor.desc": "言語が id の指定に相当します. <bold>プラグインとの競合に注意してください</bold>. 変更が正しく反映されない場合は, <link href=\"obsidian://reload-typstmate\">プラグインをリロード</link>してください.",
-      "excalidrawProcessor.name": "<link href=\"https://www.obsidianstats.com/plugins/obsidian-excalidraw-plugin\">Excalidraw</link>",
-      "excalidrawProcessor.desc": "他のプラグインとは異なり, <bold>色は自動的に調整されません</bold>.",
+      "codeblockProcessor.desc": "言語が id の指定に相当します. <b>プラグインとの競合に注意してください</b>. 変更が正しく反映されない場合は, <a href=\"obsidian://reload-typstmate\">プラグインをリロード</a>してください.",
+      "excalidrawProcessor.name": "<a href=\"https://www.obsidianstats.com/plugins/obsidian-excalidraw-plugin\">Excalidraw</a>",
+      "excalidrawProcessor.desc": "他のプラグインとは異なり, <b>色は自動的に調整されません</b>.",
 
       "addProcessorButton": "新規作成",
 
@@ -116,11 +117,11 @@
         "name": "補完",
         "desc": "変数やパッケージ, フォント情報などを補完します",
         "useUnicodeSymbols.name": "symbol を Unicode 文字で補完する",
-        "useUnicodeSymbols.desc": "<link href=\"https://typst.app/docs/reference/foundations/symbol/\">symbol</link> を補完するとき, 対応する Unicode 文字に置き換えます"
+        "useUnicodeSymbols.desc": "<a href=\"https://typst.app/docs/reference/foundations/symbol/\">symbol</a> を補完するとき, 対応する Unicode 文字に置き換えます"
       },
       "formatter": {
         "name": "フォーマッター",
-        "desc": "<link href=\"https://typstyle-rs.github.io/typstyle/\">Typstyle</link> によるフォーマットを実行します",
+        "desc": "<a href=\"https://typstyle-rs.github.io/typstyle/\">Typstyle</a> によるフォーマットを実行します",
         "formatOnSave.name": "保存時のフォーマット",
         "formatOnSave.desc": "保存時のフォーマット",
         "typstyleHeader": "Typstyle の設定",
@@ -192,12 +193,16 @@
         "desc": "インデントレインボー"
       },
       "jumpToPreview": {
-        "name": "ジャンプトゥプレビュー",
-        "desc": "ジャンプトゥプレビュー"
+        "name": "コードプレビュー",
+        "desc": "TODO"
+      },
+      "folding": {
+        "name": "コード折りたたみ",
+        "desc": "ブロック・見出し・数式などを折りたたみます。ガターアイコンまたは Ctrl-Shift-[ / Cmd-Alt-[ でトグルできます。"
       },
       "vim": {
         "name": "Vim",
-        "desc": "<link href=\"https://vimee.dev\">Vimee</link> による Vim キーバインドを有効にします"
+        "desc": "<a href=\"https://vimee.dev\">Vimee</a> による Vim キーバインドを有効にします"
       },
       "typstCore": {
         "name": "Typst コア",
@@ -211,7 +216,7 @@
       "skipStartup": "起動時の準備をスキップ",
       "skipStartupDesc": "起動時の初期化を遅らせます（モバイルでは不安定）。起動時間を短縮しますが、最初のレンダリングが遅れます。",
       "fonts": {
-        "desc": "Typst CLI に含まれる標準フォント(<link href=\"https://github.com/typst/typst-assets/tree/{{version}}/files/fonts\">一覧はこちら</link>) は埋め込まれています.",
+        "desc": "Typst CLI に含まれる標準フォント(<a href=\"https://github.com/typst/typst-assets/tree/{{version}}/files/fonts\">一覧はこちら</a>) は埋め込まれています.",
         "clickToLoad": "クリックしてシステムフォント一覧を読み込む",
         "filterPlaceholder": "フォント名をフィルタリング",
         "fontCount": "{{count}} 個のフォント",
@@ -291,7 +296,7 @@
     "advanced": {
       "applyProcessorToMathJax": "プロセッサを MathJax に適用する",
       "enableMathjaxFallback": "MathJax フォールバックを有効にする",
-      "enableMathjaxFallbackDesc": "パフォーマンス上の理由から推奨されません。有効にすると、<bold>Typst のエラー、警告、ヒントが利用できなくなります。</bold>",
+      "enableMathjaxFallbackDesc": "パフォーマンス上の理由から推奨されません。有効にすると、<b>Typst のエラー、警告、ヒントが利用できなくなります。</b>",
       "importPath": "Typst ファイルのインポートパス",
       "importPathDesc": "インポートする Typst ファイルを探す vault 内のディレクトリ。パスが存在しないか空の場合、この機能は無効になります。",
       "openDetails": "詳細を開く",
