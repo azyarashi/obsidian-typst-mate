@@ -26,6 +26,7 @@ class CodeBlockPreviewWidget extends WidgetType {
     readonly code: string,
     readonly id: string,
     readonly regionFrom: number,
+    readonly enabled: boolean,
   ) {
     super();
   }
@@ -34,6 +35,8 @@ class CodeBlockPreviewWidget extends WidgetType {
     const container = document.createElement('div');
     container.addClasses(['typstmate-codeblockpreview', 'typstmate-temporary']);
     container.dataset.regionFrom = this.regionFrom.toString();
+
+    if (!this.enabled) container.style.display = 'none';
 
     const file = appUtils.app.workspace.getActiveFile();
     const { ndir, npath } = getNdirAndNPath(file);
@@ -44,11 +47,19 @@ class CodeBlockPreviewWidget extends WidgetType {
   }
 
   override eq(other: CodeBlockPreviewWidget): boolean {
-    return this.code === other.code && this.id === other.id && this.regionFrom === other.regionFrom;
+    return (
+      this.code === other.code &&
+      this.id === other.id &&
+      this.regionFrom === other.regionFrom &&
+      this.enabled === other.enabled
+    );
   }
 
   override updateDOM(dom: HTMLElement, _view: EditorView): boolean {
     dom.replaceChildren();
+
+    if (!this.enabled) dom.style.display = 'none';
+    else dom.style.display = '';
 
     const file = appUtils.app.workspace.getActiveFile();
     const { ndir, npath } = getNdirAndNPath(file);
@@ -59,29 +70,30 @@ class CodeBlockPreviewWidget extends WidgetType {
   }
 }
 
-const codeblockPreviewState = StateField.define<DecorationSet>({
-  create() {
-    return Decoration.none;
-  },
-  update(decorations, tr) {
-    if (tr.docChanged) decorations = decorations.map(tr.changes);
+const codeblockPreviewState = (enabled: boolean) =>
+  StateField.define<DecorationSet>({
+    create() {
+      return Decoration.none;
+    },
+    update(decorations, tr) {
+      if (tr.docChanged) decorations = decorations.map(tr.changes);
 
-    for (const effect of tr.effects) {
-      if (effect.is(setPreviewEffect)) {
-        const widgetData = effect.value;
-        if (!widgetData) return Decoration.none;
+      for (const effect of tr.effects) {
+        if (effect.is(setPreviewEffect)) {
+          const widgetData = effect.value;
+          if (!widgetData) return Decoration.none;
 
-        const widget = new CodeBlockPreviewWidget(widgetData.code, widgetData.id, widgetData.regionFrom);
+          const widget = new CodeBlockPreviewWidget(widgetData.code, widgetData.id, widgetData.regionFrom, enabled);
 
-        const deco = Decoration.widget({ widget, side: 1, block: true });
-        return Decoration.set([deco.range(widgetData.position)]);
+          const deco = Decoration.widget({ widget, side: 1, block: true });
+          return Decoration.set([deco.range(widgetData.position)]);
+        }
       }
-    }
 
-    return decorations;
-  },
-  provide: (field) => EditorView.decorations.from(field),
-});
+      return decorations;
+    },
+    provide: (field) => EditorView.decorations.from(field),
+  });
 
 class CodeblockPreviewPlugin implements PluginValue {
   private widgetData: WidgetData | null = null;
@@ -140,7 +152,7 @@ class CodeblockPreviewPlugin implements PluginValue {
   }
 }
 
-export const codeblockPreviewExtension: Extension = [
-  codeblockPreviewState,
+export const codeblockPreviewExtension = (enabled: boolean): Extension => [
+  codeblockPreviewState(enabled),
   ViewPlugin.fromClass(CodeblockPreviewPlugin),
 ];

@@ -4,5 +4,5 @@ import { inlinePreviewPackage } from './package';
 
 export const inlinePreviewEntry = defineExtension()(() => ({
   package: inlinePreviewPackage(),
-  factory: () => inlinePreviewExtension,
+  factory: (_context, settings: { enabled?: boolean }) => inlinePreviewExtension(settings.enabled ?? true),
 }));

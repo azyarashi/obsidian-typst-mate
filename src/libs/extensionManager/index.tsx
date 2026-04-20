@@ -88,16 +88,21 @@ export class ExtensionManager implements Singleton {
   private resolveExtension(entry: ExtensionEntry<any>, context: EditorContext): Extension {
     const setting = settingsManager.settings.extensionSettings[context][entry.package.id];
     const enabled = entry.package.isBuiltin || (setting ? setting.enabled : (entry.package.defaultEnabled ?? true));
-    if (!enabled) return [];
+    // ! 裏でリンターを走らせる
+    const isPreview = entry.package.id === 'inline-preview' || entry.package.id === 'codeblock-preview';
+    if (!enabled && !isPreview) return [];
 
     const defaultValues = this.buildDefaultValues(entry.package.settings);
     const values = {
       ...defaultValues,
       ...(setting?.values ?? {}),
+      enabled,
     };
 
     const entryExt = entry.factory(context, values);
-    return entryExt ?? [];
+    if (!entryExt) return [];
+
+    return entryExt;
   }
 
   private buildDefaultValues(items: readonly ExtensionSettingItem[]): Record<string, unknown> {

@@ -4,5 +4,5 @@ import { codeblockPreviewPackage } from './package';
 
 export const codeblockPreviewEntry = defineExtension()(() => ({
   package: codeblockPreviewPackage(),
-  factory: () => codeblockPreviewExtension,
+  factory: (_context, settings: { enabled?: boolean }) => codeblockPreviewExtension(settings.enabled ?? true),
 }));

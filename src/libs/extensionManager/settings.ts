@@ -72,7 +72,7 @@ export type InferSettingsFromPackage<P extends (...args: any[]) => { settings: r
  */
 export interface ExtensionEntry<Settings = Record<string, any>> {
   package: ExtensionPackage;
-  factory: (context: EditorContext, settings: Settings) => Extension | null;
+  factory: (context: EditorContext, settings: Settings & { enabled: boolean }) => Extension | null;
 }
 
 /**
@@ -87,7 +87,7 @@ export function defineExtension<Settings extends Record<string, any> = never>() 
       };
       factory: (
         context: EditorContext,
-        settings: [Settings] extends [never] ? InferSettingsFromItems<T> : Settings,
+        settings: ([Settings] extends [never] ? InferSettingsFromItems<T> : Settings) & { enabled?: boolean },
       ) => Extension | null;
     },
   ): (() => ExtensionEntry<[Settings] extends [never] ? InferSettingsFromItems<T> : Settings>) => {

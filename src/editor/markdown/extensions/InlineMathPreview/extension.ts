@@ -8,7 +8,10 @@ class InlinePreviewPlugin implements PluginValue {
   container: HTMLElement;
   lastContent: string = '';
 
-  constructor(public view: EditorView) {
+  constructor(
+    public view: EditorView,
+    private enabled: boolean,
+  ) {
     this.container = document.createElement('div');
     this.container.addClasses(['typstmate-inlinemathpreview', 'typstmate-temporary']);
     this.container.hide();
@@ -39,7 +42,14 @@ class InlinePreviewPlugin implements PluginValue {
         return;
       }
 
+      const enabled = this.enabled;
+
       if (!this.renderContent(content, region.from + region.skip)) {
+        return;
+      }
+
+      if (!enabled) {
+        this.hideContainer();
         return;
       }
 
@@ -94,9 +104,16 @@ class InlinePreviewPlugin implements PluginValue {
   }
 
   hide() {
+    this.hideContainer();
+    this.lastContent = '';
+  }
+
+  /**
+   * Hide the container without clearing lastContent to allow background rendering
+   */
+  hideContainer() {
     this.container.hide();
     this.container.style.opacity = '';
-    this.lastContent = '';
     delete this.container.dataset.regionFrom;
   }
 
@@ -105,4 +122,5 @@ class InlinePreviewPlugin implements PluginValue {
   }
 }
 
-export const inlinePreviewExtension = ViewPlugin.fromClass(InlinePreviewPlugin);
+export const inlinePreviewExtension = (enabled: boolean) =>
+  ViewPlugin.define((view) => new InlinePreviewPlugin(view, enabled));
