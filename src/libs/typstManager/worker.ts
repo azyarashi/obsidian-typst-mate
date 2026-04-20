@@ -19,6 +19,10 @@ import type { SvgEOptions, SvgEResult, HtmlEOptions, HtmlEResult, PdfEOptions, P
 // その他
 import type { FontInfo, FormatOptions, FormatResult, PackageSpec } from '@/../pkg/typst_wasm.js';
 
+/**
+ * * Mobile App: normalized path
+ * * Desktop App: absolute path (os-native path format)
+ */
 export type VPath = string;
 type FileMap = Map<VPath, Uint8Array | undefined>;
 
@@ -421,46 +425,46 @@ export default class WasmAdapter {
 
   // * Preview
 
-  svgp(path: string, code: string): SvgPResult | Promise<SvgPResult> {
-    return this.wasm!.svgp(path, code);
+  svgp(vpath: VPath, code: string): SvgPResult | Promise<SvgPResult> {
+    return this.wasm!.svgp(vpath, code);
   }
 
-  async svgpAsync(path: string, code: string): Promise<SvgPResult> {
-    return this.withStatus(path, () => this.compileWithRetry(() => this.wasm!.svgp(path, code)));
+  async svgpAsync(vpath: VPath, code: string): Promise<SvgPResult> {
+    return this.withStatus(vpath, () => this.compileWithRetry(() => this.wasm!.svgp(vpath, code)));
   }
 
   // * Export
 
-  htmle(path: string, code: string, options: HtmlEOptions): HtmlEResult | Promise<HtmlEResult> {
-    return this.wasm!.htmle(path, code, options);
+  htmle(vpath: VPath, code: string, options: HtmlEOptions): HtmlEResult | Promise<HtmlEResult> {
+    return this.wasm!.htmle(vpath, code, options);
   }
 
-  async htmleAsync(path: string, code: string, options: HtmlEOptions): Promise<HtmlEResult> {
-    return this.withStatus(path, () => this.compileWithRetry(() => this.wasm!.htmle(path, code, options)));
+  async htmleAsync(vpath: VPath, code: string, options: HtmlEOptions): Promise<HtmlEResult> {
+    return this.withStatus(vpath, () => this.compileWithRetry(() => this.wasm!.htmle(vpath, code, options)));
   }
 
-  pdfe(path: string, code: string, options: PdfEOptions): PdfEResult | Promise<PdfEResult> {
-    return this.wasm!.pdfe(path, code, options);
+  pdfe(vpath: VPath, code: string, options: PdfEOptions): PdfEResult | Promise<PdfEResult> {
+    return this.wasm!.pdfe(vpath, code, options);
   }
 
-  async pdfeAsync(path: string, code: string, options: PdfEOptions): Promise<PdfEResult> {
-    return this.withStatus(path, () => this.compileWithRetry(() => this.wasm!.pdfe(path, code, options)));
+  async pdfeAsync(vpath: VPath, code: string, options: PdfEOptions): Promise<PdfEResult> {
+    return this.withStatus(vpath, () => this.compileWithRetry(() => this.wasm!.pdfe(vpath, code, options)));
   }
 
-  svge(path: string, code: string, options: SvgEOptions): SvgEResult | Promise<SvgEResult> {
-    return this.wasm!.svge(path, code, options);
+  svge(vpath: VPath, code: string, options: SvgEOptions): SvgEResult | Promise<SvgEResult> {
+    return this.wasm!.svge(vpath, code, options);
   }
 
-  async svgeAsync(path: string, code: string, options: SvgEOptions): Promise<SvgEResult> {
-    return this.withStatus(path, () => this.compileWithRetry(() => this.wasm!.svge(path, code, options)));
+  async svgeAsync(vpath: VPath, code: string, options: SvgEOptions): Promise<SvgEResult> {
+    return this.withStatus(vpath, () => this.compileWithRetry(() => this.wasm!.svge(vpath, code, options)));
   }
 
-  pnge(path: string, code: string, options: PngEOptions): PngEResult | Promise<PngEResult> {
-    return this.wasm!.pnge(path, code, options);
+  pnge(vpath: VPath, code: string, options: PngEOptions): PngEResult | Promise<PngEResult> {
+    return this.wasm!.pnge(vpath, code, options);
   }
 
-  async pngeAsync(path: string, code: string, options: PngEOptions): Promise<PngEResult> {
-    return this.withStatus(path, () => this.compileWithRetry(() => this.wasm!.pnge(path, code, options)));
+  async pngeAsync(vpath: VPath, code: string, options: PngEOptions): Promise<PngEResult> {
+    return this.withStatus(vpath, () => this.compileWithRetry(() => this.wasm!.pnge(vpath, code, options)));
   }
 }
 
