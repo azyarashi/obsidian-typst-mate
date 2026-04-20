@@ -6,7 +6,6 @@ import type ObsidianTypstMate from '@/main';
 import { TypstFileView } from '../typst-file';
 
 import './typst-preview.css';
-import { TypstMate } from '@/api';
 
 interface PreviewViewerState {
   currentPage: number;
@@ -20,6 +19,7 @@ export class TypstPreviewView extends TextFileView {
   plugin: ObsidianTypstMate;
 
   parentFileView: TypstFileView | null = null;
+  vpath!: string;
 
   fileContent?: string;
   svgPages: string[] = [];
@@ -61,8 +61,8 @@ export class TypstPreviewView extends TextFileView {
           if (!this.file) return;
           const leaf = this.app.workspace.getLeaf(false);
           await leaf.setViewState({
-            type: 'typst-text',
-            state: { file: this.file.path },
+            type: 'typst-file',
+            state: { vpath: this.vpath },
           });
         } catch (e) {
           console.error('Open as text failed:', e);
@@ -86,8 +86,9 @@ export class TypstPreviewView extends TextFileView {
     }
 
     try {
+      this.vpath = file.path;
       this.fileContent = await this.app.vault.read(file);
-      const result = await TypstMate.wasm!.svgpAsync('/', file.path, this.fileContent);
+      const result = await typstManager.wasm!.svgpAsync(this.vpath, this.fileContent);
       this.svgPages = result.svgp;
 
       await this.renderPreview();
@@ -116,7 +117,7 @@ export class TypstPreviewView extends TextFileView {
 
     try {
       this.fileContent = await this.app.vault.read(file);
-      const result = await TypstMate.wasm!.svgpAsync('/', file.path, this.fileContent);
+      const result = await typstManager.wasm!.svgpAsync(this.vpath, this.fileContent);
       this.svgPages = result.svgp;
 
       if (!this.pageContainerEl || !this.viewerAreaEl) return;
@@ -141,7 +142,7 @@ export class TypstPreviewView extends TextFileView {
     const fileLeaves = this.app.workspace.getLeavesOfType(TypstFileView.viewtype);
     for (const leaf of fileLeaves) {
       const fileView = leaf.view;
-      if (fileView instanceof TypstFileView && fileView.file?.path === this.file?.path) {
+      if (fileView instanceof TypstFileView && fileView.vpath === this.vpath) {
         this.parentFileView = fileView;
         fileView.linkedPreviewLeaf = this.leaf;
         break;
@@ -154,7 +155,10 @@ export class TypstPreviewView extends TextFileView {
   }
 
   override getViewData(): string {
-    return JSON.stringify(this.viewerState);
+    return JSON.stringify({
+      ...this.viewerState,
+      vpath: this.vpath,
+    });
   }
 
   override setViewData(data: string, _clear: boolean): void {
@@ -167,6 +171,7 @@ export class TypstPreviewView extends TextFileView {
         scrollTop: parsedState.scrollTop || 0,
         scale: parsedState.scale || 1.0,
       };
+      this.vpath = parsedState.vpath || '';
 
       this.restoreViewerState();
     } catch (e) {
@@ -547,8 +552,8 @@ export class TypstPreviewView extends TextFileView {
     const x = (event.clientX - rect.left) / (rect.width / svg.viewBox.baseVal.width);
     const y = (event.clientY - rect.top) / (rect.height / svg.viewBox.baseVal.height);
 
-    await TypstMate.wasm!.svgpAsync('/', this.fileContent ? this.file!.path : 'preview.typ', this.fileContent || '');
-    const result = await TypstMate.wasm!.jumpFromClickPAsync(pageIndex, x, y);
+    await typstManager.wasm!.svgpAsync(this.vpath, this.fileContent || '');
+    const result = await typstManager.wasm!.jumpFromClickPAsync(pageIndex, x, y);
 
     if (!result || !this.parentFileView) return;
 

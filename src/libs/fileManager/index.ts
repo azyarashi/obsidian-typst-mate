@@ -1,4 +1,4 @@
-import type { WatcherSubscription } from '@typst-mate/watcher';
+import type { Subscription } from '@typst-mate/watcher';
 import {
   type DataAdapter,
   type FileSystemAdapter,
@@ -11,12 +11,12 @@ import {
 import type { PackageSpec } from '@/../pkg/typst_wasm';
 import { TypstMate } from '@/api';
 import { t } from '@/i18n';
-import { settingsManager } from '@/libs';
-import { features, fs, loadWatcher, os, path, watcher } from '@/libs/features';
+import { features, fs, initWatcherNode, loadWatcherModule, os, path, watcher } from '@/libs/features';
 import ObsidianTypstMate from '@/main';
 import type { GitHubAsset, PackageAsset } from '@/types/global';
 import type { Singleton } from '@/types/singleton';
-import { filterWithExtensions } from './utils';
+import type { VPath } from '../typstManager/worker';
+import { arrayBufferLikeToArrayBuffer, filterWithExtensions } from './utils';
 
 /**
  * Path conventions:
@@ -27,7 +27,6 @@ import { filterWithExtensions } from './utils';
  */
 export class FileManager implements Singleton {
   private plugin?: ObsidianTypstMate;
-
   adapter!: DataAdapter;
 
   /**
@@ -38,12 +37,15 @@ export class FileManager implements Singleton {
 
   /** Example: `.obsidian/plugins/typst-mate` */
   pluginDirNPath!: string;
+  pluginDirPath!: string;
 
   wasmNPath!: string;
-  watcherNPath!: string;
-  fontsDirNPath!: string;
+  watcherModuleNPath!: string;
+  watcherNodeNPath!: string;
 
+  fontsDirNPath!: string;
   vaultPackagesDirNPath!: string;
+  // TODO: vaultPackagesDirNPaths!: string;
   localPackagesDirPaths: string[] = [];
 
   async init(plugin: ObsidianTypstMate) {
@@ -56,15 +58,14 @@ export class FileManager implements Singleton {
     this.pluginDirNPath = `${this.plugin.app.vault.configDir}/plugins/${ObsidianTypstMate.id}`;
 
     this.wasmNPath = `${this.pluginDirNPath}/typst-${TypstMate.version}.wasm`;
-    this.watcherNPath = `${this.pluginDirNPath}/watcher-${TypstMate.version}.js`;
+    this.watcherModuleNPath = `${this.pluginDirNPath}/watcher-${TypstMate.version}.js`;
 
     this.fontsDirNPath = `${this.pluginDirNPath}/fonts`;
     this.vaultPackagesDirNPath = `${this.pluginDirNPath}/packages`;
 
     if (features.node) {
       this.setLocalPackagesDirPath();
-      const pluginFullPath = (this.adapter as FileSystemAdapter).getFullPath(this.pluginDirNPath);
-      loadWatcher(pluginFullPath, TypstMate.version!, settingsManager.settings.linuxLibc);
+      this.pluginDirPath = (this.adapter as FileSystemAdapter).getFullPath(this.pluginDirNPath);
     }
   }
 
@@ -108,38 +109,27 @@ export class FileManager implements Singleton {
     if (!wasms.includes(this.wasmNPath)) await this.downloadAsset(this.wasmNPath);
   }
 
-  // TODO
-  async ensureWatcher() {
+  async ensureAndLoadWatcherModule() {
     const files = (await this.adapter.list(this.pluginDirNPath)).files;
 
-    const watchers = files.filter((file) => file.endsWith('.js') && file.includes('watcher-'));
-    for (const f of watchers.filter((w) => w !== this.watcherNPath)) await this.adapter.remove(f);
-    if (!watchers.includes(this.watcherNPath)) await this.downloadAsset(this.watcherNPath);
+    const watchers = files.filter((file) => file.startsWith('watcher-'));
+    for (const f of watchers.filter((w) => w !== this.watcherModuleNPath)) await this.adapter.remove(f);
+    if (!watchers.includes(this.watcherModuleNPath)) await this.downloadAsset(this.watcherModuleNPath);
 
-    if (features.node) {
-      const nodes = files.filter((file) => file.endsWith('.node') && file.includes('watcher-'));
-      const platform = this.getWatcherPlatform();
-      const nodeNPath = `${this.pluginDirNPath}/watcher-${platform}-${TypstMate.version}.node`;
-
-      for (const f of nodes.filter((n) => n !== nodeNPath)) await this.adapter.remove(f);
-      if (!nodes.includes(nodeNPath)) await this.downloadAsset(nodeNPath);
-    }
+    const watcherModulePath = path!.join(this.pluginDirNPath, watcher!.getName(TypstMate.version!));
+    loadWatcherModule(watcherModulePath);
+    this.watcherNodeNPath = path!.join(this.pluginDirNPath, watcher!.getName(TypstMate.version!));
   }
 
-  getWatcherPlatform(): string {
-    const os = require('node:os');
-    const platform = os.platform();
-    const arch = os.arch();
+  async ensureAndLoadWatcherNode() {
+    const files = (await this.adapter.list(this.pluginDirNPath)).files;
 
-    if (platform === 'linux') {
-      const libc = settingsManager.settings.linuxLibc;
-      return `linux-${arch}-${libc}`;
-    }
-    if (platform === 'win32') return `win32-${arch}`;
-    if (platform === 'darwin') return `darwin-${arch}`;
-    if (platform === 'freebsd') return `freebsd-${arch}`;
+    const watchers = files.filter((file) => file.startsWith('watcher-'));
+    for (const f of watchers.filter((w) => w !== this.watcherNodeNPath)) await this.adapter.remove(f);
+    if (!watchers.includes(this.watcherNodeNPath)) await this.downloadAsset(this.watcherNodeNPath);
 
-    return `${platform}-${arch}`;
+    const watcherNodePath = path!.join(this.pluginDirNPath, watcher!.getName(TypstMate.version!));
+    initWatcherNode(watcherNodePath);
   }
 
   async downloadAsset(targetPath: string) {
@@ -265,8 +255,55 @@ export class FileManager implements Singleton {
     return { filePaths, folderPaths };
   }
 
-  private watcherSubscriptions: WatcherSubscription[] = [];
+  getFilename(vpath: VPath) {
+    if (features.node && path!.isAbsolute(vpath)) return path!.basename(vpath);
 
+    return vpath.split('/').pop()!;
+  }
+
+  getBasename(vpath: VPath, ext = '.typ') {
+    if (features.node && path!.isAbsolute(vpath)) return path!.basename(vpath, ext);
+
+    const filename = vpath.split('/').pop()!;
+    const lastDotIndex = filename.lastIndexOf('.');
+    return lastDotIndex === -1 ? filename : filename.slice(0, lastDotIndex);
+  }
+
+  getDirname(vpath: VPath) {
+    if (features.node && path!.isAbsolute(vpath)) return path!.dirname(vpath);
+
+    const lastSlashIndex = vpath.lastIndexOf('/');
+    return lastSlashIndex === -1 ? '' : vpath.slice(0, lastSlashIndex);
+  }
+
+  join(vpath: VPath, filename: string): string {
+    const parentPath = this.getDirname(vpath);
+    if (features.node && path!.isAbsolute(vpath)) return path!.join(parentPath, filename);
+    return parentPath ? `${parentPath}/${filename}` : filename;
+  }
+
+  async writeUint8Array(vpath: VPath, data: Uint8Array) {
+    if (features.node && path!.isAbsolute(vpath)) await fs!.promises.writeFile(vpath, data);
+    else await this.adapter.writeBinary(vpath, arrayBufferLikeToArrayBuffer(data));
+  }
+
+  async writeArrayBuffer(vpath: VPath, data: ArrayBuffer) {
+    if (features.node && path!.isAbsolute(vpath)) await fs!.promises.writeFile(vpath, Buffer.from(data));
+    else await this.adapter.writeBinary(vpath, data);
+  }
+
+  async writeString(vpath: VPath, data: string) {
+    if (features.node && path!.isAbsolute(vpath)) await fs!.promises.writeFile(vpath, data);
+    else await this.adapter.write(vpath, data);
+  }
+
+  replaceExtension(vpath: VPath, ext: string) {
+    const lastDotIndex = vpath.lastIndexOf('.');
+    if (lastDotIndex === -1) return `${vpath}.${ext}`;
+    return `${vpath.slice(0, lastDotIndex)}.${ext}`;
+  }
+
+  private watcherSubscriptions: Subscription[] = [];
   async watchPackages(callback: (path: string) => void) {
     if (!features.watcher || !watcher) return;
 
@@ -275,18 +312,12 @@ export class FileManager implements Singleton {
 
     this.watcherSubscriptions = await watcher.subscribe(
       [this.vaultPackagesDirNPath, ...this.localPackagesDirPaths],
-      callback,
+      (events) => {
+        for (const event of events) {
+          callback(event.path);
+        }
+      },
     );
-  }
-
-  async getLoadImportedFonts(): Promise<string[]> {
-    try {
-      const result = await this.adapter.list(this.fontsDirNPath);
-      const extensions = ['font', 'ttf', 'ttc', 'otf', 'otc'] as const;
-      return result.files.filter((f) => extensions.some((ext) => f.endsWith(`.${ext}`)));
-    } catch {
-      return [];
-    }
   }
 
   async collectFonts() {

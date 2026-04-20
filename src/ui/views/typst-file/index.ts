@@ -7,7 +7,7 @@ import { buildTypstTextExtensions } from '@/editor/typst/build';
 import { jumpToPreviewTargetFacet } from '@/editor/typst/extensions/JumpToPreview';
 import { vimQuitFacet, vimSaveFacet } from '@/editor/typst/extensions/Vim';
 import { t } from '@/i18n';
-import { settingsManager, typstManager } from '@/libs';
+import { fileManager, settingsManager, typstManager } from '@/libs';
 import { viewTracker } from '@/libs/extensionManager';
 import type ObsidianTypstMate from '@/main';
 import { exportToPdf } from '@/utils/export';
@@ -18,12 +18,13 @@ import './typst-file.css';
 
 export class TypstFileView extends TextFileView {
   static viewtype = 'typst-file';
-
   plugin: ObsidianTypstMate;
 
-  view!: EditorView;
-
+  vpath: string | undefined;
+  isExternal: boolean = false;
   linkedPreviewLeaf: WorkspaceLeaf | null = null;
+
+  view!: EditorView;
 
   override requestSave = debounce(this.save.bind(this), 1000);
 
@@ -40,18 +41,25 @@ export class TypstFileView extends TextFileView {
     return TypstFileView.viewtype;
   }
 
+  private resolveVPath(): string | undefined {
+    if (this.vpath) return this.vpath;
+    this.vpath = this.file?.path;
+    return this.vpath;
+  }
+
   override async onload(): Promise<void> {
     // 念の為 await
     await super.onload();
+    this.resolveVPath();
 
     this.addAction('upload', t('views.typstText.actions.exportAsPdf'), () => {
-      if (!this.file) return;
-      new ExportToolModal(this.app, this.plugin, this.file, this.view.state.doc.toString()).open();
+      if (!this.vpath) return;
+      new ExportToolModal(this.app, this.vpath, this.view.state.doc.toString()).open();
     });
 
     this.addAction('file-image', t('views.typstText.actions.exportAsPdf'), async () => {
-      if (!this.file) return;
-      const path = await exportToPdf(this.plugin, this.file, this.view.state.doc.toString(), {
+      if (!this.vpath) return;
+      const path = await exportToPdf(this.vpath, this.view.state.doc.toString(), {
         tagged: true,
         standards: [],
       });
@@ -67,42 +75,36 @@ export class TypstFileView extends TextFileView {
     this.addAction('eye', t('views.typstText.actions.openPreview'), async () => {
       if (this.linkedPreviewLeaf && this.linkedPreviewLeaf.view instanceof TypstPreviewView) {
         this.app.workspace.revealLeaf(this.linkedPreviewLeaf);
+        const container = this.linkedPreviewLeaf.containerEl;
+        container.addClass('typstmate-linked-view-highlight');
+        setTimeout(() => container.removeClass('typstmate-linked-view-highlight'), 700);
         return;
       }
 
       const newLeaf = this.app.workspace.getLeaf('split', 'vertical');
       await newLeaf.setViewState({
         type: TypstPreviewView.viewtype,
-        state: { file: this.file?.path },
+        state: { file: this.file?.path, vpath: this.vpath },
       });
       this.linkedPreviewLeaf = newLeaf;
 
       const previewView = newLeaf.view;
       if (previewView instanceof TypstPreviewView) previewView.parentFileView = this;
-
-      const detach = this.app.workspace.on('layout-change', () => {
-        if (
-          this.linkedPreviewLeaf &&
-          !this.app.workspace.getLeavesOfType(TypstPreviewView.viewtype).includes(this.linkedPreviewLeaf)
-        ) {
-          const previewView = this.linkedPreviewLeaf.view;
-          if (previewView instanceof TypstPreviewView) previewView.parentFileView = null;
-          this.linkedPreviewLeaf = null;
-          this.app.workspace.offref(detach);
-        }
-      });
-      this.register(() => this.app.workspace.offref(detach));
     });
+  }
+
+  async onLoadExternalFile(): Promise<void> {
+    // not implemented
   }
 
   override onPaneMenu(menu: Menu, source: string) {
     menu.addItem((item) => {
       item.setTitle(t('contextMenu.openWithDefaultApp')).onClick(async () => {
+        if (!this.vpath) return;
         try {
-          if (!this.file) return;
-          this.app.openWithDefaultApp(this.file.path);
+          this.app.openWithDefaultApp(this.vpath);
         } catch (e) {
-          console.error('Open with default app failed:', e);
+          console.error('[Typst Mate] app.openWithDefaultApp failed', e);
         }
       });
     });
@@ -110,22 +112,21 @@ export class TypstFileView extends TextFileView {
     super.onPaneMenu(menu, source);
   }
 
-  override async save(clear?: boolean): Promise<void> {
+  override async save(_?: boolean): Promise<void> {
+    if (!this.vpath) return;
+
     const settings = this.view.state.facet(formatterSettingsFacet);
     if (settings?.formatOnSave) this.app.commands.executeCommandById('typst-mate:run-typstyle');
-    await super.save(clear);
-    if (!this.file) return;
 
     const content = this.view.state.doc.toString();
-    await this.plugin.app.vault.adapter.write(this.file.path, content);
-
+    await fileManager.writeString(this.vpath, content);
     await this.compileAndUpdate(content);
 
     // タグの更新
     const importPath = settingsManager.settings.importPath;
-    if (!this.file.path.startsWith(`${importPath}/tags/`)) return;
+    if (!this.vpath.startsWith(`${importPath}/tags/`)) return;
 
-    const typstPath = this.file.path.slice(importPath.length);
+    const typstPath = this.vpath.slice(importPath.length);
     typstManager.wasm.store({ files: new Map([[typstPath, content]]) });
 
     const tag = typstPath
@@ -137,13 +138,11 @@ export class TypstFileView extends TextFileView {
   }
 
   private async compileAndUpdate(content: string): Promise<void> {
-    if (!this.file) return;
-
+    if (!this.vpath) return;
     if (!typstManager.ready) return;
     this.removeWaiting();
 
     if (!this.extensionsInitialized) {
-      // Reconfigure extensions if they might have changed (e.g. extensionManager initialized)
       this.view.dispatch({
         effects: this.extensionCompartment.reconfigure(this.buildExtensions()),
       });
@@ -151,7 +150,7 @@ export class TypstFileView extends TextFileView {
     }
 
     try {
-      const result = await typstManager.wasm.svgpAsync('/', this.file.name, content);
+      const result = await typstManager.wasm.svgpAsync(this.vpath, content);
 
       updateDiagnosticEffect(this.view, {
         diagnostics: result.diags,
@@ -175,7 +174,8 @@ export class TypstFileView extends TextFileView {
   private extensionsInitialized = false;
 
   override getDisplayText() {
-    return this.file?.name ?? t('views.typstText.displayText');
+    const vpath = this.resolveVPath();
+    return vpath ? fileManager.getFilename(vpath) : t('views.typstText.displayText');
   }
 
   override getViewData() {
@@ -210,7 +210,6 @@ export class TypstFileView extends TextFileView {
   }
 
   private extensionCompartment = new Compartment();
-
   private buildExtensions(): any[] {
     return [
       ...buildTypstTextExtensions(),
@@ -250,7 +249,6 @@ export class TypstFileView extends TextFileView {
     });
 
     this.view = new EditorView({ parent: this.contentEl, state: startState });
-    this.view.dom.addClass('typst-file-view');
 
     this.findAndLinkPreview();
 
@@ -271,12 +269,12 @@ export class TypstFileView extends TextFileView {
   private findAndLinkPreview() {
     const previewLeaves = this.app.workspace.getLeavesOfType(TypstPreviewView.viewtype);
     for (const leaf of previewLeaves) {
-      const previewView = leaf.view;
-      if (previewView instanceof TypstPreviewView && previewView.file?.path === this.file?.path) {
-        this.linkedPreviewLeaf = leaf;
-        previewView.parentFileView = this;
-        break;
-      }
+      const previewView = leaf.view as TypstPreviewView;
+      if (previewView.vpath !== this.vpath) continue;
+
+      this.linkedPreviewLeaf = leaf;
+      previewView.parentFileView = this;
+      break;
     }
   }
 }
