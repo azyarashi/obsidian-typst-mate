@@ -4,6 +4,6 @@ import { editorHelper } from '@/libs';
 
 export const selectEquationCommand: Command = {
   id: 'select-equation',
-  name: t('commands.selectCurrentEquation'),
+  name: t('commands.selectEquation'),
   editorCallback: (editor) => editorHelper.selectCurrentEquation(editor.cm),
 };

@@ -4,6 +4,6 @@ import { editorHelper } from '@/libs';
 
 export const boxEquationCommand: Command = {
   id: 'box-equation',
-  name: t('commands.boxCurrentEquation'),
+  name: t('commands.boxEquation'),
   editorCallback: (editor) => editorHelper.boxCurrentEquation(editor.cm),
 };

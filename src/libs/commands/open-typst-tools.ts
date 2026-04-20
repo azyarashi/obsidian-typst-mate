@@ -4,7 +4,7 @@ import { appUtils } from '@/libs';
 
 export const openTypstToolsCommand: Command = {
   id: 'open-typst-tools',
-  name: t('commands.openTypstTools'),
+  name: t('common.openTypstTools'),
   callback: async () => {
     await appUtils.openTypstTools(true);
   },
