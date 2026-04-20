@@ -206,7 +206,7 @@ class AutocompletePlugin implements PluginValue {
     let offset = 0;
 
     if (region.processor) {
-      const res = format(currentCode, region.kind, region.processor);
+      const res = format(currentCode, region.kind!, region.processor);
       formatted = res.formatted;
       offset = res.offset;
     }
@@ -609,6 +609,7 @@ class AutocompletePlugin implements PluginValue {
         return true;
       }
     }
+
     return false;
   }
 }
@@ -618,12 +619,11 @@ export const autocompletePlugin = ViewPlugin.fromClass(AutocompletePlugin);
 export const autocompleteExtension = [
   autocompletePlugin,
   Prec.highest(
-    keymap.of([
-      { key: 'ArrowUp', run: (view) => view.plugin(autocompletePlugin)?.handleKeyAction('ArrowUp') ?? false },
-      { key: 'ArrowDown', run: (view) => view.plugin(autocompletePlugin)?.handleKeyAction('ArrowDown') ?? false },
-      { key: 'Enter', run: (view) => view.plugin(autocompletePlugin)?.handleKeyAction('Enter') ?? false },
-      { key: 'Tab', run: (view) => view.plugin(autocompletePlugin)?.handleKeyAction('Tab') ?? false },
-      { key: 'Escape', run: (view) => view.plugin(autocompletePlugin)?.handleKeyAction('Escape') ?? false },
-    ]),
+    keymap.of(
+      ['ArrowUp', 'ArrowDown', 'Enter', 'Tab', 'Escape'].map((key) => ({
+        key,
+        run: (view) => view.plugin(autocompletePlugin)?.handleKeyAction(key) ?? false,
+      })),
+    ),
   ),
 ];

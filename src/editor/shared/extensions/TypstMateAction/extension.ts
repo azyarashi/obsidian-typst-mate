@@ -6,7 +6,7 @@ import { getActiveRegion } from '../../utils/core';
 import { checkActionContext, executeAction, executeActionEffect, resolveActionContext } from './actions';
 
 export function buildActionExtensions(actions: Action[], longPressDelayMs: number): Extension[] {
-  actions = actions.filter((a) => a.trigger?.t && a.trigger.v && a.action?.t && a.action.v && a.contexts?.length > 0);
+  actions = actions.filter((a) => a.trigger?.t && a.trigger.v && a.action?.t && a.action.v && 0 < a.contexts?.length);
 
   const interceptor = Prec.highest(buildActionInterceptorPlugin(actions, longPressDelayMs));
   const dispatcher = buildActionDispatcherPlugin();

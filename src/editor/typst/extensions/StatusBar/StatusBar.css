@@ -16,7 +16,6 @@
   z-index: var(--layer-status-bar);
 }
 
-/* Spacer pushes right-side items to the right */
 .cm-typstmate-status-bar-spacer {
   flex: 1;
 }

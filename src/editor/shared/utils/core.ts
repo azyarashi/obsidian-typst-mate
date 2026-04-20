@@ -12,7 +12,7 @@ export interface ParsedRegion {
   /** innerTo = to */
   to: number;
 
-  readonly kind: ProcessorKind;
+  readonly kind: ProcessorKind | null;
   processor?: Processor;
 
   /** top level mode */

@@ -264,7 +264,7 @@ export class MarkdownCorePluginValue implements PluginValue {
             {
               from: newFrom,
               to: newRawTo - this.activeRegion.skipEnd,
-              kind: this.activeRegion.kind,
+              kind: this.activeRegion.kind!,
             },
             true,
           );

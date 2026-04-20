@@ -90,7 +90,7 @@ export function executeAction(
       for (const actionId of actionIds) {
         const targetAction = settingsManager.settings.actions.find((a) => a.id === actionId);
         if (targetAction) executeAction(view, context, targetAction, 0, match, depth + 1);
-        else console.warn(`Action with ID "${actionId}" not found.`);
+        else console.warn(`[Typst Mate] executeAction.action failed (id: ${actionId})`);
       }
       break;
     }

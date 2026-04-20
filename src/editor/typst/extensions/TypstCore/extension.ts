@@ -9,7 +9,7 @@ export class TypstCorePluginValue implements PluginValue {
     skipEnd: 0,
     from: 0,
     to: 0,
-    kind: 'codeblock',
+    kind: null,
     mode: SyntaxMode.Markup,
   };
 
@@ -54,7 +54,7 @@ export class TypstCorePluginValue implements PluginValue {
           changeInsertedLen,
         );
       } catch (e) {
-        console.warn('TypstMate: Reparse failed, falling back to full parse.', e);
+        console.warn('[Typst Mate] TypstCore.reparse failed', e);
         this.activeRegion.tree = parse(update.state.doc.toString());
       }
     } else this.activeRegion.tree = parse(update.state.doc.toString());
