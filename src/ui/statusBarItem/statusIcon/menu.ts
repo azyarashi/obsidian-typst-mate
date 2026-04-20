@@ -7,12 +7,12 @@ export function showStatusBarMenu(event: MouseEvent) {
   const menu = new Menu();
 
   menu.addItem((item) => {
-    item.setTitle(t('commands.openTypstTools')).onClick(() => appUtils.openTypstTools(true));
+    item.setTitle(t('common.openTypstTools')).onClick(() => appUtils.openTypstTools(true));
   });
 
   menu.addItem((item) => {
     const enabled = settingsManager.settings.enableBackgroundRendering;
-    item.setTitle(t('commands.toggleBackgroundRendering')).onClick(async () => {
+    item.setTitle(t('statusBar.toggleBackgroundRendering')).onClick(async () => {
       settingsManager.settings.enableBackgroundRendering = !enabled;
       await settingsManager.saveSettings();
       await appUtils.reloadPlugin(false);
@@ -54,11 +54,11 @@ export function showStatusBarMenu(event: MouseEvent) {
   menu.addSeparator();
 
   menu.addItem((item) => {
-    item.setTitle(t('commands.refreshView')).onClick(() => appUtils.refreshView());
+    item.setTitle(t('statusBar.refreshView')).onClick(() => appUtils.refreshView());
   });
 
   menu.addItem((item) => {
-    item.setTitle(t('commands.refreshWasm')).onClick(async () => {
+    item.setTitle(t('statusBar.refreshWasm')).onClick(async () => {
       await typstManager.refreshWasm();
       appUtils.refreshView();
     });

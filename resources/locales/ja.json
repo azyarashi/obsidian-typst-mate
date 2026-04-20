@@ -107,7 +107,7 @@
       },
       "inlinePreview": {
         "name": "インラインプレビュー",
-        "desc": "インライン数式のプレビューを表示します"
+        "desc": "インライン数式をプレビューする吹き出しを追加します"
       },
       "markdownCore": {
         "name": "Markdown コア",
