@@ -33,13 +33,13 @@ function renderMarkup(parent: Node, text: string): void {
       case 'text':
         appendText(parent, segment.content);
         break;
-      case 'bold':
+      case 'b':
         appendElement(parent, 'b', segment.content, true);
         break;
       case 'code':
         appendElement(parent, 'code', segment.content, false);
         break;
-      case 'link':
+      case 'a':
         appendLink(parent, segment.content, segment.href, true);
         break;
       default: {

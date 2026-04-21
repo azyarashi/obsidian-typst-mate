@@ -1,23 +1,23 @@
-export type TagType = 'bold' | 'code' | 'link';
+export type TagType = 'b' | 'c' | 'a';
 
 export type Segment =
   | { type: 'text'; content: string }
-  | { type: 'bold'; content: string }
+  | { type: 'b'; content: string }
   | { type: 'code'; content: string }
-  | { type: 'link'; content: string; href: string };
+  | { type: 'a'; content: string; href: string };
 
-// Matches <bold>...</bold>, <code>...</code>, <link href="...">...</link>
-const TAG_REGEXP = /<(bold|code|link)(?:\s+href="([^"]*)")?>(.*?)<\/\1>/g;
+// Matches <b>...</b>, <code>...</code>, <a href="...">...</a>
+const TAG_REGEXP = /<(b|code|a)(?:\s+href="([^"]*)")?>(.*?)<\/\1>/g;
 
 function createSegment(tag: string, content: string, href?: string): Segment | undefined {
   switch (tag) {
-    case 'bold':
-      return { type: 'bold', content };
+    case 'b':
+      return { type: 'b', content };
     case 'code':
       return { type: 'code', content };
-    case 'link': {
+    case 'a': {
       if (!href) return undefined;
-      return { type: 'link', content, href };
+      return { type: 'a', content, href };
     }
     default:
       return undefined;
