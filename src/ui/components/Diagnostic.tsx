@@ -1,6 +1,6 @@
 import type { EditorView } from '@codemirror/view';
-import { type JSX, render } from 'preact';
-import { EXTRA_HINTS } from '@/constants/extraHints';
+import { render } from 'preact';
+import { getExtraHints } from '@/constants/extraHints';
 import type { TypstDiagnostic } from '@/editor/shared/extensions/Linter/extension';
 
 import './Diagnostic.css';
@@ -10,21 +10,7 @@ type DiagnosticProps = { diagnostic: TypstDiagnostic; state?: { doc: string; vie
 export function Diagnostic({ diagnostic, state }: DiagnosticProps) {
   const { severity, message, hints } = diagnostic;
 
-  const extraHints: JSX.Element[] = [];
-  // TODO: 次のバージョンでおそらく変わる
-  if (state) {
-    if (
-      message === 'expected expression' &&
-      diagnostic.from === diagnostic.to &&
-      state.doc.slice(diagnostic.from - 1, diagnostic.to) === '#'
-    ) {
-      const extra = EXTRA_HINTS.ExpectedExpressionAfterHash ?? [];
-      extraHints.push(...extra.map((fn) => fn(state.view, state.doc, diagnostic.from, diagnostic.to)));
-    }
-  }
-
-  const allHints = [...hints, ...extraHints];
-
+  const allHints = state ? [...hints, ...getExtraHints(state.view, diagnostic, state.doc)] : hints;
   return (
     <>
       <div className={`typstmate-diag-message`}>
