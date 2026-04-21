@@ -11,11 +11,6 @@ export const jumpToPreviewTargetFacet = Facet.define<JumpToPreviewTarget, JumpTo
   combine: (values) => values[0]!,
 });
 
-function utf16ToUtf8Offset(text: string, utf16Offset: number): number {
-  const segment = text.slice(0, utf16Offset);
-  return new TextEncoder().encode(segment).length;
-}
-
 class JumpToPreviewPluginValue {
   constructor(public view: EditorView) {}
 
@@ -26,15 +21,12 @@ class JumpToPreviewPluginValue {
     if (pos === null) return;
 
     const target = this.view.state.facet(jumpToPreviewTargetFacet);
-
     if (!target) return;
 
     try {
-      const utf8Pos = utf16ToUtf8Offset(this.view.state.doc.toString(), pos);
-
-      const positions = await typstManager.wasm.jumpFromCursorPAsync(utf8Pos);
-      if (positions?.[0] && positions[0].type === 'position') {
-        await target.jumpToPosition(positions[0]);
+      const position = (await typstManager.wasm.jumpFromCursorPAsync(pos))[0];
+      if (position && position.type === 'position') {
+        await target.jumpToPosition(position);
         target.reveal();
       }
     } catch (e) {

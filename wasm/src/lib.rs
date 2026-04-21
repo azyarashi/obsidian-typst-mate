@@ -322,7 +322,8 @@ impl Wasm {
             Some(document) => {
                 let result = self.world.source(self.world.main());
                 if let Ok(source) = result {
-                    let positions = typst_ide::jump_from_cursor(document, &source, cursor);
+                    let cursor_byte = source.lines().utf16_to_byte(cursor).unwrap_or(cursor);
+                    let positions = typst_ide::jump_from_cursor(document, &source, cursor_byte);
 
                     let positions_ser: Vec<jump::Jump> = positions
                         .into_iter()

@@ -620,7 +620,7 @@ export class TypstPreviewView extends TextFileView {
   async jumpToPosition(position: { page: number; x: number; y: number }): Promise<void> {
     if (!this.viewerAreaEl) return;
 
-    const pageNumber = position.page + 1;
+    const pageNumber = position.page;
     const pageElement = this.viewerAreaEl.querySelector(`#preview-page-${pageNumber}`) as HTMLElement;
     if (pageElement) {
       pageElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -635,7 +635,7 @@ export class TypstPreviewView extends TextFileView {
 
   triggerRipple(position: { page: number; x: number; y: number }): void {
     if (!this.viewerAreaEl) return;
-    const pageNumber = position.page + 1;
+    const pageNumber = position.page;
     const pageElement = this.viewerAreaEl.querySelector(`#preview-page-${pageNumber}`) as HTMLElement;
     if (!pageElement) return;
 
