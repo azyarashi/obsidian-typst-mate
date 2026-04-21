@@ -54,8 +54,8 @@ export function SystemFontList({ onImport, importedFonts }: SystemFontListProps)
       <Setting
         build={(setting) => {
           setting
-            .setName(t('settings.compiler.fonts.importFont'))
-            .setDesc(t('settings.compiler.fonts.importFontDesc'))
+            .setName(t('settings.compiler.fonts.importFont.name'))
+            .setDesc(t('settings.compiler.fonts.importFont.desc'))
             .addSearch((search) => {
               search.setPlaceholder(t('settings.compiler.fonts.filterPlaceholder'));
               search.onChange((value) => setFilter(value));

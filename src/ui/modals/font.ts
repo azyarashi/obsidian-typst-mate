@@ -1,6 +1,6 @@
 import { type App, Modal, Notice, Setting } from 'obsidian';
+import type { FontInfo } from '@/../pkg/typst_wasm';
 import { t } from '@/i18n';
-import type { FontInfo } from '@/libs/typstManager/worker';
 
 export class FontModal extends Modal {
   constructor(app: App, fontInfoArray: FontInfo[]) {
@@ -12,7 +12,7 @@ export class FontModal extends Modal {
         .setHeading()
         .addButton((button) => {
           button.setIcon('copy');
-          button.setTooltip(t('modals.font.copyFontFamilyName'));
+          button.setTooltip(t('modals.font.copyFamilyName'));
 
           button.onClick(async () => {
             await navigator.clipboard.writeText(fontInfo.family);

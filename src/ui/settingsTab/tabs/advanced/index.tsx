@@ -26,8 +26,8 @@ export function AdvancedTab() {
       <Setting
         build={(setting) => {
           setting
-            .setName(t('settings.advanced.importPath'))
-            .setDesc(t('settings.advanced.importPathDesc'))
+            .setName(t('settings.advanced.importPath.name'))
+            .setDesc(t('settings.advanced.importPath.desc'))
             .addText((text) =>
               text.setValue(importPath).onChange((val) => {
                 setImportPath(val);
@@ -39,7 +39,7 @@ export function AdvancedTab() {
           const nameEl = setting.nameEl;
           nameEl.createSpan({ text: ' ' });
           const githubLink = nameEl.createEl('a', {
-            text: t('settings.advanced.openDetails'),
+            text: t('settings.advanced.openDetails.name'),
             href: 'https://github.com/azyarashi/obsidian-typst-mate/releases/tag/2.2.28',
           });
           githubLink.target = '_blank';
@@ -50,7 +50,7 @@ export function AdvancedTab() {
       {/* Apply Processor to MathJax */}
       <Setting
         build={(setting) =>
-          setting.setName(t('settings.advanced.applyProcessorToMathJax')).addToggle((toggle) =>
+          setting.setName(t('settings.advanced.applyProcessorToMathJax.name')).addToggle((toggle) =>
             toggle.setValue(applyProcessorToMathJax).onChange(async (v) => {
               setApplyProcessorToMathJax(v);
               settingsManager.settings.applyProcessorToMathJax = v;
@@ -64,8 +64,8 @@ export function AdvancedTab() {
       <Setting
         build={(setting) =>
           setting
-            .setName(t('settings.advanced.textViewExtensions'))
-            .setDesc(t('settings.advanced.textViewExtensionsDesc'))
+            .setName(t('settings.advanced.textViewExtensions.name'))
+            .setDesc(t('settings.advanced.textViewExtensions.desc'))
             .addText((text) =>
               text.setValue(settingsManager.settings.textViewExtensions.join(', ')).onChange(async (val) => {
                 const exts = val
@@ -82,7 +82,7 @@ export function AdvancedTab() {
       {/* Reload Plugin */}
       <Setting
         build={(setting) =>
-          setting.setName(t('settings.advanced.reloadPlugin')).addButton((button) =>
+          setting.setName(t('settings.advanced.reloadPlugin.name')).addButton((button) =>
             button.setButtonText(t('settings.advanced.buttons.reloadPlugin')).onClick(async () => {
               await appUtils.reloadPlugin(true);
               new Notice(t('notices.pluginReloaded'));

@@ -52,8 +52,8 @@ export function LoadedFontList({ fonts, onRemove }: LoadedFontListProps) {
       <Setting
         build={(setting) => {
           setting
-            .setName(t('settings.compiler.fonts.importedFonts'))
-            .setDesc(t('settings.compiler.fonts.importedFontsDesc'));
+            .setName(t('settings.compiler.fonts.importedFonts.name'))
+            .setDesc(t('settings.compiler.fonts.importedFonts.desc'));
 
           if (Platform.isDesktopApp) {
             setting.addButton((button) => {

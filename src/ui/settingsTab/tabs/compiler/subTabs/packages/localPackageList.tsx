@@ -40,8 +40,8 @@ export function LocalPackageList() {
       <Setting
         build={(setting) => {
           setting
-            .setName(t('settings.compiler.packages.importLocal'))
-            .setDesc(t('settings.compiler.packages.importLocalDesc'))
+            .setName(t('settings.compiler.packages.importLocal.name'))
+            .setDesc(t('settings.compiler.packages.importLocal.desc'))
             .addButton((button) => {
               button.setIcon('list-restart');
               button.setTooltip(t('settings.compiler.packages.tooltips.importLocalPackage'));

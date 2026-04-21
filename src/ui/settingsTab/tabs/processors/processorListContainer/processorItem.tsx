@@ -106,7 +106,7 @@ export function ProcessorItem<K extends ProcessorKind>({
             );
           }
         } catch (e) {
-          console.warn('TypstMate: Mode detection failed', e);
+          console.warn('[Typst Mate] Mode detection failed', e);
         } finally {
           setIsDetecting(false);
         }
@@ -359,8 +359,8 @@ export function ProcessorItem<K extends ProcessorKind>({
           <Setting
             build={(s) =>
               s
-                .setName(tFragment('settings.processors.useReplaceAllName'))
-                .setDesc(tFragment('settings.processors.useReplaceAllDesc'))
+                .setName(tFragment('settings.processors.useReplaceAll.name'))
+                .setDesc(tFragment('settings.processors.useReplaceAll.desc'))
                 .addToggle((t) => {
                   t.setValue(processor.useReplaceAll ?? false).onChange((v) =>
                     handleUpdate('useReplaceAll' as keyof ProcessorOfKind<K>, v as ProcessorOfKind<K>['useReplaceAll']),
@@ -372,8 +372,8 @@ export function ProcessorItem<K extends ProcessorKind>({
             <Setting
               build={(s) =>
                 s
-                  .setName(tFragment('settings.processors.fitToNoteWidthName'))
-                  .setDesc(tFragment('settings.processors.fitToNoteWidthDesc'))
+                  .setName(tFragment('settings.processors.fitToNoteWidth.name'))
+                  .setDesc(tFragment('settings.processors.fitToNoteWidth.desc'))
                   .addToggle((t) => {
                     const p = processor as ProcessorWithFit;
                     t.setValue(p.fitToNoteWidth ?? false).onChange((v) => {
@@ -387,8 +387,8 @@ export function ProcessorItem<K extends ProcessorKind>({
             <Setting
               build={(s) =>
                 s
-                  .setName(tFragment('settings.processors.noPreambleName'))
-                  .setDesc(tFragment('settings.processors.noPreambleDesc'))
+                  .setName(tFragment('settings.processors.noPreamble.name'))
+                  .setDesc(tFragment('settings.processors.noPreamble.desc'))
                   .addToggle((t) => {
                     const p = processor as ProcessorWithPreamble;
                     t.setValue(p.noPreamble ?? false).onChange((v) => {

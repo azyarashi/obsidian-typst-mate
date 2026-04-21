@@ -33,6 +33,7 @@ export interface Settings {
   offset: number;
   fitToNoteWidthProfile: string;
   fitToNoteWidthProfiles: WidthProfile[];
+  pngPadding: number;
 
   /* Watcher の設定 */
   enableWatcher: boolean;
@@ -115,6 +116,7 @@ export const DEFAULT_SETTINGS: Settings = {
   autoBaseColor: true,
   baseColor: '#000000',
   offset: 0.0,
+  pngPadding: 0,
   fitToNoteWidthProfile: 'Live',
   fitToNoteWidthProfiles: [
     { name: 'A3', width: '700pt' },

@@ -62,12 +62,12 @@
       },
       "formatPlaceholder": "フォーマット",
 
-      "useReplaceAllName": "ReplaceAll を使用",
-      "useReplaceAllDesc": "フォーマット内に含まれる <code>{CODE}</code> を全て置換します.",
-      "fitToNoteWidthName": "ノート幅を利用",
-      "fitToNoteWidthDesc": "<code>WIDTH</code> に値が格納されるので, フォーマット内で <code>page(width: WIDTH)</code> を使用してください.",
-      "noPreambleName": "プリアンブルを無効化",
-      "noPreambleDesc": "プリアンブルを使用しません.",
+      "useReplaceAll.name": "ReplaceAll を使用",
+      "useReplaceAll.desc": "フォーマット内に含まれる <code>{CODE}</code> を全て置換します.",
+      "fitToNoteWidth.name": "ノート幅を利用",
+      "fitToNoteWidth.desc": "<code>WIDTH</code> に値が格納されるので, フォーマット内で <code>page(width: WIDTH)</code> を使用してください.",
+      "noPreamble.name": "プリアンブルを無効化",
+      "noPreamble.desc": "プリアンブルを使用しません.",
       "deleteProcessorButton": "このプロセッサーを削除する"
     },
 
@@ -211,19 +211,19 @@
     },
 
     "compiler": {
-      "disablePackageCache": "パッケージキャッシュを無効にする",
-      "disablePackageCacheDesc": "インポートされたパッケージのキャッシュを無効にします。メモリの少ない環境で便利ですが、パッケージの再ダウンロードが必要になります。",
-      "skipStartup": "起動時の準備をスキップ",
-      "skipStartupDesc": "起動時の初期化を遅らせます（モバイルでは不安定）。起動時間を短縮しますが、最初のレンダリングが遅れます。",
+      "disablePackageCache.name": "パッケージキャッシュを無効にする",
+      "disablePackageCache.desc": "インポートされたパッケージのキャッシュを無効にします。メモリの少ない環境で便利ですが、パッケージの再ダウンロードが必要になります。",
+      "skipStartup.name": "起動時の準備をスキップ",
+      "skipStartup.desc": "起動時の初期化を遅らせます（モバイルでは不安定）。起動時間を短縮しますが、最初のレンダリングが遅れます。",
       "fonts": {
         "desc": "Typst CLI に含まれる標準フォント(<a href=\"https://github.com/typst/typst-assets/tree/{{version}}/files/fonts\">一覧はこちら</a>) は埋め込まれています.",
         "clickToLoad": "クリックしてシステムフォント一覧を読み込む",
         "filterPlaceholder": "フォント名をフィルタリング",
         "fontCount": "{{count}} 個のフォント",
-        "importFont": "フォントをインポート",
-        "importFontDesc": "デスクトップアプリのみ。Typst は .ttf, .otf, .ttc, .otc フォントをサポートしています。",
-        "importedFonts": "インポート済みフォント",
-        "importedFontsDesc": "フォント名の隣の文字列は、同じ PostScript 名を共有するフォントを識別するために使用されます。",
+        "importFont.name": "フォントをインポート",
+        "importFont.desc": "デスクトップアプリのみ。Typst は .ttf, .otf, .ttc, .otc フォントをサポートしています。",
+        "importedFonts.name": "インポート済みフォント",
+        "importedFonts.desc": "フォント名の隣の文字列は、同じ PostScript 名を共有するフォントを識別するために使用されます。",
         "tooltips": {
           "getFontList": "フォント一覧を取得",
           "getInfo": "情報を取得",
@@ -236,8 +236,8 @@
         "cachedPackages": "キャッシュされたパッケージ",
         "desc": "パッケージがインポートされると、パフォーマンス向上のために実際のファイルの代わりにキャッシュが使用されます。直接変更を加えた場合は、パッケージアイコンをクリックしてキャッシュを更新してください（プラグインの再読み込みが必要です）。",
         "heading": "パッケージ",
-        "importLocal": "ローカルパッケージをインポート",
-        "importLocalDesc": "デスクトップアプリのみ。",
+        "importLocal.name": "ローカルパッケージをインポート",
+        "importLocal.desc": "デスクトップアプリのみ。",
         "tooltips": {
           "cache": "キャッシュ",
           "importLocalPackage": "ローカルパッケージをインポート",
@@ -273,39 +273,41 @@
     "renderer": {
       "addProfile": "プロファイルを追加",
       "newProfileName": "新規プロファイル",
-      "baseColor": "基本色",
-      "baseColorDesc": "SVG 内の黒を別の色に置き換えます。ダークテーマで便利です。これを使用するには <code>テーマのテキスト色を使用する</code> を無効にしてください。",
+      "baseColor.name": "基本色",
+      "baseColor.desc": "SVG 内の黒を別の色に置き換えます。ダークテーマで便利です。これを使用するには <code>テーマのテキスト色を使用する</code> を無効にしてください。",
       "deleteProfile": "プロファイルを削除",
-      "enableBackgroundRendering": "バックグラウンドレンダリングを有効にする",
-      "enableBackgroundRenderingDesc": "UI がフリーズしなくなりますが、エクスポートやレンダリングに関連する他のプラグインと衝突する可能性があります。（Markdown メニューから PDF に書き出す際は自動的に無効になります）",
+      "enableBackgroundRendering.name": "バックグラウンドレンダリングを有効にする",
+      "enableBackgroundRendering.desc": "UI がフリーズしなくなりますが、エクスポートやレンダリングに関連する他のプラグインと衝突する可能性があります。（Markdown メニューから PDF に書き出す際は自動的に無効になります）",
       "fitNoteWidthProfiles": "プロファイルを選択する",
-      "fitToNoteWidthProfile": "プロファイルを選択する",
-      "fitToNoteWidthProfileDesc": "「ノートの幅に合わせる」計算に使用するプロファイル。プリセットを選択するか、Live を選択してエディタの幅を検出します。",
-      "offset": "オフセット",
-      "offsetDesc": "インライン数式の垂直オフセット。Obsidian で使用されているフォントによって見え方が異なる場合があります。必要に応じて調整してください。",
-      "patchPdfExport": "PDF 書き出しをパッチ",
-      "patchPdfExportDesc": "ダークテーマでの背景が白くなる問題を修正するため、PDF 書き出し中に一時的に AutoBaseColor を無効にし BaseColor を使用します。",
+      "fitToNoteWidthProfile.name": "プロファイルを選択する",
+      "fitToNoteWidthProfile.desc": "「ノートの幅に合わせる」計算に使用するプロファイル。プリセットを選択するか、Live を選択してエディタの幅を検出します。",
+      "offset.name": "オフセット",
+      "offset.desc": "インライン数式の垂直オフセット。Obsidian で使用されているフォントによって見え方が異なる場合があります。必要に応じて調整してください。",
+      "pngPadding.name": "PNG コピーの余白",
+      "pngPadding.desc": "SVG を PNG としてコピーする際の余白 (px) を調整します。",
+      "patchPdfExport.name": "PDF 書き出しをパッチ",
+      "patchPdfExport.desc": "ダークテーマでの背景が白くなる問題を修正するため、PDF 書き出し中に一時的に AutoBaseColor を無効にし BaseColor を使用します。",
       "profileNamePlaceholder": "名前",
       "profileWidthPlaceholder": "幅",
-      "profiles": "プロファイル",
-      "profilesDesc": "カスタム幅プロファイルを追加または削除します。",
-      "useThemeTextColor": "テーマのテキスト色を使用する",
-      "useThemeTextColorDesc": "Obsidian のテキスト色を基本色として使用します。"
+      "profiles.name": "プロファイル",
+      "profiles.desc": "カスタム幅プロファイルを追加または削除します。",
+      "useThemeTextColor.name": "テーマのテキスト色を使用する",
+      "useThemeTextColor.desc": "Obsidian のテキスト色を基本色として使用します。"
     },
 
     "advanced": {
-      "applyProcessorToMathJax": "プロセッサを MathJax に適用する",
-      "enableMathjaxFallback": "MathJax フォールバックを有効にする",
-      "enableMathjaxFallbackDesc": "パフォーマンス上の理由から推奨されません。有効にすると、<b>Typst のエラー、警告、ヒントが利用できなくなります。</b>",
-      "importPath": "Typst ファイルのインポートパス",
-      "importPathDesc": "インポートする Typst ファイルを探す vault 内のディレクトリ。パスが存在しないか空の場合、この機能は無効になります。",
-      "openDetails": "詳細を開く",
+      "applyProcessorToMathJax.name": "プロセッサを MathJax に適用する",
+      "enableMathjaxFallback.name": "MathJax フォールバックを有効にする",
+      "enableMathjaxFallback.desc": "パフォーマンス上の理由から推奨されません。有効にすると、<b>Typst のエラー、警告、ヒントが利用できなくなります。</b>",
+      "importPath.name": "Typst ファイルのインポートパス",
+      "importPath.desc": "インポートする Typst ファイルを探す vault 内のディレクトリ。パスが存在しないか空の場合、この機能は無効になります。",
+      "openDetails.name": "詳細を開く",
       "openSnippetManager": "スニペットマネージャーを開く",
-      "openTypstToolsOnStartup": "起動時に Typst ツールを開く",
-      "openTypstToolsOnStartupDesc": "Obsidian 起動時にサイドパネルに Typst ツールを開きます。",
-      "reloadPlugin": "プラグインを再読み込み",
-      "textViewExtensions": "エディタの対象拡張子",
-      "textViewExtensionsDesc": "指定した拡張子のファイルを Typst Mate のエディタで開けるようにします。（カンマ区切り、要再読み込み）",
+      "openTypstToolsOnStartup.name": "起動時に Typst ツールを開く",
+      "openTypstToolsOnStartup.desc": "Obsidian 起動時にサイドパネルに Typst ツールを開きます。",
+      "reloadPlugin.name": "プラグインを再読み込み",
+      "textViewExtensions.name": "エディタの対象拡張子",
+      "textViewExtensions.desc": "指定した拡張子のファイルを Typst Mate のエディタで開けるようにします。（カンマ区切り、要再読み込み）",
       "snippetsManaged": "スニペットは別のリーフで管理されます。",
       "buttons": {
         "reloadPlugin": "プラグインを再読み込み"
@@ -386,10 +388,10 @@
         "tagged.desc": "アクセシビリティのメタデータを含めます",
         "standards.name": "PDF 準拠規格",
         "standards.desc": "特定の規格に準拠させます。",
-        "customTimestamp": "カスタムタイムスタンプ",
-        "customTimestampDesc": "カスタムの作成日時を設定します。",
-        "documentIdentifier": "ドキュメント識別子",
-        "documentIdentifierDesc": "ドキュメントの一意の識別子。"
+        "customTimestamp.name": "カスタムタイムスタンプ",
+        "customTimestamp.desc": "カスタムの作成日時を設定します。",
+        "documentIdentifier.name": "ドキュメント識別子",
+        "documentIdentifier.desc": "ドキュメントの一意の識別子。"
       },
       "png": {
         "name": "PNG オプション",
@@ -401,8 +403,8 @@
       },
       "html": {
         "name": "HTML オプション",
-        "extractBody": "body の中身を抽出",
-        "extractBodyDesc": "<code><body></code> タグの中身のみを出力します."
+        "extractBody.name": "body の中身を抽出",
+        "extractBody.desc": "<code><body></code> タグの中身のみを出力します."
       },
       "buttons": {
         "export": "出力"
@@ -466,9 +468,9 @@
   },
 
   "commands": {
-    "boxEquation": "数式をボックスで囲む",
-    "selectEquation": "現在の数式範囲を選択する",
-    "formatTypst": "Typstyle フォーマットを実行",
+    "boxEquation": "数式を囲む",
+    "selectEquation": "数式を選択する",
+    "formatTypst": "Typstyle フォーマッターを実行する",
     "reloadTagFiles": "タグファイルを再読み込みする",
     "tex2typ": "ノート全体または選択範囲の数式を Typst に変換する",
     "toggleBackgroundRendering": "バックグラウンドレンダリングを切り替える"

@@ -3,7 +3,7 @@ import type { Diagnostic, SvgMResult } from '@/../pkg/typst_wasm';
 import { BASE_COLOR_VAR } from '@/constants';
 import { jumpFromClickPlugin } from '@/editor/shared/extensions/JumpFromClick';
 import { t } from '@/i18n';
-import { appUtils, typstManager } from '@/libs';
+import { appUtils, settingsManager, typstManager } from '@/libs';
 import { ErrorCode } from '@/libs/typstManager/worker';
 import TypstElement from './Typst';
 
@@ -203,9 +203,10 @@ async function SVGToPNG(
   try {
     const img = await loadImage(url);
 
+    const padding = (settingsManager.settings.pngPadding ?? 0) * scale;
     const canvas = document.createElement('canvas');
-    canvas.width = width;
-    canvas.height = height;
+    canvas.width = width + padding * 2;
+    canvas.height = height + padding * 2;
 
     const ctx = canvas.getContext('2d');
     if (!ctx) return null;
@@ -214,7 +215,7 @@ async function SVGToPNG(
       ctx.fillStyle = backgroundColor;
       ctx.fillRect(0, 0, canvas.width, canvas.height);
     }
-    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+    ctx.drawImage(img, padding, padding, width, height);
 
     const blob = await canvasToBlob(canvas);
     return blob;

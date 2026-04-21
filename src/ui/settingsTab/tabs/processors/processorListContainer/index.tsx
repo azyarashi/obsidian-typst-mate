@@ -1,9 +1,9 @@
 import { getSortableUuid, List, useSortableList } from '@components/List/ListContainer';
 import { Setting } from '@components/obsidian/Setting';
 import { debounce } from 'obsidian';
-import { useMemo, useState } from 'preact/hooks';
+import { useEffect, useMemo, useState } from 'preact/hooks';
 import { t, tFragment } from '@/i18n';
-import { settingsManager, typstManager } from '@/libs';
+import { checkPluginFeatures, features, settingsManager, typstManager } from '@/libs';
 import {
   type CodeblockProcessor,
   DefaultNewProcessor,
@@ -14,6 +14,13 @@ import {
 import { ProcessorItem } from './processorItem';
 
 export function ProcessorsContainer<K extends ProcessorKind>({ kind }: { kind: K }) {
+  const [isFlickeringPluginEnabled, setIsFlickeringPluginEnabled] = useState(features.noMoreFlickeringInlineMath);
+
+  useEffect(() => {
+    checkPluginFeatures();
+    setIsFlickeringPluginEnabled(features.noMoreFlickeringInlineMath);
+  }, []);
+
   const [processors, setProcessors] = useState<ProcessorOfKind<K>[]>([
     ...settingsManager.settings.processor[kind].processors,
   ] as ProcessorOfKind<K>[]);
@@ -65,11 +72,14 @@ export function ProcessorsContainer<K extends ProcessorKind>({ kind }: { kind: K
   return (
     <>
       <Setting
-        build={(setting) =>
-          setting
-            .setName(tFragment(`settings.processors.${kind}Processor.name`))
-            .setDesc(tFragment(`settings.processors.${kind}Processor.desc`))
-        }
+        build={(setting) => {
+          const desc = tFragment(`settings.processors.${kind}Processor.desc`);
+          if (kind === 'inline' && !isFlickeringPluginEnabled) {
+            desc.appendChild(tFragment(`settings.processors.inlineProcessor.desc.extra`));
+          }
+
+          setting.setName(tFragment(`settings.processors.${kind}Processor.name`)).setDesc(desc);
+        }}
       />
       <button className="typstmate-button is-primary" onClick={handleAdd} style={{ marginBottom: 'var(--size-4-2)' }}>
         {t('settings.processors.addProcessorButton')}
