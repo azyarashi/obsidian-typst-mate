@@ -66,7 +66,6 @@ async function checkQueryLocalFontsFeature(): Promise<boolean> {
     return false;
   }
 }
-
 checkQueryLocalFontsFeature().then((result) => {
   features.queryLocalFonts = result;
 });
