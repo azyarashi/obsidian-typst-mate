@@ -13,6 +13,8 @@ export const features = {
   watcher: false,
   queryLocalFonts: false,
   excalidraw: false,
+  latexSuite: false,
+  noMoreFlickeringInlineMath: false,
 };
 export type Features = typeof features;
 
@@ -50,7 +52,21 @@ export function initWatcherNode(watcherNodePath: string): boolean {
 }
 
 export function checkPluginFeatures() {
-  if ('obsidian-excalidraw-pluhin' in appUtils.app.plugins.plugins) features.excalidraw = true;
+  features.excalidraw = appUtils.app.plugins.enabledPlugins.has('obsidian-excalidraw-plugin');
+  features.latexSuite = appUtils.app.plugins.enabledPlugins.has('obsidian-latex-suite');
+  features.noMoreFlickeringInlineMath = appUtils.app.plugins.enabledPlugins.has('inline-math');
 }
 
-if (window.queryLocalFonts) features.queryLocalFonts = true;
+async function checkQueryLocalFontsFeature(): Promise<boolean> {
+  if (typeof window.queryLocalFonts !== 'function') return false;
+
+  try {
+    return 0 < (await window.queryLocalFonts()).length;
+  } catch {
+    return false;
+  }
+}
+
+checkQueryLocalFontsFeature().then((result) => {
+  features.queryLocalFonts = result;
+});
