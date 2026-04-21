@@ -1,0 +1,4 @@
+.typst-mate-font-modal-label {
+  display: inline-block;
+  width: 140px; /* 固定幅でコロンの位置を揃える */
+}
