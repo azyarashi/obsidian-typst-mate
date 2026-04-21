@@ -1,4 +1,21 @@
-.typst-mate-font-modal-label {
-  display: inline-block;
-  width: 140px; /* 固定幅でコロンの位置を揃える */
+.typst-mate-font-info-row {
+  display: flex;
+  padding: var(--size-4-4) 0;
+  border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.typst-mate-font-info-row:last-child {
+  border-bottom: none;
+}
+
+.typst-mate-font-info-row .label {
+  flex: 1;
+  color: var(--text-muted);
+  font-weight: var(--font-semibold);
+  margin-right: var(--size-4-4);
+}
+
+.typst-mate-font-info-row .value {
+  flex: 1;
+  word-break: break-all;
 }

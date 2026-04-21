@@ -25,20 +25,10 @@ export class FontModal extends Modal {
         });
 
       const addRow = (labelKey: TranslationKey, value: string) => {
-        const setting = new Setting(this.contentEl);
-        const fullText = t(labelKey, { value });
-        const colonIndex = fullText.indexOf(':');
-
-        if (colonIndex !== -1) {
-          const label = fullText.substring(0, colonIndex + 1);
-          const val = fullText.substring(colonIndex + 1);
-
-          setting.nameEl.empty();
-          setting.nameEl.createSpan({ text: label, cls: 'typst-mate-font-modal-label' });
-          setting.nameEl.createSpan({ text: val });
-        } else {
-          setting.setName(fullText);
-        }
+        const row = this.contentEl.createDiv({ cls: 'typst-mate-font-info-row' });
+        const label = t(labelKey, { value: '' }).trim();
+        row.createDiv({ text: label, cls: 'label' });
+        row.createDiv({ text: value, cls: 'value' });
       };
 
       addRow('modals.font.labels.style', fontInfo.variant.style);
