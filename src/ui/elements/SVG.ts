@@ -190,12 +190,14 @@ async function SVGToPNG(
   backgroundColor?: string,
   scale = 2,
 ): Promise<Blob | null> {
-  const svgChild = svgElement.querySelector('svg') as SVGGraphicsElement | null;
+  const svgChild = svgElement.querySelector('svg') as SVGSVGElement | null;
   if (!svgChild) return null;
 
-  let { width, height } = svgChild.getBBox();
-  width *= scale;
-  height *= scale;
+  const vb = svgChild.viewBox?.baseVal;
+  const bbox = svgChild.getBBox();
+
+  const width = (vb && vb.width > 0 ? vb.width : bbox.width || 1) * scale;
+  const height = (vb && vb.height > 0 ? vb.height : bbox.height || 1) * scale;
 
   const svgBlob = new Blob([svgContent], { type: 'image/svg+xml' });
   const url = URL.createObjectURL(svgBlob);
