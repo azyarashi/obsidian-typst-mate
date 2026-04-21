@@ -222,7 +222,7 @@ export class ActionJsonModal extends Modal {
         const template = {
           id: `new-${t}-action`,
           contexts: ['Markdown', 'Vim'],
-          trigger: { t: t, v: t === 'hotkey' ? 'mod-alt-h' : '' },
+          trigger: { t: t, v: t === 'hotkey' ? 'mod-alt-h' : 'a' },
           action: { t: 'snippet', v: '' },
         };
         const json = JSON.stringify(template, null, 2);
@@ -329,6 +329,12 @@ export class ActionJsonModal extends Modal {
         const newValue = this.editor.state.doc.toString();
         const parsed = JSON.parse(newValue);
         if (!Array.isArray(parsed)) throw new Error('Must be an array of actions');
+
+        for (const action of parsed as Action[]) {
+          if (!action.trigger?.v || action.trigger.v.trim() === '') {
+            throw new Error(`Action "${action.id || 'unknown'}" has an empty trigger value.`);
+          }
+        }
 
         await this.onSave(parsed);
         this.close();

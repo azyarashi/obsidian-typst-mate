@@ -1,8 +1,8 @@
-import { type App, Modal, Notice, Setting, type TFile } from 'obsidian';
+import { type App, Modal, Notice, Setting } from 'obsidian';
+import type { HtmlEOptions, PdfEOptions } from '@/../pkg/typst_wasm';
 import { t, tFragment } from '@/i18n';
-import { settingsManager, typstManager } from '@/libs';
-import type { HtmlEOptions, PdfEOptions } from '@/libs/typstManager/worker';
-import type ObsidianTypstMate from '@/main';
+import { fileManager, settingsManager, typstManager } from '@/libs';
+import type { VPath } from '@/libs/typstManager/worker';
 import {
   type ExportFormat,
   exportToHtml,
@@ -22,19 +22,16 @@ export type ExportOptions = {
 };
 
 export class ExportToolModal extends Modal {
-  plugin: ObsidianTypstMate;
-  file: TFile;
-  content: string;
+  private vpath: VPath;
+  private content: string;
   options: ExportOptions;
 
-  constructor(app: App, plugin: ObsidianTypstMate, file: TFile, content: string) {
+  constructor(app: App, vpath: VPath, content: string) {
     super(app);
-    this.plugin = plugin;
-    this.file = file;
+    this.vpath = vpath;
     this.content = content;
 
     const { format, pdfTagged, pdfStandard, pngPpi, htmlExtractBody } = settingsManager.settings.exportStates;
-
     this.options = {
       format,
       pdf: {
@@ -53,7 +50,7 @@ export class ExportToolModal extends Modal {
       },
     };
 
-    const baseName = this.file.name.slice(0, this.file.name.lastIndexOf('.'));
+    const baseName = fileManager.getBasename(this.vpath);
     this.options.svg.filenameTemplate = `${baseName}_{0p}.svg`;
     this.options.png.filenameTemplate = `${baseName}_{0p}.png`;
   }
@@ -120,8 +117,8 @@ export class ExportToolModal extends Modal {
         });
 
       new Setting(contentEl)
-        .setName(t('modals.exportTool.pdf.documentIdentifier'))
-        .setDesc(tFragment('modals.exportTool.pdf.documentIdentifierDesc'))
+        .setName(t('modals.exportTool.pdf.documentIdentifier.name'))
+        .setDesc(tFragment('modals.exportTool.pdf.documentIdentifier.desc'))
         .addText((text) => {
           text
             .setPlaceholder('...')
@@ -146,8 +143,8 @@ export class ExportToolModal extends Modal {
         });
 
       new Setting(contentEl)
-        .setName(t('modals.exportTool.pdf.customTimestamp'))
-        .setDesc(tFragment('modals.exportTool.pdf.customTimestampDesc'))
+        .setName(t('modals.exportTool.pdf.customTimestamp.name'))
+        .setDesc(tFragment('modals.exportTool.pdf.customTimestamp.desc'))
         .addText((text) => {
           text.inputEl.type = 'datetime-local';
           if (this.options.pdf.timestamp) {
@@ -249,8 +246,8 @@ export class ExportToolModal extends Modal {
       contentEl.createEl('h3', { text: t('modals.exportTool.html.name') });
 
       new Setting(contentEl)
-        .setName(t('modals.exportTool.html.extractBody'))
-        .setDesc(tFragment('modals.exportTool.html.extractBodyDesc'))
+        .setName(t('modals.exportTool.html.extractBody.name'))
+        .setDesc(tFragment('modals.exportTool.html.extractBody.desc'))
         .addToggle((toggle) => {
           toggle.setValue(this.options.html.extractBody ?? true).onChange((value) => {
             this.options.html.extractBody = value;
@@ -264,16 +261,16 @@ export class ExportToolModal extends Modal {
     try {
       switch (this.options.format) {
         case 'pdf':
-          await exportToPdf(this.plugin, this.file, this.content, this.options.pdf);
+          await exportToPdf(this.vpath, this.content, this.options.pdf);
           break;
         case 'svg':
-          await exportToSvg(this.plugin, this.file, this.content, this.options.svg);
+          await exportToSvg(this.vpath, this.content, this.options.svg);
           break;
         case 'png':
-          await exportToPng(this.plugin, this.file, this.content, this.options.png);
+          await exportToPng(this.vpath, this.content, this.options.png);
           break;
         case 'html':
-          await exportToHtml(this.plugin, this.file, this.content, this.options.html);
+          await exportToHtml(this.vpath, this.content, this.options.html);
           break;
       }
     } catch (e) {
