@@ -38,7 +38,7 @@ class DebugPlugin implements PluginValue {
     if (region) {
       const innerStart = region.from + region.skip;
       const code = this.view.state.sliceDoc(innerStart, region.to);
-      const { offset } = format(code, region.kind, region.processor!);
+      const { offset } = format(code, region.kind!, region.processor!);
 
       const localPos = cursor - innerStart;
       const typstPos = localPos - offset;
