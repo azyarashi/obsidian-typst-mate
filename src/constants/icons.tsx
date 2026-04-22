@@ -77,6 +77,8 @@ export const ICONS = {
   // 拡張機能
   /** Codeblock Preview / Inline Preview */
   ScanEye: getIconAsJSX('scan-eye'),
+  /** LaTeX Suite Integration */
+  CircuitBoard: getIconAsJSX('circuit-board'),
   /** Debugger */
   Bug: getIconAsJSX('bug'),
 

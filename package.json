@@ -37,6 +37,8 @@
 		"obsidian": "^1.12.3",
 		"obsidian-typings": "^5.20.0",
 		"obsidian-excalidraw-plugin": "github:zsviczian/obsidian-excalidraw-plugin#master",
+		"obsidian-latex-suite": "github:azyarashi/obsidian-latex-suite#type",
+		"obsidian-typings": "^5.20.0",
 		"postcss": "^8.5.10",
 		"vite": "^8.0.8",
 		"vite-plugin-static-copy": "^4.0.1"

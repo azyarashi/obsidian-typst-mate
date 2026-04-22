@@ -10,5 +10,13 @@ export const inlinePreviewPackage: ExtensionPackageFn = () => ({
   tags: ['ui'],
   scope: ['markdown'],
   isBuiltin: false,
-  settings: [],
+  settings: [
+    {
+      type: 'toggle',
+      key: 'disableOnMathJax',
+      title: t('settings.extensions.inlinePreview.disableOnMathJax.name'),
+      description: t('settings.extensions.inlinePreview.disableOnMathJax.desc'),
+      defaultValue: false,
+    },
+  ],
 });

@@ -11,6 +11,7 @@ class InlinePreviewPlugin implements PluginValue {
   constructor(
     public view: EditorView,
     private enabled: boolean,
+    private disableOnMathJax: boolean,
   ) {
     this.container = document.createElement('div');
     this.container.addClasses(['typstmate-inlinemathpreview', 'typstmate-temporary']);
@@ -36,20 +37,26 @@ class InlinePreviewPlugin implements PluginValue {
         return;
       }
 
+      const isMathJax = region.processor?.renderingEngine === 'mathjax';
+      const showPreview = this.enabled && !(isMathJax && this.disableOnMathJax);
+
+      if (isMathJax && !showPreview) {
+        this.hide();
+        return;
+      }
+
+      if (!showPreview) {
+        this.hideContainer();
+        return;
+      }
+
       const content = update.state.sliceDoc(region.from, region.to);
       if (content.startsWith('\\ref') || content.startsWith('{} \\ref')) {
         this.hide();
         return;
       }
 
-      const enabled = this.enabled;
-
       if (!this.renderContent(content, region.from + region.skip)) {
-        return;
-      }
-
-      if (!enabled) {
-        this.hideContainer();
         return;
       }
 
@@ -122,5 +129,5 @@ class InlinePreviewPlugin implements PluginValue {
   }
 }
 
-export const inlinePreviewExtension = (enabled: boolean) =>
-  ViewPlugin.define((view) => new InlinePreviewPlugin(view, enabled));
+export const inlinePreviewExtension = (enabled: boolean, disableOnMathJax: boolean) =>
+  ViewPlugin.define((view) => new InlinePreviewPlugin(view, enabled, disableOnMathJax));

@@ -4,5 +4,6 @@ import { inlinePreviewPackage } from './package';
 
 export const inlinePreviewEntry = defineExtension()(() => ({
   package: inlinePreviewPackage(),
-  factory: (_context, settings: { enabled?: boolean }) => inlinePreviewExtension(settings.enabled ?? true),
+  factory: (_context, settings: { enabled?: boolean; disableOnMathJax?: boolean }) =>
+    inlinePreviewExtension(settings.enabled ?? true, settings.disableOnMathJax ?? false),
 }));
