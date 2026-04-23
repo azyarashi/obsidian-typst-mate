@@ -2,6 +2,7 @@ import path from 'node:path';
 import builtinModules from 'builtin-modules';
 import { buildSync } from 'esbuild';
 import { defineConfig, type UserConfig } from 'vite';
+import { json5Plugin } from 'vite-plugin-json5';
 import { viteStaticCopy } from 'vite-plugin-static-copy';
 import { supportedWatcherPlatforms } from './src/constants/watcher';
 
@@ -11,6 +12,7 @@ export default defineConfig(async ({ mode }) => {
 
   return {
     plugins: [
+      json5Plugin(),
       {
         name: 'build-watcher',
         writeBundle(options) {

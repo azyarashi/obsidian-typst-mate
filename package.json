@@ -40,8 +40,9 @@
 		"obsidian-latex-suite": "github:azyarashi/obsidian-latex-suite#type",
 		"obsidian-typings": "^5.20.0",
 		"postcss": "^8.5.10",
-		"vite": "^8.0.8",
-		"vite-plugin-static-copy": "^4.0.1"
+		"vite": "^8.0.10",
+		"vite-plugin-json5": "^1.3.0",
+		"vite-plugin-static-copy": "^4.1.0"
 	},
 	"peerDependencies": {
 		"typescript": "^6.0.3",
