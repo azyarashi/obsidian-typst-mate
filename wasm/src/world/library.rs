@@ -18,7 +18,7 @@ pub fn build_library(fontsize: f64) -> Library {
 
     // ライブラリのグローバル・数学定義
     // #let fontsize = (16 / 1.25) * 1pt
-    let fontsize_abs = Abs::pt(fontsize / 1.25);
+    let fontsize_abs = Abs::pt(fontsize * 0.8);
     let fontsize_val = Value::Length(Length::from(fontsize_abs));
     library.global.scope_mut().define("fontsize", fontsize_val);
 
