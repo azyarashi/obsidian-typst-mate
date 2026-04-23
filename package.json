@@ -9,6 +9,7 @@
 		"tsgo": "bunx --bun tsgo --noEmit"
 	},
 	"dependencies": {
+		"@codemirror/lang-javascript": "^6.2.5",
 		"@lezer/common": "^1.5.2",
 		"@typst-mate/i18n": "workspace:*",
 		"@typst-mate/watcher": "workspace:*",
@@ -16,6 +17,7 @@
 		"@vimee/core": "^0.3.0",
 		"@vimee/plugin-codemirror": "^0.2.0",
 		"comlink": "^4.4.2",
+		"obsidian-typings": "^5.21.0",
 		"preact": "^10.29.1",
 		"untar-sync": "^1.0.4"
 	},
@@ -25,20 +27,17 @@
 		"@codemirror/commands": "^6.10.3",
 		"@codemirror/language": "^6.12.3",
 		"@codemirror/lint": "^6.9.5",
-		"@codemirror/search": "^6.6.0",
+		"@codemirror/search": "^6.7.0",
 		"@codemirror/state": "^6.6.0",
-		"@codemirror/view": "^6.41.0",
-		"@types/bun": "^1.3.12",
-		"@typescript/native-preview": "^7.0.0-dev.20260416.2",
-		"@zsviczian/excalidraw": "^0.18.0-88",
+		"@codemirror/view": "^6.41.1",
+		"@types/bun": "^1.3.13",
+		"@typescript/native-preview": "^7.0.0-dev.20260423.1",
 		"autoprefixer": "^10.5.0",
 		"builtin-modules": "^5.1.0",
 		"esbuild": "^0.28.0",
 		"obsidian": "^1.12.3",
-		"obsidian-typings": "^5.20.0",
 		"obsidian-excalidraw-plugin": "github:zsviczian/obsidian-excalidraw-plugin#master",
-		"obsidian-latex-suite": "github:azyarashi/obsidian-latex-suite#type",
-		"obsidian-typings": "^5.20.0",
+		"obsidian-latex-suite": "github:artisticat1/obsidian-latex-suite#main",
 		"postcss": "^8.5.10",
 		"vite": "^8.0.10",
 		"vite-plugin-json5": "^1.3.0",
@@ -46,9 +45,15 @@
 	},
 	"peerDependencies": {
 		"typescript": "^6.0.3",
-		"puppeteer": "^24.41.0"
+		"puppeteer": "^24.42.0"
 	},
 	"workspaces": [
 		"packages/*"
-	]
+	],
+	"types": "./src/types/api.d.ts",
+	"exports": {
+		".": {
+			"types": "./src/types/api.d.ts"
+		}
+	}
 }

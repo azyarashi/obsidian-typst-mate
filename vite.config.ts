@@ -71,10 +71,10 @@ export default defineConfig(async ({ mode }) => {
           '@lezer/common',
           '@lezer/highlight',
           '@lezer/lr',
-          '@excalidraw/excalidraw',
-          'obsidian-excalidraw-plugin',
-          '@zsviczian/excalidraw',
           ...builtinModules,
+
+          'obsidian-latex-suite',
+          'obsidian-excalidraw-plugin',
         ],
         onwarn: (warning, defaultHandler) => {
           if (warning.code !== 'FILE_NAME_CONFLICT') defaultHandler(warning);
