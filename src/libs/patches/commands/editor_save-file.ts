@@ -1,7 +1,7 @@
 import type { Command } from 'obsidian';
 import { formatterSettingsFacet } from '@/editor';
 import { appUtils } from '@/libs/appUtils';
-import { formatView } from '@/libs/commands/format-typst';
+import { formatTypstInView } from '@/libs/commands/format-typst';
 import type ObsidianTypstMate from '@/main';
 import type { Singleton } from '@/types/singleton';
 
@@ -20,7 +20,7 @@ class EditorSaveFilePatch implements Singleton {
       if (!checking) {
         const view = appUtils.getActiveMarkdownView();
         const cm = view?.editor.cm;
-        if (cm?.state.facet(formatterSettingsFacet).formatOnSave) formatView(cm);
+        if (cm?.state.facet(formatterSettingsFacet).formatOnSave) formatTypstInView(cm);
       }
       return editorSaveFileCallbackOrig!.apply(this, [checking]);
     };

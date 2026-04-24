@@ -14,11 +14,12 @@ export const formatTypstCommand: Command = {
     const view = appUtils.getActiveTypstView()?.view ?? appUtils.getActiveMarkdownView()?.editor.cm;
     if (!view) return;
 
-    formatView(view);
+    formatTypstInView(view);
   },
 };
 
-export async function formatView(view: EditorView) {
+export async function formatTypstInView(view: EditorView) {
+  // 判定
   const region = getActiveRegion(view);
   if (!region || region.mode === SyntaxMode.Plain) return;
   const settings = view.state.facet(formatterSettingsFacet);
@@ -29,8 +30,8 @@ export async function formatView(view: EditorView) {
   const rawCode = view.state.sliceDoc(innerFrom, innerTo);
   if (rawCode.includes('// @typstyle off all') || rawCode.includes('/* @typstyle off all */')) return;
 
-  // cursor の offset を計算する
-  const deIndentedCode = deindentText(rawCode);
+  // 調整
+  const deindentedCode = region.processor !== undefined ? deindentText(rawCode) : rawCode;
 
   let prefix = '';
   let suffix = '';
@@ -41,7 +42,7 @@ export async function formatView(view: EditorView) {
     prefix = '#{\n';
     suffix = '\n}';
   }
-  const source = prefix + deIndentedCode + suffix;
+  const source = prefix + deindentedCode + suffix;
 
   try {
     const cursor = view.state.selection.main.head;
@@ -57,17 +58,18 @@ export async function formatView(view: EditorView) {
       }
     }
 
+    // 実行
+
     const result = await formatTypst(source, settings, range);
 
     const resFrom = result.range[0];
     const resTo = result.range[1];
 
+    // 最終調整
     let finalContent = result.content;
 
-    const isNeedLineBreak = region.kind === 'display' && deIndentedCode.startsWith('\n');
+    const isNeedLineBreak = region.kind === 'display' && deindentedCode.startsWith('\n');
     if (isNeedLineBreak) finalContent = `\n${finalContent.trim()}\n`;
-
-    // final
 
     let finalFrom = resFrom - prefix.length + innerFrom;
     let finalTo = resTo - prefix.length + innerFrom;
@@ -92,7 +94,6 @@ export async function formatView(view: EditorView) {
     }
 
     const currentContent = view.state.sliceDoc(finalFrom, finalTo);
-    console.log(finalContent, finalContent.length, range);
     if (finalContent !== currentContent) {
       view.dispatch({
         changes: { from: finalFrom, to: finalTo, insert: finalContent },
@@ -105,9 +106,7 @@ export async function formatView(view: EditorView) {
       });
     }
   } catch (e) {
-    // TODO
-    console.error('Formatter error:', e);
-    new Notice(`Failed to format: ${e}`);
+    console.warn('[Typst Mate] formatTypstInView failed', e);
   }
 }
 
