@@ -12,9 +12,12 @@ export { editorHelper } from './editorHelper';
 export { extensionManager, EditorContextFacet } from './extensionManager';
 
 export { typstManager, extarctCMMath, ctxToNDir } from './typstManager';
+export { tmActionsManager } from './tmActionsManager';
 
 export { registerEvents } from './events';
 export { registerCommands } from './commands';
 export { registerProtocolHandlers } from './protocolHandlers';
 
 export type { EditorContext } from './extensionManager';
+
+export { applyAllPatches, detachAllPatches } from './patches';

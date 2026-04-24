@@ -2,9 +2,8 @@ import { debounce, loadMathJax, Notice, Platform, Plugin, renderMath } from 'obs
 import { initI18n, t } from '@/i18n';
 import { Status, TypstMate } from './api';
 import { markdownExtensionEntries, sharedExtensionEntries, typstExtensionEntries } from './editor';
-// biome-ignore format: 可読性のため
-import { appUtils, crashTracker, editorHelper, extensionManager, fileManager, registerCommands, registerEvents, registerProtocolHandlers, settingsManager, tmActionsManager, typstManager } from './libs';
-import { applyAllPatches, detachAllPatches } from './libs/patches';
+// biome-ignore format: readability
+import { applyAllPatches, appUtils, crashTracker, detachAllPatches, editorHelper, extensionManager, fileManager, registerCommands, registerEvents, registerProtocolHandlers, settingsManager, tmActionsManager, typstManager } from './libs';
 import { hideStatusBarItem, registerEmbeds, registerViews, SettingsTab, setStatusBarItem } from './ui';
 
 import './ui/styles';
@@ -27,11 +26,12 @@ export default class ObsidianTypstMate extends Plugin {
     if (window.TypstMate !== undefined) this.hasLoadedInProcess = true;
     TypstMate.pluginVersion = this.manifest.version;
 
-    // * settingsManager & crashTracker
+    // * settingsManager
     await settingsManager.init(this);
     this.detaches.unshift(async () => await settingsManager.detach());
     this.detaches.unshift(() => appUtils.refreshView(this.app));
 
+    // * crashTracker
     if (crashTracker.shouldBlockStart) return await this.blockStart();
     else crashTracker.updateCrashStatus(true);
 
