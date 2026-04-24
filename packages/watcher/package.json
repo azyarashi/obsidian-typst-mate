@@ -1,5 +1,5 @@
 {
-  "name": "@typst-mate/watcher",
+  "name": "@typstmate/watcher",
   "version": "1.0.0",
   "private": true,
   "main": "src/index.ts",

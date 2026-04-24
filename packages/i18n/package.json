@@ -1,5 +1,5 @@
 {
-  "name": "@typst-mate/i18n",
+  "name": "@typstmate/i18n",
   "version": "1.0.0",
   "private": true,
   "main": "src/index.ts"

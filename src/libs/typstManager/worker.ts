@@ -4,20 +4,20 @@ import type pathModule from 'node:path';
 import { expose } from 'comlink';
 import type { TarFile } from 'untar-sync';
 import untar from 'untar-sync';
-import init, { Wasm } from './../../../pkg/typst_wasm.js';
+import init, { Wasm } from '@/../pkg/typst_wasm.js';
 import type { Features } from '../features';
 
 // wasm types
 
 // markdown
-import type { HtmlMResult, SvgMResult } from './../../../pkg/typst_wasm.js';
+import type { HtmlMResult, SvgMResult } from '@/../pkg/typst_wasm.js';
 // preview
-import type { SvgPResult } from './../../../pkg/typst_wasm.js';
+import type { SvgPResult } from '@/../pkg/typst_wasm.js';
 // export
 // biome-ignore format: 可読性のため
-import type { SvgEOptions, SvgEResult, HtmlEOptions, HtmlEResult, PdfEOptions, PdfEResult, PngEOptions, PngEResult } from './../../../pkg/typst_wasm.js';
+import type { SvgEOptions, SvgEResult, HtmlEOptions, HtmlEResult, PdfEOptions, PdfEResult, PngEOptions, PngEResult } from '@/../pkg/typst_wasm.js';
 // その他
-import type { FontInfo, FormatOptions, FormatResult, PackageSpec } from './../../../pkg/typst_wasm.js';
+import type { FontInfo, FormatOptions, FormatResult, PackageSpec } from '@/../pkg/typst_wasm.js';
 
 /**
  * * Mobile App: normalized path

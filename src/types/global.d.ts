@@ -1,7 +1,4 @@
-import type { Remote } from 'comlink';
 import type { App, DropdownComponent, MarkdownView, Modal, SliderComponent, TFile, ToggleComponent } from 'obsidian';
-import type { Status } from '@/api';
-import type WasmAdapter from '@/libs/typstManager/worker';
 import type { MarginType, PageSize } from '../../.vscode/print';
 import type { TarFile } from './untar-sync';
 
@@ -16,19 +13,6 @@ interface FontData {
 declare global {
   interface Window {
     queryLocalFonts?: () => Promise<FontData[]>;
-
-    TypstMate?: {
-      status: Status;
-      rendering: RenderingStatus;
-      version?: string;
-      typstVersion?: string;
-      wasm?: WasmAdapter | Remote<WasmAdapter>;
-
-      isReady: () => boolean;
-      update: (status?: Status, rendering?: RenderingStatus) => void;
-      /** Original MathJax tex2chtml */
-      tex2chtml?: (math: string, options: { display?: boolean }) => HTMLElement;
-    };
   }
 
   interface PrintToPdfModal extends Modal {
@@ -51,12 +35,6 @@ declare global {
     landscape: ToggleComponent;
     scaleFactor: SliderComponent;
   }
-}
-
-export interface RenderingStatus {
-  isRendering: boolean;
-  hasError: boolean;
-  message?: string;
 }
 
 export interface GitHubAsset {

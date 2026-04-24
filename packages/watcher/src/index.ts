@@ -1,15 +1,15 @@
-import * as path from 'node:path';
 import type watcherModule from '@parcel/watcher';
 import { createWrapper } from './wrapper';
 
 type Event = watcherModule.Event;
+export type Subscription = watcherModule.AsyncSubscription;
 
 export interface WatcherOptions {
   ignore?: string[];
 }
 
 let watcher: typeof watcherModule | undefined;
-const activeSubscriptions = new Map<string, watcherModule.AsyncSubscription>();
+const activeSubscriptions = new Map<string, Subscription>();
 
 type Libc = 'glibc' | 'musl';
 export function detectLibc(): Libc {
@@ -36,11 +36,11 @@ export function getName(version: string): string {
   return name;
 }
 
-export function load(pluginFullPath: string, version: string): boolean {
+export function load(watcherNodePath: string): boolean {
   try {
-    const name = getName(version);
-    const binding = require(path.join(pluginFullPath, name));
+    const binding = require(watcherNodePath);
     watcher = createWrapper(binding);
+    activeSubscriptions.clear();
     return true;
   } catch {
     return false;
@@ -51,7 +51,7 @@ export async function subscribe(
   paths: string | string[],
   callback: (events: Event[]) => void,
   options?: WatcherOptions,
-): Promise<watcherModule.AsyncSubscription[]> {
+): Promise<Subscription[]> {
   if (!watcher) return [];
 
   const pathList = Array.isArray(paths) ? paths : [paths];

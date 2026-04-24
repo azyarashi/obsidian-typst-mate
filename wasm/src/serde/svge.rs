@@ -15,6 +15,8 @@ use tsify::Tsify;
 pub struct SvgEOptions {
     #[tsify(optional)]
     pub page_ranges: Option<String>,
+    #[tsify(optional)]
+    pub overflow: Option<bool>,
 }
 
 #[derive(Serialize, Tsify)]

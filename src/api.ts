@@ -24,19 +24,32 @@ export enum Status {
   Disabling,
 }
 
-/**
- * status === Status.Ready のときのみ、以下のプロパティが利用可能
- */
 export const TypstMate: NonNullable<typeof window.TypstMate> = {
   status: 0 as Status,
-  rendering: { isRendering: false, hasError: false, message: undefined },
+  setStatus: (status: Status) => (TypstMate.status = status),
   isReady: () => TypstMate.status === Status.Ready,
+
+  rendering: { isRendering: false, hasError: false, message: undefined },
+
   update: (status, rendering) => {
     if (status !== undefined) TypstMate.status = status;
     if (rendering !== undefined) TypstMate.rendering = rendering;
   },
-  version: undefined,
+  pluginVersion: undefined,
   typstVersion: undefined,
   wasm: undefined,
-  tex2chtml: undefined,
+  tex2chtmlOrig: undefined,
+
+  context: null,
+
+  openTypstEditor: async () => {},
+  renderTypstToSvg: async (typst: string) => {
+    if (TypstMate === undefined) throw new Error('TypstMate is not loaded');
+    if (!TypstMate.isReady()) throw new Error('TypstMate is not ready');
+
+    const result = await TypstMate.wasm!.svge('', typst, { pageRanges: '0', overflow: true });
+    const svg = result.svgs.at(0);
+    if (svg === undefined) throw new Error('TypstMate failed to render SVG');
+    return svg;
+  },
 };

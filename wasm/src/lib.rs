@@ -580,7 +580,10 @@ impl Wasm {
                     continue;
                 }
             }
-            let svg = typst_svg::svg(page);
+            let mut svg = typst_svg::svg(page);
+            if options_ser.overflow.unwrap_or(false) {
+                svg = svg.replacen("<svg class", "<svg style=\"overflow: visible;\" class", 1);
+            }
             svgs.push(svg);
         }
         Ok(svge::svge(svgs, warnings, &self.world)?.unchecked_into())
