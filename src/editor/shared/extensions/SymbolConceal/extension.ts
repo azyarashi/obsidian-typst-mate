@@ -122,11 +122,15 @@ export class SymbolConcealPlugin {
           const startWhitespace = fullText.length - fullText.trimStart().length;
           const absStart = offset + node.offset + startWhitespace;
           const absEnd = absStart + text.length;
+          const isSelected =
+            !view.state.selection.main.empty &&
+            view.state.selection.ranges.some((r) => r.from <= absEnd && absStart <= r.to);
           const isNearby = absStart <= cursor && cursor <= absEnd;
 
           let isConcealed = true;
 
-          if (isNearby) {
+          if (isSelected) isConcealed = false;
+          else if (isNearby) {
             let wasConcealed = false;
             if (this.decorations !== Decoration.none) {
               this.decorations.between(absStart, absEnd, (from, to) => {
