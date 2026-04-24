@@ -5,10 +5,12 @@ import { setIcon } from 'obsidian';
 import type { Completion, CompletionKind } from '@/../pkg/typst_wasm';
 import SYMBOLS_BY_NAME from '@/data/symbols.json';
 import { typstManager } from '@/libs';
+import { tmActionsManager } from '@/libs/tmActionsManager';
 import { format } from '@/ui/elements/Typst';
 import { getActiveRegion, type ParsedRegion } from '../../utils/core';
 import { calculatePopOverPositionByCursor } from '../../utils/position';
 import { type SymbolData, searchSymbols } from '../../utils/symbolSearcher';
+import { checkActionContext, executeAction, resolveActionContext } from '../TypstMateAction/actions';
 import { autocompleteSettingsFacet } from './package';
 
 import './Autocomplete.css';
@@ -74,9 +76,10 @@ export class AutocompletePlugin implements PluginValue {
   from = 0;
   /** 現在のカーソル または 最後に適用されたカーソルの位置 */
   to = 0;
-  allCandidates: Completion[] = [];
+  private lastRequestId = 0;
+  allCandidates: (Completion & { labelLow?: string })[] = [];
   // フィルターされたもの
-  candidates: Completion[] = [];
+  candidates: (Completion & { labelLow?: string })[] = [];
   selectedIndex = -1;
 
   private hasState = false;
@@ -166,34 +169,10 @@ export class AutocompletePlugin implements PluginValue {
       }
     }
 
-    // 表示中
-    if (this.isActive) {
-      if (!isSimple || cursor < this.from) {
-        this.reset();
-        return;
-      }
+    if (isSimple) {
       this.to = cursor;
-      this.filterAndRender(update.view, cursor);
-      return;
-    }
-
-    // 非表示中
-    if (this.hasState) {
-      if (cursor < this.from || !isSimple) {
-        this.reset();
-        if (!isSimple) return;
-      } else {
-        this.isCycling = false;
-        this.to = cursor;
-        this.filterAndRender(update.view, cursor);
-        return;
-      }
-    }
-
-    // 新規
-    if (!isSimple) return;
-
-    this.triggerAutocomplete(update.view, cursor, region);
+      this.triggerAutocomplete(update.view, cursor, region);
+    } else if (this.isActive || this.hasState) this.reset();
   }
 
   destroy() {
@@ -204,7 +183,9 @@ export class AutocompletePlugin implements PluginValue {
 
   // コアロジック
 
-  private async triggerAutocomplete(view: EditorView, cursor: number, region: ParsedRegion) {
+  public async triggerAutocomplete(view: EditorView, cursor: number, region: ParsedRegion) {
+    const requestId = ++this.lastRequestId;
+
     this.allCandidates = [];
     this.candidates = [];
     this.selectedIndex = -1;
@@ -229,11 +210,14 @@ export class AutocompletePlugin implements PluginValue {
 
     try {
       const raw = await typstManager.wasm.autocompleteAsync(innerOffset, formatted);
+      if (requestId !== this.lastRequestId) return; // 破棄
       if (raw?.completions && raw.completions.length > 0) {
         wasmCompletions = raw.completions;
         wasmFrom = regionInnerStart + offset + raw.from;
       }
-    } catch {}
+    } catch {
+      if (requestId !== this.lastRequestId) return;
+    }
 
     let localCompletions: Completion[] = [];
     let localFrom = cursor;
@@ -260,6 +244,8 @@ export class AutocompletePlugin implements PluginValue {
         });
       }
     }
+
+    if (requestId !== this.lastRequestId) return; // 再チェック
 
     const autocompleteSettings = view.state.facet(autocompleteSettingsFacet);
     const useUnicodeSymbols = autocompleteSettings?.useUnicodeSymbols ?? false;
@@ -301,9 +287,13 @@ export class AutocompletePlugin implements PluginValue {
     this.allCandidates = this.allCandidates.filter((c) => !(c.kind === 'constant' && c.label === 'WIDTH'));
 
     this.allCandidates.sort((a, b) => {
-      const score = (x: Completion) => (x.kind === 'func' || x.kind === 'constant' ? 1 : 0);
+      const score = (x: Completion) => (x.kind === 'param' || x.kind === 'font' || x.kind === 'path' ? 1 : 0);
       return score(b) - score(a);
     });
+
+    for (const c of this.allCandidates) {
+      c.labelLow = c.label.toLowerCase();
+    }
 
     if (this.allCandidates.length === 0 || view.state.selection.main.head !== cursor) {
       this.reset();
@@ -323,14 +313,29 @@ export class AutocompletePlugin implements PluginValue {
     }
 
     this.selectedIndex = -1;
-    const query = view.state.sliceDoc(this.from, cursor).toLowerCase();
+    const rawQuery = view.state.sliceDoc(this.from, cursor);
+    const query = rawQuery.toLowerCase();
 
     let filtered: Completion[];
     if (query.length === 0) {
       filtered = this.allCandidates;
     } else {
-      const prefix = this.allCandidates.filter((c) => c.label.toLowerCase().startsWith(query));
-      filtered = prefix.length > 0 ? prefix : this.allCandidates.filter((c) => c.label.toLowerCase().includes(query));
+      const prefix = this.allCandidates.filter((c) => c.labelLow!.startsWith(query));
+      filtered = prefix.length > 0 ? prefix : this.allCandidates.filter((c) => c.labelLow!.includes(query));
+
+      filtered.sort((a, b) => {
+        // Case-sensitive startsWith
+        const aStartsRaw = a.label.startsWith(rawQuery);
+        const bStartsRaw = b.label.startsWith(rawQuery);
+        if (aStartsRaw !== bStartsRaw) return aStartsRaw ? -1 : 1;
+
+        // Case-sensitive includes
+        const aIncludesRaw = a.label.includes(rawQuery);
+        const bIncludesRaw = b.label.includes(rawQuery);
+        if (aIncludesRaw !== bIncludesRaw) return aIncludesRaw ? -1 : 1;
+
+        return 0;
+      });
     }
 
     if (filtered.length === 0) {
@@ -545,6 +550,27 @@ export class AutocompletePlugin implements PluginValue {
   }
 
   private execute(item: Completion) {
+    const context = resolveActionContext(this.view);
+    const completeAction = tmActionsManager.actions.find(
+      (a) =>
+        a.trigger.t === 'complete' &&
+        (a.trigger.v === item.label || a.trigger.v === item.apply) &&
+        checkActionContext(this.view, a, context, this.to - this.from),
+    );
+
+    if (completeAction) {
+      this.isApplyingCompletion = true;
+      this.view.dispatch({
+        changes: { from: this.from, to: this.to, insert: '' },
+        userEvent: 'input.complete',
+      });
+      executeAction(this.view, context, completeAction);
+      this.isApplyingCompletion = false;
+      this.reset();
+      this.view.focus();
+      return;
+    }
+
     const apply = item.apply ?? item.label;
     const { text, cursor } = resolveApply(apply);
 
@@ -643,3 +669,14 @@ export const autocompleteExtension = [
     ),
   ),
 ];
+
+export function startAutocomplete(view: EditorView) {
+  const plugin = view.plugin(autocompletePlugin);
+  if (plugin) {
+    const region = getActiveRegion(view);
+    if (region) {
+      const cursor = view.state.selection.main.head;
+      plugin.triggerAutocomplete(view, cursor, region);
+    }
+  }
+}

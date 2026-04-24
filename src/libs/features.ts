@@ -1,12 +1,14 @@
 import type fsModule from 'node:fs';
 import type osModule from 'node:os';
 import type pathModule from 'node:path';
+import type urlModule from 'node:url';
 import { Platform } from 'obsidian';
 import { appUtils } from './appUtils';
 
 export let fs: typeof fsModule | undefined;
 export let os: typeof osModule | undefined;
 export let path: typeof pathModule | undefined;
+export let url: typeof urlModule | undefined;
 
 export const features = {
   node: false,
@@ -23,6 +25,7 @@ if (Platform.isDesktop) {
     fs = require('node:fs');
     os = require('node:os');
     path = require('node:path');
+    url = require('node:url');
     features.node = true;
   } catch {}
 }
