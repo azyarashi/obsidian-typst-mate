@@ -11,9 +11,9 @@
 	"dependencies": {
 		"@codemirror/lang-javascript": "^6.2.5",
 		"@lezer/common": "^1.5.2",
-		"@typst-mate/i18n": "workspace:*",
-		"@typst-mate/watcher": "workspace:*",
-		"@typstmate/typst-syntax": "workspace:*",
+		"@typstmate/i18n": "file:packages/i18n",
+		"@typstmate/watcher": "file:packages/watcher",
+		"@typstmate/typst-syntax": "file:packages/typst-syntax",
 		"@vimee/core": "^0.3.0",
 		"@vimee/plugin-codemirror": "^0.2.0",
 		"comlink": "^4.4.2",
@@ -22,7 +22,7 @@
 		"untar-sync": "^1.0.4"
 	},
 	"devDependencies": {
-		"@biomejs/biome": "^2.4.12",
+		"@biomejs/biome": "^2.4.13",
 		"@codemirror/autocomplete": "^6.20.1",
 		"@codemirror/commands": "^6.10.3",
 		"@codemirror/language": "^6.12.3",
