@@ -17,6 +17,7 @@ const symbolRegexForLatex =
   /(?:^| |\$|\(|\)|\[|\]|\{|\}|<|>|\+|-|\/|\*|=|!|\?|#|%|&|'|:|;|,|\d)(?<symbol>\\[a-zA-Z.]*)$/;
 const placeholderRegex = /\$\{(?:\d+:)?([^}]*)}/g;
 const rgbDetailRegex = /^rgb\("#?([0-9a-fA-F]{3,8})"\)$/;
+const lumaDetailRegex = /^luma\("?(\d+(?:\.\d+)?)%"?\)$/;
 
 const kindToIcon: Record<CompletionKind, string> = {
   func: 'function-square',
@@ -49,11 +50,21 @@ function resolveApply(apply: string): { text: string; cursor: number } {
 
 function extractColor(detail?: string): string | null {
   if (!detail) return null;
-  const m = detail.match(rgbDetailRegex);
-  return m ? `#${m[1]}` : null;
+  const mRgb = detail.match(rgbDetailRegex);
+  if (mRgb) return `#${mRgb[1]}`;
+
+  const mLuma = detail.match(lumaDetailRegex);
+  if (mLuma) {
+    const percent = parseFloat(mLuma[1]!);
+    const v = Math.round((percent / 100) * 255);
+    const hex = Math.max(0, Math.min(255, v)).toString(16).padStart(2, '0');
+    return `#${hex}${hex}${hex}`;
+  }
+
+  return null;
 }
 
-class AutocompletePlugin implements PluginValue {
+export class AutocompletePlugin implements PluginValue {
   private container: HTMLElement;
   private items: HTMLElement;
 
