@@ -1,6 +1,6 @@
 import { SyntaxMode } from '@typstmate/typst-syntax';
 import type { EditorView } from '@codemirror/view';
-import { type Command, Notice } from 'obsidian';
+import type { Command } from 'obsidian';
 import { formatterSettingsFacet } from '@/editor/shared/extensions';
 import { formatTypst } from '@/editor/shared/extensions/Formatter';
 import { getActiveRegion } from '@/editor/shared/utils/core';
