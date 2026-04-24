@@ -36,7 +36,6 @@
 		"builtin-modules": "^5.1.0",
 		"esbuild": "^0.28.0",
 		"obsidian": "^1.12.3",
-		"obsidian-excalidraw-plugin": "github:zsviczian/obsidian-excalidraw-plugin#master",
 		"obsidian-latex-suite": "github:artisticat1/obsidian-latex-suite#main",
 		"postcss": "^8.5.10",
 		"vite": "^8.0.10",
