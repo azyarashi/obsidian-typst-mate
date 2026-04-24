@@ -18,11 +18,9 @@ export const formatTypstCommand: Command = {
   },
 };
 
-// TODO: カーソル位置の復元
 export async function formatView(view: EditorView) {
   const region = getActiveRegion(view);
-  if (!region) return;
-
+  if (!region || region.mode === SyntaxMode.Plain) return;
   const settings = view.state.facet(formatterSettingsFacet);
   if (!settings) return;
 
@@ -31,18 +29,8 @@ export async function formatView(view: EditorView) {
   const rawCode = view.state.sliceDoc(innerFrom, innerTo);
   if (rawCode.includes('// @typstyle off all') || rawCode.includes('/* @typstyle off all */')) return;
 
-  let minIndent = 0;
-  let deIndentedCode = rawCode;
-  if (region.processor) {
-    const lines = rawCode.split('\n');
-    const nonEmptyLines = lines.filter((l) => l.trim().length > 0);
-    if (nonEmptyLines.length > 0) {
-      minIndent = Math.min(...nonEmptyLines.map((l) => l.match(/^\s*/)?.[0].length ?? 0));
-      if (minIndent > 0) {
-        deIndentedCode = lines.map((l) => (l.trim().length > 0 ? l.slice(minIndent) : l)).join('\n');
-      }
-    }
-  }
+  // cursor の offset を計算する
+  const deIndentedCode = deindentText(rawCode);
 
   let prefix = '';
   let suffix = '';
@@ -56,6 +44,7 @@ export async function formatView(view: EditorView) {
   const source = prefix + deIndentedCode + suffix;
 
   try {
+    const cursor = view.state.selection.main.head;
     const selection = view.state.selection.main;
     let range: [number, number] | undefined;
 
@@ -76,9 +65,9 @@ export async function formatView(view: EditorView) {
     let finalContent = result.content;
 
     const isNeedLineBreak = region.kind === 'display' && deIndentedCode.startsWith('\n');
-    if (isNeedLineBreak) {
-      finalContent = `\n${finalContent.trim()}\n`;
-    }
+    if (isNeedLineBreak) finalContent = `\n${finalContent.trim()}\n`;
+
+    // final
 
     let finalFrom = resFrom - prefix.length + innerFrom;
     let finalTo = resTo - prefix.length + innerFrom;
@@ -103,14 +92,36 @@ export async function formatView(view: EditorView) {
     }
 
     const currentContent = view.state.sliceDoc(finalFrom, finalTo);
+    console.log(finalContent, finalContent.length, range);
     if (finalContent !== currentContent) {
       view.dispatch({
         changes: { from: finalFrom, to: finalTo, insert: finalContent },
-        selection: range ? { anchor: finalFrom, head: finalFrom + finalContent.length } : undefined,
+        selection: range
+          ? { anchor: finalFrom, head: finalFrom + finalContent.length }
+          : {
+              anchor: finalFrom + finalContent.length - (innerTo - cursor),
+              head: finalFrom + finalContent.length - (innerTo - cursor),
+            },
       });
     }
   } catch (e) {
+    // TODO
     console.error('Formatter error:', e);
     new Notice(`Failed to format: ${e}`);
   }
+}
+
+function deindentText(text: string): string {
+  let minIndent = 0;
+
+  const lines = text.split('\n');
+  const nonEmptyLines = lines.filter((l) => 0 < l.trim().length);
+  if (0 < nonEmptyLines.length) {
+    minIndent = Math.min(...nonEmptyLines.map((l) => l.match(/^\s*/)?.[0].length ?? 0));
+    if (0 < minIndent) {
+      text = lines.map((l) => (0 < l.trim().length ? l.slice(minIndent) : l)).join('\n');
+    }
+  }
+
+  return text;
 }
