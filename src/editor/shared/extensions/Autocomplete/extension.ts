@@ -558,6 +558,11 @@ export class AutocompletePlugin implements PluginValue {
 
     this.reset();
     this.view.focus();
+
+    if (item.kind === 'param') {
+      const region = getActiveRegion(this.view);
+      if (region) this.triggerAutocomplete(this.view, this.from + cursor, region);
+    }
   }
 
   // キーイベント
