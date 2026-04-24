@@ -1,3 +1,4 @@
+import type { EditorView } from '@codemirror/view';
 import type { Remote } from 'comlink';
 import type { Status } from '../api';
 import type { ParsedRegion } from '../editor/shared/utils/core';
@@ -16,6 +17,12 @@ export enum CompileState {
 export interface CompileStatus {
   state: CompileState;
   message: string;
+}
+
+export interface RenderingStatus {
+  isRendering: boolean;
+  hasError: boolean;
+  message?: string;
 }
 
 declare global {
