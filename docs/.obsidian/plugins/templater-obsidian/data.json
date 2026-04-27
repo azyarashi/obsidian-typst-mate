@@ -1,6 +1,6 @@
 {
   "command_timeout": 5,
-  "templates_folder": "",
+  "templates_folder": "CONTRIBUTING/templates",
   "templates_pairs": [
     [
       "",
