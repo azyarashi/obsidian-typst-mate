@@ -1,7 +1,7 @@
 import { proxy, type Remote, wrap } from 'comlink';
 import { type CachedMetadata, getAllTags, MarkdownPreviewRenderer, Notice, requestUrl, type TFile } from 'obsidian';
 import type { PackageSpec } from '@/../pkg/typst_wasm';
-import { Status, TypstMate } from '@/api';
+import { Phase, State, TypstMate } from '@/api';
 import { DEFAULT_FONT_SIZE } from '@/constants';
 import { DEFAULT_SETTINGS, type Settings } from '@/data/settings';
 import { t } from '@/i18n';
@@ -88,11 +88,11 @@ export class TypstManager implements Singleton {
       updateStatus: (status: { isRendering: boolean; message?: string }) => {
         if (this.renderTimer) clearTimeout(this.renderTimer);
 
-        if (status.isRendering) TypstMate.update(undefined, { ...TypstMate.rendering, ...status });
+        if (status.isRendering) TypstMate.setStatus({ state: State.Rendering, message: status.message });
         else {
           this.renderTimer = setTimeout(() => {
             this.renderTimer = undefined;
-            TypstMate.update(undefined, { ...TypstMate.rendering, isRendering: false });
+            TypstMate.setStatus({ state: State.Idle });
           }, 250);
         }
       },
@@ -160,7 +160,7 @@ export class TypstManager implements Singleton {
     await this.wasm.store({ fonts, files });
 
     this.ready = true;
-    TypstMate.update(Status.Ready);
+    TypstMate.setPhase(Phase.Ready);
     crashTracker.updateCrashStatus(false);
 
     const waitingElements = document.querySelectorAll('.typstmate-waiting');
@@ -322,7 +322,7 @@ export class TypstManager implements Singleton {
       const metadata = this.plugin.app.metadataCache.getCache(npath);
       if (metadata) {
         if ((kind === 'inline' || kind === 'display') && metadata?.frontmatter?.['math-engine'] === 'mathjax')
-          return TypstMate.tex2chtml!(code, {
+          return TypstMate.tex2chtmlOrig!(code, {
             display: kind !== 'inline',
           });
         this.syncFileCache(metadata);
@@ -363,7 +363,7 @@ export class TypstManager implements Singleton {
     this.beforeProcessor = processor;
     if (processor.renderingEngine === 'mathjax') {
       if (settings.applyProcessorToMathJax) code = processor.format.replace('{CODE}', code);
-      return TypstMate.tex2chtml!(code, {
+      return TypstMate.tex2chtmlOrig!(code, {
         display: kind !== 'inline',
       });
     }
@@ -432,8 +432,8 @@ export class TypstManager implements Singleton {
   }
 
   syncFileCache(metadata: CachedMetadata): boolean {
-    const imports: string[] = metadata.frontmatter?.imports ?? [];
-    const definitions: string[] = metadata.frontmatter?.definitions ?? metadata.frontmatter?.lets ?? [];
+    const imports: string[] = metadata.frontmatter?.import ?? [];
+    const definitions: string[] = metadata.frontmatter?.definitions ?? metadata.frontmatter?.let ?? [];
     const tags: string[] = [];
     for (const tag of expandHierarchicalTags(getAllTags(metadata) ?? [])) if (this.tagFiles.has(tag)) tags.push(tag);
 
@@ -509,7 +509,7 @@ export const extarctCMMath = (settings: Settings, code: string, display: boolean
       processors?.find((p) => code.startsWith(p.id)) ??
       processors?.at(-1) ??
       DEFAULT_SETTINGS.processor.display!.processors.at(-1)!;
-    if (processor.id.length > 0) eqStart += processor.id.length;
+    if (0 < processor.id.length) eqStart += processor.id.length;
   } else {
     // Inline
     if (code.startsWith('{}')) {
@@ -528,7 +528,7 @@ export const extarctCMMath = (settings: Settings, code: string, display: boolean
       processors?.find((p) => code.startsWith(`${p.id}:`)) ??
       processors.at(-1) ??
       DEFAULT_SETTINGS.processor.inline!.processors.at(-1)!;
-    if (processor.id.length > 0) eqStart += processor.id.length + 1; // ? : の分
+    if (0 < processor.id.length) eqStart += processor.id.length + 1; // ? : の分
   }
 
   return { eqStart, eqEnd, processor };

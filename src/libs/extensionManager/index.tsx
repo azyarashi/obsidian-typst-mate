@@ -43,21 +43,12 @@ interface ManagedEntry {
 
 export class ExtensionManager implements Singleton {
   private entries: ManagedEntry[] = [];
-  private settingsEditorFactory: (() => Extension[]) | null = null;
   private views: Partial<Record<EditorContext, EditorView[]>> = {
     markdown: [],
     typst: [],
   };
 
   init(_: ObsidianTypstMate) {}
-
-  registerSettingsEditorFactory(factory: () => Extension[]) {
-    this.settingsEditorFactory = factory;
-  }
-
-  buildSettingsEditorExtensions(): Extension[] {
-    return this.settingsEditorFactory?.() ?? [];
-  }
 
   register(definition: () => ExtensionEntry<any>) {
     const entry = definition();

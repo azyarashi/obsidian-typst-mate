@@ -8,7 +8,7 @@ class SettingsManager implements Singleton {
   private plugin?: ObsidianTypstMate;
 
   settings!: Settings;
-  version!: string;
+  version?: string;
 
   async init(plugin: ObsidianTypstMate) {
     this.plugin = plugin;
@@ -35,12 +35,11 @@ class SettingsManager implements Singleton {
       }
     }
 
-    this.version = storedSettings?.version ?? DEFAULT_SETTINGS.version;
     this.settings = Object.assign({}, DEFAULT_SETTINGS, storedSettings);
   }
 
   private migrate() {
-    while (this.version !== TypstMate.version) {
+    while (this.version !== TypstMate.pluginVersion) {
       const migration = migrations.find((m) => m.version === this.version);
       if (!migration) return; // TODO;
 
@@ -48,7 +47,7 @@ class SettingsManager implements Singleton {
       this.version = migration.next;
     }
 
-    this.settings.version = this.version;
+    this.settings.pluginVersion = this.version;
   }
 
   private normalizeSettings() {

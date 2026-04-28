@@ -57,8 +57,8 @@ export class FileManager implements Singleton {
 
     this.pluginDirNPath = `${this.plugin.app.vault.configDir}/plugins/${ObsidianTypstMate.id}`;
 
-    this.wasmNPath = `${this.pluginDirNPath}/typst-${TypstMate.version}.wasm`;
-    this.watcherModuleNPath = `${this.pluginDirNPath}/watcher-${TypstMate.version}.js`;
+    this.wasmNPath = `${this.pluginDirNPath}/typst-${TypstMate.pluginVersion}.wasm`;
+    this.watcherModuleNPath = `${this.pluginDirNPath}/watcher-${TypstMate.pluginVersion}.js`;
 
     this.fontsDirNPath = `${this.pluginDirNPath}/fonts`;
     this.vaultPackagesDirNPath = `${this.pluginDirNPath}/packages`;
@@ -100,7 +100,7 @@ export class FileManager implements Singleton {
 
     this.localPackagesDirPaths = dataDirsCandidates
       .map((dirPath) => path!.join(dirPath, 'typst', 'packages'))
-      .filter((path) => fs?.existsSync(path));
+      .filter((path) => fs!.existsSync(path));
   }
 
   async ensureWasm(files: string[]) {
@@ -116,9 +116,9 @@ export class FileManager implements Singleton {
     for (const f of watchers.filter((w) => w !== this.watcherModuleNPath)) await this.adapter.remove(f);
     if (!watchers.includes(this.watcherModuleNPath)) await this.downloadAsset(this.watcherModuleNPath);
 
-    const watcherModulePath = path!.join(this.pluginDirNPath, watcher!.getName(TypstMate.version!));
+    const watcherModulePath = path!.join(this.pluginDirNPath, watcher!.getName(TypstMate.pluginVersion!));
     loadWatcherModule(watcherModulePath);
-    this.watcherNodeNPath = path!.join(this.pluginDirNPath, watcher!.getName(TypstMate.version!));
+    this.watcherNodeNPath = path!.join(this.pluginDirNPath, watcher!.getName(TypstMate.pluginVersion!));
   }
 
   async ensureAndLoadWatcherNode() {
@@ -128,7 +128,7 @@ export class FileManager implements Singleton {
     for (const f of watchers.filter((w) => w !== this.watcherNodeNPath)) await this.adapter.remove(f);
     if (!watchers.includes(this.watcherNodeNPath)) await this.downloadAsset(this.watcherNodeNPath);
 
-    const watcherNodePath = path!.join(this.pluginDirNPath, watcher!.getName(TypstMate.version!));
+    const watcherNodePath = path!.join(this.pluginDirNPath, watcher!.getName(TypstMate.pluginVersion!));
     initWatcherNode(watcherNodePath);
   }
 
@@ -137,7 +137,7 @@ export class FileManager implements Singleton {
     new Notice(t('notices.downloadingAsset', { asset: filename }));
 
     // 最新の Asset がある URL を取得する
-    const releaseUrl = `https://api.github.com/repos/azyarashi/obsidian-typst-mate/releases/tags/${TypstMate.version}`;
+    const releaseUrl = `https://api.github.com/repos/azyarashi/obsidian-typst-mate/releases/tags/${TypstMate.pluginVersion}`;
     const releaseResponse = await requestUrl(releaseUrl);
     const releaseData = (await releaseResponse.json) as { assets: GitHubAsset[] };
     const asset = releaseData.assets.find((asset) => asset.name === filename);
@@ -359,7 +359,6 @@ export class FileManager implements Singleton {
 
   async detach() {
     this.plugin = undefined;
-    TypstMate.version = undefined;
 
     if (features.node) {
       await Promise.all(this.watcherSubscriptions.map((s) => s.unsubscribe()));
