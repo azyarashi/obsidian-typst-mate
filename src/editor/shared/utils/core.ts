@@ -4,7 +4,14 @@ import { collectRegions, markdownCore, parseRegion } from '@/editor/markdown/ext
 import { typstTextCore } from '@/editor/typst/extensions/TypstCore';
 import type { Processor, ProcessorKind } from '@/libs/processor';
 
+export enum RegionContext {
+  Markdown,
+  Typst,
+}
+
 export interface ParsedRegion {
+  context: RegionContext;
+
   skip: number;
   skipEnd: number;
   /** innerFrom = from + skip */

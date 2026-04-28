@@ -9,7 +9,7 @@ import {
 import { syntaxTree } from '@codemirror/language';
 import { type EditorView, type PluginValue, ViewPlugin, type ViewUpdate } from '@codemirror/view';
 import { TypstMate } from '@/api';
-import type { ParsedRegion } from '@/editor/shared/utils/core';
+import { type ParsedRegion, RegionContext } from '@/editor/shared/utils/core';
 import { editorHelper, extarctCMMath, settingsManager } from '@/libs';
 import { type ProcessorKind, RenderingEngine } from '@/libs/processor';
 import { getModeAndKindFromRegion } from '@/utils/typstSyntax';
@@ -202,7 +202,7 @@ export function parseRegion(view: EditorView, region: Region, skipParse = false)
     }
 
     return {
-      context: 'markdown',
+      context: RegionContext.Markdown,
       skip,
       skipEnd: 1,
       from: region.from,
@@ -232,7 +232,7 @@ export function parseRegion(view: EditorView, region: Region, skipParse = false)
   }
 
   return {
-    context: 'markdown',
+    context: RegionContext.Markdown,
     skip: eqStart,
     skipEnd: eqEnd,
     from: region.from,

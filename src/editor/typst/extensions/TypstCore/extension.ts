@@ -1,12 +1,12 @@
 import { parse, reparse, SyntaxMode } from '@typstmate/typst-syntax';
 import { type EditorView, type PluginValue, ViewPlugin, type ViewUpdate } from '@codemirror/view';
 import { TypstMate } from '@/api';
-import type { ParsedRegion } from '@/editor/shared/utils/core';
+import { type ParsedRegion, RegionContext } from '@/editor/shared/utils/core';
 import { getModeAndKindFromRegion } from '@/utils/typstSyntax';
 
 export class TypstCorePluginValue implements PluginValue {
   activeRegion: ParsedRegion = {
-    context: 'typst',
+    context: RegionContext.Typst,
     skip: 0,
     skipEnd: 0,
     from: 0,
