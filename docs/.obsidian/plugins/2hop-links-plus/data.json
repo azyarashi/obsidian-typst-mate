@@ -1,0 +1,23 @@
+{
+  "autoLoadTwoHopLinks": true,
+  "showForwardConnectedLinks": false,
+  "showBackwardConnectedLinks": true,
+  "showTwohopLinks": true,
+  "showNewLinks": true,
+  "showTagsLinks": true,
+  "showPropertiesLinks": true,
+  "showImage": true,
+  "excludePaths": [
+    ""
+  ],
+  "initialBoxCount": 10,
+  "initialSectionCount": 20,
+  "enableDuplicateRemoval": true,
+  "sortOrder": "filenameAsc",
+  "showTwoHopLinksInSeparatePane": false,
+  "excludeTags": [],
+  "panePositionIsRight": false,
+  "createFilesForMultiLinked": false,
+  "frontmatterPropertyKeyAsTitle": "",
+  "frontmatterKeys": []
+}

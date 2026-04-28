@@ -99,7 +99,7 @@
       "enabled": true
     },
     "remove-trailing-punctuation-in-heading": {
-      "enabled": true,
+      "enabled": false,
       "punctuation-to-remove": ".,;:!。，；：！"
     },
     "footnote-after-punctuation": {

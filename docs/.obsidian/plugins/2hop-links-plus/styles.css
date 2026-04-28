@@ -1,0 +1,259 @@
+:root {
+  --box-width: 139px;
+  --box-height: 170px;
+  --box-font-size: 100%;
+}
+/* switch light/dark mode */
+.theme-light {
+  --bg-box: #ffffff;
+  --bg-box-top: #e2e2e2;
+  --title-box: #363c49;
+  --text-box: #b7b7b7;
+  --bg-header-twohop: #9babc1;
+  --title-header-twohop: #ffffff;
+  --bg-header-new: #fd7373;
+  --title-header-new: #ffffff;
+  --bg-header-connected: #5e8af6;
+  --title-header-connected: #ffffff;
+  --bg-header-properties: #46af5d;
+  --title-header-properties: #ffffff;
+}
+
+.theme-dark {
+  --bg-box: #373b44;
+  --bg-box-top: #2b2e38;
+  --title-box: #f0f0f0;
+  --text-box: #b4b5b6;
+  --bg-header-twohop: #2b2e38;
+  --title-header-twohop: #dddede;
+  --bg-header-new: #fb7476;
+  --title-header-new: #ffffff;
+  --bg-header-connected: #80c9fe;
+  --title-header-connected: #202277;
+  --bg-header-properties: #46af5d;
+  --title-header-properties: #ffffff;
+}
+
+/* the container */
+.twohop-links-container {
+  margin-bottom: 55px;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.twohop-links-section {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(var(--box-width), 1fr));
+  grid-gap: 8px;
+  margin: 20px;
+  font-size: var(--box-font-size);
+}
+
+/* common */
+.twohop-links-box {
+  box-sizing: border-box;
+  max-height: var(--box-height);
+  padding: 10px;
+  background-color: var(--bg-box);
+  border-radius: 2px;
+  overflow: hidden;
+  box-shadow: 0px 2px 2px rgba(0, 0, 0, 0.25);
+  cursor: pointer;
+  word-break: break-word;
+}
+
+.twohop-links-box:hover {
+  filter: brightness(0.8) contrast(0.8);
+}
+
+.twohop-links-box-title {
+  color: var(--title-box);
+  font-size: 90%;
+  font-weight: 500;
+  margin-bottom: 10px;
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  white-space: unset;
+  -webkit-line-clamp: 3;
+}
+
+.twohop-links-box img {
+  margin: auto;
+}
+
+/* Non-header box */
+.twohop-links-box:not([class*=" "]) {
+  border-top: 10px solid var(--bg-box-top);
+}
+
+.twohop-links-box-preview {
+  color: var(--text-box);
+  font-size: 70%;
+  white-space: pre-line;
+}
+
+/* connected links */
+.twohop-links-connected-links-header {
+  background-color: var(--bg-header-connected);
+  color: var(--title-header-connected);
+}
+
+/* two hop links */
+.twohop-links-twohop-header {
+  background-color: var(--bg-header-twohop);
+  color: var(--title-header-twohop);
+}
+
+/* properties */
+.twohop-links-properties-header {
+  background-color: var(--bg-header-properties);
+  color: var(--title-header-properties);
+}
+
+/* new links */
+.twohop-links-new-links-header {
+  background-color: var(--bg-header-new);
+  color: var(--title-header-new);
+}
+
+.markdown-embed-content .twohop-links-container {
+  display: none;
+}
+
+body:not(.zoom-off)
+  .view-content
+  div:not(.canvas-node-content)
+  .twohop-links-box
+  img {
+  cursor: pointer !important;
+}
+
+.load-more-button {
+  width: -webkit-fill-available;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.TwoHopLinks {
+  overflow: auto;
+}
+
+.settings-button {
+  cursor: pointer;
+}
+
+/* @settings
+
+name: 2Hop Links Plus
+id: 2hop-links-plus
+settings:
+    -
+        id: box-width
+        title: Box min width (px)
+        type: variable-number
+        default: 139
+        format: px
+    -
+        id: box-height
+        title: Box max height (px)
+        type: variable-number
+        default: 170
+        format: px
+    -
+        id: box-font-size
+        title: Font size (%)
+        type: variable-number
+        default: 100
+        format: '%'
+    -
+        id: title-box
+        title: Title color
+        type: variable-themed-color
+        format: hex
+        default-light: '#363c49'
+        default-dark: '#f0f0f0'
+    -
+        id: text-box
+        title: Text color
+        type: variable-themed-color
+        format: hex
+        default-light: '#b7b7b7'
+        default-dark: '#b4b5b6'
+    -
+        id: bg-box-top
+        title: Box color (Top)
+        type: variable-themed-color
+        format: hex
+        default-light: '#e2e2e2'
+        default-dark: '#2b2e38'
+    -
+        id: bg-box
+        title: Box color
+        type: variable-themed-color
+        format: hex
+        default-light: '#ffffff'
+        default-dark: '#373b44'
+    -
+        id: bg-header-connected
+        title: Header box color (Links & Backlinks)
+        type: variable-themed-color
+        format: hex
+        default-light: '#5e8af6'
+        default-dark: '#80c9fe'
+    -
+        id: title-header-connected
+        title: Header title color (Links & Backlinks)
+        type: variable-themed-color
+        format: hex
+        default-light: '#ffffff'
+        default-dark: '#202277'
+    -
+        id: bg-header-twohop
+        title: Header box color (2Hop links)
+        type: variable-themed-color
+        format: hex
+        default-light: '#9babc1'
+        default-dark: '#2b2e38'
+    -
+        id: title-header-twohop
+        title: Header title color (2Hop links)
+        type: variable-themed-color
+        format: hex
+        default-light: '#ffffff'
+        default-dark: '#dddede'
+    -
+        id: bg-header-new
+        title: Header box color (New links)
+        type: variable-themed-color
+        format: hex
+        default-light: '#fd7373'
+        default-dark: '#fb7476'
+    -
+        id: title-header-new
+        title: Header title color (New links)
+        type: variable-themed-color
+        format: hex
+        default-light: '#ffffff'
+        default-dark: '#ffffff'
+    -
+        id: bg-header-properties
+        title: Header box color (Properties)
+        type: variable-themed-color
+        format: hex
+        default-light: '#46af5d'
+        default-dark: '#46af5d'
+    -
+        id: title-header-properties
+        title: Header title color (Properties)
+        type: variable-themed-color
+        format: hex
+        default-light: '#ffffff'
+        default-dark: '#ffffff'
+    -
+        id: property-info
+        title: About Properties
+        description: "Each property header is assigned a css class in the form twohop-links-{key}-header, so you can use css snippets to style each property."
+        type: info-text
+        markdown: true
+*/

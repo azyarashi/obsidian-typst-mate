@@ -1,4 +1,7 @@
 [
   "obsidian-linter",
-  "templater-obsidian"
+  "templater-obsidian",
+  "shiki-highlighter",
+  "obsidian-hover-editor",
+  "2hop-links-plus"
 ]

@@ -1,0 +1,15 @@
+{
+  "disabledLanguages": [
+    "js",
+    "ts"
+  ],
+  "customThemeFolder": "",
+  "customLanguageFolder": "",
+  "darkTheme": "obsidian-theme",
+  "lightTheme": "obsidian-theme",
+  "preferThemeColors": true,
+  "inlineHighlighting": false,
+  "ecDefaultShowLineNumbers": false,
+  "ecDefaultWrap": false,
+  "ecDefaultFrame": "auto"
+}

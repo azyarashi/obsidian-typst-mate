@@ -1,6 +1,9 @@
 # コマンド
 
-[英語](./README.md) | 日本語
+\[[English](./README.md) | 日本語\]
+
+> [!INFO]
+> これは翻訳版です。最新の変更が反映されていない可能性があります。
 
 コマンドの ID は接頭辞 `typst-mate:` を省略して表記しています。
 
@@ -24,6 +27,8 @@ TODO
 
 TODO
 
-## 数式を囲む `box-equation` / 数式を選択する `select-equation`
+---
 
-これらのコマンドの詳細については、元になっている[Obsidian LaTeX Suite#Editor commands](https://github.com/artisticat1/obsidian-latex-suite#editor-commands) を参照してください。
+以下のコマンドの詳細は元になっている [LaTeX Suite#Editor commands](https://github.com/artisticat1/obsidian-latex-suite#editor-commands) を参照してください。
+
+## 数式を囲む `box-equation` / 数式を選択する `select-equation`
