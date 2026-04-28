@@ -114,6 +114,8 @@ export const DEFAULT_SETTINGS: Settings = {
     '  ($+-$, sym.plus.minus),',
     '  ($|-$, math.tack),',
     ')',
+    '\n',
+    '#import typstmate: *',
   ].join('\n'),
   preambleHtml: '',
   preambleMathJax: '',
