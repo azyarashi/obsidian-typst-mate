@@ -51,12 +51,12 @@ export const TypstMate: NonNullable<typeof window.TypstMate> = {
 
   // TODO
   openTypstEditor: async () => {},
-  renderTypstToSvgs: async (typst: string) => {
+  renderTypstToSvg: async (typst: string) => {
     if (TypstMate === undefined) throw new Error('TypstMate is not loaded');
     if (!TypstMate.isReady()) throw new Error('TypstMate is not ready');
 
     const result = await TypstMate.wasm!.svge('', typst, { pageRanges: '0', overflow: true });
     if (result.svgs.length === 0) throw new Error('TypstMate failed to render SVG');
-    return result.svgs;
+    return result.svgs[0]!;
   },
 };

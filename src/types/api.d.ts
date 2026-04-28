@@ -73,7 +73,7 @@ declare global {
        * @public
        * @since 3.0.0
        * */
-      renderTypstToSvgs: (typst: string) => Promise<string[]>;
+      renderTypstToSvg: (typst: string) => Promise<string>;
     };
   }
 }
