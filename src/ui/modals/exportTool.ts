@@ -31,7 +31,8 @@ export class ExportToolModal extends Modal {
     this.vpath = vpath;
     this.content = content;
 
-    const { format, pdfTagged, pdfStandard, pngPpi, htmlExtractBody } = settingsManager.settings.exportStates;
+    const { format, pdfTagged, pdfStandard, pngPpi, htmlExtractBody, svgOverflow } =
+      settingsManager.settings.exportStates;
     this.options = {
       format,
       pdf: {
@@ -39,7 +40,8 @@ export class ExportToolModal extends Modal {
         standards: pdfStandard ? [pdfStandard] : [],
       },
       svg: {
-        filenameTemplate: '{p}.svg',
+        filenameTemplate: `${fileManager.getBasename(this.vpath)}_{0p}.svg`,
+        overflow: svgOverflow,
       },
       png: {
         filenameTemplate: '{p}.png',
@@ -61,6 +63,7 @@ export class ExportToolModal extends Modal {
     settingsManager.settings.exportStates.pdfStandard = this.options.pdf.standards[0] ?? '';
     settingsManager.settings.exportStates.pngPpi = this.options.png.ppi;
     settingsManager.settings.exportStates.htmlExtractBody = this.options.html.extractBody ?? true;
+    settingsManager.settings.exportStates.svgOverflow = this.options.svg.overflow ?? true;
     settingsManager.saveSettings();
   }
 
@@ -189,6 +192,16 @@ export class ExportToolModal extends Modal {
             .onChange((value) => {
               this.options.svg.pageRanges = value || undefined;
             });
+        });
+
+      new Setting(contentEl)
+        .setName(t('modals.exportTool.svg.overflow.name'))
+        .setDesc(t('modals.exportTool.svg.overflow.desc'))
+        .addToggle((toggle) => {
+          toggle.setValue(this.options.svg.overflow ?? true).onChange((value) => {
+            this.options.svg.overflow = value;
+            this.saveSettings();
+          });
         });
 
       new Setting(contentEl)
