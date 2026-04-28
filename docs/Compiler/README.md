@@ -2,7 +2,7 @@
 
 \[English | [日本語](./README.ja.md)\]
 
-To provide a more comfortable experience, some library definitions differ from the standard Typst CLI engine.
+To provide a more comfortable experience, some library definitions differ from the standard Typst CLI compiler.
 
 ## Variable Definitions
 

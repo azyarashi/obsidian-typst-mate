@@ -49,5 +49,4 @@ Please note the following:
 
 - Only the first page is rendered.
 - In tables or blockquotes, use *display math* instead of *code blocks*. `<br>` and `\n[\s\t]*>` will be automatically replaced with line breaks.
-- While there are examples of using Typst for Syntax Highlighting in CodeBlock Processor, we recommend using the [Obsidian Shiki Plugin](https://github.com/mProjectsCode/obsidian-shiki-plugin).
 - Do not include special characters, especially slashes `/`, in Processors. This may cause issues.
