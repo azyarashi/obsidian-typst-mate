@@ -167,7 +167,7 @@ class VimPlugin implements PluginValue {
 
   private syncCursorToEditor(pos: { line: number; col: number }) {
     const offset = cursorToOffset(this.view.state.doc.toString(), pos);
-    if (this.view.state.selection.main.head !== offset) {
+    if (this.view.state.selection.ranges.length === 1 && this.view.state.selection.main.head !== offset) {
       this.view.dispatch({
         selection: { anchor: offset },
         scrollIntoView: true,
