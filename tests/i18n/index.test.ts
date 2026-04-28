@@ -1,6 +1,6 @@
 import { beforeAll, describe, expect, it } from 'bun:test';
 import { I18n } from '../../packages/i18n/src/index';
-import en from '../../resources/locales/en.json';
+import en from '../../resources/locales/en.jsonc';
 
 describe('i18n integration', () => {
   const i18n = I18n.createInstance();
