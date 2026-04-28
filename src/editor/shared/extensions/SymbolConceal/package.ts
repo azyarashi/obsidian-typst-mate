@@ -7,7 +7,7 @@ export const symbolConcealPackage: ExtensionPackageFn = () =>
   ({
     id: 'symbol-conceal',
     name: t('settings.extensions.symbolConceal.name'),
-    icon: ICONS.SquareFunction,
+    icon: ICONS.Pi,
     description: t('settings.extensions.symbolConceal.desc'),
     tags: ['decoration'],
     scope: ['markdown', 'typst'],

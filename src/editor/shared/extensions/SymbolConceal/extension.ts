@@ -115,8 +115,20 @@ export class SymbolConcealPlugin {
       if (isMatchable) {
         const fullText = node.node.intoText();
         const text = fullText.trim();
-        let sym = SYMBOL_MAP.get(text);
-        if (!sym && text.startsWith('sym.')) sym = SYMBOL_MAP.get(text.slice(4));
+        let sym: string | undefined;
+
+        if (kind === SyntaxKind.MathIdent || kind === SyntaxKind.MathText) sym = SYMBOL_MAP.get(text);
+        else if (kind === SyntaxKind.FieldAccess) {
+          const leftmost = node.leftmostLeaf();
+          if (leftmost) {
+            const lKind = leftmost.kind();
+            if (lKind === SyntaxKind.MathIdent) sym = SYMBOL_MAP.get(text);
+            else if (lKind === SyntaxKind.Ident && leftmost.text().trim() === 'sym') {
+              const dotIndex = text.indexOf('.');
+              if (dotIndex !== -1) sym = SYMBOL_MAP.get(text.slice(dotIndex + 1).trim());
+            }
+          }
+        }
 
         if (sym) {
           const startWhitespace = fullText.length - fullText.trimStart().length;
