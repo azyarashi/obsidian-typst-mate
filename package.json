@@ -31,15 +31,15 @@
 		"@codemirror/state": "^6.6.0",
 		"@codemirror/view": "^6.41.1",
 		"@types/bun": "^1.3.13",
-		"@typescript/native-preview": "^7.0.0-dev.20260423.1",
+		"@typescript/native-preview": "^7.0.0-dev.20260427.1",
 		"autoprefixer": "^10.5.0",
 		"builtin-modules": "^5.1.0",
 		"esbuild": "^0.28.0",
 		"obsidian": "^1.12.3",
 		"obsidian-latex-suite": "github:artisticat1/obsidian-latex-suite#main",
-		"postcss": "^8.5.10",
+		"postcss": "^8.5.12",
 		"vite": "^8.0.10",
-		"vite-plugin-json5": "^1.3.0",
+		"vite-plugin-json5": "^1.4.4",
 		"vite-plugin-static-copy": "^4.1.0"
 	},
 	"peerDependencies": {
