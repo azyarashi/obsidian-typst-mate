@@ -2,7 +2,7 @@ import { type Diagnostic, setDiagnostics } from '@codemirror/lint';
 import { StateEffect, StateField } from '@codemirror/state';
 import { type EditorView, ViewPlugin, type ViewUpdate } from '@codemirror/view';
 import type { Diagnostic as WasmDiagnostic } from '@/../pkg/typst_wasm';
-import { TypstMate } from '@/api';
+import { State, TypstMate } from '@/api';
 import type { Processor } from '@/libs/processor';
 import { renderDiagnosticMessage } from '@/ui/components/Diagnostic';
 import { getActiveRegion } from '../../utils/core';
@@ -127,8 +127,8 @@ export const linterExtension = [
         const computed = computeDiagnostics(this.view, result);
 
         const errorOne = computed.find((d) => d.severity === 'error');
-        if (errorOne) TypstMate.update(undefined, { isRendering: false, hasError: true, message: errorOne.message });
-        else TypstMate.update(undefined, { ...TypstMate.rendering, hasError: false });
+        if (errorOne) TypstMate.setStatus({ state: State.Error, message: errorOne.message });
+        else if (TypstMate.status.state === State.Error) TypstMate.setStatus({ state: State.Success });
 
         requestAnimationFrame(() => {
           this.view.dispatch(setDiagnostics(this.view.state, computed));
