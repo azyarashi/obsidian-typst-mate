@@ -1,12 +1,10 @@
-import { State, type Status } from './types/api';
-
-export { State, type Status };
+import type { Status } from './types/api';
 
 export enum Phase {
-  // 初期状態
+  // Initial state
   Loading,
 
-  // 準備中
+  // Preparing
   LoadingMathJax,
 
   DownloadingWasm,
@@ -20,12 +18,21 @@ export enum Phase {
 
   ApplyingPatches,
 
-  // 最終状態
+  // Final states
   Ready,
   Error,
   Disabling,
   Disabled,
 }
+
+export enum State {
+  Idle,
+  Rendering,
+  Success,
+  Error,
+}
+
+export type { Status };
 
 export const TypstMate: NonNullable<typeof window.TypstMate> = {
   phase: 0 as Phase,

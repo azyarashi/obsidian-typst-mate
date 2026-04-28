@@ -1,18 +1,11 @@
 import type { EditorView } from '@codemirror/view';
 import type { Remote } from 'comlink';
-import type { Phase } from '../api';
+import type { Phase, State } from '../api';
 import type { ParsedRegion } from '../editor/shared/utils/core';
 import type WasmAdapter from '../libs/typstManager/worker';
 
 export type * as Wasm from '../../pkg/typst_wasm';
 export type { ParsedRegion, Status };
-
-export enum State {
-  Idle,
-  Rendering,
-  Success,
-  Error,
-}
 
 export interface Status {
   state: State;
