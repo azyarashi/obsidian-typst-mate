@@ -1,5 +1,4 @@
 import { SyntaxMode } from '@typstmate/typst-syntax';
-import type { Action, ActionContext, ActionType, TriggerType } from '@/libs/action';
 import type { EditorContext, ExtensionSetting, Tag } from '@/libs/extensionManager';
 import {
   type CodeblockProcessor,
@@ -13,17 +12,24 @@ import {
 } from '@/libs/processor';
 import type { WidthProfile } from '@/libs/profile';
 import type { Tab } from '@/ui/settingsTab';
+import type { ActionsSubTab } from '@/ui/settingsTab/tabs/actions';
 import type { CompilerSubTab } from '@/ui/settingsTab/tabs/compiler';
+import type { Tool } from '@/ui/views/typst-tools';
 import type { ExportFormat } from '@/utils/export';
-import { DEFAULT_ACTIONS } from './actions/';
 
 /**
  * プラグイン設定
  */
 export interface Settings {
+  /* プロセッサー */
   preambleSvg: string;
   preambleHtml: string;
   preambleMathJax: string;
+
+  /* Typst Mate アクション */
+  tmactionsSource: string;
+  useTmactionsFile: boolean;
+  tmactionsFileNPath: string;
 
   /* レンダリング */
   enableBackgroundRendering: boolean; // プラグインのリロードが必要
@@ -41,8 +47,9 @@ export interface Settings {
   watchExtensions: string[];
 
   /* 高度な設定 */
-  applyProcessorToMathJax: boolean;
   importPath: string;
+  localeOverride?: string;
+  applyProcessorToMathJax: boolean;
   textViewExtensions: string[];
 
   /* その他の設定 */
@@ -57,32 +64,30 @@ export interface Settings {
       processors: CodeblockProcessor[];
     };
     excalidraw: {
-      processors: CodeblockProcessor[];
+      processors: CodeblockProcessor[]; // TODO
     };
   };
-
-  actions: Action[];
   extensionSettings: Record<EditorContext, Record<string, ExtensionSetting>>;
 
   /* 内部設定 */
-  version: string;
-  crashCount: number; // ? OOM による Boot Loop 回避のため
+  pluginVersion?: string;
+  tmactionsVersion?: string;
+  crashCount: number;
+
   settingsStates: {
     tab: Tab;
     preambleRenderingEngineTab: RenderingEngine;
     processorKindTab: ProcessorKind;
     compilerSubTab: CompilerSubTab;
+    actionsSubTab: ActionsSubTab;
     extensionContextTab: EditorContext;
     extensionFilter: {
       query: string;
       tags: Tag[];
     };
-    actionFilter: {
-      query: string;
-      triggers: TriggerType[];
-      actions: ActionType[];
-      contexts: ActionContext[];
-    };
+  };
+  toolsStates: {
+    tool: Tool;
   };
   exportStates: {
     format: ExportFormat;
@@ -90,17 +95,20 @@ export interface Settings {
     pdfStandard: string;
     pngPpi: number;
     htmlExtractBody: boolean;
+    svgOverflow: boolean;
   };
+  editorStates: Record<string, { cursor: number; expiredOn: number }>;
 
   snippets: any[];
 }
 
 export const DEFAULT_SETTINGS: Settings = {
+  /* プロセッサー */
   preambleSvg: [
     '#set page(margin: 0pt, width: auto, height: auto)',
     '#set text(size: fontsize)',
     '#show raw: set text(size: 1.25em)',
-    '#import "@preview/mannot:0.3.2": *',
+    '#import "@preview/mannot:0.3.3": *',
     '#import "@preview/quick-maths:0.2.1": shorthands',
     '#show: shorthands.with(',
     '  ($+-$, sym.plus.minus),',
@@ -109,6 +117,11 @@ export const DEFAULT_SETTINGS: Settings = {
   ].join('\n'),
   preambleHtml: '',
   preambleMathJax: '',
+
+  /* Typst Mate アクション */
+  tmactionsSource: '',
+  useTmactionsFile: false,
+  tmactionsFileNPath: 'typstmate/tmactions.js',
 
   /* レンダリング */
   enableBackgroundRendering: true,
@@ -134,9 +147,9 @@ export const DEFAULT_SETTINGS: Settings = {
   watchExtensions: ['typ', 'png', 'jpg', 'jpeg', 'gif', 'svg', 'pdf', 'webp', 'wasm', 'tmTheme', 'sublime-color-scheme'],
 
   /* 高度な設定 */
-  applyProcessorToMathJax: false,
   importPath: 'typstmate',
-  textViewExtensions: ['html', 'toml'],
+  applyProcessorToMathJax: false,
+  textViewExtensions: ['html', 'toml', 'js'],
 
   /* その他の設定 */
   processor: {
@@ -162,7 +175,7 @@ export const DEFAULT_SETTINGS: Settings = {
           styling: InlineStyling.Inline,
           useReplaceAll: false,
           noPreamble: false,
-          syntaxMode: SyntaxMode.Opaque,
+          syntaxMode: SyntaxMode.Plain,
         },
         {
           id: 'display',
@@ -243,7 +256,7 @@ export const DEFAULT_SETTINGS: Settings = {
         {
           id: 'lilaq',
           renderingEngine: RenderingEngine.TypstSVG,
-          format: '#import "@preview/lilaq:0.5.0" as lq\n{CODE}',
+          format: '#import "@preview/lilaq:0.6.0" as lq\n{CODE}',
           styling: CodeblockStyling.BlockCenter,
           useReplaceAll: false,
           fitToNoteWidth: false,
@@ -257,33 +270,36 @@ export const DEFAULT_SETTINGS: Settings = {
     },
   },
 
-  actions: DEFAULT_ACTIONS,
   /**
    * ! 直接参照せずに Facet を使うこと
    */
   extensionSettings: {
     markdown: {},
-    typst: {},
+    typst: {
+      'typst-formatter': {
+        // @ts-expect-error
+        formatOnSave: true,
+      },
+    },
   },
 
   /* 内部設定 */
   crashCount: 0,
+
   settingsStates: {
     tab: 'processors',
     preambleRenderingEngineTab: RenderingEngine.TypstSVG,
     processorKindTab: 'inline',
     compilerSubTab: 'packages',
+    actionsSubTab: 'code',
     extensionContextTab: 'markdown',
     extensionFilter: {
       query: '',
       tags: [],
     },
-    actionFilter: {
-      query: '',
-      triggers: [],
-      actions: [],
-      contexts: [],
-    },
+  },
+  toolsStates: {
+    tool: 'converter',
   },
   exportStates: {
     format: 'pdf',
@@ -291,9 +307,9 @@ export const DEFAULT_SETTINGS: Settings = {
     pdfStandard: '',
     pngPpi: 288,
     htmlExtractBody: true,
+    svgOverflow: true,
   },
-
-  version: '3.0.0',
+  editorStates: { '[tmactions]': { cursor: 0, expiredOn: Infinity } },
 
   /* 古い設定 */
   snippets: [],
