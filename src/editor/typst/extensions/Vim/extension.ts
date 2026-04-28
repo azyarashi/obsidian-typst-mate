@@ -55,7 +55,11 @@ class VimPlugin implements PluginValue {
 
     if (update.docChanged && this.buffer.getContent() !== content) this.buffer.replaceContent(content);
 
-    if (update.selectionSet && !update.transactions.some((tr) => tr.annotation(TransactionAnnotation))) {
+    if (
+      update.selectionSet &&
+      update.state.selection.ranges.length === 1 &&
+      !update.transactions.some((tr) => tr.annotation(TransactionAnnotation))
+    ) {
       const head = update.state.selection.main.head;
       this.ctx.cursor = offsetToCursor(content, head);
     }

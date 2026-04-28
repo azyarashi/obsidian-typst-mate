@@ -23,6 +23,7 @@ export function buildTypstTextExtensions() {
     diagnosticsState,
     ...extensionManager.buildExtensions('typst'),
 
+    EditorState.allowMultipleSelections.of(true),
     EditorView.lineWrapping,
 
     history(),

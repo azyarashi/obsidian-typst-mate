@@ -8,6 +8,7 @@ import {
 } from '@typstmate/typst-syntax';
 import { syntaxTree } from '@codemirror/language';
 import { type EditorView, type PluginValue, ViewPlugin, type ViewUpdate } from '@codemirror/view';
+import { TypstMate } from '@/api';
 import type { ParsedRegion } from '@/editor/shared/utils/core';
 import { editorHelper, extarctCMMath, settingsManager } from '@/libs';
 import { type ProcessorKind, RenderingEngine } from '@/libs/processor';
@@ -201,6 +202,7 @@ export function parseRegion(view: EditorView, region: Region, skipParse = false)
     }
 
     return {
+      context: 'markdown',
       skip,
       skipEnd: 1,
       from: region.from,
@@ -230,6 +232,7 @@ export function parseRegion(view: EditorView, region: Region, skipParse = false)
   }
 
   return {
+    context: 'markdown',
     skip: eqStart,
     skipEnd: eqEnd,
     from: region.from,
@@ -318,8 +321,8 @@ export class MarkdownCorePluginValue implements PluginValue {
           }
 
           this.activeRegion = newRegion;
+          this.finalize(cursor, update.view);
 
-          this.updateActiveKindAndMode(cursor);
           return;
         }
         this.recompute(update.view);
@@ -345,46 +348,52 @@ export class MarkdownCorePluginValue implements PluginValue {
         });
         if (hasDelimiter) this.recompute(update.view);
       }
+
+      return;
     } else if (update.selectionSet) {
-      const prevCursor = update.startState.selection.main.head;
-      const cursor = update.state.selection.main.head;
-      if (cursor === prevCursor) return;
+      const prevSelection = update.startState.selection;
+      const selection = update.state.selection;
+      if (selection.main.head === prevSelection.main.head && selection.ranges.length === prevSelection.ranges.length)
+        return;
+
+      const cursor = selection.main.head;
 
       if (
         this.activeRegion &&
         this.activeRegion.from + this.activeRegion.skip <= cursor &&
         cursor <= this.activeRegion.to
-      ) {
-        const { kindLeft, kindRight, mode } = getModeAndKindFromRegion(this.activeRegion, cursor);
-        this.activeRegion.activeKindLeft = kindLeft;
-        this.activeRegion.activeKindRight = kindRight;
-        this.activeRegion.activeMode = mode;
-        return;
-      }
-      this.recompute(update.view);
+      )
+        this.finalize(cursor, update.view);
+      else this.recompute(update.view);
+
+      return;
     }
   }
 
   recompute(view: EditorView) {
     const cursor = view.state.selection.main.head;
     const region = findActiveRegion(view, cursor);
-    if (!region) {
-      editorHelper.hideAllPopup();
-      this.activeRegion = null;
-      return;
-    }
-    this.activeRegion = parseRegion(view, region);
+    if (!region) this.activeRegion = null;
+    else this.activeRegion = parseRegion(view, region);
 
-    this.updateActiveKindAndMode(cursor);
+    this.finalize(cursor, view);
   }
 
-  updateActiveKindAndMode(cursor: number): boolean {
-    if (!this.activeRegion) return false;
-    const { mode, kindLeft, kindRight } = getModeAndKindFromRegion(this.activeRegion, cursor);
-    this.activeRegion.activeMode = mode;
-    this.activeRegion.activeKindLeft = kindLeft;
-    this.activeRegion.activeKindRight = kindRight;
-    return true;
+  private finalize(cursor: number, view: EditorView): boolean {
+    if (!this.activeRegion) {
+      editorHelper.hideAllPopup();
+
+      TypstMate.ctx = null;
+      return false;
+    } else {
+      const { mode, kindLeft, kindRight } = getModeAndKindFromRegion(this.activeRegion, cursor);
+      this.activeRegion.activeMode = mode !== null && 1 < view.state.selection.ranges.length ? SyntaxMode.Plain : mode;
+      this.activeRegion.activeKindLeft = kindLeft;
+      this.activeRegion.activeKindRight = kindRight;
+
+      TypstMate.ctx = { view, cursor, region: this.activeRegion };
+      return true;
+    }
   }
 }
 

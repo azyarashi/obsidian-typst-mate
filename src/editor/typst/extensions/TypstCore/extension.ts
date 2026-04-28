@@ -1,10 +1,12 @@
 import { parse, reparse, SyntaxMode } from '@typstmate/typst-syntax';
 import { type EditorView, type PluginValue, ViewPlugin, type ViewUpdate } from '@codemirror/view';
+import { TypstMate } from '@/api';
 import type { ParsedRegion } from '@/editor/shared/utils/core';
 import { getModeAndKindFromRegion } from '@/utils/typstSyntax';
 
 export class TypstCorePluginValue implements PluginValue {
   activeRegion: ParsedRegion = {
+    context: 'typst',
     skip: 0,
     skipEnd: 0,
     from: 0,
@@ -16,13 +18,21 @@ export class TypstCorePluginValue implements PluginValue {
   constructor(view: EditorView) {
     this.activeRegion.to = view.state.doc.length;
     this.activeRegion.tree = parse(view.state.doc.toString());
+
+    this.finalize(view.state.selection.main.head, view);
   }
 
   update(update: ViewUpdate) {
+    const view = update.view;
+    const cursor = update.state.selection.main.head;
     if (!update.docChanged) {
       if (update.selectionSet) {
-        const cursor = update.state.selection.main.head;
-        this.updateKindAndMode(cursor);
+        const prevSelection = update.startState.selection;
+        const selection = update.state.selection;
+        if (selection.main.head === prevSelection.main.head && selection.ranges.length === prevSelection.ranges.length)
+          return;
+
+        this.finalize(cursor, view);
       }
       return;
     }
@@ -59,15 +69,16 @@ export class TypstCorePluginValue implements PluginValue {
       }
     } else this.activeRegion.tree = parse(update.state.doc.toString());
 
-    const cursor = update.state.selection.main.head;
-    this.updateKindAndMode(cursor);
+    this.finalize(cursor, view);
   }
 
-  updateKindAndMode(cursor: number) {
-    const { kindLeft, kindRight, mode } = getModeAndKindFromRegion(this.activeRegion, cursor);
+  finalize(cursor: number, view: EditorView) {
+    const { mode, kindLeft, kindRight } = getModeAndKindFromRegion(this.activeRegion, cursor);
+    this.activeRegion.activeMode = mode !== null && 1 < view.state.selection.ranges.length ? SyntaxMode.Plain : mode;
     this.activeRegion.activeKindLeft = kindLeft;
     this.activeRegion.activeKindRight = kindRight;
-    this.activeRegion.activeMode = mode;
+
+    TypstMate.ctx = { view, cursor, region: this.activeRegion };
   }
 }
 
