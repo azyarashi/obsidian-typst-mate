@@ -1,4 +1,4 @@
-# Typst Engine in Typst Mate
+# Typst Compiler in Typst Mate
 
 \[English | [日本語](./README.ja.md)\]
 
