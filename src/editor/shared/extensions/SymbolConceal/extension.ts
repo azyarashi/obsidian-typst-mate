@@ -11,47 +11,56 @@ for (const [key, val] of Object.entries(symbolData as Record<string, { sym?: str
   if (val.sym) SYMBOL_MAP.set(key, val.sym);
 }
 
+// * widget
+
 const widgetCache = new Map<string, SymbolWidget>();
 
 class SymbolWidget extends WidgetType {
-  constructor(public text: string) {
+  constructor(public symbol: string) {
     super();
   }
 
   override eq(other: SymbolWidget): boolean {
-    return this.text === other.text;
+    return this.symbol === other.symbol;
   }
 
   override toDOM() {
     const span = document.createElement('span');
     span.className = 'typ-pol';
-    span.textContent = this.text;
+    span.textContent = this.symbol;
+
     return span;
   }
 }
 
-function getSymbolWidget(text: string): SymbolWidget {
-  let w = widgetCache.get(text);
+function getSymbolWidget(symbol: string): SymbolWidget {
+  let w = widgetCache.get(symbol);
+
   if (!w) {
-    w = new SymbolWidget(text);
-    widgetCache.set(text, w);
+    w = new SymbolWidget(symbol);
+    widgetCache.set(symbol, w);
   }
+
   return w;
 }
+
+// * plugin
 
 const forceRevealEffect = StateEffect.define<void>();
 
 export class SymbolConcealPlugin {
+  view!: EditorView;
+  private settingsFacet!: Facet<SymbolConcealSettings, SymbolConcealSettings>;
   decorations: DecorationSet = Decoration.none;
 
   forceRevealPos: number = -1;
   hoveredSymbolPos: number = -1;
   revealTimer: number | undefined;
 
-  constructor(
-    public view: EditorView,
-    private settingsFacet: Facet<SymbolConcealSettings, SymbolConcealSettings>,
-  ) {
+  constructor(view: EditorView, settingsFacet: Facet<SymbolConcealSettings, SymbolConcealSettings>) {
+    this.view = view;
+    this.settingsFacet = settingsFacet;
+
     this.updateDecorations(view, false, false);
   }
 
@@ -71,29 +80,12 @@ export class SymbolConcealPlugin {
     this.clearTimer();
   }
 
-  private clearTimer() {
-    if (this.revealTimer !== undefined) {
-      window.clearTimeout(this.revealTimer);
-      this.revealTimer = undefined;
-    }
-  }
-
   private updateDecorations(view: EditorView, isDocChange: boolean, isCursorMove: boolean) {
     const region = getActiveRegion(view);
     const settings = view.state.facet(this.settingsFacet);
 
-    if (!region?.tree) {
-      this.decorations = Decoration.none;
-      this.clearTimer();
-      this.hoveredSymbolPos = -1;
-      this.forceRevealPos = -1;
-      return;
-    }
-    if (region.processor?.renderingEngine === RenderingEngine.MathJax) {
-      this.decorations = Decoration.none;
-      this.clearTimer();
-      this.hoveredSymbolPos = -1;
-      this.forceRevealPos = -1;
+    if (!region?.tree || region.processor?.renderingEngine === RenderingEngine.MathJax) {
+      this.reset();
       return;
     }
 
@@ -166,18 +158,17 @@ export class SymbolConcealPlugin {
             const deco = Decoration.replace({ widget: getSymbolWidget(sym) });
             marks.push(deco.range(absStart, absEnd));
           }
+
           return;
         }
       }
       for (const child of node.children()) traverse(child);
     };
-
     traverse(LinkedNode.new(region.tree));
 
     this.decorations = Decoration.set(marks, true);
 
     const delay = Number(settings.revealDelay) || 1000;
-
     if (newHoveredPos !== -1) {
       if (isNewlyTyped) {
         this.forceRevealPos = newHoveredPos;
@@ -200,10 +191,24 @@ export class SymbolConcealPlugin {
       this.forceRevealPos = -1;
     }
   }
+
+  private clearTimer() {
+    if (this.revealTimer !== undefined) {
+      window.clearTimeout(this.revealTimer);
+      this.revealTimer = undefined;
+    }
+  }
+
+  private reset() {
+    this.decorations = Decoration.none;
+    this.clearTimer();
+    this.hoveredSymbolPos = -1;
+    this.forceRevealPos = -1;
+  }
 }
 
 export function createSymbolConcealExtension(settingsFacet: Facet<SymbolConcealSettings, SymbolConcealSettings>) {
-  const plugin = ViewPlugin.fromClass(
+  const viewPlugin = ViewPlugin.fromClass(
     class extends SymbolConcealPlugin {
       constructor(view: EditorView) {
         super(view, settingsFacet);
@@ -215,9 +220,9 @@ export function createSymbolConcealExtension(settingsFacet: Facet<SymbolConcealS
   );
 
   return [
-    plugin,
+    viewPlugin,
     EditorView.atomicRanges.of((view) => {
-      return view.plugin(plugin)?.decorations ?? RangeSet.empty;
+      return view.plugin(viewPlugin)?.decorations ?? RangeSet.empty;
     }),
   ];
 }
