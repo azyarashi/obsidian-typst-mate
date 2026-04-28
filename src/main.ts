@@ -1,6 +1,6 @@
 import { debounce, loadMathJax, Notice, Platform, Plugin, renderMath } from 'obsidian';
 import { initI18n, t } from '@/i18n';
-import { Status, TypstMate } from './api';
+import { Phase, TypstMate } from './api';
 import { markdownExtensionEntries, sharedExtensionEntries, typstExtensionEntries } from './editor';
 // biome-ignore format: readability
 import { applyAllPatches, appUtils, crashTracker, detachAllPatches, editorHelper, extensionManager, fileManager, registerCommands, registerEvents, registerProtocolHandlers, settingsManager, tmActionsManager, typstManager } from './libs';
@@ -82,12 +82,12 @@ export default class ObsidianTypstMate extends Plugin {
       this.app.workspace.onLayoutReady(() => {
         this.onLayoutReady()
           .then(() => {
-            TypstMate.update(Status.Ready);
+            TypstMate.setPhase(Phase.Ready);
 
             if (!this.hasLoadedInVault) appUtils.openTypstTools(true);
           })
           .catch((e) => {
-            TypstMate.update(Status.Error);
+            TypstMate.setPhase(Phase.Error);
 
             console.error('[TypstMate] Failed to complete `Plugin.onLayoutReady`', e);
             new Notice(t('notices.initFailed'));
@@ -97,7 +97,7 @@ export default class ObsidianTypstMate extends Plugin {
           });
       });
     } catch (e) {
-      TypstMate.update(Status.Error);
+      TypstMate.setPhase(Phase.Error);
 
       console.error('[TypstMate] Failed to complete `Plugin.onload`', e);
       new Notice(t('notices.initFailed'));
@@ -107,7 +107,7 @@ export default class ObsidianTypstMate extends Plugin {
   private async waitUntilNotDisabling() {
     const start = Date.now();
 
-    while (window.TypstMate?.status === Status.Disabling) {
+    while (window.TypstMate?.phase === Phase.Disabling) {
       if (10000 < Date.now() - start) throw new Error('[TypstMate] The plugin did not unload properly last time.');
       await new Promise((resolve) => setTimeout(resolve, 1000 / 60));
     }
@@ -120,7 +120,7 @@ export default class ObsidianTypstMate extends Plugin {
   }
 
   private async onFirstLoadInProcess() {
-    TypstMate.update(Status.LoadingMathJax);
+    TypstMate.setPhase(Phase.LoadingMathJax);
     await this.prepareMathJaxOnce();
   }
 
@@ -142,36 +142,36 @@ export default class ObsidianTypstMate extends Plugin {
     await fileManager.tryCreateDirs();
 
     // * wasm
-    TypstMate.update(Status.InitializingWasm);
+    TypstMate.setPhase(Phase.InitializingWasm);
     await typstManager.prepareWasm();
     this.detaches.unshift(() => delete window.TypstMate!.wasm);
 
-    TypstMate.update(Status.PreparingAssets);
+    TypstMate.setPhase(Phase.PreparingAssets);
     await typstManager.prepareAssets();
 
     // * tmActionsManager
     await tmActionsManager.init(this);
     this.detaches.unshift(() => tmActionsManager.detach());
 
-    TypstMate.update(Status.PreparingExtensions);
+    TypstMate.setPhase(Phase.PreparingExtensions);
     extensionManager.init(this);
     this.detaches.unshift(() => extensionManager.detach());
     const entries = [...sharedExtensionEntries, ...markdownExtensionEntries, ...typstExtensionEntries];
     for (const entry of entries) extensionManager.register(entry);
 
     // * editorHelper
-    TypstMate.update(Status.RegisteringExtensions);
+    TypstMate.setPhase(Phase.RegisteringExtensions);
     editorHelper.init(this);
     this.detaches.unshift(() => editorHelper.detach());
 
     // * commands & events
-    TypstMate.update(Status.RegisteringCommandsAndEvents);
+    TypstMate.setPhase(Phase.RegisteringCommandsAndEvents);
     registerCommands(this);
     registerEvents(this);
     // detach は不要
 
     // * patches
-    TypstMate.update(Status.ApplyingPatches);
+    TypstMate.setPhase(Phase.ApplyingPatches);
     applyAllPatches(this);
     this.detaches.unshift(() => detachAllPatches());
 
@@ -186,7 +186,7 @@ export default class ObsidianTypstMate extends Plugin {
    * ! Plugin.disablePlugin 時にも呼ばれる
    */
   override async onunload() {
-    TypstMate.update(Status.Disabling);
+    TypstMate.setPhase(Phase.Disabling);
 
     try {
       if (crashTracker.shouldBlockStart) crashTracker.updateCrashStatus(false);
@@ -201,7 +201,7 @@ export default class ObsidianTypstMate extends Plugin {
       new Notice(t('notices.unloadFailed'));
     }
 
-    TypstMate.update(Status.Disabled);
+    TypstMate.setPhase(Phase.Disabled);
   }
 
   /* onExternalSettingsChange */

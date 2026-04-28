@@ -1,68 +1,86 @@
 import type { EditorView } from '@codemirror/view';
 import type { Remote } from 'comlink';
-import type { Status } from '../api';
+import type { Phase } from '../api';
 import type { ParsedRegion } from '../editor/shared/utils/core';
 import type WasmAdapter from '../libs/typstManager/worker';
 
 export type * as Wasm from '../../pkg/typst_wasm';
 export type { ParsedRegion, Status };
 
-export enum CompileState {
+export enum State {
   Idle,
   Rendering,
   Success,
   Error,
 }
 
-export interface CompileStatus {
-  state: CompileState;
-  message: string;
-}
-
-export interface RenderingStatus {
-  isRendering: boolean;
-  hasError: boolean;
+export interface Status {
+  state: State;
   message?: string;
 }
 
 declare global {
   interface Window {
     TypstMate?: {
-      /** @private */
-      status: Status;
-      /** @public */
-      isReady: () => boolean;
-
-      /** @public */
+      /**
+       * @public
+       * @since 3.0.0
+       * */
       pluginVersion?: string;
 
       /** @private */
-      wasm?: WasmAdapter | Remote<WasmAdapter>;
-      /** @public */
-      typstVersion?: string;
+      phase: Phase;
+      /**
+       * @public
+       * @since 3.0.0
+       * */
+      isReady: () => boolean;
+      /** @private */
+      setPhase: (phase: Phase) => void;
 
       /** @private */
-      update: (status?: Status, rendering?: RenderingStatus) => void;
-      /** @public */
+      wasm?: WasmAdapter | Remote<WasmAdapter>;
+      /**
+       * @public
+       * @since 3.0.0
+       * */
+      typstVersion?: string;
+
+      /**
+       * @public
+       * @since 3.0.0
+       * */
       tex2chtmlOrig?: (math: string, options: { display?: boolean }) => HTMLElement;
 
-      /** @public */
-      context: {
+      /**
+       * @public
+       * @since 3.0.0
+       * */
+      status: Status;
+      /** @private */
+      setStatus: (status: Status) => void;
+
+      /**
+       * @public
+       * @since 3.0.0
+       * */
+      ctx: {
         view: EditorView;
         cursor: number;
         region: ParsedRegion;
       } | null;
-      /** @public */
-      rendering: RenderingStatus;
-
-      /** @private */
-      setStatus: (status: Status) => void;
 
       // *  excalidraw
-      /** @public */
+      /**
+       * @public
+       * @since 3.0.0
+       * */
       openTypstEditor: (typst: string, onUpdate?: (formula: string) => Promise<void>) => Promise<void>;
-      /** @public */
-      renderTypstToSvg: (typst: string) => Promise<string>;
+      /**
+       * @public
+       * @since 3.0.0
+       * */
+      renderTypstToSvgs: (typst: string) => Promise<string[]>;
     };
   }
 }

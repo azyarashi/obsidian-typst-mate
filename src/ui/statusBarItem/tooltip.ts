@@ -1,7 +1,8 @@
-import type { TypstMate } from '@/api';
+import { State, type Status } from '@/api';
 
-export function getStatusBarTooltip({ rendering }: { rendering: typeof TypstMate.rendering }) {
-  const tooltip = rendering.isRendering || rendering.hasError ? (rendering.message ?? 'Typst Mate') : 'Typst Mate';
+export function getStatusBarTooltip({ status }: { status: Status }) {
+  const tooltip =
+    status.state === State.Rendering || status.state === State.Error ? (status.message ?? 'Typst Mate') : 'Typst Mate';
 
   return tooltip;
 }

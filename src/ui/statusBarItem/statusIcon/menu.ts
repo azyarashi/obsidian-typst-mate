@@ -20,7 +20,7 @@ export function showStatusBarMenu(event: MouseEvent) {
   });
 
   menu.addItem((item) => {
-    item.setTitle(t('settings.renderer.fitToNoteWidthProfile'));
+    item.setTitle(t('settings.renderer.fitToNoteWidthProfile.name'));
 
     const currentProfile = settingsManager.settings.fitToNoteWidthProfile;
     const submenu = item.setSubmenu();
@@ -67,7 +67,7 @@ export function showStatusBarMenu(event: MouseEvent) {
   menu.addSeparator();
 
   menu.addItem((item) => {
-    item.setTitle(`Typst Mate v${TypstMate.version} on Typst v${TypstMate.typstVersion}`).setDisabled(true);
+    item.setTitle(`Typst Mate v${TypstMate.pluginVersion} on Typst v${TypstMate.typstVersion}`).setDisabled(true);
   });
 
   menu.showAtMouseEvent(event);

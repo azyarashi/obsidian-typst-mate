@@ -1,10 +1,10 @@
-import { Status } from '@/api';
+import { Phase } from '@/api';
 
 import './progressBar.css';
 
-export function ProgressBar({ status }: { status: Status }) {
-  const progress = status === Status.Error ? 100 : Math.min(100, (status / Status.Ready) * 100);
-  const color = status === Status.Error ? 'var(--text-error)' : 'var(--text-accent)';
+export function ProgressBar({ phase }: { phase: Phase }) {
+  const progress = phase === Phase.Error ? 100 : Math.min(100, (phase / Phase.Ready) * 100);
+  const color = phase === Phase.Error ? 'var(--text-error)' : 'var(--text-accent)';
 
   return (
     <div className="typstmate-progress-bar-container">
