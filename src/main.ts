@@ -83,21 +83,24 @@ export default class ObsidianTypstMate extends Plugin {
         this.onLayoutReady()
           .then(() => {
             TypstMate.update(Status.Ready);
+
             if (!this.hasLoadedInVault) appUtils.openTypstTools(true);
           })
           .catch((e) => {
-            console.error('[TypstMate] Plugin.onLayoutReady failed', e);
-            new Notice(t('notices.initFailed'));
             TypstMate.update(Status.Error);
+
+            console.error('[TypstMate] Failed to complete `Plugin.onLayoutReady`', e);
+            new Notice(t('notices.initFailed'));
           })
           .finally(() => {
             appUtils.refreshView(this.app);
           });
       });
     } catch (e) {
-      console.error('[TypstMate] Plugin.onload failed', e);
-      new Notice(t('notices.initFailed'));
       TypstMate.update(Status.Error);
+
+      console.error('[TypstMate] Failed to complete `Plugin.onload`', e);
+      new Notice(t('notices.initFailed'));
     }
   }
 
@@ -184,6 +187,7 @@ export default class ObsidianTypstMate extends Plugin {
    */
   override async onunload() {
     TypstMate.update(Status.Disabling);
+
     try {
       if (crashTracker.shouldBlockStart) crashTracker.updateCrashStatus(false);
 
@@ -193,9 +197,10 @@ export default class ObsidianTypstMate extends Plugin {
       for (const detach of this.detaches) await detach();
       this.detaches = [];
     } catch (e) {
-      console.error('[TypstMate] Plugin.onunload failed', e);
+      console.error('[TypstMate] Failed to complete `Plugin.onunload`', e);
       new Notice(t('notices.unloadFailed'));
     }
+
     TypstMate.update(Status.Disabled);
   }
 
