@@ -1,12 +1,10 @@
 import { Prec } from '@codemirror/state';
 import type { EditorView } from '@codemirror/view';
-import { debounce, type Editor, Notice } from 'obsidian';
-import { t } from '@/i18n';
+import { debounce, type Editor } from 'obsidian';
 import type ObsidianTypstMate from '@/main';
 import type { Singleton } from '@/types/singleton';
 import type TypstSVGElement from '@/ui/elements/SVG';
 import { buildExtension as buildSharedExtensions } from '../../editor/markdown/build';
-import { getActiveRegion } from '../../editor/shared/utils/core';
 
 import '../../editor/shared/css';
 import { collectRegions } from '@/editor/markdown/extensions/MarkdownCore';
@@ -47,37 +45,6 @@ export class EditorHelper implements Singleton {
     100,
     true,
   );
-
-  /* Editor Commands
-   * Obsidian LaTeX Suite からの輸入
-   */
-
-  boxCurrentEquation(view: EditorView) {
-    const region = getActiveRegion(view);
-    if (!region) return new Notice(t('notices.noActiveRegion'));
-
-    const content = view.state.sliceDoc(region.from + region.skip, region.to);
-
-    view.dispatch({
-      changes: {
-        from: region.from + region.skip,
-        to: region.to,
-        insert: `${region.kind === 'display' ? ' ' : ''}boxed(${content})`,
-      },
-      selection: {
-        anchor: region.from + region.skip + `boxed(${content})`.length,
-      },
-    });
-  }
-
-  selectCurrentEquation(view: EditorView) {
-    const region = getActiveRegion(view);
-    if (!region) return new Notice(t('notices.noActiveRegion'));
-
-    view.dispatch({
-      selection: { anchor: region.from + region.skip, head: region.to },
-    });
-  }
 
   async replaceTexWithTypst(editor: Editor, view: EditorView) {
     const selection = view.state.selection.main;

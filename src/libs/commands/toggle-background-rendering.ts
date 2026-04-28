@@ -1,13 +1,19 @@
-import type { Command } from 'obsidian';
 import { t } from '@/i18n';
 import { appUtils, settingsManager } from '@/libs';
+import type { CommandGen } from '.';
 
-export const toggleBackgroundRenderingCommand: Command = {
-  id: 'toggle-background-rendering',
-  name: t('commands.toggleBackgroundRendering'),
-  callback: async () => {
-    settingsManager.settings.enableBackgroundRendering = !settingsManager.settings.enableBackgroundRendering;
-    await settingsManager.saveSettings();
-    await appUtils.reloadPlugin(false);
-  },
+export const toggleBackgroundRenderingCommand: CommandGen = () => {
+  return {
+    id: 'toggle-background-rendering',
+    name: t('commands.toggleBackgroundRendering'),
+    callback: toggleBackgroundRendering,
+  };
 };
+
+export async function toggleBackgroundRendering() {
+  settingsManager.settings.enableBackgroundRendering = !settingsManager.settings.enableBackgroundRendering;
+  await settingsManager.saveSettings();
+
+  // TODO: 単なる Wasm の初期化にとどめる
+  await appUtils.reloadPlugin();
+}

@@ -1,21 +1,23 @@
 import { SyntaxMode } from '@typstmate/typst-syntax';
 import type { EditorView } from '@codemirror/view';
-import type { Command } from 'obsidian';
 import { formatterSettingsFacet } from '@/editor/shared/extensions';
 import { formatTypst } from '@/editor/shared/extensions/Formatter';
 import { getActiveRegion } from '@/editor/shared/utils/core';
 import { t } from '@/i18n';
 import { appUtils } from '../appUtils';
+import type { CommandGen } from '.';
 
-export const formatTypstCommand: Command = {
-  id: 'run-typstyle',
-  name: t('commands.formatTypst'),
-  callback: async () => {
-    const view = appUtils.getActiveTypstView()?.view ?? appUtils.getActiveMarkdownView()?.editor.cm;
-    if (!view) return;
+export const formatTypstCommand: CommandGen = () => {
+  return {
+    id: 'run-typstyle',
+    name: t('commands.formatTypst'),
+    callback: async (cm?: EditorView) => {
+      const view = cm ?? appUtils.getActiveTypstView()?.view ?? appUtils.getActiveMarkdownView()?.editor.cm;
+      if (!view) return;
 
-    formatTypstInView(view);
-  },
+      formatTypstInView(view);
+    },
+  };
 };
 
 export async function formatTypstInView(view: EditorView) {
