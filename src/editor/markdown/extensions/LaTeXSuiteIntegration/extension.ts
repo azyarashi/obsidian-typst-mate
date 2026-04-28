@@ -1,5 +1,4 @@
 import { type PluginValue, ViewPlugin, type ViewUpdate } from '@codemirror/view';
-import type LatexSuitePlugin from 'obsidian-latex-suite';
 import { TypstMate } from '@/api';
 import { appUtils } from '@/libs';
 
@@ -10,7 +9,7 @@ class LaTeXSuiteIntegrationPlugin implements PluginValue {
     if (!this.enabled) return;
     if (!(update.docChanged || update.selectionSet || update.viewportChanged)) return;
 
-    const region = TypstMate.context?.region;
+    const region = TypstMate.ctx?.region;
     if (!region) return;
 
     const processor = region.processor;
@@ -19,10 +18,10 @@ class LaTeXSuiteIntegrationPlugin implements PluginValue {
     const kind = region.kind;
     if (kind !== 'inline' && kind !== 'display') return;
 
-    const latexSuitePlugin = appUtils.app.plugins.getPlugin('obsidian-latex-suite') as LatexSuitePlugin | null;
-    if (!latexSuitePlugin) return;
+    const latexSuitePluginApi = appUtils.app.plugins.getPlugin('obsidian-latex-suite');
+    if (!latexSuitePluginApi) return;
 
-    latexSuitePlugin.disableMath(update.view);
+    latexSuitePluginApi.disableMath(update.view);
   }
 }
 
