@@ -3,6 +3,7 @@ import { BASE_COLOR_VAR } from '@/constants';
 import { t } from '@/i18n';
 import ObsidianTypstMate from '@/main';
 import { TextFileView, type Tool, TypstFileView, TypstPreviewView, TypstToolsView } from '@/ui/views';
+import { checkPluginFeatures } from '../features';
 import { settingsManager } from '../settingsManager';
 import { typstManager } from '../typstManager';
 
@@ -12,22 +13,24 @@ class AppUtils {
 
   init(plugin: ObsidianTypstMate) {
     this.app = plugin.app;
+    checkPluginFeatures();
   }
 
-  async reloadPlugin(openSettingsTab: boolean) {
+  async reloadPlugin(openSettingsTab: boolean = false) {
     const { app } = this;
-    const pluginId = ObsidianTypstMate.id;
 
+    const pluginId = ObsidianTypstMate.id;
     await app.plugins.disablePlugin(pluginId); // ? onunload is also called
     await app.plugins.enablePlugin(pluginId); // ? onload is also called
+
     if (openSettingsTab) app.setting.openTabById(pluginId);
   }
 
-  applyBaseColor(useBaseColor: boolean = false) {
+  applyBaseColor(forceBaseColor: boolean = false) {
     const { settings } = settingsManager;
 
-    // ? Canvas にも適用するためbodyへの適用が必要
-    if (!settings.autoBaseColor || useBaseColor)
+    // ! Canvas にも適用するためbodyへの適用が必要
+    if (!settings.autoBaseColor || forceBaseColor)
       return document.body.style.setProperty(BASE_COLOR_VAR, settings.baseColor);
     else document.body.style.setProperty(BASE_COLOR_VAR, 'currentColor');
   }
@@ -141,11 +144,11 @@ class AppUtils {
   }
 
   getActiveMarkdownView() {
-    return this.app.workspace.getActiveViewOfType(MarkdownView);
+    return this.app?.workspace.getActiveViewOfType(MarkdownView);
   }
 
   getActiveTypstView() {
-    return this.app.workspace.getActiveViewOfType(TypstFileView);
+    return this.app?.workspace.getActiveViewOfType(TypstFileView);
   }
 
   detach() {
