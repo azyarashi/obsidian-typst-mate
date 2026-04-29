@@ -24,7 +24,7 @@ pub enum DefinitionValue {
 pub enum Origin {
     BuiltIn,
     Package { name: String },
-    User { this: bool },
+    User { main: bool },
 }
 
 #[derive(Serialize, Tsify)]
@@ -51,7 +51,7 @@ impl Definition {
                     }
                 } else {
                     Origin::User {
-                        this: id == world.main(),
+                        main: id == world.main(),
                     }
                 };
 
