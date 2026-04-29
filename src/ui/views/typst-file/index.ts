@@ -1,6 +1,14 @@
 import { Compartment, EditorState } from '@codemirror/state';
 import { EditorView } from '@codemirror/view';
-import { debounce, type Menu, TextFileView, TFile, type View, type WorkspaceLeaf } from 'obsidian';
+import {
+  debounce,
+  type Menu,
+  TextFileView,
+  TFile,
+  type View,
+  type ViewStateResult,
+  type WorkspaceLeaf,
+} from 'obsidian';
 import { formatterSettingsFacet } from '@/editor/shared/extensions';
 import { updateDiagnosticEffect } from '@/editor/shared/extensions/Linter/extension';
 import { buildTypstTextExtensions } from '@/editor/typst/build';
@@ -73,24 +81,38 @@ export class TypstFileView extends TextFileView {
     });
 
     this.addAction('eye', t('views.typstText.actions.openPreview'), async () => {
-      if (this.linkedPreviewLeaf && this.linkedPreviewLeaf.view instanceof TypstPreviewView) {
-        this.app.workspace.revealLeaf(this.linkedPreviewLeaf);
-        const container = this.linkedPreviewLeaf.containerEl;
-        container.addClass('typstmate-linked-view-highlight');
-        setTimeout(() => container.removeClass('typstmate-linked-view-highlight'), 700);
-        return;
-      }
-
-      const newLeaf = this.app.workspace.getLeaf('split', 'vertical');
-      await newLeaf.setViewState({
-        type: TypstPreviewView.viewtype,
-        state: { file: this.file?.path, vpath: this.vpath },
-      });
-      this.linkedPreviewLeaf = newLeaf;
-
-      const previewView = newLeaf.view;
-      if (previewView instanceof TypstPreviewView) previewView.parentFileView = this;
+      this.openPreview();
     });
+  }
+
+  override async setState(state: Record<string, unknown>, result: ViewStateResult) {
+    await super.setState(state, result);
+    if (state.openPreview) this.openPreview();
+  }
+
+  override async setEphemeralState(state: unknown) {
+    super.setEphemeralState(state);
+    console.log(state);
+  }
+
+  async openPreview() {
+    if (this.linkedPreviewLeaf && this.linkedPreviewLeaf.view instanceof TypstPreviewView) {
+      this.app.workspace.revealLeaf(this.linkedPreviewLeaf);
+      const container = this.linkedPreviewLeaf.containerEl;
+      container.addClass('typstmate-linked-view-highlight');
+      setTimeout(() => container.removeClass('typstmate-linked-view-highlight'), 700);
+      return;
+    }
+
+    const newLeaf = this.app.workspace.getLeaf('split', 'vertical');
+    await newLeaf.setViewState({
+      type: TypstPreviewView.viewtype,
+      state: { file: this.file?.path, vpath: this.vpath },
+    });
+    this.linkedPreviewLeaf = newLeaf;
+
+    const previewView = newLeaf.view;
+    if (previewView instanceof TypstPreviewView) previewView.parentFileView = this;
   }
 
   async onLoadExternalFile(): Promise<void> {
@@ -245,7 +267,7 @@ export class TypstFileView extends TextFileView {
 
     const startState = EditorState.create({
       doc: fileContent,
-      extensions: [this.extensionCompartment.of(this.buildExtensions())],
+      extensions: this.extensionCompartment.of(this.buildExtensions()),
     });
 
     this.view = new EditorView({ parent: this.contentEl, state: startState });

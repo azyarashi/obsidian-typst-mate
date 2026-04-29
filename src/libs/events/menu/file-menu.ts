@@ -10,8 +10,9 @@ export function onFileMenu(menu: Menu, file: TAbstractFile) {
   menu.addItem((item) => {
     item.setTitle(t('contextMenu.newTypstFile')).onClick(async () => {
       const tfile = await fileManager.createNewFile(file);
-      if (tfile) app.workspace.getLeaf(true).openFile(tfile);
+      if (tfile) app.workspace.getLeaf(false).openFile(tfile, { state: { openPreview: true } });
     });
+
     menu.addItem((item) => {
       item.setTitle(t('contextMenu.newTypstFileWithTemplate')).onClick(() => {
         new TemplateSelectModal(app, file).open();

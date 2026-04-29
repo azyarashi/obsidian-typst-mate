@@ -38,8 +38,8 @@ export class TemplateSelectModal extends Modal {
       new Setting(contentEl).setName(template.name).addButton((btn) => {
         btn.setButtonText(t('modals.templateSelect.buttons.select')).onClick(async () => {
           const content = await app.vault.read(template);
-          const file = await fileManager.createNewFile(this.target, content);
-          if (file) app.workspace.openLinkText(file.path, '');
+          const tfile = await fileManager.createNewFile(this.target, content);
+          if (tfile) app.workspace.getLeaf(false).openFile(tfile, { state: { openPreview: true } });
           this.close();
         });
       });
