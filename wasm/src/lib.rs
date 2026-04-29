@@ -394,7 +394,7 @@ impl Wasm {
             .replacen(
                 "<svg class",
                 format!(
-                    "<svg style=\"overflow: visible; vertical-align: {:.2}pt;\" class",
+                    "<svg style=\"overflow: visible; vertical-align: {:.3}pt;\" class",
                     descent
                 )
                 .as_str(),
