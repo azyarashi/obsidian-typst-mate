@@ -1,4 +1,4 @@
-import type { Definition, Jump, Str, Value } from '@/../pkg/typst_wasm';
+import type { Definition, DefinitionValue, Jump, Str } from '@/../pkg/typst_wasm';
 
 import { formatAngle } from './angle';
 import { formatArgs } from './args';
@@ -50,16 +50,16 @@ export * from './tiling';
 export * from './type_';
 export * from './version';
 
-export function formatInt(v: number): string {
-  return `**int(Integer):** \`${v}\``;
+export function formatInt(v: { value: number }): string {
+  return `**int(Integer):** \`${v.value}\``;
 }
 
-export function formatFloat(v: number): string {
-  return `**float(Float):** \`${v}\``;
+export function formatFloat(v: { value: number }): string {
+  return `**float(Float):** \`${v.value}\``;
 }
 
-export function formatBool(v: boolean): string {
-  return `**bool(Boolean):** \`${v}\``;
+export function formatBool(v: { value: boolean }): string {
+  return `**bool(Boolean):** \`${v.value}\``;
 }
 
 export function formatAuto(): string {
@@ -112,38 +112,38 @@ export function formatDefinition(v: Definition): string {
   return formatDefinitionValue(v.value);
 }
 
-export function formatDefinitionValue(v: Value | { type: 'span'; value: Jump }): string {
+export function formatDefinitionValue(v: DefinitionValue): string {
   switch (v.type) {
-    case 'Angle': return formatAngle(v.value);
-    case 'Args': return formatArgs(v.value);
-    case 'Array': return formatArray(v.value);
-    case 'Auto': return formatAuto();
-    case 'Bool': return formatBool(v.value);
-    case 'Bytes': return formatBytes(v.value);
-    case 'Color': return formatColor(v.value);
-    case 'Content': return formatContent(v.value);
-    case 'Datetime': return formatDatetime(v.value);
-    case 'Decimal': return formatDecimal(v.value);
-    case 'Dict': return formatDict(v.value);
-    case 'Duration': return formatDuration(v.value);
-    case 'Dyn': return formatDyn(v.value);
-    case 'Float': return formatFloat(v.value);
-    case 'Fraction': return formatFraction(v.value);
-    case 'Func': return formatFunc(v.value);
-    case 'Gradient': return formatGradient(v.value);
-    case 'Int': return formatInt(v.value);
-    case 'Label': return formatLabel(v.value);
-    case 'Length': return formatLength(v.value);
-    case 'Module': return formatModule(v.value);
-    case 'None': return formatNone();
-    case 'Ratio': return formatRatio(v.value);
-    case 'Relative': return formatRelative(v.value);
-    case 'Str': return formatStr(v.value);
-    case 'Styles': return formatStyles(v.value);
-    case 'Symbol': return formatSymbol(v.value);
-    case 'Tiling': return formatTiling(v.value);
-    case 'Type': return formatType(v.value);
-    case 'Version': return formatVersion(v.value);
+    case 'angle': return formatAngle(v.value);
+    case 'args': return formatArgs(v.value);
+    case 'array': return formatArray(v.value);
+    case 'auto': return formatAuto();
+    case 'bool': return formatBool(v.value);
+    case 'bytes': return formatBytes(v.value);
+    case 'color': return formatColor(v.value);
+    case 'content': return formatContent(v.value);
+    case 'datetime': return formatDatetime(v.value);
+    case 'decimal': return formatDecimal(v.value);
+    case 'dict': return formatDict(v.value);
+    case 'duration': return formatDuration(v.value);
+    case 'dyn': return formatDyn(v.value);
+    case 'float': return formatFloat(v.value);
+    case 'fraction': return formatFraction(v.value);
+    case 'func': return formatFunc(v.value);
+    case 'gradient': return formatGradient(v.value);
+    case 'int': return formatInt(v.value);
+    case 'label': return formatLabel(v.value);
+    case 'length': return formatLength(v.value);
+    case 'module': return formatModule(v.value);
+    case 'none': return formatNone();
+    case 'ratio': return formatRatio(v.value);
+    case 'relative': return formatRelative(v.value);
+    case 'str': return formatStr(v.value);
+    case 'styles': return formatStyles(v.value);
+    case 'symbol': return formatSymbol(v.value);
+    case 'tiling': return formatTiling(v.value);
+    case 'type': return formatType(v.value);
+    case 'version': return formatVersion(v.value);
     case 'span': return formatSpan(v.value);
     default: return 'Unknown value';
   }

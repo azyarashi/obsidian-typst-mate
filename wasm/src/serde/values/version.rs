@@ -1,10 +1,12 @@
 use serde::Serialize;
 use tsify::Tsify;
+use typst::foundations::Repr;
 
 use typst::foundations::Version as TypstVersion;
 
 #[derive(Serialize, Tsify)]
 pub struct Version {
+    pub repr: String,
     pub version: String,
 }
 
@@ -16,10 +18,12 @@ impl From<&TypstVersion> for Version {
 
         if major == -1 || minor == -1 || patch == -1 {
             Version {
+                repr: version.repr().to_string(),
                 version: "Not valid version".to_string(),
             }
         } else {
             Version {
+                repr: version.repr().to_string(),
                 version: format!("{}.{}.{}", major, minor, patch),
             }
         }

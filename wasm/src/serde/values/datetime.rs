@@ -1,10 +1,12 @@
 use serde::Serialize;
+use typst::foundations::Repr;
 use tsify::Tsify;
 
 use typst::foundations::Datetime as TypstDatetime;
 
 #[derive(Serialize, Tsify)]
 pub struct Datetime {
+    pub repr: String,
     pub year: i32,
     pub month: u8,
     pub day: u8,
@@ -19,6 +21,7 @@ pub struct Datetime {
 impl From<&TypstDatetime> for Datetime {
     fn from(datetime: &TypstDatetime) -> Self {
         Datetime {
+            repr: datetime.repr().to_string(),
             year: datetime.year().unwrap_or(0),
             month: datetime.month().unwrap_or(0),
             day: datetime.day().unwrap_or(0),

@@ -2,7 +2,8 @@ use crate::serde::jump::Jump;
 use crate::serde::values::Value;
 use serde::Serialize;
 use tsify::Tsify;
-use typst::World;
+use typst::WorldExt;
+use typst_ide::IdeWorld;
 
 #[derive(Serialize, Tsify)]
 #[serde(rename_all = "camelCase")]
@@ -20,40 +21,37 @@ pub enum DefinitionValue {
 
 #[derive(Serialize, Tsify)]
 #[serde(tag = "type", content = "value")]
-#[serde(rename_all = "camelCase")]
 pub enum Origin {
     BuiltIn,
-    Package { name: String, path: String },
-    User { this: bool, path: String },
+    Package { name: String },
+    User { this: bool },
 }
 
 #[derive(Serialize, Tsify)]
 #[serde(tag = "type", content = "value")]
+#[serde(rename_all = "camelCase")]
 pub enum DefinitionSpan {
-    #[serde(rename = "span")]
     Span(Jump),
 }
 
 impl Definition {
     pub fn from_definition<W>(def: typst_ide::Definition, world: &W) -> Option<Self>
     where
-        W: World,
+        W: IdeWorld,
     {
         match def {
             typst_ide::Definition::Span(span) => {
                 let id = span.id()?;
-                let range = span.range()?;
+                let range = world.range(span)?;
                 let jump = Jump::from_jump(&typst_ide::Jump::File(id, range.start), world);
 
                 let origin = if let Some(package) = id.package() {
                     Origin::Package {
                         name: package.to_string(),
-                        path: id.vpath().as_rootless_path().to_string_lossy().to_string(),
                     }
                 } else {
                     Origin::User {
                         this: id == world.main(),
-                        path: id.vpath().as_rootless_path().to_string_lossy().to_string(),
                     }
                 };
 

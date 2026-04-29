@@ -6,6 +6,8 @@ use typst::foundations::Value as TypstValue;
 pub mod angle;
 pub mod args;
 pub mod array;
+pub mod auto;
+pub mod bool;
 pub mod bytes;
 pub mod color;
 pub mod content;
@@ -14,12 +16,15 @@ pub mod decimal;
 pub mod dict;
 pub mod duration;
 pub mod r#dyn;
+pub mod float;
 pub mod fraction;
 pub mod func;
 pub mod gradient;
+pub mod int;
 pub mod label;
 pub mod length;
 pub mod module;
+pub mod none;
 pub mod ratio;
 pub mod relative;
 pub mod str;
@@ -32,6 +37,8 @@ pub mod version;
 pub use angle::Angle;
 pub use args::Args;
 pub use array::Array;
+pub use auto::Auto;
+pub use bool::Bool;
 pub use bytes::Bytes;
 pub use color::Color;
 pub use content::Content;
@@ -40,12 +47,15 @@ pub use decimal::Decimal;
 pub use dict::Dict;
 pub use duration::DurationValue;
 pub use r#dyn::Dyn;
+pub use float::Float;
 pub use fraction::Fr;
 pub use func::Func;
 pub use gradient::Gradient;
+pub use int::Int;
 pub use label::Label;
 pub use length::Length;
 pub use module::Module;
+pub use none::None;
 pub use ratio::Ratio;
 pub use relative::Relative;
 pub use str::Str;
@@ -57,12 +67,13 @@ pub use version::Version;
 
 #[derive(Serialize, Tsify)]
 #[serde(tag = "type", content = "value")]
+#[serde(rename_all = "camelCase")]
 pub enum Value {
-    None,
-    Auto,
-    Bool(bool),
-    Int(i64),
-    Float(f64),
+    None(None),
+    Auto(Auto),
+    Bool(Bool),
+    Int(Int),
+    Float(Float),
     Length(Length),
     Angle(Angle),
     Ratio(Ratio),
@@ -93,11 +104,11 @@ pub enum Value {
 impl From<&TypstValue> for Value {
     fn from(value: &TypstValue) -> Self {
         match value {
-            TypstValue::None => Value::None,
-            TypstValue::Auto => Value::Auto,
-            TypstValue::Bool(v) => Value::Bool(*v),
-            TypstValue::Int(v) => Value::Int(*v),
-            TypstValue::Float(v) => Value::Float(*v),
+            TypstValue::None => Value::None(None::default()),
+            TypstValue::Auto => Value::Auto(Auto::default()),
+            TypstValue::Bool(v) => Value::Bool(Bool::from(*v)),
+            TypstValue::Int(v) => Value::Int(Int::from(*v)),
+            TypstValue::Float(v) => Value::Float(Float::from(*v)),
             TypstValue::Length(v) => Value::Length(Length::from(v)),
             TypstValue::Angle(v) => Value::Angle(Angle::from(v)),
             TypstValue::Ratio(v) => Value::Ratio(Ratio::from(v)),

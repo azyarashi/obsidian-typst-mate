@@ -14,7 +14,7 @@ pub struct Arg {
 
 #[derive(Serialize, Tsify)]
 pub struct Args {
-    repr: String,
+    pub repr: String,
     args: Vec<Arg>,
 }
 
