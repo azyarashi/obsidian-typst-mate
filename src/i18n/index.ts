@@ -1,5 +1,5 @@
-import en from '@resources/locales/en.json';
-import ja from '@resources/locales/ja.json';
+import en from '@resources/locales/en.jsonc';
+import ja from '@resources/locales/ja.jsonc';
 import { I18n } from '@typst-mate/i18n';
 
 const resources = {
