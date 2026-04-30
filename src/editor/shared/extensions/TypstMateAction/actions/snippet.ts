@@ -1,46 +1,52 @@
 import type { EditorView } from '@codemirror/view';
-import type { Action } from '@/libs/action';
-import { clearTabStopEffect, jumpToFirstTabStop, TAB_STOP_REGEX } from '../../TabJump';
+import { TypstMate } from '@/api';
+import { applyToCurrentTabStop, snippet } from '@/editor/shared/internal/Snippet';
+import type { TMAction, TMActionContext } from '@/libs/tmActionsManager';
+import { Commands, type ScriptFn } from '@/libs/tmActionsManager/definition';
+import { applyExtraActions } from '../extras';
 
 export function executeSnippet(
-  action: Action,
+  action: TMAction,
   view: EditorView,
   selectedText: string,
   from: number,
   to: number,
   isScript: boolean,
   match?: RegExpMatchArray,
-) {
-  let value = action.action.v;
+  context?: TMActionContext,
+): boolean {
+  const value = action.action.v;
 
-  if (isScript) {
-    try {
-      const fn = new Function('input', value);
-      const result = String(fn(match ?? selectedText));
-      view.dispatch({
-        changes: { from, to, insert: result },
-        selection: { anchor: from + result.length },
-        effects: clearTabStopEffect.of(),
-        userEvent: 'input.script',
-        scrollIntoView: true,
-      });
-    } catch (e) {
-      console.error('Failed to execute script action:', e);
+  try {
+    // * preprocess
+    let template: string;
+    if (isScript) {
+      const fn = value as ScriptFn;
+
+      const fnResult = fn(match ?? selectedText, Commands, TypstMate.ctx);
+      if (typeof fnResult === 'boolean') return fnResult;
+
+      template = fnResult;
+    } else template = value as string;
+    template = applyExtraActions(action, from, template, view, context);
+
+    // * expand snippet
+    snippet(template)(view, null, from, to);
+
+    // * postprocess
+    if (!isScript) {
+      if (match && 1 < match.length)
+        for (let i = 1; i < match.length; i++) {
+          const m = match[i];
+          if (m === undefined) continue;
+          applyToCurrentTabStop(view, m);
+        }
+      else if (selectedText) applyToCurrentTabStop(view, selectedText);
     }
-    return;
+  } catch (e) {
+    new Notice(String(e));
+    return false;
   }
 
-  if (selectedText) value = value.replace(/#\.0(?:"[^"]*")?/g, () => selectedText);
-
-  const hasTabStops = new RegExp(TAB_STOP_REGEX.source).test(value);
-
-  view.dispatch({
-    changes: { from, to, insert: value },
-    selection: { anchor: from + value.length },
-    effects: clearTabStopEffect.of(),
-    userEvent: 'input.snippet',
-    scrollIntoView: true,
-  });
-
-  if (hasTabStops) jumpToFirstTabStop(view, from, from + value.length);
+  return true;
 }
