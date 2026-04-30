@@ -47,6 +47,7 @@ class TabStopRange {
   }
 }
 
+const TABSTOP_RE = /\\\$|\$\{(?:(\d+)(?::([^{}]*))?|((?:\\[{}]|[^{}])*))\}|\$(\d+)/g;
 export class Snippet {
   lines: readonly string[];
   tabStops: readonly TabStop[];
@@ -82,65 +83,46 @@ export class Snippet {
   }
 
   static parse(template: string): Snippet {
-    // Each entry tracks the sequence number ($1, $2 … or null for unnamed)
-    // and the display-name / default text of the level.
     type LevelDef = { seq: number | null; name: string };
     const levels: LevelDef[] = [];
 
     const lines: string[] = [];
     const positions: TabStop[] = [];
 
-    // Regex breakdown:
-    //   \\\$          – escaped dollar sign  (\$1, \${…}) → kept as literal text
-    //   \${N:text}    – numbered field with default text
-    //   \${N}         – numbered field, no default
-    //   \${text}      – unnamed field with default text
-    //   \$N           – shorthand numbered field
-    const FIELD_RE = /\\\$|\$\{(?:(\d+)(?::([^{}]*))?|((?:\\[{}]|[^{}])*))\}|\$(\d+)/g;
-
     for (const rawLine of template.split(/\r\n?|\n/)) {
       let line = rawLine;
       const lineIndex = lines.length;
 
-      // We need a mutable offset because replacing field syntax with the
-      // shorter default-text shifts subsequent match positions.
       let offset = 0;
 
-      FIELD_RE.lastIndex = 0;
+      TABSTOP_RE.lastIndex = 0;
 
       for (;;) {
-        const m = FIELD_RE.exec(line);
+        const m = TABSTOP_RE.exec(line);
         if (m === null) break;
         const matchStart = m.index;
         const matchEnd = m.index + m[0].length;
 
-        // ── Case 1: escaped dollar sign (\$N or \${…}) ──────────────────────
+        // エスケープされている場合
         if (m[0].startsWith('\\$')) {
-          // Remove the backslash; the rest of the match stays as literal text.
-          // Adjust positions of already-recorded fields on this line.
           shiftPositionsAfter(positions, lineIndex, matchStart + offset, -1);
           line = line.slice(0, matchStart) + line.slice(matchStart + 1);
-          // Rewind so the now-unescaped text is not re-processed.
-          FIELD_RE.lastIndex = matchStart + 1;
-          offset--; // one char shorter
+          TABSTOP_RE.lastIndex = matchStart + 1;
+          offset--;
           continue;
         }
 
-        // ── Case 2: real field placeholder ──────────────────────────────────
-        // Determine numeric sequence and raw/clean default name.
+        // されていない場合
+        // タブストップの番号と名前を取得
         const seq: number | null = m[1] != null ? +m[1] : m[4] != null ? +m[4] : null;
-        // m[4] is the shorthand $N form — its "name" is empty string.
+        // プレースホルダー
         const rawName: string = m[4] != null ? '' : (m[2] ?? m[3] ?? '');
-        const name = rawName.replace(/\\([{}])/g, '$1'); // unescape \{ and \}
+        const name = rawName.replace(/\\([{}])/g, '$1');
 
-        // Look up or insert this level into the ordered level list.
+        // タブストップのレベルを取得
         let levelIndex = levels.findIndex((l) => (seq != null ? l.seq === seq : name ? l.name === name : false));
 
         if (levelIndex < 0) {
-          // Insert in sorted order:
-          //   • numbered fields (non-zero) sorted by seq ascending
-          //   • $0 is always last (sentinel: treated as Infinity)
-          //   • unnamed fields come before $0
           const seqOrder = (l: LevelDef) =>
             l.seq === 0 ? Infinity : l.seq != null ? l.seq : l.name ? Infinity - 1 : Infinity;
           const newOrder = seq === 0 ? Infinity : seq != null ? seq : name ? Infinity - 1 : Infinity;
@@ -150,24 +132,20 @@ export class Snippet {
           levels.splice(insertAt, 0, { seq, name });
           levelIndex = insertAt;
 
-          // All existing positions whose level index is >= the new one need bumping.
           for (const pos of positions) if (levelIndex <= pos.level) pos.level++;
         }
 
-        // Shift positions on this line that come after the current match start.
-        // The replacement is `rawName` (possibly shorter than the full `${…}` syntax).
         const removedLen = matchEnd - matchStart - rawName.length;
         shiftPositionsAfter(positions, lineIndex, matchStart + offset, -removedLen);
 
         positions.push(new TabStop(levelIndex, lineIndex, matchStart + offset, matchStart + offset + name.length));
 
-        // Splice the field syntax out, leaving only the default text.
         line = line.slice(0, matchStart) + rawName + line.slice(matchEnd);
-        FIELD_RE.lastIndex = matchStart + rawName.length;
+        TABSTOP_RE.lastIndex = matchStart + rawName.length;
         offset -= removedLen;
       }
 
-      // Unescape remaining \{ and \} that are not inside a field.
+      // エスケープの解除
       line = line.replace(/\\([{}])/g, (_full, brace: string, escIndex: number) => {
         shiftPositionsAfter(positions, lineIndex, escIndex, -1);
         return brace;
