@@ -12,7 +12,7 @@ export default defineConfig(async ({ mode }) => {
 
   return {
     plugins: [
-      json5Plugin(),
+      json5Plugin({ dts: true }),
       {
         name: 'build-watcher',
         writeBundle(options) {

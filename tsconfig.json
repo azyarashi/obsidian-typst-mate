@@ -27,7 +27,7 @@
     "resolveJsonModule": true,
     "esModuleInterop": true,
 
-    "types": ["bun-types", "vite/client", "obsidian-typings"],
+    "types": ["bun-types", "vite/client", "__vite-plugin-json5__", "obsidian-typings"],
     "paths": {
       "@/*": ["./src/*"],
       "@resources/*": ["./resources/*"],
