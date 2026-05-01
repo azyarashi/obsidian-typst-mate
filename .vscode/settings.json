@@ -29,5 +29,5 @@
   "i18n-ally.sourceLanguage": "ja",
   "i18n-ally.displayLanguage": "ja",
 
-  "i18n-ally.regex.usageMatch": ["\\bt\\(\\s*['\"`]([^'\"`]+)['\"`]"]
+  "i18n-ally.regex.usageMatch": ["\\bt(?:Fragment)?\\(\\s*['\"`]([^'\"`]+)['\"`]"]
 }
