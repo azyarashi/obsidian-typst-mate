@@ -64,6 +64,7 @@ impl Completion {
             symbol,
             label: c.label.to_string(),
             apply: c.apply.map(|s| s.to_string()),
+            // detail: c.detail.map(|s| resolve_docs(&s))
             detail: c.detail.map(|s| s.to_string()),
         }
     }

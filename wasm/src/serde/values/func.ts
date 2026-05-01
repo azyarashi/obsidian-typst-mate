@@ -4,7 +4,7 @@ export function formatFunc(func: Func): string {
   let markdown = '';
   const tooltipData: Record<string, { types: string; default?: string }> = {};
 
-  const formatParamTypes = (p: Param, index?: number) => {
+  function formatParamTypes (p: Param, index?: number) {
     const typesStr = p.types.map((t) => t.type).join(' | ');
     const defaultVal = p.default ? ` = ${p.default}` : '';
     const full = `type: ${typesStr}${defaultVal}`;

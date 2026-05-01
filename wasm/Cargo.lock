@@ -3358,6 +3358,7 @@ dependencies = [
  "console_error_panic_hook",
  "js-sys",
  "rayon",
+ "regex",
  "rustc-hash 2.1.2",
  "send_wrapper",
  "serde",

@@ -87,27 +87,6 @@ export function formatSpan(v: Jump): string {
   return '';
 }
 
-export function formatOrigin(v: Definition): string {
-  let text = `${v.value.type}`
-
-  const origin = v.origin;
-  switch (origin.type) {
-    case 'builtIn':
-      text += ' built-in';
-      break;
-    case 'package':
-      text += ` package (\`${origin.value.name}\`) @ \`${origin.value.path}\``;
-      break;
-    case 'user':
-      text += origin.value.this ? ' user' : ` user (\`${origin.value.path}\`)`;
-      break;
-    default:
-      break;
-  }
-
-  return text;
-}
-
 export function formatDefinition(v: Definition): string {
   return formatDefinitionValue(v.value);
 }

@@ -1,5 +1,9 @@
-use std::num::NonZeroUsize;
-use typst::layout::{Abs, Frame, FrameItem, PageRanges};
+use std::{num::NonZeroUsize, sync::LazyLock};
+use typst::{
+    foundations::Regex,
+    layout::{Abs, Frame, FrameItem, PageRanges},
+};
+use typst_docs::link::resolve;
 
 pub fn parse_page_ranges(s: &str) -> Option<PageRanges> {
     let mut ranges = Vec::new();
@@ -53,4 +57,26 @@ pub fn find_baseline(frame: &Frame, offset_y: Abs) -> Option<Abs> {
         }
     }
     None
+}
+
+pub fn resolve_docs(docs: &str) -> String {
+    static RE: LazyLock<Regex> =
+        LazyLock::new(|| Regex::new(r#"\[([^\]]+)\]\(([^)\s]+)\)"#).unwrap());
+
+    RE.replace_all(docs, |caps: &regex::Captures| {
+        let label = &caps[1];
+        let dest = &caps[2];
+
+        let should_resolve =
+            dest.starts_with('$') || dest.starts_with('#') || dest.starts_with("http");
+
+        if !should_resolve {
+            return caps[0].to_string();
+        }
+
+        let resolved =
+            resolve(dest, "https://typst.app/docs/").unwrap_or_else(|_| dest.to_string());
+        format!("[{label}]({resolved})")
+    })
+    .into_owned()
 }

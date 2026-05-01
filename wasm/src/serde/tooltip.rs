@@ -1,3 +1,4 @@
+use crate::utils::resolve_docs;
 use serde::Serialize;
 use tsify::Tsify;
 
@@ -11,7 +12,7 @@ pub enum Tooltip {
 impl From<typst_ide::Tooltip> for Tooltip {
     fn from(tooltip: typst_ide::Tooltip) -> Self {
         match tooltip {
-            typst_ide::Tooltip::Text(text) => Tooltip::Text(text.to_string()),
+            typst_ide::Tooltip::Text(text) => Tooltip::Text(resolve_docs(&text)),
             typst_ide::Tooltip::Code(code) => Tooltip::Code(code.to_string()),
         }
     }

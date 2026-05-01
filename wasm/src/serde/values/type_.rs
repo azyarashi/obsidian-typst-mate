@@ -1,7 +1,8 @@
 use serde::Serialize;
-use typst::foundations::Repr;
 use tsify::Tsify;
+use typst::foundations::Repr;
 
+use crate::utils::resolve_docs;
 use typst::foundations::Type as TypstType;
 
 #[derive(Serialize, Tsify)]
@@ -16,7 +17,7 @@ impl From<&TypstType> for Type {
         Type {
             repr: type_.repr().to_string(),
             title: type_.title().to_string(),
-            docs: type_.docs().to_string(),
+            docs: resolve_docs(&type_.docs()),
         }
     }
 }
