@@ -6,7 +6,7 @@ export const previewJumpPackage: ExtensionPackageFn = () =>
   ({
     id: 'preview-jump',
     name: t('settings.extensions.previewJump.name'),
-    icon: ICONS.MousePointerClick,
+    icon: ICONS.MoveLeft,
     description: t('settings.extensions.previewJump.desc'),
     tags: ['navigation'],
     scope: ['markdown', 'typst'],

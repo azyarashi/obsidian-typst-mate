@@ -5,7 +5,7 @@ export const codeJumpPackage = () =>
   ({
     id: 'code-jump',
     name: t('settings.extensions.codeJump.name'),
-    icon: ICONS.ExternalLink,
+    icon: ICONS.MoveRight,
     description: t('settings.extensions.codeJump.desc'),
     tags: ['navigation'],
     scope: ['typst'],
