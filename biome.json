@@ -64,6 +64,7 @@
       "tsconfig.json",
       ".vscode/settings.json",
       "!src/data/symbols.json",
+      "!docs/Typst-Mate-Actions/tmactions.js",
       "!**/dist/*"
     ]
   },
