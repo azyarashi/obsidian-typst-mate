@@ -1,14 +1,14 @@
 import { Facet } from '@codemirror/state';
 import { ICONS } from '@/constants/icons';
-import { t } from '@/i18n';
-import type { InferSettingsFromPackage } from '@/libs/extensionManager';
+import { t, tFragment } from '@/i18n';
+import type { ExtensionPackageFn, InferSettingsFromPackage } from '@/libs/extensionManager';
 
-export const tabJumpPackage = () =>
+export const tabJumpPackage: ExtensionPackageFn = () =>
   ({
     id: 'tab-jump',
     name: t('settings.extensions.tabJumpName'),
     icon: ICONS.CornerDownRight,
-    description: t('settings.extensions.tabJumpDesc'),
+    description: tFragment('settings.extensions.tabJumpDesc'),
     tags: ['action', 'navigation'],
     scope: ['markdown', 'typst'],
     isBuiltin: false,
@@ -16,29 +16,29 @@ export const tabJumpPackage = () =>
       {
         key: 'revertTabToDefault',
         type: 'toggle',
-        title: t('settings.extensions.tabJumpRevertTabToDefaultName'),
-        description: t('settings.extensions.tabJumpRevertTabToDefaultDesc'),
+        title: t('settings.extensions.tabJump.revertTabToDefaultName'),
+        description: t('settings.extensions.tabJump.revertTabToDefaultDesc'),
         defaultValue: false,
       },
       {
         key: 'jumpOutsideBracket',
         type: 'toggle',
-        title: t('settings.extensions.tabJumpJumpOutsideBracketName'),
-        description: t('settings.extensions.tabJumpJumpOutsideBracketDesc'),
+        title: t('settings.extensions.tabJump.jumpOutsideBracketName'),
+        description: t('settings.extensions.tabJump.jumpOutsideBracketDesc'),
         defaultValue: true,
       },
       {
         key: 'preferInlineExitForSingleLineDisplayMath',
         type: 'toggle',
-        title: t('settings.extensions.tabJumpPreferInlineExitName'),
-        description: t('settings.extensions.tabJumpPreferInlineExitDesc'),
+        title: t('settings.extensions.tabJump.preferInlineExitForSingleLineDisplayMathName'),
+        description: t('settings.extensions.tabJump.preferInlineExitForSingleLineDisplayMathDesc'),
         defaultValue: true,
       },
       {
         key: 'moveToEndBeforeExiting',
         type: 'toggle',
-        title: t('settings.extensions.tabJumpMoveToEndOfMathBlockName'),
-        description: t('settings.extensions.tabJumpMoveToEndOfMathBlockDesc'),
+        title: t('settings.extensions.tabJump.moveToEndBeforeExitingName'),
+        description: t('settings.extensions.tabJump.moveToEndBeforeExitingDesc'),
         defaultValue: false,
       },
     ],

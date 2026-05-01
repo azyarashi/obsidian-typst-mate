@@ -1,12 +1,12 @@
 import { ICONS } from '@/constants/icons';
-import { t } from '@/i18n';
+import { t, tFragment } from '@/i18n';
 import type { ExtensionPackageFn } from '@/libs/extensionManager';
 
 export const codeblockPreviewPackage: ExtensionPackageFn = () => ({
   id: 'codeblock-preview',
-  name: t('settings.extensions.codeblockPreviewName'),
+  name: t('settings.extensions.codeblockPreview.name'),
   icon: ICONS.ScanEye,
-  description: t('settings.extensions.codeblockPreviewDesc'),
+  description: tFragment('settings.extensions.codeblockPreview.desc'),
   tags: ['ui'],
   scope: ['markdown'],
   isBuiltin: false,

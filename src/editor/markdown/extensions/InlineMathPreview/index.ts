@@ -1,9 +1,9 @@
 import { defineExtension } from '@/libs/extensionManager';
 import { inlinePreviewExtension } from './extension';
-import { inlinePreviewPackage } from './package';
+import { inlineMathPreviewPackage } from './package';
 
-export const inlinePreviewEntry = defineExtension()(() => ({
-  package: inlinePreviewPackage(),
+export const inlineMathPreviewEntry = defineExtension()(() => ({
+  package: inlineMathPreviewPackage(),
   factory: (_context, settings: { enabled?: boolean; disableOnMathJax?: boolean }) =>
     inlinePreviewExtension(settings.enabled ?? true, settings.disableOnMathJax ?? false),
 }));

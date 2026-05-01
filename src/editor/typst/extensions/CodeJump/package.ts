@@ -1,14 +1,14 @@
 import { ICONS } from '@/constants/icons';
-import { t } from '@/i18n';
+import { t, tFragment } from '@/i18n';
+import type { ExtensionPackageFn } from '@/libs/extensionManager';
 
-export const codeJumpPackage = () =>
+export const codeJumpPackage: ExtensionPackageFn = () =>
   ({
     id: 'code-jump',
     name: t('settings.extensions.codeJump.name'),
     icon: ICONS.MoveRight,
-    description: t('settings.extensions.codeJump.desc'),
+    description: tFragment('settings.extensions.codeJump.desc'),
     tags: ['navigation'],
     scope: ['typst'],
-    isBuiltin: true,
     settings: [],
   }) as const;

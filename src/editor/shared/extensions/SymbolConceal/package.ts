@@ -1,14 +1,14 @@
 import { Facet } from '@codemirror/state';
 import { ICONS } from '@/constants/icons';
-import { t } from '@/i18n';
+import { t, tFragment } from '@/i18n';
 import type { ExtensionPackageFn, InferSettingsFromPackage } from '@/libs/extensionManager';
 
 export const symbolConcealPackage: ExtensionPackageFn = () =>
   ({
     id: 'symbol-conceal',
-    name: t('settings.extensions.symbolConcealName'),
+    name: t('settings.extensions.symbolConceal.name'),
     icon: ICONS.Pi,
-    description: t('settings.extensions.symbolConcealDesc'),
+    description: tFragment('settings.extensions.symbolConceal.desc'),
     tags: ['decoration'],
     scope: ['markdown', 'typst'],
     isBuiltin: false,
@@ -16,8 +16,8 @@ export const symbolConcealPackage: ExtensionPackageFn = () =>
       {
         key: 'revealDelay',
         type: 'slider',
-        title: t('settings.extensions.symbolConcealRevealDelayName'),
-        description: t('settings.extensions.symbolConcealRevealDelayDesc'),
+        title: t('settings.extensions.symbolConceal.revealDelayName'),
+        description: tFragment('settings.extensions.symbolConceal.revealDelayDesc'),
         defaultValue: 1000,
         min: 0,
         max: 5000,

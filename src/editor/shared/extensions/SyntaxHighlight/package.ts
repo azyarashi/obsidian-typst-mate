@@ -1,13 +1,13 @@
 import { ICONS } from '@/constants/icons';
-import { t } from '@/i18n';
-import type { InferSettingsFromPackage } from '@/libs/extensionManager';
+import { t, tFragment } from '@/i18n';
+import type { ExtensionPackageFn, InferSettingsFromPackage } from '@/libs/extensionManager';
 
-export const syntaxHighlightPackage = () =>
+export const syntaxHighlightPackage: ExtensionPackageFn = () =>
   ({
     id: 'syntax-highlight',
-    name: t('settings.extensions.syntaxHighlightName'),
+    name: t('settings.extensions.syntaxHighlight.name'),
     icon: ICONS.Highlighter,
-    description: t('settings.extensions.syntaxHighlightDesc'),
+    description: tFragment('settings.extensions.syntaxHighlight.desc'),
     tags: ['decoration'],
     scope: ['markdown', 'typst'],
     isBuiltin: false,
@@ -16,8 +16,8 @@ export const syntaxHighlightPackage = () =>
       {
         key: 'useObsidianTheme',
         type: 'toggle',
-        title: t('settings.extensions.syntaxHighlightUseObsidianThemeName'),
-        description: t('settings.extensions.syntaxHighlightUseObsidianThemeDesc'),
+        title: t('settings.extensions.syntaxHighlight.useObsidianThemeName'),
+        description: tFragment('settings.extensions.syntaxHighlight.useObsidianThemeDesc'),
         defaultValue: false,
       },
     ],

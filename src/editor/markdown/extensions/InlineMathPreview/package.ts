@@ -1,12 +1,12 @@
 import { ICONS } from '@/constants/icons';
-import { t } from '@/i18n';
+import { t, tFragment } from '@/i18n';
 import type { ExtensionPackageFn } from '@/libs/extensionManager';
 
-export const inlinePreviewPackage: ExtensionPackageFn = () => ({
-  id: 'inline-preview',
-  name: t('settings.extensions.inlinePreviewName'),
+export const inlineMathPreviewPackage: ExtensionPackageFn = () => ({
+  id: 'inline-math-preview',
+  name: t('settings.extensions.inlineMathPreview.name'),
   icon: ICONS.ScanEye,
-  description: t('settings.extensions.inlinePreviewDesc'),
+  description: tFragment('settings.extensions.inlineMathPreview.desc'),
   tags: ['ui'],
   scope: ['markdown'],
   isBuiltin: false,
@@ -14,8 +14,8 @@ export const inlinePreviewPackage: ExtensionPackageFn = () => ({
     {
       type: 'toggle',
       key: 'disableOnMathJax',
-      title: t('settings.extensions.inlinePreviewDisableOnMathJaxName'),
-      description: t('settings.extensions.inlinePreviewDisableOnMathJaxDesc'),
+      title: t('settings.extensions.inlineMathPreview.disableOnMathJaxName'),
+      description: tFragment('settings.extensions.inlineMathPreview.disableOnMathJaxDesc'),
       defaultValue: false,
     },
   ],

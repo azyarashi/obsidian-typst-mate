@@ -1,12 +1,13 @@
 import { ICONS } from '@/constants/icons';
-import { t } from '@/i18n';
+import { t, tFragment } from '@/i18n';
+import type { ExtensionPackageFn } from '@/libs/extensionManager';
 
-export const tooltipPackage = () =>
+export const tooltipPackage: ExtensionPackageFn = () =>
   ({
     id: 'tooltip',
-    name: t('settings.extensions.tooltipName'),
+    name: t('settings.extensions.tooltip.name'),
     icon: ICONS.MessageSquare,
-    description: t('settings.extensions.tooltipDesc'),
+    description: tFragment('settings.extensions.tooltip.desc'),
     tags: ['ui'],
     scope: ['markdown', 'typst'],
     isBuiltin: false,

@@ -11,7 +11,7 @@ import { format } from '@/ui/elements/Typst';
 import { getActiveRegion, type ParsedRegion } from '../../utils/core';
 import { calculatePopOverPositionByCursor } from '../../utils/position';
 import { type SymbolData, searchSymbols } from '../../utils/symbolSearcher';
-import { checkActionContext, executeAction, resolveActionContext } from '../TypstMateAction/actions';
+import { checkActionContext, executeAction, resolveActionContext } from '../TypstMateActions/actions';
 import { autocompleteSettingsFacet } from './package';
 
 import './Autocomplete.css';

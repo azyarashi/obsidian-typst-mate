@@ -1,12 +1,13 @@
 import { ICONS } from '@/constants/icons';
-import { t } from '@/i18n';
+import { t, tFragment } from '@/i18n';
+import type { ExtensionPackageFn } from '@/libs/extensionManager';
 
-export const pairHighlightPackage = () =>
+export const pairHighlightPackage: ExtensionPackageFn = () =>
   ({
     id: 'pair-highlight',
-    name: t('settings.extensions.pairHighlightName'),
+    name: t('settings.extensions.pairHighlight.name'),
     icon: ICONS.Braces,
-    description: t('settings.extensions.pairHighlightDesc'),
+    description: tFragment('settings.extensions.pairHighlight.desc'),
     tags: ['decoration'],
     scope: ['markdown', 'typst'],
     isBuiltin: false,

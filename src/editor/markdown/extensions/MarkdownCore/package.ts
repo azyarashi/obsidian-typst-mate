@@ -4,9 +4,8 @@ import type { ExtensionPackageFn } from '@/libs/extensionManager';
 
 export const markdownCorePackage: ExtensionPackageFn = () => ({
   id: 'markdown-core',
-  name: t('settings.extensions.markdownCoreName'),
+  name: t('settings.extensions.markdownCore.name'),
   icon: ICONS.Markdown,
-  description: t('settings.extensions.markdownCoreDesc'),
   tags: ['core'],
   scope: ['markdown'],
   isBuiltin: true,

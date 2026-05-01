@@ -6,9 +6,9 @@ import type { ExtensionPackageFn, InferSettingsFromPackage } from '@/libs/extens
 export const autocompletePackage: ExtensionPackageFn = () =>
   ({
     id: 'autocomplete',
-    name: t('settings.extensions.autocompleteName'),
+    name: t('settings.extensions.autocomplete.name'),
     icon: ICONS.Terminal,
-    description: t('settings.extensions.autocompleteDesc'),
+    description: tFragment('settings.extensions.autocomplete.desc'),
     tags: ['completion'],
     scope: ['markdown', 'typst'],
     isBuiltin: false,
@@ -16,8 +16,8 @@ export const autocompletePackage: ExtensionPackageFn = () =>
       {
         key: 'useUnicodeSymbols',
         type: 'toggle',
-        title: t('settings.extensions.autocompleteUseUnicodeSymbolsName'),
-        description: tFragment('settings.extensions.autocompleteUseUnicodeSymbolsDesc'),
+        title: t('settings.extensions.autocomplete.useUnicodeSymbolsName'),
+        description: tFragment('settings.extensions.autocomplete.useUnicodeSymbolsDesc'),
         defaultValue: false,
       },
     ],

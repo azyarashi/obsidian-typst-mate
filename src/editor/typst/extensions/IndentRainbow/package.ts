@@ -1,12 +1,12 @@
 import { ICONS } from '@/constants/icons';
-import { t } from '@/i18n';
+import { t, tFragment } from '@/i18n';
 
 export const indentRainbowPackage = () =>
   ({
     id: 'indent-rainbow',
-    name: t('settings.extensions.indentRainbowName'),
+    name: t('settings.extensions.indentRainbow.name'),
     icon: ICONS.Rainbow,
-    description: t('settings.extensions.indentRainbowDesc'),
+    description: tFragment('settings.extensions.indentRainbow.desc'),
     tags: ['decoration'],
     scope: ['typst'],
     isBuiltin: false,

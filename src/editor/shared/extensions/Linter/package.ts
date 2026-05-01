@@ -1,13 +1,13 @@
 import { ICONS } from '@/constants/icons';
-import { t } from '@/i18n';
+import { t, tFragment } from '@/i18n';
 import type { ExtensionPackageFn } from '@/libs/extensionManager';
 
 export const linterPackage: ExtensionPackageFn = () =>
   ({
     id: 'linter',
-    name: t('settings.extensions.linterName'),
+    name: t('settings.extensions.linter.name'),
     icon: ICONS.ShieldAlert,
-    description: t('settings.extensions.linterDesc'),
+    description: tFragment('settings.extensions.linter.desc'),
     tags: ['ui'],
     scope: ['markdown', 'typst'],
     isBuiltin: false,

@@ -1,12 +1,12 @@
 import { ICONS } from '@/constants/icons';
-import { t } from '@/i18n';
+import { t, tFragment } from '@/i18n';
 import type { ExtensionPackageFn } from '@/libs/extensionManager';
 
 export const debuggerPackage: ExtensionPackageFn = () => ({
   id: 'debugger',
-  name: t('settings.extensions.debuggerName'),
+  name: t('settings.extensions.debugger.name'),
   icon: ICONS.Bug,
-  description: t('settings.extensions.debuggerDesc'),
+  description: tFragment('settings.extensions.debugger.desc'),
   tags: ['ui'],
   scope: ['markdown'],
   isBuiltin: false,

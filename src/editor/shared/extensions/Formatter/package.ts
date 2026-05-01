@@ -5,10 +5,10 @@ import type { ExtensionPackageFn, InferSettingsFromPackage } from '@/libs/extens
 
 export const formatterPackage: ExtensionPackageFn = () =>
   ({
-    id: 'typst-formatter',
-    name: t('settings.extensions.formatterName'),
+    id: 'formatter',
+    name: t('settings.extensions.formatter.name'),
     icon: ICONS.Sticker,
-    description: tFragment('settings.extensions.formatterDesc'),
+    description: tFragment('settings.extensions.formatter.desc'),
     tags: ['action'],
     scope: ['markdown', 'typst'],
     isBuiltin: false,
@@ -16,8 +16,8 @@ export const formatterPackage: ExtensionPackageFn = () =>
       {
         key: 'formatOnSave',
         type: 'toggle',
-        title: t('settings.extensions.formatterFormatOnSaveName'),
-        description: t('settings.extensions.formatterFormatOnSaveDesc'),
+        title: t('settings.extensions.formatter.formatOnSaveName'),
+        description: tFragment('settings.extensions.formatter.formatOnSaveDesc'),
         defaultValue: false,
       },
       {
@@ -27,8 +27,8 @@ export const formatterPackage: ExtensionPackageFn = () =>
       {
         key: 'tabSpaces',
         type: 'slider',
-        title: t('settings.extensions.formatterTabSpacesName'),
-        description: t('settings.extensions.formatterTabSpacesDesc'),
+        title: t('settings.extensions.formatter.tabSpacesName'),
+        description: tFragment('settings.extensions.formatter.tabSpacesDesc'),
         defaultValue: 2,
         min: 0,
         max: 8,
@@ -37,8 +37,8 @@ export const formatterPackage: ExtensionPackageFn = () =>
       {
         key: 'maxWidth',
         type: 'slider',
-        title: t('settings.extensions.formatterMaxWidthName'),
-        description: t('settings.extensions.formatterMaxWidthDesc'),
+        title: t('settings.extensions.formatter.maxWidthName'),
+        description: tFragment('settings.extensions.formatter.maxWidthDesc'),
         defaultValue: 80,
         min: 40,
         max: 200,
@@ -47,8 +47,8 @@ export const formatterPackage: ExtensionPackageFn = () =>
       {
         key: 'blankLinesUpperBound',
         type: 'slider',
-        title: t('settings.extensions.formatterBlankLinesUpperBoundName'),
-        description: t('settings.extensions.formatterBlankLinesUpperBoundDesc'),
+        title: t('settings.extensions.formatter.blankLinesUpperBoundName'),
+        description: tFragment('settings.extensions.formatter.blankLinesUpperBoundDesc'),
         defaultValue: 2,
         min: 0,
         max: 5,
@@ -57,22 +57,22 @@ export const formatterPackage: ExtensionPackageFn = () =>
       {
         key: 'collapseMarkupSpaces',
         type: 'toggle',
-        title: t('settings.extensions.formatterCollapseMarkupSpacesName'),
-        description: t('settings.extensions.formatterCollapseMarkupSpacesDesc'),
+        title: t('settings.extensions.formatter.collapseMarkupSpacesName'),
+        description: tFragment('settings.extensions.formatter.collapseMarkupSpacesDesc'),
         defaultValue: false,
       },
       {
         key: 'reorderImportItems',
         type: 'toggle',
-        title: t('settings.extensions.formatterReorderImportItemsName'),
-        description: t('settings.extensions.formatterReorderImportItemsDesc'),
+        title: t('settings.extensions.formatter.reorderImportItemsName'),
+        description: tFragment('settings.extensions.formatter.reorderImportItemsDesc'),
         defaultValue: true,
       },
       {
         key: 'wrapText',
         type: 'toggle',
-        title: t('settings.extensions.formatterWrapTextName'),
-        description: t('settings.extensions.formatterWrapTextDesc'),
+        title: t('settings.extensions.formatter.wrapTextName'),
+        description: tFragment('settings.extensions.formatter.wrapTextDesc'),
         defaultValue: true,
       },
     ],

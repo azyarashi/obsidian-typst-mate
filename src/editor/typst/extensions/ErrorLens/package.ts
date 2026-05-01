@@ -1,12 +1,12 @@
 import { ICONS } from '@/constants/icons';
-import { t } from '@/i18n';
+import { t, tFragment } from '@/i18n';
 
 export const errorLensPackage = () =>
   ({
     id: 'error-lens',
-    name: t('settings.extensions.errorLensName'),
+    name: t('settings.extensions.errorLens.name'),
     icon: ICONS.TriangleAlert,
-    description: t('settings.extensions.errorLensDesc'),
+    description: tFragment('settings.extensions.errorLens.desc'),
     tags: ['decoration'],
     scope: ['typst'],
     isBuiltin: false,

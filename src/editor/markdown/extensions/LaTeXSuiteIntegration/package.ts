@@ -1,12 +1,12 @@
 import { ICONS } from '@/constants/icons';
-import { t } from '@/i18n';
+import { t, tFragment } from '@/i18n';
 import type { ExtensionPackageFn } from '@/libs/extensionManager';
 
 export const latexSuiteIntegrationPackage: ExtensionPackageFn = () => ({
   id: 'latex-suite-integration',
-  name: t('settings.extensions.latexSuiteIntegrationName'),
+  name: t('settings.extensions.latexSuiteIntegration.name'),
   icon: ICONS.TeX,
-  description: t('settings.extensions.latexSuiteIntegrationDesc'),
+  description: tFragment('settings.extensions.latexSuiteIntegration.desc'),
   tags: [],
   scope: ['markdown'],
   isBuiltin: false,

@@ -8,7 +8,7 @@ import { symbolConcealEntry } from './SymbolConceal';
 import { syntaxHighlightEntry } from './SyntaxHighlight/index';
 import { tabJumpEntry } from './TabJump/index';
 import { tooltipEntry } from './Tooltip/index';
-import { typstMateActionEntry } from './TypstMateAction/index';
+import { typstMateActionsEntry } from './TypstMateActions/index';
 
 export { formatterSettingsFacet } from './Formatter/package';
 export { symbolConcealSettingsFacet } from './SymbolConceal/package';
@@ -27,5 +27,6 @@ export const sharedExtensionEntries: (() => ExtensionEntry<any>)[] = [
   previewJumpEntry,
 
   tooltipEntry,
-  typstMateActionEntry,
+
+  typstMateActionsEntry,
 ];
