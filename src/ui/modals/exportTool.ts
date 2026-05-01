@@ -70,15 +70,15 @@ export class ExportToolModal extends Modal {
   override onOpen() {
     const { contentEl } = this;
     contentEl.empty();
-    contentEl.createEl('h2', { text: t('modals.exportTool.name') });
+    contentEl.createEl('h2', { text: t('modals.exportTool.heading') });
 
-    new Setting(contentEl).setName(t('modals.exportTool.format.name')).addDropdown((dropdown) => {
+    new Setting(contentEl).setName(t('modals.exportTool.formatName')).addDropdown((dropdown) => {
       dropdown
         .addOptions({
-          pdf: t('modals.exportTool.format.options.pdf'),
-          svg: t('modals.exportTool.format.options.svg'),
-          png: t('modals.exportTool.format.options.png'),
-          html: t('modals.exportTool.format.options.html'),
+          pdf: t('modals.exportTool.formatOptions.pdf'),
+          svg: t('modals.exportTool.formatOptions.svg'),
+          png: t('modals.exportTool.formatOptions.png'),
+          html: t('modals.exportTool.formatOptions.html'),
         })
         .setValue(this.options.format)
         .onChange((value) => {
@@ -107,11 +107,11 @@ export class ExportToolModal extends Modal {
 
   renderOptions(contentEl: HTMLElement) {
     if (this.options.format === 'pdf') {
-      contentEl.createEl('h3', { text: t('modals.exportTool.pdf.name') });
+      contentEl.createEl('h3', { text: t('modals.exportTool.pdf.heading') });
 
       new Setting(contentEl)
-        .setName(t('modals.exportTool.pdf.tagged.name'))
-        .setDesc(tFragment('modals.exportTool.pdf.tagged.desc'))
+        .setName(t('modals.exportTool.pdf.taggedName'))
+        .setDesc(tFragment('modals.exportTool.pdf.taggedDesc'))
         .addToggle((toggle) => {
           toggle.setValue(this.options.pdf.tagged).onChange((value) => {
             this.options.pdf.tagged = value;
@@ -120,8 +120,8 @@ export class ExportToolModal extends Modal {
         });
 
       new Setting(contentEl)
-        .setName(t('modals.exportTool.pdf.documentIdentifier.name'))
-        .setDesc(tFragment('modals.exportTool.pdf.documentIdentifier.desc'))
+        .setName(t('modals.exportTool.pdf.documentIdentifierName'))
+        .setDesc(tFragment('modals.exportTool.pdf.documentIdentifierDesc'))
         .addText((text) => {
           text
             .setPlaceholder('...')
@@ -132,8 +132,8 @@ export class ExportToolModal extends Modal {
         });
 
       new Setting(contentEl)
-        .setName(t('modals.exportTool.pdf.standards.name'))
-        .setDesc(tFragment('modals.exportTool.pdf.standards.desc'))
+        .setName(t('modals.exportTool.pdf.standardsName'))
+        .setDesc(tFragment('modals.exportTool.pdf.standardsDesc'))
         .addDropdown(async (dropdown) => {
           const standards: Record<string, string> = await typstManager.wasm.get_pdf_standards();
           dropdown
@@ -146,8 +146,8 @@ export class ExportToolModal extends Modal {
         });
 
       new Setting(contentEl)
-        .setName(t('modals.exportTool.pdf.customTimestamp.name'))
-        .setDesc(tFragment('modals.exportTool.pdf.customTimestamp.desc'))
+        .setName(t('modals.exportTool.pdf.customTimestampName'))
+        .setDesc(tFragment('modals.exportTool.pdf.customTimestampDesc'))
         .addText((text) => {
           text.inputEl.type = 'datetime-local';
           if (this.options.pdf.timestamp) {
@@ -169,25 +169,25 @@ export class ExportToolModal extends Modal {
         });
 
       new Setting(contentEl)
-        .setName(t('modals.exportTool.common.pageRange.name'))
-        .setDesc(tFragment('modals.exportTool.common.pageRange.desc'))
+        .setName(t('modals.exportTool.common.pageRangeName'))
+        .setDesc(tFragment('modals.exportTool.common.pageRangeDesc'))
         .addText((text) => {
           text
-            .setPlaceholder(t('modals.exportTool.common.pageRange.placeholder'))
+            .setPlaceholder(t('modals.exportTool.common.pageRangePlaceholder'))
             .setValue(this.options.pdf.pageRanges ?? '')
             .onChange((value) => {
               this.options.pdf.pageRanges = value || undefined;
             });
         });
     } else if (this.options.format === 'svg') {
-      contentEl.createEl('h3', { text: t('modals.exportTool.svg.name') });
+      contentEl.createEl('h3', { text: t('modals.exportTool.svg.heading') });
 
       new Setting(contentEl)
-        .setName(t('modals.exportTool.common.pageRange.name'))
-        .setDesc(tFragment('modals.exportTool.common.pageRange.desc'))
+        .setName(t('modals.exportTool.common.pageRangeName'))
+        .setDesc(tFragment('modals.exportTool.common.pageRangeDesc'))
         .addText((text) => {
           text
-            .setPlaceholder(t('modals.exportTool.common.pageRange.placeholder'))
+            .setPlaceholder(t('modals.exportTool.common.pageRangePlaceholder'))
             .setValue(this.options.svg.pageRanges ?? '')
             .onChange((value) => {
               this.options.svg.pageRanges = value || undefined;
@@ -195,8 +195,8 @@ export class ExportToolModal extends Modal {
         });
 
       new Setting(contentEl)
-        .setName(t('modals.exportTool.svg.overflow.name'))
-        .setDesc(t('modals.exportTool.svg.overflow.desc'))
+        .setName(t('modals.exportTool.svg.overflowName'))
+        .setDesc(t('modals.exportTool.svg.overflowDesc'))
         .addToggle((toggle) => {
           toggle.setValue(this.options.svg.overflow ?? true).onChange((value) => {
             this.options.svg.overflow = value;
@@ -205,8 +205,8 @@ export class ExportToolModal extends Modal {
         });
 
       new Setting(contentEl)
-        .setName(t('modals.exportTool.common.output.name'))
-        .setDesc(tFragment('modals.exportTool.common.output.desc'))
+        .setName(t('modals.exportTool.common.outputName'))
+        .setDesc(tFragment('modals.exportTool.common.outputDesc'))
         .addText((text) => {
           text
             .setPlaceholder('{p}.svg')
@@ -216,11 +216,11 @@ export class ExportToolModal extends Modal {
             });
         });
     } else if (this.options.format === 'png') {
-      contentEl.createEl('h3', { text: t('modals.exportTool.png.name') });
+      contentEl.createEl('h3', { text: t('modals.exportTool.png.heading') });
 
       new Setting(contentEl)
-        .setName(t('modals.exportTool.png.ppi.name'))
-        .setDesc(tFragment('modals.exportTool.png.ppi.desc'))
+        .setName(t('modals.exportTool.png.ppiName'))
+        .setDesc(tFragment('modals.exportTool.png.ppiDesc'))
         .addText((text) => {
           text.inputEl.type = 'number';
           text
@@ -233,11 +233,11 @@ export class ExportToolModal extends Modal {
         });
 
       new Setting(contentEl)
-        .setName(t('modals.exportTool.common.pageRange.name'))
-        .setDesc(tFragment('modals.exportTool.common.pageRange.desc'))
+        .setName(t('modals.exportTool.common.pageRangeName'))
+        .setDesc(tFragment('modals.exportTool.common.pageRangeDesc'))
         .addText((text) => {
           text
-            .setPlaceholder(t('modals.exportTool.common.pageRange.placeholder'))
+            .setPlaceholder(t('modals.exportTool.common.pageRangePlaceholder'))
             .setValue(this.options.png.pageRanges ?? '')
             .onChange((value) => {
               this.options.png.pageRanges = value || undefined;
@@ -245,8 +245,8 @@ export class ExportToolModal extends Modal {
         });
 
       new Setting(contentEl)
-        .setName(t('modals.exportTool.common.output.name'))
-        .setDesc(tFragment('modals.exportTool.common.output.desc'))
+        .setName(t('modals.exportTool.common.outputName'))
+        .setDesc(tFragment('modals.exportTool.common.outputDesc'))
         .addText((text) => {
           text
             .setPlaceholder('{p}.png')
@@ -256,11 +256,11 @@ export class ExportToolModal extends Modal {
             });
         });
     } else if (this.options.format === 'html') {
-      contentEl.createEl('h3', { text: t('modals.exportTool.html.name') });
+      contentEl.createEl('h3', { text: t('modals.exportTool.html.heading') });
 
       new Setting(contentEl)
-        .setName(t('modals.exportTool.html.extractBody.name'))
-        .setDesc(tFragment('modals.exportTool.html.extractBody.desc'))
+        .setName(t('modals.exportTool.html.extractBodyName'))
+        .setDesc(tFragment('modals.exportTool.html.extractBodyDesc'))
         .addToggle((toggle) => {
           toggle.setValue(this.options.html.extractBody ?? true).onChange((value) => {
             this.options.html.extractBody = value;

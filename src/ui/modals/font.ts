@@ -16,7 +16,7 @@ export class FontModal extends Modal {
         .setHeading()
         .addButton((button) => {
           button.setIcon('copy');
-          button.setTooltip(t('modals.font.copyFamilyName'));
+          button.setTooltip(t('modals.font.buttons.copyFamilyName'));
 
           button.onClick(async () => {
             await navigator.clipboard.writeText(fontInfo.family);
