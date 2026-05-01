@@ -5,9 +5,9 @@ import type { ExtensionPackageFn } from '@/libs/extensionManager';
 export const linterPackage: ExtensionPackageFn = () =>
   ({
     id: 'linter',
-    name: t('settings.extensions.linter.name'),
+    name: t('settings.extensions.linterName'),
     icon: ICONS.ShieldAlert,
-    description: t('settings.extensions.linter.desc'),
+    description: t('settings.extensions.linterDesc'),
     tags: ['ui'],
     scope: ['markdown', 'typst'],
     isBuiltin: false,

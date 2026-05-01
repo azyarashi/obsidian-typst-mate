@@ -6,9 +6,9 @@ import type { ExtensionPackageFn, InferSettingsFromPackage } from '@/libs/extens
 export const symbolConcealPackage: ExtensionPackageFn = () =>
   ({
     id: 'symbol-conceal',
-    name: t('settings.extensions.symbolConceal.name'),
+    name: t('settings.extensions.symbolConcealName'),
     icon: ICONS.Pi,
-    description: t('settings.extensions.symbolConceal.desc'),
+    description: t('settings.extensions.symbolConcealDesc'),
     tags: ['decoration'],
     scope: ['markdown', 'typst'],
     isBuiltin: false,
@@ -16,8 +16,8 @@ export const symbolConcealPackage: ExtensionPackageFn = () =>
       {
         key: 'revealDelay',
         type: 'slider',
-        title: t('settings.extensions.symbolConceal.revealDelay.name'),
-        description: t('settings.extensions.symbolConceal.revealDelay.desc'),
+        title: t('settings.extensions.symbolConcealRevealDelayName'),
+        description: t('settings.extensions.symbolConcealRevealDelayDesc'),
         defaultValue: 1000,
         min: 0,
         max: 5000,

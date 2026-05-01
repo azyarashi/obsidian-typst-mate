@@ -5,9 +5,9 @@ import type { InferSettingsFromPackage } from '@/libs/extensionManager';
 export const syntaxHighlightPackage = () =>
   ({
     id: 'syntax-highlight',
-    name: t('settings.extensions.syntaxHighlight.name'),
+    name: t('settings.extensions.syntaxHighlightName'),
     icon: ICONS.Highlighter,
-    description: t('settings.extensions.syntaxHighlight.desc'),
+    description: t('settings.extensions.syntaxHighlightDesc'),
     tags: ['decoration'],
     scope: ['markdown', 'typst'],
     isBuiltin: false,
@@ -16,8 +16,8 @@ export const syntaxHighlightPackage = () =>
       {
         key: 'useObsidianTheme',
         type: 'toggle',
-        title: t('settings.extensions.syntaxHighlight.useObsidianTheme.name'),
-        description: t('settings.extensions.syntaxHighlight.useObsidianTheme.desc'),
+        title: t('settings.extensions.syntaxHighlightUseObsidianThemeName'),
+        description: t('settings.extensions.syntaxHighlightUseObsidianThemeDesc'),
         defaultValue: false,
       },
     ],

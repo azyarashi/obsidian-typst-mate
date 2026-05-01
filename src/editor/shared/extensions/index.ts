@@ -1,9 +1,9 @@
 import type { ExtensionEntry } from '@/libs/extensionManager';
 import { autocompleteEntry } from './Autocomplete/index';
 import { formatterEntry } from './Formatter/index';
-import { jumpFromClickEntry } from './JumpFromClick/index';
 import { linterEntry } from './Linter/index';
 import { pairHighlightEntry } from './PairHighlight/index';
+import { previewJumpEntry } from './PreviewJump/index';
 import { symbolConcealEntry } from './SymbolConceal';
 import { syntaxHighlightEntry } from './SyntaxHighlight/index';
 import { tabJumpEntry } from './TabJump/index';
@@ -15,14 +15,17 @@ export { symbolConcealSettingsFacet } from './SymbolConceal/package';
 export { tabJumpSettingsFacet } from './TabJump/package';
 
 export const sharedExtensionEntries: (() => ExtensionEntry<any>)[] = [
-  autocompleteEntry,
   syntaxHighlightEntry,
+  formatterEntry,
   linterEntry,
   symbolConcealEntry,
+
+  autocompleteEntry,
   pairHighlightEntry,
+
   tabJumpEntry,
-  jumpFromClickEntry,
+  previewJumpEntry,
+
   tooltipEntry,
   typstMateActionEntry,
-  formatterEntry,
 ];

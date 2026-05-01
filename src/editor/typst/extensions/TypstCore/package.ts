@@ -4,9 +4,9 @@ import { t } from '@/i18n';
 export const typstCorePackage = () =>
   ({
     id: 'typst-core',
-    name: t('settings.extensions.typstCore.name'),
+    name: t('settings.extensions.typstCoreName'),
     icon: ICONS.Settings,
-    description: t('settings.extensions.typstCore.desc'),
+    description: t('settings.extensions.typstCoreDesc'),
     tags: ['core'],
     scope: ['typst'],
     isBuiltin: true,

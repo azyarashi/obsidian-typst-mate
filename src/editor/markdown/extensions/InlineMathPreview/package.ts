@@ -4,9 +4,9 @@ import type { ExtensionPackageFn } from '@/libs/extensionManager';
 
 export const inlinePreviewPackage: ExtensionPackageFn = () => ({
   id: 'inline-preview',
-  name: t('settings.extensions.inlinePreview.name'),
+  name: t('settings.extensions.inlinePreviewName'),
   icon: ICONS.ScanEye,
-  description: t('settings.extensions.inlinePreview.desc'),
+  description: t('settings.extensions.inlinePreviewDesc'),
   tags: ['ui'],
   scope: ['markdown'],
   isBuiltin: false,
@@ -14,8 +14,8 @@ export const inlinePreviewPackage: ExtensionPackageFn = () => ({
     {
       type: 'toggle',
       key: 'disableOnMathJax',
-      title: t('settings.extensions.inlinePreview.disableOnMathJax.name'),
-      description: t('settings.extensions.inlinePreview.disableOnMathJax.desc'),
+      title: t('settings.extensions.inlinePreviewDisableOnMathJaxName'),
+      description: t('settings.extensions.inlinePreviewDisableOnMathJaxDesc'),
       defaultValue: false,
     },
   ],

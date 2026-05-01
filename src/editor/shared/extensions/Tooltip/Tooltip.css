@@ -19,7 +19,6 @@
   z-index: var(--layer-tooltip);
 }
 
-/* Obsidian レンダラーが抱え込んでいる「最小高さ」や「巨大な余白」を徹底破壊 */
 .typstmate-hover-tooltip .markdown-rendered,
 .typstmate-hover-tooltip .markdown-preview-view,
 .typstmate-hover-tooltip .markdown-rendered > div {
@@ -37,7 +36,6 @@
   margin-bottom: 0 !important;
 }
 
-/* 段落のマージンも極小に固定 */
 .typstmate-hover-tooltip p {
   margin: 2px 0 !important;
   padding: 0 !important;
@@ -45,7 +43,6 @@
   min-height: 0 !important;
 }
 
-/* シグネチャ表示 (HTML 形式) */
 .typstmate-hover-tooltip .typstmate-signature {
   font-family: var(--font-monospace);
   white-space: pre-wrap;

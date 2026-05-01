@@ -2,16 +2,16 @@ import { Facet } from '@codemirror/state';
 import { EditorView, ViewPlugin } from '@codemirror/view';
 import { typstManager } from '@/libs';
 
-export type JumpToPreviewTarget = {
+export type CodeJumpTarget = {
   jumpToPosition: (position: { page: number; x: number; y: number }) => Promise<void>;
   reveal: () => void;
 };
 
-export const jumpToPreviewTargetFacet = Facet.define<JumpToPreviewTarget, JumpToPreviewTarget>({
+export const codeJumpTargetFacet = Facet.define<CodeJumpTarget, CodeJumpTarget>({
   combine: (values) => values[0]!,
 });
 
-class JumpToPreviewPluginValue {
+class CodeJumpPluginValue {
   constructor(public view: EditorView) {}
 
   async onMouseDown(event: MouseEvent) {
@@ -20,7 +20,7 @@ class JumpToPreviewPluginValue {
     const pos = this.view.posAtCoords({ x: event.clientX, y: event.clientY });
     if (pos === null) return;
 
-    const target = this.view.state.facet(jumpToPreviewTargetFacet);
+    const target = this.view.state.facet(codeJumpTargetFacet);
     if (!target) return;
 
     try {
@@ -30,20 +30,20 @@ class JumpToPreviewPluginValue {
         target.reveal();
       }
     } catch (e) {
-      console.error('[TypstMate] Jump to preview failed:', e);
+      console.error('[TypstMate] Code jump failed:', e);
     }
   }
 
   destroy() {}
 }
 
-const jumpToPreviewPlugin = ViewPlugin.fromClass(JumpToPreviewPluginValue);
+const codeJumpPlugin = ViewPlugin.fromClass(CodeJumpPluginValue);
 
-export const jumpToPreviewExtension = [
-  jumpToPreviewPlugin,
+export const codeJumpExtension = [
+  codeJumpPlugin,
   EditorView.domEventHandlers({
     mousedown(event, view) {
-      view.plugin(jumpToPreviewPlugin)?.onMouseDown(event);
+      view.plugin(codeJumpPlugin)?.onMouseDown(event);
     },
   }),
 ];

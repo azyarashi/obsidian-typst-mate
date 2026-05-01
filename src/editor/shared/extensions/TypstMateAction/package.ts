@@ -4,19 +4,19 @@ import type { InferSettingsFromPackage } from '@/libs/extensionManager';
 
 export const typstMateActionPackage = () =>
   ({
-    id: 'typst-mate-action',
-    name: t('settings.extensions.typstMateAction.name'),
+    id: 'typstmate-action',
+    name: t('settings.extensions.typstMateActionName'),
     icon: ICONS.Zap,
-    description: t('settings.extensions.typstMateAction.desc'),
+    description: t('settings.extensions.typstMateActionDesc'),
     tags: ['core', 'action'],
     scope: ['markdown', 'typst'],
     isBuiltin: true,
     settings: [
       {
-        key: 'longPressDelayMs',
+        key: 'longPressDuration',
         type: 'slider',
-        title: t('settings.extensions.typstMateAction.longPressDelayMs.name'),
-        description: t('settings.extensions.typstMateAction.longPressDelayMs.desc'),
+        title: t('settings.extensions.typstMateActionLongPressDurationName'),
+        description: t('settings.extensions.typstMateActionLongPressDurationDesc'),
         defaultValue: 200,
         min: 0,
         max: 1000,

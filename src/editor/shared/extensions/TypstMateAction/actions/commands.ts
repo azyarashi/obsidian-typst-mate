@@ -3,7 +3,7 @@ import { Notice } from 'obsidian';
 import { t } from '@/i18n';
 import { appUtils } from '@/libs';
 
-export function executeCommand(commandId: string, view: EditorView, from: number, to: number) {
+export function executeCommand(commandId: string, view: EditorView, from: number, to: number): boolean {
   const command = appUtils.app.commands.findCommand(commandId);
 
   if (command !== undefined) {
@@ -17,4 +17,6 @@ export function executeCommand(commandId: string, view: EditorView, from: number
       userEvent: 'delete',
     });
   }
+
+  return false;
 }

@@ -1,12 +1,12 @@
 import { ICONS } from '@/constants/icons';
 import { t } from '@/i18n';
 
-export const jumpToPreviewPackage = () =>
+export const codeJumpPackage = () =>
   ({
-    id: 'jump-to-preview',
-    name: t('settings.extensions.jumpToPreview.name'),
+    id: 'code-jump',
+    name: t('settings.extensions.codeJump.name'),
     icon: ICONS.ExternalLink,
-    description: t('settings.extensions.jumpToPreview.desc'),
+    description: t('settings.extensions.codeJump.desc'),
     tags: ['navigation'],
     scope: ['typst'],
     isBuiltin: true,

@@ -1,14 +1,12 @@
 import { type Extension, Prec } from '@codemirror/state';
 import { EditorView, ViewPlugin, type ViewUpdate } from '@codemirror/view';
-import type { Action, ActionContext } from '@/libs/action';
 import { RenderingEngine } from '@/libs/processor';
+import type { TMAction, TMActionContext } from '@/libs/tmActionsManager';
 import { getActiveRegion } from '../../utils/core';
 import { checkActionContext, executeAction, executeActionEffect, resolveActionContext } from './actions';
 
-export function buildActionExtensions(actions: Action[], longPressDelayMs: number): Extension[] {
-  actions = actions.filter((a) => a.trigger?.t && a.trigger.v && a.action?.t && a.action.v && 0 < a.contexts?.length);
-
-  const interceptor = Prec.highest(buildActionInterceptorPlugin(actions, longPressDelayMs));
+export function buildActionExtensions(actions: TMAction[], longPressDuration: number): Extension[] {
+  const interceptor = Prec.highest(buildActionInterceptorPlugin(actions, longPressDuration));
   const dispatcher = buildActionDispatcherPlugin();
 
   return [interceptor, dispatcher];
@@ -17,25 +15,35 @@ export function buildActionExtensions(actions: Action[], longPressDelayMs: numbe
 class ActionInterceptorPluginValue {
   private longPressTimeout?: number;
   private pendingKey?: string;
-  private savedSelection?: { anchor: number; head: number; content: string; context: ActionContext };
+  private savedSelection?: { anchor: number; head: number; content: string; context: TMActionContext };
 
   private static readonly BUFFER_SIZE = 64;
   private typeBuffer = '';
   private lastHotkeyTime = 0;
   private lastHotkeyStr = '';
 
-  private hotkeyActions: Action[] = [];
-  private inputActions: Action[] = [];
-  private longPressActions: Action[] = [];
+  private hotkeyActions: TMAction[] = [];
+  private inputActions: TMAction[] = [];
+  private longPressActions: TMAction[] = [];
   private regexCache = new Map<string, RegExp>();
 
   constructor(
     public view: EditorView,
-    actions: Action[],
-    private longPressDelay: number,
+    actions: TMAction[],
+    private longPressDuration: number,
   ) {
     this.hotkeyActions = actions.filter((a) => a.trigger.t === 'hotkey');
-    this.inputActions = actions.filter((a) => a.trigger.t === 'type' || a.trigger.t === 'regex');
+    this.inputActions = actions
+      .filter((a) => a.trigger.t === 'type' || a.trigger.t === 'regex')
+      .sort((a, b) => {
+        const pA = a.p ?? 0;
+        const pB = b.p ?? 0;
+        if (pA !== pB) return pB - pA;
+
+        const lenA = a.trigger.v?.length ?? 0;
+        const lenB = b.trigger.v?.length ?? 0;
+        return lenB - lenA;
+      });
     this.longPressActions = actions.filter((a) => a.trigger.t === 'long-press');
 
     for (const action of this.inputActions) {
@@ -99,13 +107,12 @@ class ActionInterceptorPluginValue {
       const docMatchBuffer = this.view.state.sliceDoc(Math.max(0, head - lookback), head) + key;
 
       for (const action of this.inputActions) {
-        if (!checkActionContext(this.view, action, context)) continue;
-
         const t = action.trigger.t;
         const v = action.trigger.v;
 
         if (t === 'type') {
           if (v && typeMatchBuffer.endsWith(v) && docMatchBuffer.endsWith(v)) {
+            if (!checkActionContext(this.view, action, context, v.length - 1)) continue;
             e.preventDefault();
             this.executeAction(context, action, v.length - 1);
             this.typeBuffer = '';
@@ -118,6 +125,7 @@ class ActionInterceptorPluginValue {
           const match = regex ? docMatchBuffer.match(regex) : null;
           if (match) {
             const matchedStr = match[0];
+            if (!checkActionContext(this.view, action, context, matchedStr.length - 1)) continue;
             e.preventDefault();
             this.executeAction(context, action, matchedStr.length - 1, match);
             this.typeBuffer = '';
@@ -157,10 +165,10 @@ class ActionInterceptorPluginValue {
   }
 
   private startLongPressTimeout(
-    context: ActionContext,
+    context: TMActionContext,
     key: string,
     selection: { anchor: number; head: number },
-    action: Action,
+    action: TMAction,
   ) {
     this.clearLongPressTimeout();
     this.pendingKey = key;
@@ -177,7 +185,7 @@ class ActionInterceptorPluginValue {
     this.longPressTimeout = window.setTimeout(() => {
       this.executeAction(context, action);
       this.clearLongPressTimeout();
-    }, this.longPressDelay);
+    }, this.longPressDuration);
   }
 
   private cancelLongPressAndInsertKey() {
@@ -198,7 +206,7 @@ class ActionInterceptorPluginValue {
     this.clearLongPressTimeout();
   }
 
-  private executeAction(context: ActionContext, action: Action, deleteLength?: number, match?: RegExpMatchArray) {
+  private executeAction(context: TMActionContext, action: TMAction, deleteLength?: number, match?: RegExpMatchArray) {
     this.view.dispatch({
       effects: executeActionEffect.of({ action, context, deleteLength, match }),
       userEvent: `action.${action.action.t}`,
@@ -224,11 +232,11 @@ class ActionInterceptorPluginValue {
   }
 }
 
-function buildActionInterceptorPlugin(actions: Action[], longPressDelayMs: number) {
+function buildActionInterceptorPlugin(actions: TMAction[], longPressDuration: number) {
   return ViewPlugin.fromClass(
     class extends ActionInterceptorPluginValue {
       constructor(view: EditorView) {
-        super(view, actions, longPressDelayMs);
+        super(view, actions, longPressDuration);
       }
     },
     {

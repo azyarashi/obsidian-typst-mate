@@ -4,6 +4,7 @@ import { type EditorView, keymap, type PluginValue, ViewPlugin, type ViewUpdate 
 import { setIcon } from 'obsidian';
 import type { Completion, CompletionKind } from '@/../pkg/typst_wasm';
 import SYMBOLS_BY_NAME from '@/data/symbols.json';
+import { Snippet } from '@/editor/shared/internal/Snippet';
 import { typstManager } from '@/libs';
 import { tmActionsManager } from '@/libs/tmActionsManager';
 import { format } from '@/ui/elements/Typst';
@@ -15,43 +16,49 @@ import { autocompleteSettingsFacet } from './package';
 
 import './Autocomplete.css';
 
-const symbolRegexForLatex =
-  /(?:^| |\$|\(|\)|\[|\]|\{|\}|<|>|\+|-|\/|\*|=|!|\?|#|%|&|'|:|;|,|\d)(?<symbol>\\[a-zA-Z.]*)$/;
-const placeholderRegex = /\$\{(?:\d+:)?([^}]*)}/g;
-const rgbDetailRegex = /^rgb\("#?([0-9a-fA-F]{3,8})"\)$/;
-const lumaDetailRegex = /^luma\("?(\d+(?:\.\d+)?)%"?\)$/;
+const symbolRegexForLatex = /(\\[a-zA-Z]{2,})$/;
 
 const kindToIcon: Record<CompletionKind, string> = {
-  func: 'function-square',
+  func: 'square-function',
   type: 'box',
   param: 'at-sign',
   constant: 'hash',
-  path: 'folder',
-  package: 'package',
-  label: 'tag',
+
   font: 'type',
+  path: 'file',
+  package: 'package',
+
+  label: 'tag',
+
   symbol: 'asterisk',
+
   syntax: 'code',
 };
 
-function resolveApply(apply: string): { text: string; cursor: number } {
-  let cursorPos = -1;
-  let result = '';
-  let lastIdx = 0;
+function resolveApply(template: string): { text: string; anchorOffset: number; headOffset: number } {
+  const snippet = Snippet.parse(template);
+  const text = snippet.lines.join('\n');
+  let anchorOffset = text.length;
+  let headOffset = text.length;
 
-  for (let match = placeholderRegex.exec(apply); match !== null; match = placeholderRegex.exec(apply)) {
-    result += apply.slice(lastIdx, match.index);
-    if (cursorPos === -1) cursorPos = result.length;
-    result += match[1];
-    lastIdx = match.index + match[0].length;
+  const firstFieldPos = snippet.tabStops.find((p) => p.level === 0) ?? snippet.tabStops[0];
+  if (firstFieldPos) {
+    let pos = 0;
+    for (let i = 0; i < firstFieldPos.line; i++) pos += snippet.lines[i]!.length + 1;
+    anchorOffset = pos + firstFieldPos.from;
+    headOffset = pos + firstFieldPos.to;
   }
-  result += apply.slice(lastIdx);
-  if (cursorPos === -1) cursorPos = result.length;
-  return { text: result, cursor: cursorPos };
+
+  return { text, anchorOffset, headOffset };
 }
 
+/** rgb(#000000) -> 000000 */
+const rgbDetailRegex = /^rgb\("#([0-9a-f]{6})"\)$/;
+/** luma(66.67%) -> 66.67 */
+const lumaDetailRegex = /^luma\((\d+(?:\.\d+)?)%\)$/;
 function extractColor(detail?: string): string | null {
   if (!detail) return null;
+
   const mRgb = detail.match(rgbDetailRegex);
   if (mRgb) return `#${mRgb[1]}`;
 
@@ -87,19 +94,6 @@ export class AutocompletePlugin implements PluginValue {
   private isApplyingCompletion = false;
   private isCycling = false;
   private lastPositionAbove = false;
-
-  private readonly onMouseMoveCapture = (e: MouseEvent) => this.handleMouseMove(e);
-  private readonly onMouseDownCapture = (e: MouseEvent) => this.handleMouseDown(e);
-  private readonly onKeyDownCapture = (e: KeyboardEvent) => {
-    if (!this.isActive) return;
-    if (['ArrowUp', 'ArrowDown', 'Tab', 'Enter', 'Escape'].includes(e.key)) {
-      if (this.handleKeyAction(e.key, e)) {
-        e.preventDefault();
-        e.stopPropagation();
-        e.stopImmediatePropagation();
-      }
-    }
-  };
 
   constructor(public view: EditorView) {
     this.container = document.createElement('div');
@@ -211,7 +205,7 @@ export class AutocompletePlugin implements PluginValue {
     try {
       const raw = await typstManager.wasm.autocompleteAsync(innerOffset, formatted);
       if (requestId !== this.lastRequestId) return; // 破棄
-      if (raw?.completions && raw.completions.length > 0) {
+      if (raw?.completions && 0 < raw.completions.length) {
         wasmCompletions = raw.completions;
         wasmFrom = regionInnerStart + offset + raw.from;
       }
@@ -223,6 +217,8 @@ export class AutocompletePlugin implements PluginValue {
     let localFrom = cursor;
 
     const mode = region.activeMode ?? region.mode;
+
+    // math mode の場合, latex 形式の検索も行う
     if (mode === SyntaxMode.Math) {
       const line = view.state.doc.lineAt(cursor);
       const textBefore = view.state.sliceDoc(line.from, cursor);
@@ -233,13 +229,13 @@ export class AutocompletePlugin implements PluginValue {
         localFrom = cursor - query.length;
         const symbols = searchSymbols(query);
 
-        localCompletions = symbols.map((sym: SymbolData) => {
+        localCompletions = symbols.map((symbolData: SymbolData) => {
           return {
             kind: 'symbol' as CompletionKind,
-            symbol: sym.sym,
-            label: `\\${sym.latexName}`,
-            detail: sym.name,
-            apply: sym.name,
+            symbol: symbolData.sym,
+            label: `\\${symbolData.latexName}`,
+            detail: symbolData.name,
+            apply: symbolData.name,
           };
         });
       }
@@ -251,29 +247,34 @@ export class AutocompletePlugin implements PluginValue {
     const useUnicodeSymbols = autocompleteSettings?.useUnicodeSymbols ?? false;
 
     const processCompletion = (item: Completion): Completion => {
-      if (!useUnicodeSymbols || (item.kind !== 'symbol' && item.kind !== 'constant')) {
-        if (item.label.startsWith('\\') && item.apply) {
-          const symData = (SYMBOLS_BY_NAME as any)[item.detail || ''];
-          if (symData && !['op', 'Large'].includes(symData.mathClass)) return { ...item, apply: `${item.apply} ` };
-        }
-        return item;
-      }
+      const result = { ...item };
+      let symData: SymbolData | undefined;
 
-      let symbol = item.symbol;
-      if (!symbol) {
+      if (item.kind === 'symbol' || item.kind === 'constant') {
         const label = item.label.startsWith('sym.') ? item.label.slice(4) : item.label;
-        const symData = (SYMBOLS_BY_NAME as any)[label] || (SYMBOLS_BY_NAME as any)[item.detail || ''];
-        if (symData?.sym) symbol = symData.sym;
+        const lookup = SYMBOLS_BY_NAME as Record<string, SymbolData>;
+        symData = lookup[label] || lookup[item.detail || ''];
       }
 
-      if (symbol) {
-        return {
-          ...item,
-          symbol,
-          apply: symbol,
-        };
+      if (!useUnicodeSymbols || (item.kind !== 'symbol' && item.kind !== 'constant')) {
+        if (item.apply) {
+          if (symData && !['op', 'Large'].includes(symData.mathClass)) result.apply = `${item.apply} `;
+        }
+      } else {
+        let symbol = item.symbol;
+        if (!symbol && symData?.sym) symbol = symData.sym;
+
+        if (symbol) {
+          result.symbol = symbol;
+          result.apply = symbol;
+        }
       }
-      return item;
+
+      if (item.kind === 'symbol' && symData && typeof symData.mathClass === 'string') {
+        result.detail = symData.mathClass;
+      }
+
+      return result;
     };
 
     if (localCompletions.length > 0) {
@@ -284,16 +285,15 @@ export class AutocompletePlugin implements PluginValue {
       this.from = wasmFrom;
     }
 
+    // 絞り込み
     this.allCandidates = this.allCandidates.filter((c) => !(c.kind === 'constant' && c.label === 'WIDTH'));
-
+    // 並び替え
     this.allCandidates.sort((a, b) => {
       const score = (x: Completion) => (x.kind === 'param' || x.kind === 'font' || x.kind === 'path' ? 1 : 0);
       return score(b) - score(a);
     });
 
-    for (const c of this.allCandidates) {
-      c.labelLow = c.label.toLowerCase();
-    }
+    for (const c of this.allCandidates) c.labelLow = c.label.toLowerCase();
 
     if (this.allCandidates.length === 0 || view.state.selection.main.head !== cursor) {
       this.reset();
@@ -506,29 +506,6 @@ export class AutocompletePlugin implements PluginValue {
     this.isCycling = false;
   }
 
-  // マウスイベント
-
-  private handleMouseMove(e: MouseEvent) {
-    if (!this.isActive) return;
-    const item = (e.target as HTMLElement).closest('.item') as HTMLElement | null;
-    if (!item) return;
-    const index = Number(item.dataset.index);
-    if (!Number.isNaN(index)) this.updateSelection(index);
-  }
-
-  private handleMouseDown(e: MouseEvent) {
-    if (!this.isActive) return;
-    const item = (e.target as HTMLElement).closest('.item') as HTMLElement | null;
-    if (!item) return;
-    e.preventDefault();
-    e.stopPropagation();
-    const index = Number(item.dataset.index);
-    if (!Number.isNaN(index) && this.candidates[index]) {
-      this.execute(this.candidates[index]!);
-      this.view.focus();
-    }
-  }
-
   // 補完
 
   private complete(item: Completion, isCycling = false) {
@@ -572,12 +549,14 @@ export class AutocompletePlugin implements PluginValue {
     }
 
     const apply = item.apply ?? item.label;
-    const { text, cursor } = resolveApply(apply);
+    const { text, anchorOffset, headOffset } = resolveApply(apply);
+    const newCursor = this.from + anchorOffset;
+    const newHead = this.from + headOffset;
 
     this.isApplyingCompletion = true;
     this.view.dispatch({
       changes: { from: this.from, to: this.to, insert: text },
-      selection: { anchor: this.from + cursor },
+      selection: { anchor: newCursor, head: newHead },
       userEvent: 'input.complete',
     });
     this.isApplyingCompletion = false;
@@ -587,11 +566,49 @@ export class AutocompletePlugin implements PluginValue {
 
     if (item.kind === 'param') {
       const region = getActiveRegion(this.view);
-      if (region) this.triggerAutocomplete(this.view, this.from + cursor, region);
+      if (region) this.triggerAutocomplete(this.view, newCursor, region);
     }
   }
 
+  // マウスイベント
+  private readonly onMouseMoveCapture = (e: MouseEvent) => {
+    if (!this.isActive) return;
+
+    const item = (e.target as HTMLElement).closest('.item') as HTMLElement | null;
+    if (!item) return;
+
+    const index = Number(item.dataset.index);
+    if (!Number.isNaN(index)) this.updateSelection(index);
+  };
+
+  private readonly onMouseDownCapture = (e: MouseEvent) => {
+    if (!this.isActive) return;
+
+    const item = (e.target as HTMLElement).closest('.item') as HTMLElement | null;
+    if (!item) return;
+
+    e.preventDefault();
+    e.stopPropagation();
+    const index = Number(item.dataset.index);
+    if (!Number.isNaN(index) && this.candidates[index]) {
+      this.execute(this.candidates[index]!);
+      this.view.focus();
+    }
+  };
+
   // キーイベント
+
+  private readonly onKeyDownCapture = (e: KeyboardEvent) => {
+    if (!this.isActive) return;
+
+    if (['ArrowUp', 'ArrowDown', 'Tab', 'Enter', 'Escape'].includes(e.key)) {
+      if (this.handleKeyAction(e.key, e)) {
+        e.preventDefault();
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+      }
+    }
+  };
 
   handleKeyAction(key: string, e?: KeyboardEvent): boolean {
     if (!this.isActive || this.candidates.length === 0) return false;
@@ -670,13 +687,18 @@ export const autocompleteExtension = [
   ),
 ];
 
-export function startAutocomplete(view: EditorView) {
+export function startAutocomplete(view: EditorView): boolean {
+  const selection = view.state.selection;
+  if (selection.ranges.length !== 1) return false;
+
   const plugin = view.plugin(autocompletePlugin);
-  if (plugin) {
-    const region = getActiveRegion(view);
-    if (region) {
-      const cursor = view.state.selection.main.head;
-      plugin.triggerAutocomplete(view, cursor, region);
-    }
-  }
+  if (!plugin) return false;
+
+  const region = getActiveRegion(view);
+  if (!region) return false;
+
+  const cursor = selection.main.anchor;
+  plugin.triggerAutocomplete(view, cursor, region);
+
+  return true;
 }

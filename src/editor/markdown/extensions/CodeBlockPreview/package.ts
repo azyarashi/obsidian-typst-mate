@@ -4,9 +4,9 @@ import type { ExtensionPackageFn } from '@/libs/extensionManager';
 
 export const codeblockPreviewPackage: ExtensionPackageFn = () => ({
   id: 'codeblock-preview',
-  name: t('settings.extensions.codeblockPreview.name'),
+  name: t('settings.extensions.codeblockPreviewName'),
   icon: ICONS.ScanEye,
-  description: t('settings.extensions.codeblockPreview.desc'),
+  description: t('settings.extensions.codeblockPreviewDesc'),
   tags: ['ui'],
   scope: ['markdown'],
   isBuiltin: false,

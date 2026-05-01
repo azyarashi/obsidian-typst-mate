@@ -1,44 +1,45 @@
 import { LinkedNode, SyntaxKind } from '@typstmate/typst-syntax';
 import { type Facet, RangeSet, StateEffect } from '@codemirror/state';
 import { Decoration, type DecorationSet, EditorView, ViewPlugin, type ViewUpdate, WidgetType } from '@codemirror/view';
+import { setTooltip } from 'obsidian';
 import symbolData from '@/data/symbols.json';
 import { RenderingEngine } from '@/libs/processor';
 import { getActiveRegion } from '../../utils/core';
+import type { SymbolData } from '../../utils/symbolSearcher';
 import type { SymbolConcealSettings } from './package';
 
-export const SYMBOL_MAP = new Map<string, string>();
-for (const [key, val] of Object.entries(symbolData as Record<string, { sym?: string }>)) {
-  if (val.sym) SYMBOL_MAP.set(key, val.sym);
-}
+export const SYMBOL_MAP = new Map<string, SymbolData>();
+for (const [key, val] of Object.entries(symbolData)) SYMBOL_MAP.set(key, val);
 
 // * widget
 
 const widgetCache = new Map<string, SymbolWidget>();
 
 class SymbolWidget extends WidgetType {
-  constructor(public symbol: string) {
+  constructor(private symbolData: SymbolData) {
     super();
   }
 
   override eq(other: SymbolWidget): boolean {
-    return this.symbol === other.symbol;
+    return this.symbolData.sym === other.symbolData.sym;
   }
 
   override toDOM() {
     const span = document.createElement('span');
     span.className = 'typ-pol';
-    span.textContent = this.symbol;
+    span.textContent = this.symbolData.sym;
+    setTooltip(span, `${this.symbolData.name} [${this.symbolData.mathClass}]`, { placement: 'left', delay: 1 });
 
     return span;
   }
 }
 
-function getSymbolWidget(symbol: string): SymbolWidget {
-  let w = widgetCache.get(symbol);
+function getSymbolWidget(symbolData: SymbolData): SymbolWidget {
+  let w = widgetCache.get(symbolData.sym);
 
   if (!w) {
-    w = new SymbolWidget(symbol);
-    widgetCache.set(symbol, w);
+    w = new SymbolWidget(symbolData);
+    widgetCache.set(symbolData.sym, w);
   }
 
   return w;
@@ -107,22 +108,22 @@ export class SymbolConcealPlugin {
       if (isMatchable) {
         const fullText = node.node.intoText();
         const text = fullText.trim();
-        let sym: string | undefined;
+        let symbolData: SymbolData | undefined;
 
-        if (kind === SyntaxKind.MathIdent || kind === SyntaxKind.MathText) sym = SYMBOL_MAP.get(text);
+        if (kind === SyntaxKind.MathIdent || kind === SyntaxKind.MathText) symbolData = SYMBOL_MAP.get(text);
         else if (kind === SyntaxKind.FieldAccess) {
           const leftmost = node.leftmostLeaf();
           if (leftmost) {
             const lKind = leftmost.kind();
-            if (lKind === SyntaxKind.MathIdent) sym = SYMBOL_MAP.get(text);
+            if (lKind === SyntaxKind.MathIdent) symbolData = SYMBOL_MAP.get(text);
             else if (lKind === SyntaxKind.Ident && leftmost.text().trim() === 'sym') {
               const dotIndex = text.indexOf('.');
-              if (dotIndex !== -1) sym = SYMBOL_MAP.get(text.slice(dotIndex + 1).trim());
+              if (dotIndex !== -1) symbolData = SYMBOL_MAP.get(text.slice(dotIndex + 1).trim());
             }
           }
         }
 
-        if (sym) {
+        if (symbolData) {
           const startWhitespace = fullText.length - fullText.trimStart().length;
           const absStart = offset + node.offset + startWhitespace;
           const absEnd = absStart + text.length;
@@ -155,7 +156,7 @@ export class SymbolConcealPlugin {
           }
 
           if (isConcealed) {
-            const deco = Decoration.replace({ widget: getSymbolWidget(sym) });
+            const deco = Decoration.replace({ widget: getSymbolWidget(symbolData) });
             marks.push(deco.range(absStart, absEnd));
           }
 

@@ -1,0 +1,8 @@
+.typstmate-link {
+  cursor: pointer;
+}
+
+.typstmate-modifier-pressed .typstmate-link:hover {
+  text-decoration: var(--link-external-decoration-hover);
+  color: var(--link-external-color-hover);
+}

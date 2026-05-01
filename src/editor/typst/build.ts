@@ -1,7 +1,6 @@
-import { closeBrackets, closeBracketsKeymap } from '@codemirror/autocomplete';
 import { history, historyKeymap, indentLess, indentMore, standardKeymap } from '@codemirror/commands';
 import { highlightSelectionMatches, search, searchKeymap } from '@codemirror/search';
-import type { Extension } from '@codemirror/state';
+import { EditorState, type Extension } from '@codemirror/state';
 import {
   EditorView,
   highlightActiveLine,
@@ -12,27 +11,42 @@ import {
 } from '@codemirror/view';
 import { diagnosticsState } from '@/editor/shared/extensions/Linter/extension';
 import { extensionManager, viewTracker } from '@/libs/extensionManager';
-import { typstTextViewTheme } from './extensions/Theme';
+import { textViewTheme } from '../../editorSimple/extensions/Theme';
 import { typstTextCore } from './extensions/TypstCore';
+import { clickableLinkExtension } from '../shared/internal/ClickableLink';
+import { typstFoldingExtension } from './internal/Folding';
+import { statusBarExtension } from './internal/StatusBar';
+import { zoomExtension } from './internal/Zoom';
 
 export function buildTypstTextExtensions() {
   const extensions: Extension[] = [
     viewTracker('typst'),
     typstTextCore,
-    typstTextViewTheme,
+    textViewTheme,
     diagnosticsState,
     ...extensionManager.buildExtensions('typst'),
+
+    clickableLinkExtension,
+    typstFoldingExtension,
+    statusBarExtension,
+    zoomExtension,
+
 
     EditorState.allowMultipleSelections.of(true),
     EditorView.lineWrapping,
 
     history(),
     search(),
-    closeBrackets(),
-    highlightSelectionMatches({ minSelectionLength: 2 }),
+    // closeBrackets(),
+    highlightSelectionMatches({ minSelectionLength: 2, wholeWords: true }),
+    highlightTrailingWhitespace(),
 
+    lineNumbers(),
+    highlightActiveLineGutter(),
+    highlightActiveLine(),
+
+    // TODO
     keymap.of([
-      ...closeBracketsKeymap,
       ...searchKeymap,
       ...historyKeymap,
       { key: 'Tab', run: indentMore },
@@ -40,12 +54,6 @@ export function buildTypstTextExtensions() {
 
       ...standardKeymap,
     ]),
-
-    highlightTrailingWhitespace(),
-
-    lineNumbers(),
-    highlightActiveLineGutter(),
-    highlightActiveLine(),
   ];
 
   return extensions.filter((ext) => !Array.isArray(ext) || (Array.isArray(ext) && ext.length !== 0));

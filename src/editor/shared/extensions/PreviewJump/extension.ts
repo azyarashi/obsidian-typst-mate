@@ -5,7 +5,7 @@ import type TypstElement from '@/ui/elements/Typst';
 import { getRegionAt, type ParsedRegion } from '../../utils/core';
 import { handleTypstMateURI } from './uri';
 
-class JumpFromClickPluginValue {
+class PreviewJumpPluginValue {
   constructor(public view: EditorView) {}
 
   async jumpTo(jump: Jump, event: MouseEvent, context?: TypstElement) {
@@ -71,5 +71,5 @@ class JumpFromClickPluginValue {
   }
 }
 
-export const jumpFromClickPlugin = ViewPlugin.fromClass(JumpFromClickPluginValue);
-export const jumpFromClickExtension = jumpFromClickPlugin;
+export const previewJumpPlugin = ViewPlugin.fromClass(PreviewJumpPluginValue);
+export const previewJumpExtension = previewJumpPlugin;

@@ -4,9 +4,9 @@ import { t } from '@/i18n';
 export const indentRainbowPackage = () =>
   ({
     id: 'indent-rainbow',
-    name: t('settings.extensions.indentRainbow.name'),
+    name: t('settings.extensions.indentRainbowName'),
     icon: ICONS.Rainbow,
-    description: t('settings.extensions.indentRainbow.desc'),
+    description: t('settings.extensions.indentRainbowDesc'),
     tags: ['decoration'],
     scope: ['typst'],
     isBuiltin: false,
