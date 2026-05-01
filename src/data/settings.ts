@@ -5,6 +5,7 @@ import {
   CodeblockStyling,
   type DisplayProcessor,
   DisplayStyling,
+  type ExcalidrawProcessor,
   type InlineProcessor,
   InlineStyling,
   type ProcessorKind,
@@ -29,7 +30,6 @@ export interface Settings {
   /* Typst Mate アクション */
   tmactionsSource: string;
   useTmactionsFile: boolean;
-  tmactionsFileNPath: string;
 
   /* レンダリング */
   enableBackgroundRendering: boolean; // プラグインのリロードが必要
@@ -47,7 +47,7 @@ export interface Settings {
   watchExtensions: string[];
 
   /* 高度な設定 */
-  importPath: string;
+  resourcesPath: string;
   localeOverride?: string;
   applyProcessorToMathJax: boolean;
   textViewExtensions: string[];
@@ -64,7 +64,7 @@ export interface Settings {
       processors: CodeblockProcessor[];
     };
     excalidraw: {
-      processors: CodeblockProcessor[]; // TODO
+      processors: ExcalidrawProcessor[];
     };
   };
   extensionSettings: Record<EditorContext, Record<string, ExtensionSetting>>;
@@ -108,14 +108,16 @@ export const DEFAULT_SETTINGS: Settings = {
     '#set page(margin: 0pt, width: auto, height: auto)',
     '#set text(size: fontsize)',
     '#show raw: set text(size: 1.25em)',
-    '#import "@preview/mannot:0.3.3": *',
-    '#import "@preview/quick-maths:0.2.1": shorthands',
-    '#show: shorthands.with(',
-    '  ($+-$, sym.plus.minus),',
-    '  ($|-$, math.tack),',
-    ')',
-    '\n',
     '#import typstmate: *',
+    '\n',
+    '/*',
+    '  #import "@preview/mannot:0.3.3": *',
+    '  #import "@preview/quick-maths:0.2.1": shorthands',
+    '  #show: shorthands.with(',
+    '    ($+-$, sym.plus.minus),',
+    '    ($|-$, math.tack),',
+    '  )',
+    ' */',
   ].join('\n'),
   preambleHtml: '',
   preambleMathJax: '',
@@ -123,7 +125,6 @@ export const DEFAULT_SETTINGS: Settings = {
   /* Typst Mate アクション */
   tmactionsSource: '',
   useTmactionsFile: false,
-  tmactionsFileNPath: 'typstmate/tmactions.js',
 
   /* レンダリング */
   enableBackgroundRendering: true,
@@ -149,9 +150,9 @@ export const DEFAULT_SETTINGS: Settings = {
   watchExtensions: ['typ', 'png', 'jpg', 'jpeg', 'gif', 'svg', 'pdf', 'webp', 'wasm', 'tmTheme', 'sublime-color-scheme'],
 
   /* 高度な設定 */
-  importPath: 'typstmate',
+  resourcesPath: 'typstmate',
   applyProcessorToMathJax: false,
-  textViewExtensions: ['html', 'toml', 'js'],
+  textViewExtensions: ['html', 'toml', 'js', 'tmTheme', 'sublime-color-scheme'],
 
   /* その他の設定 */
   processor: {
