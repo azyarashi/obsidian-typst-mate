@@ -18,7 +18,7 @@ export function getModeAndKind(
   // 両側が同じ
   if (leftMode === rightMode) mode = leftMode;
   // 左側が 行コメント または エスケープ
-  else if (syntaxKindLeft === SyntaxKind.LineComment || syntaxKindLeft === SyntaxKind.Escape) mode = SyntaxMode.Opaque;
+  else if (syntaxKindLeft === SyntaxKind.LineComment || syntaxKindLeft === SyntaxKind.Escape) mode = SyntaxMode.Plain;
   // 右側が コードモード
   else if (rightMode === SyntaxMode.Code) mode = SyntaxMode.Code;
   // Code の後
@@ -44,7 +44,7 @@ function getMode(node?: LinkedNode): SyntaxMode | null {
   while (node) {
     const k = node.kind();
 
-    if (isOpaqueKind(k)) return SyntaxMode.Opaque;
+    if (isOpaqueKind(k)) return SyntaxMode.Plain;
     if (k === SyntaxKind.Equation || k === SyntaxKind.Math) return SyntaxMode.Math;
     if (k === SyntaxKind.ContentBlock || k === SyntaxKind.Markup) return SyntaxMode.Markup;
     if (
@@ -66,9 +66,6 @@ function isOpaqueKind(k: SyntaxKind) {
     k === SyntaxKind.LineComment || // // ...
     k === SyntaxKind.BlockComment || // /* ... */
     k === SyntaxKind.Raw || // raw
-    k === SyntaxKind.Link || // [url](url)
-    k === SyntaxKind.Ref || // @target
-    k === SyntaxKind.Label || // <label></label>
     k === SyntaxKind.Str // "..."
   );
 }

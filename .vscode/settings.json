@@ -19,6 +19,15 @@
   "[css]": {
     "editor.defaultFormatter": "biomejs.biome"
   },
-  "i18n-ally.localesPaths": ["resources/locales"],
-  "i18n-ally.regex.usageMatch": ["^[a-zA-Z0-9]t\\(\\s*['\"`]([^'\"`]+)['\"`]"]
+
+  "i18n-ally.localesPaths": "resources/locales",
+  "i18n-ally.pathMatcher": "{locale}.json5",
+  "i18n-ally.enabledParsers": ["json5"],
+  "i18n-ally.keystyle": "nested",
+
+  // TODO
+  "i18n-ally.sourceLanguage": "ja",
+  "i18n-ally.displayLanguage": "ja",
+
+  "i18n-ally.regex.usageMatch": ["\\bt\\(\\s*['\"`]([^'\"`]+)['\"`]"]
 }
