@@ -12,12 +12,11 @@ import {
 import { formatterSettingsFacet } from '@/editor/shared/extensions';
 import { updateDiagnosticEffect } from '@/editor/shared/extensions/Linter/extension';
 import { buildTypstTextExtensions } from '@/editor/typst/build';
-import { jumpToPreviewTargetFacet } from '@/editor/typst/extensions/JumpToPreview';
+import { codeJumpTargetFacet } from '@/editor/typst/extensions/CodeJump';
 import { vimQuitFacet, vimSaveFacet } from '@/editor/typst/extensions/Vim';
 import { t } from '@/i18n';
 import { fileManager, settingsManager, typstManager } from '@/libs';
 import { viewTracker } from '@/libs/extensionManager';
-import type ObsidianTypstMate from '@/main';
 import { exportToPdf } from '@/utils/export';
 import { ExportToolModal } from '../../modals/exportTool';
 import { TypstPreviewView } from '../typst-preview';
@@ -26,7 +25,6 @@ import './typst-file.css';
 
 export class TypstFileView extends TextFileView {
   static viewtype = 'typst-file';
-  plugin: ObsidianTypstMate;
 
   vpath: string | undefined;
   isExternal: boolean = false;
@@ -35,11 +33,6 @@ export class TypstFileView extends TextFileView {
   view!: EditorView;
 
   override requestSave = debounce(this.save.bind(this), 1000);
-
-  constructor(leaf: WorkspaceLeaf, plugin: ObsidianTypstMate) {
-    super(leaf);
-    this.plugin = plugin;
-  }
 
   override getIcon(): string {
     return 'typst-fill';
@@ -60,12 +53,12 @@ export class TypstFileView extends TextFileView {
     await super.onload();
     this.resolveVPath();
 
-    this.addAction('upload', t('views.typstText.actions.exportAsPdf'), () => {
+    this.addAction('upload', t('views.typstFile.actions.exportAsPdf'), () => {
       if (!this.vpath) return;
       new ExportToolModal(this.app, this.vpath, this.view.state.doc.toString()).open();
     });
 
-    this.addAction('file-image', t('views.typstText.actions.exportAsPdf'), async () => {
+    this.addAction('file-image', t('views.typstFile.actions.exportAsPdf'), async () => {
       if (!this.vpath) return;
       const path = await exportToPdf(this.vpath, this.view.state.doc.toString(), {
         tagged: true,
@@ -80,7 +73,7 @@ export class TypstFileView extends TextFileView {
       }
     });
 
-    this.addAction('eye', t('views.typstText.actions.openPreview'), async () => {
+    this.addAction('eye', t('views.typstFile.actions.openPreview'), async () => {
       this.openPreview();
     });
   }
@@ -197,7 +190,7 @@ export class TypstFileView extends TextFileView {
 
   override getDisplayText() {
     const vpath = this.resolveVPath();
-    return vpath ? fileManager.getFilename(vpath) : t('views.typstText.displayText');
+    return vpath ? fileManager.getFilename(vpath) : t('views.typstFile.displayText');
   }
 
   override getViewData() {
@@ -221,7 +214,7 @@ export class TypstFileView extends TextFileView {
   private renderWaiting(): void {
     if (this.waitingEl) return;
     this.waitingEl = this.contentEl.createDiv('typstmate-waiting-banner');
-    this.waitingEl.createEl('span', { text: t('common.waiting') });
+    this.waitingEl.createEl('span', { text: t('common.waitingForLoad') });
   }
 
   private removeWaiting(): void {
@@ -236,7 +229,7 @@ export class TypstFileView extends TextFileView {
     return [
       ...buildTypstTextExtensions(),
       viewTracker('typst'),
-      jumpToPreviewTargetFacet.of({
+      codeJumpTargetFacet.of({
         jumpToPosition: async (position: { page: number; x: number; y: number }) => {
           if (!this.linkedPreviewLeaf) return;
 

@@ -8,18 +8,17 @@ import { type Tool, TypstToolsView } from './typst-tools';
 export { isTypstFileView, TextFileView, type Tool, TypstFileView, TypstPreviewView, TypstToolsView };
 
 export function registerViews(plugin: ObsidianTypstMate) {
-  plugin.registerView(TextFileView.viewtype, (leaf) => new TextFileView(leaf, plugin));
-  plugin.registerView(TypstFileView.viewtype, (leaf) => new TypstFileView(leaf, plugin));
-  plugin.registerView(TypstPreviewView.viewtype, (leaf) => new TypstPreviewView(leaf, plugin));
-  plugin.registerView(TypstToolsView.viewtype, (leaf) => new TypstToolsView(leaf, plugin));
+  plugin.registerView(TextFileView.viewtype, (leaf) => new TextFileView(leaf));
+  plugin.registerView(TypstFileView.viewtype, (leaf) => new TypstFileView(leaf));
+  plugin.registerView(TypstPreviewView.viewtype, (leaf) => new TypstPreviewView(leaf));
+  plugin.registerView(TypstToolsView.viewtype, (leaf) => new TypstToolsView(leaf));
 
   plugin.registerExtensions(['typ'], TypstFileView.viewtype);
   for (const extension of settingsManager.settings.textViewExtensions) {
     try {
       plugin.registerExtensions([extension], TextFileView.viewtype);
     } catch (e) {
-      // TODO
-      console.error(e);
+      console.warn(`[TypstMate] Failed to register extension '${extension}'`, e);
     }
   }
 }

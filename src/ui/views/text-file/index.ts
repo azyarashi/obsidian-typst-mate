@@ -9,20 +9,11 @@ import {
   keymap,
   lineNumbers,
 } from '@codemirror/view';
-import { TextFileView as ObsidianTextFileView, type TFile, type WorkspaceLeaf } from 'obsidian';
-import type ObsidianTypstMate from '@/main';
+import { TextFileView as ObsidianTextFileView, type TFile } from 'obsidian';
 
 export class TextFileView extends ObsidianTextFileView {
   static viewtype = 'text-file';
-
-  plugin: ObsidianTypstMate;
-
   view!: EditorView;
-
-  constructor(leaf: WorkspaceLeaf, plugin: ObsidianTypstMate) {
-    super(leaf);
-    this.plugin = plugin;
-  }
 
   override getViewType() {
     return TextFileView.viewtype;
@@ -47,6 +38,7 @@ export class TextFileView extends ObsidianTextFileView {
   private extensionCompartment = new Compartment();
 
   private buildExtensions() {
+    // TODO
     return [
       EditorView.lineWrapping,
       lineNumbers(),
@@ -67,6 +59,7 @@ export class TextFileView extends ObsidianTextFileView {
 
   override async onLoadFile(file: TFile): Promise<void> {
     this.contentEl.empty();
+
     const fileContent = await this.app.vault.read(file);
 
     const startState = EditorState.create({
@@ -83,8 +76,10 @@ export class TextFileView extends ObsidianTextFileView {
 
   override async save(clear?: boolean): Promise<void> {
     if (!this.file) return;
+
     const content = this.view.state.doc.toString();
     await this.app.vault.modify(this.file, content);
+
     await super.save(clear);
   }
 

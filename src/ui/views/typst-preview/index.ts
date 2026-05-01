@@ -1,8 +1,7 @@
-import { type Menu, TextFileView, type TFile, type WorkspaceLeaf } from 'obsidian';
-import { jumpFromClickExtension } from '@/editor/shared/extensions/JumpFromClick';
+import { type Menu, setIcon, setTooltip, TextFileView, type TFile } from 'obsidian';
+import { previewJumpExtension } from '@/editor/shared/extensions/PreviewJump';
 import { t } from '@/i18n';
 import { typstManager } from '@/libs';
-import type ObsidianTypstMate from '@/main';
 import { TypstFileView } from '../typst-file';
 
 import './typst-preview.css';
@@ -15,8 +14,6 @@ interface PreviewViewerState {
 
 export class TypstPreviewView extends TextFileView {
   static viewtype = 'typst-preview';
-
-  plugin: ObsidianTypstMate;
 
   parentFileView: TypstFileView | null = null;
   vpath!: string;
@@ -44,11 +41,6 @@ export class TypstPreviewView extends TextFileView {
   private scrollStartY = 0;
 
   private isProgrammaticScroll = false;
-
-  constructor(leaf: WorkspaceLeaf, plugin: ObsidianTypstMate) {
-    super(leaf);
-    this.plugin = plugin;
-  }
 
   getViewType(): string {
     return TypstPreviewView.viewtype;
@@ -99,7 +91,7 @@ export class TypstPreviewView extends TextFileView {
 
   private renderWaiting(): void {
     const container = this.contentEl.createDiv('typstmate-waiting-container');
-    container.createEl('span', { text: t('common.waiting') });
+    container.createEl('span', { text: t('common.waitingForLoad') });
   }
 
   override async onModify(file: TFile): Promise<void> {
@@ -201,9 +193,13 @@ export class TypstPreviewView extends TextFileView {
   private createViewer(): void {
     this.controlsEl = this.contentEl.createDiv('typstmate-preview-controls');
 
-    const prevButton = this.controlsEl.createEl('button', { text: '←' });
+    // * prevButton
+    const prevButton = this.controlsEl.createEl('button');
+    setIcon(prevButton, 'arrow-left');
+    setTooltip(prevButton, t('views.typstPreview.tooltips.prevPage'));
     prevButton.addEventListener('click', () => this.goToPreviousPage());
 
+    // * pageInfoContainer
     const pageInfoContainer = this.controlsEl.createDiv('typstmate-preview-page-info');
     this.pageInputEl = pageInfoContainer.createEl('input', {
       type: 'number',
@@ -225,12 +221,19 @@ export class TypstPreviewView extends TextFileView {
     this.totalPagesLabelEl = pageInfoContainer.createEl('span');
     this.totalPagesLabelEl.textContent = ` / ${this.svgPages.length}`;
 
-    const nextButton = this.controlsEl.createEl('button', { text: '→' });
+    // * nextButton
+    const nextButton = this.controlsEl.createEl('button');
+    setIcon(nextButton, 'arrow-right');
+    setTooltip(nextButton, t('views.typstPreview.tooltips.nextPage'));
     nextButton.addEventListener('click', () => this.goToNextPage());
 
-    const resetButton = this.controlsEl.createEl('button', { text: t('views.typstPreview.fitToPage') });
+    // * resetButton
+    const resetButton = this.controlsEl.createEl('button');
+    setIcon(resetButton, 'maximize-2');
+    setTooltip(resetButton, t('views.typstPreview.tooltips.fitToPage'));
     resetButton.addEventListener('click', () => this.fitToPage(true));
 
+    // * zoomSliderEl
     this.zoomSliderEl = this.controlsEl.createEl('input', {
       type: 'range',
       cls: 'typstmate-preview-zoom-slider',
@@ -558,7 +561,7 @@ export class TypstPreviewView extends TextFileView {
     if (!result || !this.parentFileView) return;
 
     this.app.workspace.revealLeaf(this.parentFileView.leaf);
-    const plugin = this.parentFileView.view.plugin(jumpFromClickExtension);
+    const plugin = this.parentFileView.view.plugin(previewJumpExtension);
     plugin?.jumpTo(result, event);
   }
 

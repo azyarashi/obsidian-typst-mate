@@ -315,7 +315,7 @@
     },
   },
   views: {
-    typstText: {
+    typstFile: {
       displayText: 'Typst テキスト',
       actions: {
         openPreview: 'プレビューを開く',
@@ -324,7 +324,11 @@
       },
     },
     typstPreview: {
-      fitToPage: '表示をリセット',
+      tooltips: {
+        prevPage: '前のページ',
+        nextPage: '次のページ',
+        fitToPage: 'ページの大きさに合わせて拡大・縮小する',
+      },
     },
     typstTools: {
       displayText: 'Typst ツール',

@@ -1,10 +1,13 @@
 .typstmate-leaf {
-  margin: 1em;
+  padding: 1em;
   height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 .typstmate-leaf div.typstmate-menu {
   display: flex;
+  flex-shrink: 0;
 }
 
 .typstmate-leaf div.typstmate-menu button {
@@ -14,7 +17,8 @@
 .typstmate-leaf div.typstmate-tool {
   margin-top: 1em;
   width: 100%;
-  height: 100%;
+  flex-grow: 1;
+  overflow-y: auto;
 }
 
 .typstmate-leaf div.typstmate-tool select {

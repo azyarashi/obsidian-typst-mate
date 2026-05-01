@@ -1,7 +1,7 @@
-import { ButtonComponent, DropdownComponent, ItemView, Platform, type WorkspaceLeaf } from 'obsidian';
+import { ButtonComponent, DropdownComponent, ItemView, Platform } from 'obsidian';
 import { render } from 'preact';
 import { t } from '@/i18n';
-import type ObsidianTypstMate from '@/main';
+import { settingsManager } from '@/libs';
 import { Actions } from './tools/Actions';
 import { Converter } from './tools/Converter';
 import { Detypify } from './tools/Detypify';
@@ -16,17 +16,10 @@ export type Tool = 'symbols' | 'detypify' | 'packages' | 'quiver' | 'actions' | 
 export class TypstToolsView extends ItemView {
   static viewtype = 'typst-tools';
 
-  plugin: ObsidianTypstMate;
-
   dropdown!: DropdownComponent;
   onChangeHandler!: (tool: Tool) => void;
 
   private reloadKey: number = 0;
-
-  constructor(leaf: WorkspaceLeaf, plugin: ObsidianTypstMate) {
-    super(leaf);
-    this.plugin = plugin;
-  }
 
   getViewType(): string {
     return TypstToolsView.viewtype;
@@ -89,6 +82,9 @@ export class TypstToolsView extends ItemView {
           render(<Converter key={key} />, toolEl);
           break;
       }
+
+      settingsManager.settings.toolsStates.tool = tool;
+      settingsManager.saveSettings();
     };
     this.dropdown.onChange((tool) => this.onChangeHandler(tool as Tool));
 
@@ -101,8 +97,9 @@ export class TypstToolsView extends ItemView {
       });
 
     // 初期表示
-    this.dropdown.setValue('converter');
-    this.onChangeHandler('converter');
+    const initialTool = settingsManager.settings.toolsStates.tool || 'converter';
+    this.dropdown.setValue(initialTool);
+    this.onChangeHandler(initialTool);
   }
 
   openTool(tool: Tool) {

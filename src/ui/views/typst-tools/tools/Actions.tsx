@@ -1,5 +1,5 @@
-import { ActionListContainer } from '@/ui/settingsTab/tabs/actions/actionListContainer';
+import { ActionCodeTab } from '@/ui/settingsTab/tabs/actions/subTabs';
 
 export const Actions = () => {
-  return <ActionListContainer />;
+  return <ActionCodeTab />;
 };
