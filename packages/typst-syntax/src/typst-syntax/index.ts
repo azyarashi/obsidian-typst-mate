@@ -1,4 +1,4 @@
-/** biome-ignore-all assist/source/organizeImports: match original */
+// biome-ignore-all assist/source/organizeImports: match original
 
 export { FileId } from './file';
 export { CSSClass, highlight } from './highlight';
