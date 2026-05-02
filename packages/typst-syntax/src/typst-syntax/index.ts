@@ -26,3 +26,6 @@ export enum SyntaxMode {
   Code,
   Plain,
 }
+
+// extras
+export * from '../extras';

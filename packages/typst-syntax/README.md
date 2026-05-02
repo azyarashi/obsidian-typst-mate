@@ -115,3 +115,27 @@ export const typstSyntaxHighlightPlugin = ViewPlugin.fromClass(
   },
 );
 ```
+
+## Extras
+
+### Getting Syntax Context
+
+You can retrieve the exact syntax mode and block context (e.g., `SyntaxMode.Markup`, `SyntaxMode.Code`, `SyntaxMode.Math`, or `SyntaxMode.Plain`) at any given cursor position using `getSyntaxContextAt`.
+
+> [!NOTE]
+> While the `SyntaxMode.Plain` mode is not natively defined in Typst and does not appear directly in parsing results, it is included as an additional feature of this package to represent text contexts such as `SyntaxKind.Str`, `SyntaxKind.LineComment`, `SyntaxKind.BlockComment`, `SyntaxKind.Raw`, and `SyntaxKind.Shebang`.
+
+```ts
+import { parse, getSyntaxContextAt } from '@typstmate/typst-syntax';
+
+const code = `$x$$ x $ // comment`;
+const tree = parse(code);
+
+console.log(getSyntaxContextAt(tree, 3).mode);  // SyntaxMode.Markup
+console.log(getSyntaxContextAt(tree, 4).mode);  // SyntaxMode.Math
+console.log(getSyntaxContextAt(tree, code.length).mode);  // SyntaxMode.Plain
+
+console.log(getSyntaxContextAt(tree, 3).isBlock);  // false
+console.log(getSyntaxContextAt(tree, 4).isBlock);  // true
+console.log(getSyntaxContextAt(tree, code.length).mode);  // false
+```

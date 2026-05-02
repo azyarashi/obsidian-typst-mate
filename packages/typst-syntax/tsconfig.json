@@ -15,10 +15,9 @@
     "noImplicitReturns": true,
     "skipLibCheck": true,
 
-    "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"]
     }
   },
-  "include": ["**/*.ts"]
+  "include": ["src", "tests"]
 }
