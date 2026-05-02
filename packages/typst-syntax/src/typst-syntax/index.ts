@@ -17,7 +17,7 @@ export { VirtualPath } from './path';
 // TODO Source
 export { Span, Spanned } from './span';
 
-export * as Lexer from './lexer';
+export { Lexer } from './lexer';
 export { reparse } from './reparser';  // TODO reparseBlock, reparseMarkup
 
 /** The syntax mode of a portion of Typst code. */
