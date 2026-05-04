@@ -1,8 +1,8 @@
 import { ICONS } from '@/constants/icons';
 import { t, tFragment } from '@/i18n';
-import type { ExtensionPackageFn, InferSettingsFromPackage } from '@/libs/extensionManager';
+import type { ExtensionPackage, InferSettingsFromPackage } from '@/libs/extensionManager';
 
-export const typstMateActionsPackage: ExtensionPackageFn = () =>
+export const typstMateActionsPackage = () =>
   ({
     id: 'typstmate-actions',
     name: t('settings.extensions.typstMateActions.name'),
@@ -23,6 +23,6 @@ export const typstMateActionsPackage: ExtensionPackageFn = () =>
         step: 50,
       },
     ],
-  }) as const;
+  }) as const satisfies ExtensionPackage;
 
 export type TypstMateActionsSettings = InferSettingsFromPackage<typeof typstMateActionsPackage>;

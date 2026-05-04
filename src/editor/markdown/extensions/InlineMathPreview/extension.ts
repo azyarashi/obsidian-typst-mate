@@ -1,6 +1,5 @@
 import { type EditorView, type PluginValue, ViewPlugin, type ViewUpdate } from '@codemirror/view';
-import { getActiveRegion } from '@/editor/shared/utils/core';
-import { calculatePopOverPositionByFromAndTo } from '@/editor/shared/utils/position';
+import { calculatePopOverPositionByFromAndTo, getActiveRegion } from '@/editor';
 
 import './InlineMathPreview.css';
 

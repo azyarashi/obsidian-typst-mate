@@ -2,7 +2,7 @@ import { LinkedNode, SyntaxKind, type SyntaxNode } from '@typstmate/typst-syntax
 import { codeFolding, foldGutter, foldService } from '@codemirror/language';
 import { type EditorState, StateEffect, StateField } from '@codemirror/state';
 import { type EditorView, ViewPlugin, type ViewUpdate } from '@codemirror/view';
-import { getActiveRegion } from '../../../shared/utils/core';
+import { getActiveRegion } from '@/editor';
 
 interface FoldingState {
   tree: SyntaxNode;

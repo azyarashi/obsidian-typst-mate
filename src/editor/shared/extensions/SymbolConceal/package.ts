@@ -1,9 +1,9 @@
 import { Facet } from '@codemirror/state';
 import { ICONS } from '@/constants/icons';
 import { t, tFragment } from '@/i18n';
-import type { ExtensionPackageFn, InferSettingsFromPackage } from '@/libs/extensionManager';
+import type { ExtensionPackage, InferSettingsFromPackage } from '@/libs/extensionManager';
 
-export const symbolConcealPackage: ExtensionPackageFn = () =>
+export const symbolConcealPackage = () =>
   ({
     id: 'symbol-conceal',
     name: t('settings.extensions.symbolConceal.name'),
@@ -24,7 +24,7 @@ export const symbolConcealPackage: ExtensionPackageFn = () =>
         step: 100,
       },
     ],
-  }) as const;
+  }) as const satisfies ExtensionPackage;
 
 export type SymbolConcealSettings = InferSettingsFromPackage<typeof symbolConcealPackage>;
 

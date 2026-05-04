@@ -3,9 +3,8 @@ import { type Facet, RangeSet, StateEffect } from '@codemirror/state';
 import { Decoration, type DecorationSet, EditorView, ViewPlugin, type ViewUpdate, WidgetType } from '@codemirror/view';
 import { setTooltip } from 'obsidian';
 import symbolData from '@/data/symbols.json';
+import { getActiveRegion, type SymbolData } from '@/editor';
 import { RenderingEngine } from '@/libs/processor';
-import { getActiveRegion } from '../../utils/core';
-import type { SymbolData } from '../../utils/symbolSearcher';
 import type { SymbolConcealSettings } from './package';
 
 export const SYMBOL_MAP = new Map<string, SymbolData>();

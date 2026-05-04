@@ -1,9 +1,9 @@
 import { Facet } from '@codemirror/state';
 import { ICONS } from '@/constants/icons';
 import { t, tFragment } from '@/i18n';
-import type { ExtensionPackageFn, InferSettingsFromPackage } from '@/libs/extensionManager';
+import type { ExtensionPackage, InferSettingsFromPackage } from '@/libs/extensionManager';
 
-export const formatterPackage: ExtensionPackageFn = () =>
+export const formatterPackage = () =>
   ({
     id: 'formatter',
     name: t('settings.extensions.formatter.name'),
@@ -76,7 +76,7 @@ export const formatterPackage: ExtensionPackageFn = () =>
         defaultValue: true,
       },
     ],
-  }) as const;
+  }) as const satisfies ExtensionPackage;
 
 export type FormatterSettings = InferSettingsFromPackage<typeof formatterPackage>;
 

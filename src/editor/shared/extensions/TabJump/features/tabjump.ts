@@ -1,7 +1,6 @@
 import type { Facet } from '@codemirror/state';
 import type { EditorView } from '@codemirror/view';
-import { nextSnippetField, prevSnippetField } from '@/editor/shared/internal/Snippet';
-import { getActiveRegion } from '@/editor/shared/utils/core';
+import { getActiveRegion, nextSnippetField, prevSnippetField } from '@/editor';
 import { RenderingEngine } from '@/libs/processor';
 import type { TabJumpSettings } from '../package';
 import { jumpOutsideBracket, jumpOutsideRegion, jumpOutsideTypstMath } from './jumpHelpers';

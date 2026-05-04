@@ -1,19 +1,21 @@
 import type { EditorView } from '@codemirror/view';
 import { TypstMate } from '@/api';
-import { applyToCurrentTabStop, snippet } from '@/editor/shared/internal/Snippet';
+import { applyToCurrentTabStop, snippet } from '@/editor';
 import type { TMAction, TMActionContext } from '@/libs/tmActionsManager';
 import { Commands, type ScriptFn } from '@/libs/tmActionsManager/definition';
 import { applyExtraActions } from '../extras';
 
 export function executeSnippet(
   action: TMAction,
+  isScript: boolean,
+  context: TMActionContext,
+
   view: EditorView,
-  selectedText: string,
   from: number,
   to: number,
-  isScript: boolean,
+
   match?: RegExpMatchArray,
-  context?: TMActionContext,
+  selectedText?: string,
 ): boolean {
   const value = action.action.v;
 

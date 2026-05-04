@@ -1,8 +1,8 @@
 import { ICONS } from '@/constants/icons';
 import { t, tFragment } from '@/i18n';
-import type { ExtensionPackageFn } from '@/libs/extensionManager';
+import type { ExtensionPackage } from '@/libs/extensionManager';
 
-export const linterPackage: ExtensionPackageFn = () =>
+export const linterPackage = () =>
   ({
     id: 'linter',
     name: t('settings.extensions.linter.name'),
@@ -13,4 +13,4 @@ export const linterPackage: ExtensionPackageFn = () =>
     isBuiltin: false,
     displayOrder: 50,
     settings: [],
-  }) as const;
+  }) as const satisfies ExtensionPackage;

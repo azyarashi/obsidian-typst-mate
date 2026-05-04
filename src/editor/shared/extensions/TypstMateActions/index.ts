@@ -1,4 +1,6 @@
+export * from './actions';
 export * from './extension';
+export * from './extras';
 
 import { defineExtension } from '@/libs/extensionManager';
 import { tmActionsManager } from '@/libs/tmActionsManager';

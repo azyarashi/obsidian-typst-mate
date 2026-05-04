@@ -1,7 +1,6 @@
 import { Prec } from '@codemirror/state';
-import { EditorView, keymap } from '@codemirror/view';
-import { nextSnippetField, prevSnippetField } from '@/editor/shared/internal/Snippet';
-import { getActiveRegion, type ParsedRegion } from '@/editor/shared/utils/core';
+import { type EditorView, keymap } from '@codemirror/view';
+import { getActiveRegion, nextSnippetField, type ParsedRegion, prevSnippetField } from '@/editor';
 import { RenderingEngine } from '@/libs/processor';
 
 export function jumpOutsideBracket(
@@ -101,11 +100,7 @@ export function jumpOutsideRegion(
   return true;
 }
 
-export function executeTabJump(
-  view: EditorView,
-  direction: -1 | 1,
-  onlyJumpToCursor: boolean = false,
-): boolean {
+export function executeTabJump(view: EditorView, direction: -1 | 1, onlyJumpToCursor: boolean = false): boolean {
   const settings = {
     revertTabToDefault: false,
     jumpOutsideBracket: true,

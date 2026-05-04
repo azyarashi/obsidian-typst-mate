@@ -9,10 +9,9 @@ import {
 import { syntaxTree } from '@codemirror/language';
 import { type EditorView, type PluginValue, ViewPlugin, type ViewUpdate } from '@codemirror/view';
 import { TypstMate } from '@/api';
-import { type ParsedRegion, RegionContext } from '@/editor/shared/utils/core';
+import { getModeAndKindFromRegion, type ParsedRegion, RegionContext } from '@/editor';
 import { editorHelper, extarctCMMath, settingsManager } from '@/libs';
 import { type ProcessorKind, RenderingEngine } from '@/libs/processor';
-import { getModeAndKindFromRegion } from '@/utils/typstSyntax';
 
 interface Region {
   /** right after the delimiter */

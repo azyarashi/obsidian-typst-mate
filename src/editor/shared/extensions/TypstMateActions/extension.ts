@@ -1,8 +1,8 @@
 import { type Extension, Prec } from '@codemirror/state';
 import { EditorView, ViewPlugin, type ViewUpdate } from '@codemirror/view';
+import { getActiveRegion } from '@/editor';
 import { RenderingEngine } from '@/libs/processor';
 import type { TMAction, TMActionContext } from '@/libs/tmActionsManager';
-import { getActiveRegion } from '../../utils/core';
 import { checkActionContext, executeAction, executeActionEffect, resolveActionContext } from './actions';
 
 export function buildActionExtensions(actions: TMAction[], longPressDuration: number): Extension[] {

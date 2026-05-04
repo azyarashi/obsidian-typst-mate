@@ -2,9 +2,9 @@ import { isIdent } from '@typstmate/typst-syntax';
 import { type EditorView, hoverTooltip } from '@codemirror/view';
 import { setTooltip } from 'obsidian';
 import { render } from 'preact';
+import { getActiveRegion } from '@/editor';
 import { typstManager } from '@/libs';
 import { RenderingEngine } from '@/libs/processor';
-import { getActiveRegion } from '../../utils/core';
 
 import './Tooltip.css';
 

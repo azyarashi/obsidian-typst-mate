@@ -1,6 +1,7 @@
 import { Facet } from '@codemirror/state';
 import { EditorView, ViewPlugin } from '@codemirror/view';
 import { typstManager } from '@/libs';
+import { consoleError } from '@/utils/notice';
 
 export type CodeJumpTarget = {
   jumpToPosition: (position: { page: number; x: number; y: number }) => Promise<void>;
@@ -30,7 +31,8 @@ class CodeJumpPluginValue {
         target.reveal();
       }
     } catch (e) {
-      console.error('[TypstMate] Code jump failed:', e);
+      // TODO
+      consoleError('Code jump failed', e);
     }
   }
 

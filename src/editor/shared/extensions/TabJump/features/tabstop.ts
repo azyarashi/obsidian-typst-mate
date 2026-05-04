@@ -1,7 +1,7 @@
 import { EditorSelection } from '@codemirror/state';
 import type { EditorView } from '@codemirror/view';
 import { clearTabStopEffect, setTabStopEffect, tabStopField } from '../state';
-import { getSnippetSearchBounds } from '../utils';
+import { getSnippetSearchBounds } from '../utils/bounds';
 import {
   findMinLevelTabStop,
   findTabStopGroupInDoc,

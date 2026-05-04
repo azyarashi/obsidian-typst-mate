@@ -1,9 +1,9 @@
 import { Facet } from '@codemirror/state';
 import { ICONS } from '@/constants/icons';
 import { t, tFragment } from '@/i18n';
-import type { ExtensionPackageFn, InferSettingsFromPackage } from '@/libs/extensionManager';
+import type { ExtensionPackage, InferSettingsFromPackage } from '@/libs/extensionManager';
 
-export const autocompletePackage: ExtensionPackageFn = () =>
+export const autocompletePackage = () =>
   ({
     id: 'autocomplete',
     name: t('settings.extensions.autocomplete.name'),
@@ -21,7 +21,7 @@ export const autocompletePackage: ExtensionPackageFn = () =>
         defaultValue: false,
       },
     ],
-  }) as const;
+  }) as const satisfies ExtensionPackage;
 
 export type AutocompleteSettings = InferSettingsFromPackage<typeof autocompletePackage>;
 

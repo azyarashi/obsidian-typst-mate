@@ -7,11 +7,7 @@ import {
   type ViewUpdate,
   WidgetType,
 } from '@codemirror/view';
-import {
-  diagnosticsState,
-  getMappedDiagnostics,
-  type TypstDiagnostic,
-} from '@/editor/shared/extensions/Linter/extension';
+import { diagnosticsState, getMappedDiagnostics, type TypstDiagnostic } from '@/editor';
 import { renderDiagnosticMessage } from '@/ui/components/Diagnostic';
 
 import './ErrorLens.css';
@@ -75,27 +71,26 @@ function computeErrorLens(view: EditorView): DecorationSet {
   return Decoration.set(decorations, true);
 }
 
-const errorLensPlugin = ViewPlugin.fromClass(
-  class {
-    decorations: DecorationSet;
+class ErrorLensPlugin {
+  decorations: DecorationSet;
 
-    constructor(view: EditorView) {
-      this.decorations = computeErrorLens(view);
-    }
+  constructor(view: EditorView) {
+    this.decorations = computeErrorLens(view);
+  }
 
-    update(update: ViewUpdate) {
-      const oldState = update.startState.field(diagnosticsState, false);
-      const newState = update.state.field(diagnosticsState, false);
+  update(update: ViewUpdate) {
+    const oldState = update.startState.field(diagnosticsState, false);
+    const newState = update.state.field(diagnosticsState, false);
 
-      if (oldState !== newState) this.decorations = computeErrorLens(update.view);
-      else if (update.docChanged) this.decorations = this.decorations.map(update.changes);
-      else if (update.viewportChanged || update.selectionSet) this.decorations = computeErrorLens(update.view);
-    }
-  },
-  {
-    decorations: (v: any) => v.decorations,
-  },
-);
+    if (oldState !== newState) this.decorations = computeErrorLens(update.view);
+    else if (update.docChanged) this.decorations = this.decorations.map(update.changes);
+    else if (update.viewportChanged || update.selectionSet) this.decorations = computeErrorLens(update.view);
+  }
+}
+
+const errorLensPlugin = ViewPlugin.fromClass(ErrorLensPlugin, {
+  decorations: (v: ErrorLensPlugin) => v.decorations,
+});
 
 const errorLensHover = hoverTooltip((view, pos) => {
   const line = view.state.doc.lineAt(pos);

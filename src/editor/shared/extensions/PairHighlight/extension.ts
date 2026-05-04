@@ -1,7 +1,7 @@
 import { LinkedNode, Side, SyntaxKind } from '@typstmate/typst-syntax';
 import { Decoration, type DecorationSet, type EditorView, ViewPlugin, type ViewUpdate } from '@codemirror/view';
+import { getActiveRegion } from '@/editor';
 import { EditorContextFacet, settingsManager } from '@/libs';
-import { getActiveRegion } from '../../utils/core';
 
 const decoCache = new Map<string, Decoration>();
 function getMarkDeco(cls: string): Decoration {

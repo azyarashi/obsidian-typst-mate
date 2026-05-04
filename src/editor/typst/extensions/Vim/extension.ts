@@ -8,7 +8,7 @@ import {
   type VimContext,
   type VimMode,
 } from '@vimee/core';
-import { cursorToOffset, offsetToCursor } from '@/editor/shared/utils/core';
+import { cursorToOffset, offsetToCursor } from '@/editor';
 
 export const vimSaveFacet = Facet.define<() => void, () => void>({
   combine: (values) => values[0] ?? (() => {}),

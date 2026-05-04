@@ -1,12 +1,11 @@
 import { SyntaxMode } from '@typstmate/typst-syntax';
 import { StateEffect } from '@codemirror/state';
 import type { EditorView } from '@codemirror/view';
-import { markdownCore } from '@/editor/markdown/extensions/MarkdownCore/extension';
-import { getActiveRegion } from '@/editor/shared/utils/core';
-import { vimModeField } from '@/editor/typst/extensions/Vim';
+import { getActiveRegion, markdownCore, vimModeField } from '@/editor';
 import { getObsidianVimMode } from '@/libs/events/vim-mode-change';
 import { RenderingEngine } from '@/libs/processor';
 import { type TMAction, type TMActionContext, tmActionsManager } from '@/libs/tmActionsManager';
+import { consoleWarn } from '@/utils/notice';
 import { executeExtraActions } from '../extras';
 import { executeCommand } from './commands';
 import { executeSnippet } from './snippet';
@@ -105,7 +104,7 @@ export function executeAction(
   const selection = view.state.selection.main;
   const selectionFrom = Math.min(selection.anchor, selection.head);
   const selectionTo = Math.max(selection.anchor, selection.head);
-  const selectedText = view.state.sliceDoc(selectionFrom, selectionTo);
+  const selectedText = selectionFrom === selectionTo ? undefined : view.state.sliceDoc(selectionFrom, selectionTo);
 
   if (depth === 0 && deleteLength && 0 < deleteLength) {
     view.dispatch({
@@ -121,22 +120,23 @@ export function executeAction(
   const actionValue = action.action.v;
   switch (actionType) {
     case 'snippet':
-      executeSnippet(action, view, selectedText, curFrom, curTo, false, undefined, context);
+      executeSnippet(action, false, context, view, curFrom, curTo, match, selectedText);
       break;
     case 'script':
-      executeSnippet(action, view, selectedText, curFrom, curTo, true, match, context);
+      executeSnippet(action, true, context, view, curFrom, curTo, match, selectedText);
       break;
     case 'commands': {
       const commandIds = (actionValue as string).split(',').map((id) => id.trim());
       for (const commandId of commandIds) executeCommand(commandId, view, curFrom, curTo);
       break;
     }
+    // TODO
     case 'actions': {
       const actionIds = (actionValue as string).split(',').map((id) => id.trim());
       for (const actionId of actionIds) {
         const targetAction = tmActionsManager.actions.find((a) => a.id === actionId);
         if (targetAction) executeAction(view, context, targetAction, 0, match, depth + 1);
-        else console.warn(`[Typst Mate] executeAction.actions failed (id: ${actionId})`);
+        else consoleWarn('executeAction.actions failed', actionId);
       }
       break;
     }

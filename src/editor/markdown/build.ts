@@ -1,16 +1,16 @@
 import type { Extension } from '@codemirror/state';
+import { clickableLinkExtension, diagnosticsState, markdownCore } from '@/editor';
 import { extensionManager, viewTracker } from '@/libs/extensionManager';
-import { diagnosticsState } from '../shared/extensions/Linter/extension';
-import { markdownCore } from './extensions/MarkdownCore';
-import { clickableLinkExtension } from '../shared/internal/ClickableLink';
-export function buildExtension() {
+
+export function buildMarkdownExtension(): Extension[] {
   const extensions: Extension[] = [
+    viewTracker('markdown'),
     markdownCore,
     diagnosticsState,
-    viewTracker('markdown'),
+
+    clickableLinkExtension,
 
     ...extensionManager.buildExtensions('markdown'),
-    clickableLinkExtension,
   ];
 
   return extensions.filter((ext) => !Array.isArray(ext) || (Array.isArray(ext) && ext.length !== 0));

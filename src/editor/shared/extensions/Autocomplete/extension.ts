@@ -4,13 +4,17 @@ import { type EditorView, keymap, type PluginValue, ViewPlugin, type ViewUpdate 
 import { setIcon } from 'obsidian';
 import type { Completion, CompletionKind } from '@/../pkg/typst_wasm';
 import SYMBOLS_BY_NAME from '@/data/symbols.json';
-import { Snippet } from '@/editor/shared/internal/Snippet';
+import {
+  calculatePopOverPositionByCursor,
+  getActiveRegion,
+  type ParsedRegion,
+  Snippet,
+  type SymbolData,
+  searchSymbols,
+} from '@/editor';
 import { typstManager } from '@/libs';
 import { tmActionsManager } from '@/libs/tmActionsManager';
 import { format } from '@/ui/elements/Typst';
-import { getActiveRegion, type ParsedRegion } from '../../utils/core';
-import { calculatePopOverPositionByCursor } from '../../utils/position';
-import { type SymbolData, searchSymbols } from '../../utils/symbolSearcher';
 import { checkActionContext, executeAction, resolveActionContext } from '../TypstMateActions/actions';
 import { autocompleteSettingsFacet } from './package';
 

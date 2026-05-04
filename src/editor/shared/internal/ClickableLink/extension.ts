@@ -1,7 +1,7 @@
 import { Decoration, type DecorationSet, type EditorView, ViewPlugin, type ViewUpdate } from '@codemirror/view';
 import { Platform, setTooltip } from 'obsidian';
+import { getActiveRegion } from '@/editor';
 import { t } from '@/i18n';
-import { getActiveRegion } from '../../utils/core';
 
 import './ClickableLink.css';
 

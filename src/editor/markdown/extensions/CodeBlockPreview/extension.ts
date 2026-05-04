@@ -8,7 +8,7 @@ import {
   type ViewUpdate,
   WidgetType,
 } from '@codemirror/view';
-import { getActiveRegion } from '@/editor/shared/utils/core';
+import { getActiveRegion } from '@/editor';
 import { appUtils, typstManager } from '@/libs';
 import { getNdirAndNPath } from '@/libs/typstManager';
 

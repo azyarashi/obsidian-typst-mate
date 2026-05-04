@@ -5,8 +5,7 @@ import type { VimMode } from '@vimee/core';
 import { setTooltip } from 'obsidian';
 import { render } from 'preact';
 import { useEffect, useRef } from 'preact/hooks';
-import { getActiveRegion } from '@/editor/shared/utils/core';
-import { vimModeField } from '@/editor/typst/extensions/Vim';
+import { getActiveRegion, vimModeField } from '@/editor';
 
 import './StatusBar.css';
 

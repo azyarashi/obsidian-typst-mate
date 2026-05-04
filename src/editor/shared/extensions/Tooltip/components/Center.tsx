@@ -1,6 +1,6 @@
+import type { Definition } from '@wasm';
+import { formatDefinitionValue } from '@wasm-values';
 import { Component, MarkdownRenderer } from 'obsidian';
-import type { Definition } from '@/../../pkg/typst_wasm';
-import { formatDefinitionValue } from '@/../../wasm/src/serde/values';
 import { appUtils } from '@/libs';
 
 const separator = '\n\n---\n';

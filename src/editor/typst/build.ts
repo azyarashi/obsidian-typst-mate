@@ -9,11 +9,10 @@ import {
   keymap,
   lineNumbers,
 } from '@codemirror/view';
-import { diagnosticsState } from '@/editor/shared/extensions/Linter/extension';
+import { clickableLinkExtension, diagnosticsState } from '@/editor';
+import { textViewTheme } from '@/editorSimple/extensions/Theme';
 import { extensionManager, viewTracker } from '@/libs/extensionManager';
-import { textViewTheme } from '../../editorSimple/extensions/Theme';
 import { typstTextCore } from './extensions/TypstCore';
-import { clickableLinkExtension } from '../shared/internal/ClickableLink';
 import { typstFoldingExtension } from './internal/Folding';
 import { statusBarExtension } from './internal/StatusBar';
 import { zoomExtension } from './internal/Zoom';
@@ -30,7 +29,6 @@ export function buildTypstTextExtensions() {
     typstFoldingExtension,
     statusBarExtension,
     zoomExtension,
-
 
     EditorState.allowMultipleSelections.of(true),
     EditorView.lineWrapping,

@@ -1,5 +1,5 @@
 import type { EditorView } from '@codemirror/view';
-import type { ParsedRegion } from '../../../utils/core';
+import type { ParsedRegion } from '@/editor';
 import type { TabJumpSettings } from '../package';
 
 export function jumpOutsideBracket(

@@ -1,8 +1,8 @@
 import { ICONS } from '@/constants/icons';
 import { t, tFragment } from '@/i18n';
-import type { ExtensionPackageFn, InferSettingsFromPackage } from '@/libs/extensionManager';
+import type { ExtensionPackage, InferSettingsFromPackage } from '@/libs/extensionManager';
 
-export const syntaxHighlightPackage: ExtensionPackageFn = () =>
+export const syntaxHighlightPackage = () =>
   ({
     id: 'syntax-highlight',
     name: t('settings.extensions.syntaxHighlight.name'),
@@ -21,6 +21,6 @@ export const syntaxHighlightPackage: ExtensionPackageFn = () =>
         defaultValue: false,
       },
     ],
-  }) as const;
+  }) as const satisfies ExtensionPackage;
 
 export type SyntaxHighlightSettings = InferSettingsFromPackage<typeof syntaxHighlightPackage>;

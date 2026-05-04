@@ -1,8 +1,8 @@
 import { parse, reparse, SyntaxMode } from '@typstmate/typst-syntax';
 import { type EditorView, type PluginValue, ViewPlugin, type ViewUpdate } from '@codemirror/view';
 import { TypstMate } from '@/api';
-import { type ParsedRegion, RegionContext } from '@/editor/shared/utils/core';
-import { getModeAndKindFromRegion } from '@/utils/typstSyntax';
+import { getModeAndKindFromRegion, type ParsedRegion, RegionContext } from '@/editor';
+import { consoleWarn } from '@/utils/notice';
 
 export class TypstCorePluginValue implements PluginValue {
   activeRegion: ParsedRegion = {
@@ -64,7 +64,7 @@ export class TypstCorePluginValue implements PluginValue {
           changeInsertedLen,
         );
       } catch (e) {
-        console.warn('[Typst Mate] TypstCore.reparse failed', e);
+        consoleWarn('TypstCore.reparse failed', e);
         this.activeRegion.tree = parse(update.state.doc.toString());
       }
     } else this.activeRegion.tree = parse(update.state.doc.toString());

@@ -1,8 +1,8 @@
 import { ICONS } from '@/constants/icons';
 import { t, tFragment } from '@/i18n';
-import type { ExtensionPackageFn } from '@/libs/extensionManager';
+import type { ExtensionPackage } from '@/libs/extensionManager';
 
-export const tooltipPackage: ExtensionPackageFn = () =>
+export const tooltipPackage = () =>
   ({
     id: 'tooltip',
     name: t('settings.extensions.tooltip.name'),
@@ -12,4 +12,4 @@ export const tooltipPackage: ExtensionPackageFn = () =>
     scope: ['markdown', 'typst'],
     isBuiltin: false,
     settings: [],
-  }) as const;
+  }) as const satisfies ExtensionPackage;

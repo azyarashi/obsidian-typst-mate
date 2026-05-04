@@ -1,7 +1,12 @@
-import type { SyntaxKind, SyntaxMode, SyntaxNode } from '@typstmate/typst-syntax';
+import {
+  getSyntaxContextAt,
+  type SyntaxContext,
+  type SyntaxKind,
+  type SyntaxMode,
+  type SyntaxNode,
+} from '@typstmate/typst-syntax';
 import type { EditorView } from '@codemirror/view';
-import { collectRegions, markdownCore, parseRegion } from '@/editor/markdown/extensions/MarkdownCore';
-import { typstTextCore } from '@/editor/typst/extensions/TypstCore';
+import { collectRegions, markdownCore, parseRegion, typstTextCore } from '@/editor';
 import type { Processor, ProcessorKind } from '@/libs/processor';
 
 export enum RegionContext {
@@ -53,6 +58,15 @@ export function getRegionAt(view: EditorView, cursor: number): ParsedRegion | nu
   });
 
   return region ? parseRegion(view, region) : null;
+}
+
+export function getModeAndKindFromRegion(region: ParsedRegion | null, pos: number): SyntaxContext {
+  if (!region?.tree) return { kindLeft: null, kindRight: null, mode: null };
+
+  const offset = region.from + region.skip;
+  const relativePos = pos - offset;
+
+  return getSyntaxContextAt(region.tree, relativePos, region.mode);
 }
 
 /** https://github.com/vimeejs/vimee/blob/main/packages/plugin-codemirror/src/cursor.ts */

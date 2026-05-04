@@ -1,5 +1,5 @@
 import type { EditorView } from '@codemirror/view';
-import { getActiveRegion } from '../../../utils/core';
+import { getActiveRegion } from '@/editor';
 
 export function getSnippetSearchBounds(view: EditorView): { from: number; to: number } | null {
   const region = getActiveRegion(view);

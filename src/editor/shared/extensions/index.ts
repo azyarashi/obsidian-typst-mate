@@ -10,9 +10,14 @@ import { tabJumpEntry } from './TabJump/index';
 import { tooltipEntry } from './Tooltip/index';
 import { typstMateActionsEntry } from './TypstMateActions/index';
 
-export { formatterSettingsFacet } from './Formatter/package';
-export { symbolConcealSettingsFacet } from './SymbolConceal/package';
-export { tabJumpSettingsFacet } from './TabJump/package';
+export * from './Autocomplete';
+export * from './Formatter';
+export * from './Linter';
+export * from './PreviewJump';
+export * from './SymbolConceal';
+export * from './SyntaxHighlight';
+export * from './TabJump';
+export * from './Theme';
 
 export const sharedExtensionEntries: (() => ExtensionEntry<any>)[] = [
   syntaxHighlightEntry,
