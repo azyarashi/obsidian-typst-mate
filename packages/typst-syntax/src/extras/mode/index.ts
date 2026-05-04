@@ -146,7 +146,7 @@ function getSyntaxContextAtInternal(leftNode: LinkedNode, pos: number): Partial<
     // * Markup
     if (k === SyntaxKind.Markup) {
       node = node.parent;
-      if (!node) return {};
+      if (!node) return {}; // Fallback to top-level context
       k = node.kind();
     }
     if (k === SyntaxKind.ContentBlock) {
@@ -178,9 +178,7 @@ function getSyntaxContextAtInternal(leftNode: LinkedNode, pos: number): Partial<
       node = node.parent;
       continue;
     }
-    if (node.prevSiblingKind() === SyntaxKind.Hash) {
-      return { mode: SyntaxMode.Code, isBlock: false };
-    }
+    if (node.prevSiblingKind() === SyntaxKind.Hash) return { mode: SyntaxMode.Code, isBlock: false };
 
     node = node.parent;
   }
