@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test';
-import { parseMarkup } from '../../src/i18n/markup';
+import { parseMarkup } from '@/i18n/markup';
 
 describe('parseMarkup', () => {
   it('returns plain text as a single text segment', () => {

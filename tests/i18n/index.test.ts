@@ -1,6 +1,6 @@
+import { I18n } from '@typstmate/i18n';
 import { beforeAll, describe, expect, it } from 'bun:test';
-import { I18n } from '../../packages/i18n/src/index';
-import en from '../../resources/locales/en.json5';
+import en from '@/resources/locales/en.json5';
 
 describe('i18n integration', () => {
   const i18n = I18n.createInstance();

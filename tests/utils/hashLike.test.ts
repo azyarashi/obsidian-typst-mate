@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test';
-import { hashLike } from '../../src/utils/hashLike';
+import { hashLike } from '@/utils/hashLike';
 
 describe('hashLike', () => {
   it('handles empty string', () => {

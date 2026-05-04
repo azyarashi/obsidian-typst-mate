@@ -1,6 +1,6 @@
+import en from '@resources/locales/en.json5';
 import { describe, it } from 'bun:test';
 import { Glob } from 'bun';
-import en from '../../resources/locales/en.json5';
 
 export function getKeys(obj: any, prefix = ''): string[] {
   let keys: string[] = [];

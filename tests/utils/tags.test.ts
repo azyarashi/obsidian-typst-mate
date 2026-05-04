@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test';
-import { expandHierarchicalTags } from '../../src/utils/tags';
+import { expandHierarchicalTags } from '@/utils/tags';
 
 describe('expandHierarchicalTags', () => {
   it('returns empty set for empty input', () => {
