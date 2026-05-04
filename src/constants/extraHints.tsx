@@ -1,7 +1,7 @@
 import { ChangeSet } from '@codemirror/state';
 import type { EditorView } from '@codemirror/view';
 import type { JSX } from 'preact';
-import type { TypstDiagnostic } from '@/editor/shared/extensions/Linter/extension';
+import type { TypstDiagnostic } from '@/editor';
 
 import './extraHints.css';
 

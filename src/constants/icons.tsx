@@ -1,5 +1,6 @@
 import { addIcon, getIcon } from 'obsidian';
 import { type JSX, render } from 'preact';
+import { consoleWarn } from '@/utils/notice';
 
 import './icons.css';
 
@@ -51,32 +52,26 @@ const VIM_SVG = (
   </svg>
 );
 
-const typstFill = 'typst-fill';
-const typstStroke = 'typst-stroke';
-const markdown = 'tm_markdown';
-const vim = 'tm_vim';
-const tex = 'tm_tex';
-
 const svgContainer = document.createElement('div');
 
 render(TYPST_SVG_FILL, svgContainer);
-addIcon(typstFill, svgContainer.innerHTML);
+addIcon('typst-fill', svgContainer.innerHTML);
 render(null, svgContainer);
 
 render(TYPST_SVG_STROKE, svgContainer);
-addIcon(typstStroke, svgContainer.innerHTML);
+addIcon('typst-stroke', svgContainer.innerHTML);
 render(null, svgContainer);
 
 render(MARKDOWN_SVG, svgContainer);
-addIcon(markdown, svgContainer.innerHTML);
+addIcon('tm_markdown', svgContainer.innerHTML);
 render(null, svgContainer);
 
 render(VIM_SVG, svgContainer);
-addIcon(vim, svgContainer.innerHTML);
+addIcon('tm_vim', svgContainer.innerHTML);
 render(null, svgContainer);
 
 render(TEX_SVG, svgContainer);
-addIcon(tex, svgContainer.innerHTML);
+addIcon('tm_tex', svgContainer.innerHTML);
 render(null, svgContainer);
 
 svgContainer.remove();
@@ -90,7 +85,7 @@ const getIconAttributes = (icon: SVGSVGElement) =>
 const getIconAsJSX = (iconId: string): JSX.Element => {
   const icon = getIcon(iconId);
   if (!icon) {
-    console.warn('[Typst Mate] getIcon failed', iconId);
+    consoleWarn('getIcon failed', iconId);
     return <svg className="svg-icon typstmate-icon-missing" />;
   }
 
@@ -159,9 +154,6 @@ export const ICONS = {
   MessageSquare: getIconAsJSX('message-square'),
   /** Typst Mate Actions */
   Zap: getIconAsJSX('zap'),
-
-  // TODO
-  CornerDownRight: getIconAsJSX('corner-down-right'),
 
   Loading: (
     <svg
