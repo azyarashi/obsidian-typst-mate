@@ -1,4 +1,6 @@
-import type { PackageSpec } from '@/../pkg/typst_wasm';
+import type { PackageSpec } from '@wasm';
+
+export type { PackageSpec };
 
 export interface PackageSpecWithPath extends PackageSpec {
   path: string;

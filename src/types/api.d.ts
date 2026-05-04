@@ -4,7 +4,7 @@ import type { Phase, State } from '../api';
 import type { ParsedRegion } from '../editor/shared/utils/core';
 import type WasmAdapter from '../libs/typstManager/worker';
 
-export type * as Wasm from '../../pkg/typst_wasm';
+export type * as Wasm from '@wasm';
 export type { ParsedRegion, Status };
 
 export interface Status {

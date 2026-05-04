@@ -1,5 +1,4 @@
 import type { App, DropdownComponent, MarkdownView, Modal, SliderComponent, TFile, ToggleComponent } from 'obsidian';
-import type { MarginType, PageSize } from '../../.vscode/print';
 import type { TarFile } from './untar-sync';
 
 interface FontData {
