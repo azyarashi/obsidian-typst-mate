@@ -63,9 +63,7 @@ export const typstTreeStateField = StateField.define<SyntaxNode>({
         console.warn('Reparse failed, falling back to full parse.', e);
         return parse(docString);
       }
-    }
-
-    return parse(docString);
+    } else (changesCount !== 0) return parse(docString);
   },
 });
 
@@ -118,24 +116,30 @@ export const typstSyntaxHighlightPlugin = ViewPlugin.fromClass(
 
 ## Extras
 
-### Getting Syntax Context
+### Getting the Syntax Context
 
 You can retrieve the exact syntax mode and block context (e.g., `SyntaxMode.Markup`, `SyntaxMode.Code`, `SyntaxMode.Math`, or `SyntaxMode.Plain`) at any given cursor position using `getSyntaxContextAt`.
 
 > [!NOTE]
-> While the `SyntaxMode.Plain` mode is not natively defined in Typst and does not appear directly in parsing results, it is included as an additional feature of this package to represent text contexts such as `SyntaxKind.Str`, `SyntaxKind.LineComment`, `SyntaxKind.BlockComment`, `SyntaxKind.Raw`, and `SyntaxKind.Shebang`.
+> `SyntaxMode.Plain` is not part of Typst's native syntax modes.
+> This package introduces it to represent plain text contexts such as `SyntaxKind.Str`, `SyntaxKind.LineComment`, `SyntaxKind.BlockComment`, `SyntaxKind.Raw`, and `SyntaxKind.Shebang`.
 
 ```ts
 import { parse, getSyntaxContextAt } from '@typstmate/typst-syntax';
 
+// Mixed markup, math, and comment
 const code = `$x$$ x $ // comment`;
 const tree = parse(code);
 
-console.log(getSyntaxContextAt(tree, 3).mode);  // SyntaxMode.Markup
-console.log(getSyntaxContextAt(tree, 4).mode);  // SyntaxMode.Math
-console.log(getSyntaxContextAt(tree, code.length).mode);  // SyntaxMode.Plain
+const ctxAt3 = getSyntaxContextAt(tree, 3);
+const ctxAt4 = getSyntaxContextAt(tree, 4);
+const ctxAtLast = getSyntaxContextAt(tree, code.length);
 
-console.log(getSyntaxContextAt(tree, 3).isBlock);  // false
-console.log(getSyntaxContextAt(tree, 4).isBlock);  // true
-console.log(getSyntaxContextAt(tree, code.length).mode);  // false
+console.log(ctxAt3.mode);  // SyntaxMode.Markup
+console.log(ctxAt4.mode);  // SyntaxMode.Math
+console.log(ctxAtLast.mode);  // SyntaxMode.Plain
+
+console.log(ctxAt3.isBlock);  // false
+console.log(ctxAt4.isBlock);  // true
+console.log(ctxAtLast.isBlock);  // false
 ```
