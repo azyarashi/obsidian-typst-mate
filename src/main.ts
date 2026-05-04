@@ -1,10 +1,12 @@
-import { debounce, loadMathJax, Notice, Platform, Plugin, renderMath } from 'obsidian';
+/** biome-ignore-all lint/style/noRestrictedImports: main */
+import { debounce, loadMathJax, Platform, Plugin, renderMath } from 'obsidian';
 import { initI18n, t } from '@/i18n';
 import { Phase, TypstMate } from './api';
 import { markdownExtensionEntries, sharedExtensionEntries, typstExtensionEntries } from './editor';
 // biome-ignore format: readability
 import { applyAllPatches, appUtils, crashTracker, detachAllPatches, editorHelper, extensionManager, fileManager, registerCommands, registerEvents, registerProtocolHandlers, settingsManager, tmActionsManager, typstManager } from './libs';
 import { hideStatusBarItem, registerEmbeds, registerViews, SettingsTab, setStatusBarItem } from './ui';
+import { noticeError, noticeMessage } from './utils/notice';
 
 import './ui/styles';
 
@@ -88,9 +90,7 @@ export default class ObsidianTypstMate extends Plugin {
           })
           .catch((e) => {
             TypstMate.setPhase(Phase.Error);
-
-            console.error('[TypstMate] Failed to complete `Plugin.onLayoutReady`', e);
-            new Notice(t('notices.initFailed'));
+            noticeError(t('notices.initFailed'), { message: 'Plugin.onLayoutReady failed', obj: e });
           })
           .finally(() => {
             appUtils.refreshView(this.app);
@@ -98,9 +98,7 @@ export default class ObsidianTypstMate extends Plugin {
       });
     } catch (e) {
       TypstMate.setPhase(Phase.Error);
-
-      console.error('[TypstMate] Failed to complete `Plugin.onload`', e);
-      new Notice(t('notices.initFailed'));
+      noticeError(t('notices.initFailed'), { message: 'Plugin.onload failed', obj: e });
     }
   }
 
@@ -108,13 +106,17 @@ export default class ObsidianTypstMate extends Plugin {
     const start = Date.now();
 
     while (window.TypstMate?.phase === Phase.Disabling) {
-      if (10000 < Date.now() - start) throw new Error('[TypstMate] The plugin did not unload properly last time.');
-      await new Promise((resolve) => setTimeout(resolve, 1000 / 60));
+      if (10 * 1000 < Date.now() - start) {
+        noticeMessage(t('notices.unloadDidNotComplete'));
+        TypstMate.setPhase(Phase.Disabled);
+        break;
+      }
+      await new Promise((resolve) => setTimeout(resolve, 1000 / 24));
     }
   }
 
   private async blockStart(): Promise<void> {
-    new Notice(t('notices.crashAutoDisabled'));
+    noticeMessage(t('notices.crashAutoDisabled'));
     crashTracker.updateCrashStatus(false);
     await this.app.plugins.disablePlugin(ObsidianTypstMate.id);
   }
@@ -197,8 +199,7 @@ export default class ObsidianTypstMate extends Plugin {
       for (const detach of this.detaches) await detach();
       this.detaches = [];
     } catch (e) {
-      console.error('[TypstMate] Failed to complete `Plugin.onunload`', e);
-      new Notice(t('notices.unloadFailed'));
+      noticeError(t('notices.unloadFailed'), { message: 'Plugin.onunload failed', obj: e });
     }
 
     TypstMate.setPhase(Phase.Disabled);
