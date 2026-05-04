@@ -30,10 +30,13 @@
     "types": ["bun-types", "vite/client", "__vite-plugin-json5__", "obsidian-typings"],
     "paths": {
       "@/*": ["./src/*"],
+
+      "@wasm": ["./pkg/typst_wasm"],
+      "@wasm-values": ["./wasm/src/serde/values/index.ts"],
       "@resources/*": ["./resources/*"],
-      "@components/*": ["./src/ui/components/*"],
-      "@settings/*": ["./src/ui/settingsTab/*"],
+
       "@typstmate/typst-syntax": ["./packages/typst-syntax/src/typst-syntax/index.ts"],
+
       "obsidian": [
         "./node_modules/obsidian/obsidian.d.ts",
         "./node_modules/obsidian/canvas.d.ts",

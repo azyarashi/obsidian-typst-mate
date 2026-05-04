@@ -1,18 +1,20 @@
-import { Setting } from '@components/obsidian/Setting';
 import { debounce, Notice } from 'obsidian';
 import { useState } from 'preact/hooks';
 import { DEFAULT_SETTINGS } from '@/data/settings';
-import { t } from '@/i18n';
+import { t, tFragment } from '@/i18n';
 import { appUtils, settingsManager, typstManager } from '@/libs';
+import { Setting } from '@/ui/components/obsidian/Setting';
 
 export function AdvancedTab() {
-  const [importPath, setImportPath] = useState(settingsManager.settings.importPath ?? DEFAULT_SETTINGS.importPath);
+  const [importPath, setImportPath] = useState(
+    settingsManager.settings.resourcesPath ?? DEFAULT_SETTINGS.resourcesPath,
+  );
   const [applyProcessorToMathJax, setApplyProcessorToMathJax] = useState(
     settingsManager.settings.applyProcessorToMathJax,
   );
 
   const debouncedUpdate = debounce(async (path: string) => {
-    settingsManager.settings.importPath = path;
+    settingsManager.settings.resourcesPath = path;
     await settingsManager.saveSettings();
     const files = await typstManager.collectTagFiles();
     await typstManager.wasm.store({ files });
@@ -27,7 +29,7 @@ export function AdvancedTab() {
         build={(setting) => {
           setting
             .setName(t('settings.advanced.importPath.name'))
-            .setDesc(t('settings.advanced.importPath.desc'))
+            .setDesc(tFragment('settings.advanced.importPath.desc'))
             .addText((text) =>
               text.setValue(importPath).onChange((val) => {
                 setImportPath(val);

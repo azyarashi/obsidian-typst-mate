@@ -1,5 +1,6 @@
 import { settingsManager } from '@/libs';
 import type ObsidianTypstMate from '@/main';
+import { consoleWarn } from '@/utils/notice';
 import { TextFileView } from './text-file';
 import { isTypstFileView, TypstFileView } from './typst-file';
 import { TypstPreviewView } from './typst-preview';
@@ -18,7 +19,7 @@ export function registerViews(plugin: ObsidianTypstMate) {
     try {
       plugin.registerExtensions([extension], TextFileView.viewtype);
     } catch (e) {
-      console.warn(`[TypstMate] Failed to register extension '${extension}'`, e);
+      consoleWarn(`Failed to register extension '${extension}'`, e);
     }
   }
 }

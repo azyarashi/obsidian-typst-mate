@@ -1,0 +1,16 @@
+.typstmate-simple-list {
+  max-height: 400px;
+  overflow-y: auto;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 4px;
+  background-color: var(--background-secondary);
+}
+
+.typstmate-simple-list .typstmate-settings-table {
+  padding: var(--size-4-2);
+}
+
+.typstmate-simple-list .setting-item-description {
+  padding: var(--size-2-2);
+  text-align: center;
+}

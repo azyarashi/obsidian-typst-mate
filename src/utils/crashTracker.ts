@@ -1,4 +1,4 @@
-import { settingsManager } from '../libs/settingsManager';
+import { settingsManager } from '@/libs';
 
 const MAX_CRASH_COUNT = 3;
 

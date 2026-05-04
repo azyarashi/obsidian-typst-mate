@@ -10,9 +10,7 @@ import {
   highlightSpecialChars,
   keymap,
 } from '@codemirror/view';
-import { typstSyntaxHighlighting } from '@/editor/shared/extensions/SyntaxHighlight/extension';
-import { obsidianTheme } from '@/editor/shared/extensions/Theme';
-import { typstTextCore } from '@/editor/typst/extensions/TypstCore';
+import { obsidianTheme, typstSyntaxHighlighting, typstTextCore } from '@/editor';
 import { RenderingEngine } from '@/libs/processor';
 
 export const getMiniEditorExtensions = (engine?: RenderingEngine): Extension[] => {

@@ -1,8 +1,8 @@
-import { Setting } from '@components/obsidian/Setting';
 import { useState } from 'preact/hooks';
 import { DEFAULT_SETTINGS } from '@/data/settings';
 import { t, tFragment } from '@/i18n';
 import { appUtils, settingsManager, typstManager } from '@/libs';
+import { Setting } from '@/ui/components/obsidian/Setting';
 
 import './renderer.css';
 
@@ -40,8 +40,8 @@ export function RendererTab() {
       <Setting
         build={(setting) =>
           setting
-            .setName(t('settings.renderer.enableBackgroundRendering.name'))
-            .setDesc(t('settings.renderer.enableBackgroundRendering.desc'))
+            .setName(t('settings.renderer.enableBackgroundRenderingName'))
+            .setDesc(t('settings.renderer.enableBackgroundRenderingDesc'))
             .addToggle((toggle) =>
               toggle.setValue(backgroundRendering).onChange(async (v) => {
                 setBackgroundRendering(v);
@@ -57,8 +57,8 @@ export function RendererTab() {
       <Setting
         build={(setting) =>
           setting
-            .setName(t('settings.renderer.patchPdfExport.name'))
-            .setDesc(t('settings.renderer.patchPdfExport.desc'))
+            .setName(t('settings.renderer.patchPdfExportName'))
+            .setDesc(t('settings.renderer.patchPdfExportDesc'))
             .addToggle((toggle) =>
               toggle.setValue(patchPDFExport).onChange(async (v) => {
                 setPatchPDFExport(v);
@@ -73,8 +73,8 @@ export function RendererTab() {
       <Setting
         build={(setting) =>
           setting
-            .setName(t('settings.renderer.useThemeTextColor.name'))
-            .setDesc(t('settings.renderer.useThemeTextColor.desc'))
+            .setName(t('settings.renderer.useThemeTextColorName'))
+            .setDesc(t('settings.renderer.useThemeTextColorDesc'))
             .addToggle((toggle) =>
               toggle.setValue(autoBaseColor).onChange(async (v) => {
                 setAutoBaseColor(v);
@@ -89,7 +89,7 @@ export function RendererTab() {
       {/* Base Color */}
       <Setting
         build={(setting) => {
-          setting.setName(t('settings.renderer.baseColor.name')).setDesc(tFragment('settings.renderer.baseColor.desc'));
+          setting.setName(t('settings.renderer.baseColorName')).setDesc(tFragment('settings.renderer.baseColorDesc'));
           const colorPickerInput = document.createElement('input');
           colorPickerInput.type = 'color';
           colorPickerInput.value = baseColor;
@@ -108,8 +108,8 @@ export function RendererTab() {
       <Setting
         build={(setting) =>
           setting
-            .setName(t('settings.renderer.offset.name'))
-            .setDesc(t('settings.renderer.offset.desc'))
+            .setName(t('settings.renderer.offsetName'))
+            .setDesc(t('settings.renderer.offsetDesc'))
             .addSlider((slider) =>
               slider
                 .setLimits(-0.5, 0.5, 0.05)
@@ -129,8 +129,8 @@ export function RendererTab() {
       <Setting
         build={(setting) =>
           setting
-            .setName(t('settings.renderer.pngPadding.name'))
-            .setDesc(t('settings.renderer.pngPadding.desc'))
+            .setName(t('settings.renderer.pngPaddingName'))
+            .setDesc(t('settings.renderer.pngPaddingDesc'))
             .addSlider((slider) =>
               slider
                 .setLimits(0, 50, 1)
@@ -149,8 +149,8 @@ export function RendererTab() {
         build={(setting) =>
           setting
             .setHeading()
-            .setName(t('settings.renderer.fitToNoteWidthProfile.name'))
-            .setDesc(t('settings.renderer.fitToNoteWidthProfile.desc'))
+            .setName(t('settings.renderer.fitToNoteWidthProfileName'))
+            .setDesc(t('settings.renderer.fitToNoteWidthProfileDesc'))
             .addDropdown((dropdown) =>
               dropdown
                 .addOptions(profileOptions)
@@ -169,8 +169,8 @@ export function RendererTab() {
       <Setting
         build={(setting) =>
           setting
-            .setName(t('settings.renderer.profiles.name'))
-            .setDesc(t('settings.renderer.profiles.desc'))
+            .setName(t('settings.renderer.profilesName'))
+            .setDesc(t('settings.renderer.profilesDesc'))
             .addButton((button) =>
               button.setButtonText(t('settings.renderer.addProfile')).onClick(async () => {
                 const newProfiles = [...profiles, { name: t('settings.renderer.newProfileName'), width: '500pt' }];

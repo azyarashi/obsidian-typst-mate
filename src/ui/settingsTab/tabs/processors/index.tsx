@@ -1,9 +1,9 @@
-import { Setting } from '@components/obsidian/Setting';
-import { type TabDefinition, Tabs } from '@components/Tabs';
 import { useMemo, useState } from 'preact/hooks';
 import { t, tFragment } from '@/i18n';
 import { features, settingsManager } from '@/libs';
 import { type ProcessorKind, ProcessorKindTokens } from '@/libs/processor';
+import { Setting } from '@/ui/components/obsidian/Setting';
+import { type TabDefinition, Tabs } from '@/ui/components/Tabs';
 import { Preamble } from './preamble';
 import { ProcessorsContainer } from './processorListContainer';
 

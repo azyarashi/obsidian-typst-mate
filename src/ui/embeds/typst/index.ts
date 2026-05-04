@@ -4,6 +4,7 @@ import { appUtils, fileManager, typstManager } from '@/libs';
 import { path } from '@/libs/features';
 
 import './typst-embed.css';
+import { consoleError } from '@/utils/notice';
 
 export class TypstEmbedComponent extends Component implements EmbedComponent {
   private isLoading = false;
@@ -42,7 +43,8 @@ export class TypstEmbedComponent extends Component implements EmbedComponent {
         pageContainer.innerHTML = svg;
       }
     } catch (err) {
-      console.error('[TypstMate] Embed render failed:', err);
+      // TODO: Use notice
+      consoleError('Embed render failed:', err);
       this.containerEl.empty();
       this.containerEl.setText('Failed to render Typst file.');
     } finally {

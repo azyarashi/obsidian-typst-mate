@@ -1,10 +1,11 @@
-import { Setting } from '@components/obsidian/Setting';
 import { Notice } from 'obsidian';
 import { useState } from 'preact/hooks';
 import { t } from '@/i18n';
 import { appUtils, fileManager, typstManager } from '@/libs';
 import { features } from '@/libs/features';
 import type { FontData } from '@/types/global';
+import { Setting } from '@/ui/components/obsidian/Setting';
+import { SimpleList } from '@/ui/components/SimpleList';
 import { FontModal } from '@/ui/modals/font';
 import { hashLike } from '@/utils/hashLike';
 
@@ -54,8 +55,8 @@ export function SystemFontList({ onImport, importedFonts }: SystemFontListProps)
       <Setting
         build={(setting) => {
           setting
-            .setName(t('settings.compiler.fonts.importFont.name'))
-            .setDesc(t('settings.compiler.fonts.importFont.desc'))
+            .setName(t('settings.compiler.fontsImportFontName'))
+            .setDesc(t('settings.compiler.fontsImportFontDesc'))
             .addSearch((search) => {
               search.setPlaceholder(t('settings.compiler.fonts.filterPlaceholder'));
               search.onChange((value) => setFilter(value));
@@ -68,43 +69,42 @@ export function SystemFontList({ onImport, importedFonts }: SystemFontListProps)
         }}
       />
 
-      {!isLoaded ? (
-        <div className="setting-item-description">{t('settings.compiler.fonts.clickToLoad')}</div>
-      ) : (
-        <>
-          <div className="setting-item-description">
-            {t('settings.compiler.fonts.fontCount', { count: filtered.length })}
-          </div>
-          <div className="typstmate-settings-table">
-            {filtered.map((font) => (
-              <Setting
-                key={font.postscriptName}
-                deps={[font]}
-                build={(setting) => {
-                  const fontId = hashLike(font.fullName);
-                  setting
-                    .setName(`${font.fullName} (${fontId})`)
-                    .addButton((button) => {
-                      button.setIcon('info');
-                      button.setTooltip(t('settings.compiler.fonts.tooltips.getInfo'));
-                      button.onClick(async () => {
-                        const info = await (typstManager.wasm as any).parseFont(
-                          await (await font.blob()).arrayBuffer(),
-                        );
-                        new FontModal(appUtils.app, info).open();
-                      });
-                    })
-                    .addButton((button) => {
-                      button.setTooltip(t('settings.compiler.fonts.tooltips.importFont'));
-                      button.setIcon('plus');
-                      button.onClick(() => importFont(font));
+      <div className="setting-item-description">
+        {isLoaded
+          ? t('settings.compiler.fonts.fontCount', { count: filtered.length })
+          : t('settings.compiler.fonts.clickToLoad')}
+      </div>
+
+      <SimpleList
+        items={filtered}
+        emptyMessage={isLoaded ? t('settings.compiler.fonts.noFontsFound') : undefined}
+        renderItem={(font) => {
+          const fontId = hashLike(font.fullName);
+          return (
+            <Setting
+              key={font.postscriptName}
+              deps={[font]}
+              build={(setting) => {
+                setting
+                  .setName(`${font.fullName} (${fontId})`)
+                  .addButton((button) => {
+                    button.setIcon('info');
+                    button.setTooltip(t('settings.compiler.fonts.tooltips.getInfo'));
+                    button.onClick(async () => {
+                      const info = await (typstManager.wasm as any).parseFont(await (await font.blob()).arrayBuffer());
+                      new FontModal(appUtils.app, info).open();
                     });
-                }}
-              />
-            ))}
-          </div>
-        </>
-      )}
+                  })
+                  .addButton((button) => {
+                    button.setTooltip(t('settings.compiler.fonts.tooltips.importFont'));
+                    button.setIcon('plus');
+                    button.onClick(() => importFont(font));
+                  });
+              }}
+            />
+          );
+        }}
+      />
     </>
   );
 }

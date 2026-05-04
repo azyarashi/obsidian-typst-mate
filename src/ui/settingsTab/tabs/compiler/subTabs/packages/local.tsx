@@ -1,10 +1,11 @@
-import { Setting } from '@components/obsidian/Setting';
 import { Notice, Platform } from 'obsidian';
 import { useState } from 'preact/hooks';
 import { t } from '@/i18n';
 import { fileManager } from '@/libs';
 import { features, fs, path } from '@/libs/features';
 import type { PackageSpecWithPath } from '@/types/typst';
+import { Setting } from '@/ui/components/obsidian/Setting';
+import { SimpleList } from '@/ui/components/SimpleList';
 
 export function LocalPackageList() {
   if (!Platform.isDesktopApp || !features.node) return null;
@@ -40,8 +41,8 @@ export function LocalPackageList() {
       <Setting
         build={(setting) => {
           setting
-            .setName(t('settings.compiler.packages.importLocal.name'))
-            .setDesc(t('settings.compiler.packages.importLocal.desc'))
+            .setName(t('settings.compiler.packages.importLocalName'))
+            .setDesc(t('settings.compiler.packages.importLocalDesc'))
             .addButton((button) => {
               button.setIcon('list-restart');
               button.setTooltip(t('settings.compiler.packages.tooltips.importLocalPackage'));
@@ -50,8 +51,9 @@ export function LocalPackageList() {
         }}
       />
       {isLoaded && (
-        <div className="typstmate-settings-table">
-          {localPackages.map((spec) => (
+        <SimpleList
+          items={localPackages}
+          renderItem={(spec) => (
             <Setting
               key={`${spec.path}/${spec.namespace}/${spec.name}:${spec.version}`}
               build={(setting) => {
@@ -64,8 +66,8 @@ export function LocalPackageList() {
                 });
               }}
             />
-          ))}
-        </div>
+          )}
+        />
       )}
     </>
   );

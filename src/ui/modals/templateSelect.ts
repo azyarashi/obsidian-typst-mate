@@ -14,14 +14,14 @@ export class TemplateSelectModal extends Modal {
     const { contentEl, app } = this;
     contentEl.empty();
 
-    const importPath = settingsManager.settings.importPath;
-    if (!(await app.vault.adapter.exists(importPath))) {
-      new Notice(t('notices.typstDirNotExist'));
+    const resourcesPath = settingsManager.settings.resourcesPath;
+    if (!(await app.vault.adapter.exists(resourcesPath))) {
+      new Notice(t('notices.resourcesDirNotExist'));
       this.close();
       return;
     }
 
-    const templatePath = `${importPath}/templates`;
+    const templatePath = `${resourcesPath}/templates`;
     if (!(await app.vault.adapter.exists(templatePath))) {
       new Notice(t('notices.templateDirNotExist'));
       this.close();

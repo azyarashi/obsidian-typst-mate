@@ -1,8 +1,9 @@
 import { type Menu, setIcon, setTooltip, TextFileView, type TFile } from 'obsidian';
-import { previewJumpExtension } from '@/editor/shared/extensions/PreviewJump';
+import { previewJumpExtension } from '@/editor';
 import { t } from '@/i18n';
 import { typstManager } from '@/libs';
-import { TypstFileView } from '../typst-file';
+import { TypstFileView } from '@/ui/views';
+import { consoleError } from '@/utils/notice';
 
 import './typst-preview.css';
 
@@ -616,7 +617,7 @@ export class TypstPreviewView extends TextFileView {
       this.updateControls();
       this.viewerAreaEl.scrollTop = currentScrollTop;
     } catch (e) {
-      console.error('[TypstMate] PDF updatePreview failed:', e);
+      consoleError('[TypstMate] PDF updatePreview failed:', e);
     }
   }
 

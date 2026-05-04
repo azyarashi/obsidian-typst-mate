@@ -1,10 +1,10 @@
-import { Setting } from '@components/obsidian/Setting';
 import { useEffect, useState } from 'preact/hooks';
 import type { PackageSpec } from '@/../pkg/typst_wasm';
 import { t } from '@/i18n';
 import { fileManager } from '@/libs';
-import { CachedPackageList } from './cachedPackageList';
-import { LocalPackageList } from './localPackageList';
+import { Setting } from '@/ui/components/obsidian/Setting';
+import { CachedPackageList } from './imported';
+import { LocalPackageList } from './local';
 
 export function PackagesListContainer() {
   const [cachedPackages, setCachedPackages] = useState<PackageSpec[]>([]);

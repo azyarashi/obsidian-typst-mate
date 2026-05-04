@@ -1,9 +1,9 @@
-import { ExtensionListItem } from '@components/List/ListItem/ExtensionListItem';
-import { type TabDefinition, Tabs } from '@components/Tabs';
 import { debounce } from 'obsidian';
 import { useMemo, useState } from 'preact/hooks';
 import { extensionManager, settingsManager } from '@/libs';
 import { ALL_TAGS, type EditorContext, type ExtensionEntry, type Tag } from '@/libs/extensionManager';
+import { ExtensionListItem } from '@/ui/components/List/ListItem/ExtensionListItem';
+import { type TabDefinition, Tabs } from '@/ui/components/Tabs';
 
 export function ExtensionsTab() {
   const [activeTab, setActiveTabInternal] = useState<EditorContext>(
@@ -15,6 +15,7 @@ export function ExtensionsTab() {
     settingsManager.saveSettings();
   };
 
+  // TODO
   const subTabs: TabDefinition<EditorContext>[] = [
     {
       id: 'markdown',
@@ -56,16 +57,8 @@ function ExtensionsContent({ context }: { context: EditorContext }) {
     const q = query.toLowerCase();
     return entries.filter((entry) => {
       const { package: pkg } = entry;
-      // Filter out extensions that don't apply to the current context
       if (!pkg.scope.includes(context)) return false;
-      if (pkg.isHidden) return false;
-      if (
-        q &&
-        !pkg.id.toLowerCase().includes(q) &&
-        !pkg.name.toLowerCase().includes(q) &&
-        !(typeof pkg.description === 'string' && pkg.description.toLowerCase().includes(q))
-      )
-        return false;
+      if (q && !pkg.id.toLowerCase().includes(q) && !pkg.name.toLowerCase().includes(q)) return false;
       if (activeTags.length > 0 && !activeTags.some((t) => pkg.tags.includes(t))) return false;
       return true;
     });

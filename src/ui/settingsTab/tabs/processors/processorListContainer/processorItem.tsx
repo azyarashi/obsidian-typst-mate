@@ -1,7 +1,4 @@
-import { IconS } from '@components/Icon';
-import { SortableItem } from '@components/List/ListContainer';
-import { Setting } from '@components/obsidian/Setting';
-import { parse, SyntaxMode } from '@typstmate/typst-syntax';
+import { getSyntaxContextAt, parse, SyntaxMode } from '@typstmate/typst-syntax';
 import { EditorState } from '@codemirror/state';
 import { EditorView } from '@codemirror/view';
 import { debounce } from 'obsidian';
@@ -22,8 +19,11 @@ import {
   RenderingEngine,
   type Processor as TypstProcessor,
 } from '@/libs/processor';
+import { IconS } from '@/ui/components/Icon';
+import { SortableItem } from '@/ui/components/List/ListContainer';
+import { Setting } from '@/ui/components/obsidian/Setting';
 import { getMiniEditorExtensions } from '@/ui/modals/miniEditor';
-import { getModeAndKind } from '@/utils/typstSyntax';
+import { consoleWarn } from '@/utils/notice';
 
 export function ProcessorItem<K extends ProcessorKind>({
   kind,
@@ -58,7 +58,7 @@ export function ProcessorItem<K extends ProcessorKind>({
     <T extends keyof ProcessorOfKind<K>>(field: T, value: ProcessorOfKind<K>[T]) => {
       const partial: Partial<TypstProcessor> = { [field]: value };
       if (field === 'renderingEngine' && value === RenderingEngine.MathJax) {
-        partial.syntaxMode = SyntaxMode.Opaque;
+        partial.syntaxMode = SyntaxMode.Plain;
       }
       onUpdate(uuid, partial);
     },
@@ -74,10 +74,10 @@ export function ProcessorItem<K extends ProcessorKind>({
       debounce((format: string) => {
         const p = processorRef.current;
         if (p.renderingEngine === RenderingEngine.MathJax) {
-          if (p.syntaxMode !== SyntaxMode.Opaque) {
+          if (p.syntaxMode !== SyntaxMode.Plain) {
             (handleUpdateRef.current as (field: 'syntaxMode', value: SyntaxMode) => void)(
               'syntaxMode',
-              SyntaxMode.Opaque,
+              SyntaxMode.Plain,
             );
           }
           return;
@@ -97,7 +97,7 @@ export function ProcessorItem<K extends ProcessorKind>({
 
           const dummy = format.slice(0, codeIndex) + format.slice(codeIndex + 6);
           const tree = parse(dummy);
-          const { mode } = getModeAndKind(tree, codeIndex, defaultMode);
+          const { mode } = getSyntaxContextAt(tree, codeIndex, defaultMode);
 
           if (mode !== undefined && mode !== null && mode !== p.syntaxMode) {
             (handleUpdateRef.current as (field: 'syntaxMode', value: SyntaxMode) => void)(
@@ -106,7 +106,7 @@ export function ProcessorItem<K extends ProcessorKind>({
             );
           }
         } catch (e) {
-          console.warn('[Typst Mate] Mode detection failed', e);
+          consoleWarn('Mode detection failed', e);
         } finally {
           setIsDetecting(false);
         }
@@ -175,7 +175,7 @@ export function ProcessorItem<K extends ProcessorKind>({
       isFixed={isFixed}
       onMove={onMove}
       onDelete={isFixed ? undefined : () => onDelete(uuid)}
-      deleteLabel={t('settings.processors.deleteProcessorButton')}
+      deleteLabel={t('settings.processors.deleteButton')}
       idInput={
         !isFixed ? (
           <input
@@ -194,6 +194,7 @@ export function ProcessorItem<K extends ProcessorKind>({
       }
       summaryFields={
         <>
+          {/* Rendering Engine */}
           <label>
             <select
               onChange={(e) =>
@@ -205,19 +206,20 @@ export function ProcessorItem<K extends ProcessorKind>({
                 value={RenderingEngine.TypstSVG}
                 selected={processor.renderingEngine === RenderingEngine.TypstSVG}
               >
-                {t('settings.processors.renderingEngineOptions.typstSVG')}
+                {t('settings.processors.renderingEngineOptions.typstSvg')}
               </option>
               <option
                 value={RenderingEngine.TypstHTML}
                 selected={processor.renderingEngine === RenderingEngine.TypstHTML}
               >
-                {t('settings.processors.renderingEngineOptions.typstHTML')}
+                {t('settings.processors.renderingEngineOptions.typstHtml')}
               </option>
               <option value={RenderingEngine.MathJax} selected={processor.renderingEngine === RenderingEngine.MathJax}>
-                {t('settings.processors.renderingEngineOptions.mathjax')}
+                {t('settings.processors.renderingEngineOptions.mathJax')}
               </option>
             </select>
           </label>
+          {/* Styling */}
           <label>
             <select
               onChange={(e) =>
@@ -252,7 +254,7 @@ export function ProcessorItem<K extends ProcessorKind>({
                   </option>
                 </>
               )}
-              {(kind === 'codeblock' || kind === 'excalidraw') && (
+              {kind === 'codeblock' && (
                 <>
                   <option value={CodeblockStyling.Block} selected={processor.styling === CodeblockStyling.Block}>
                     {t('settings.processors.stylingOptions.block')}
@@ -279,7 +281,7 @@ export function ProcessorItem<K extends ProcessorKind>({
         <>
           <IconS
             icon={ICONS.ReplaceAll}
-            title={t('settings.processors.iconTooltips.useReplaceAll')}
+            title={t('settings.processors.tooltips.useReplaceAll')}
             isActive={processor.useReplaceAll ?? false}
             onClick={() => {
               (handleUpdate as (field: 'useReplaceAll', value: boolean) => void)(
@@ -291,7 +293,7 @@ export function ProcessorItem<K extends ProcessorKind>({
           {hasFitToNoteWidth(kind) && (
             <IconS
               icon={ICONS.MoveHorizontal}
-              title={t('settings.processors.iconTooltips.fitToNoteWidth')}
+              title={t('settings.processors.tooltips.fitToNote')}
               isActive={(processor as ProcessorWithFit).fitToNoteWidth ?? false}
               onClick={() => {
                 const p = processor as ProcessorWithFit;
@@ -305,7 +307,7 @@ export function ProcessorItem<K extends ProcessorKind>({
           {hasNoPreamble(kind) && (
             <IconS
               icon={ICONS.FileX}
-              title={t('settings.processors.iconTooltips.noPreamble')}
+              title={t('settings.processors.tooltips.noPreamble')}
               isActive={(processor as ProcessorWithPreamble).noPreamble ?? false}
               onClick={() => {
                 const p = processor as ProcessorWithPreamble;
@@ -318,21 +320,21 @@ export function ProcessorItem<K extends ProcessorKind>({
             className={isDetecting ? 'typstmate-spinner' : ''}
             title={
               isDetecting
-                ? t('settings.processors.iconTooltips.syntaxModeAnalyzing')
+                ? t('settings.processors.tooltips.syntaxModeAnalyzing')
                 : (() => {
                     switch (processor.syntaxMode) {
                       case SyntaxMode.Markup:
-                        return t('settings.processors.iconTooltips.syntaxModeMarkup');
+                        return t('settings.processors.tooltips.syntaxModeMarkup');
                       case SyntaxMode.Math:
-                        return t('settings.processors.iconTooltips.syntaxModeMath');
+                        return t('settings.processors.tooltips.syntaxModeMath');
                       case SyntaxMode.Code:
-                        return t('settings.processors.iconTooltips.syntaxModeCode');
-                      case SyntaxMode.Opaque:
-                        return t('settings.processors.iconTooltips.syntaxModeOpaque');
+                        return t('settings.processors.tooltips.syntaxModeCode');
+                      case SyntaxMode.Plain:
+                        return t('settings.processors.tooltips.syntaxModePlain');
                       default:
                         return kind !== 'codeblock' && kind !== 'excalidraw'
-                          ? t('settings.processors.iconTooltips.syntaxModeMath')
-                          : t('settings.processors.iconTooltips.syntaxModeMarkup');
+                          ? t('settings.processors.tooltips.syntaxModeMath')
+                          : t('settings.processors.tooltips.syntaxModeMarkup');
                     }
                   })()
             }
@@ -359,8 +361,8 @@ export function ProcessorItem<K extends ProcessorKind>({
           <Setting
             build={(s) =>
               s
-                .setName(tFragment('settings.processors.useReplaceAll.name'))
-                .setDesc(tFragment('settings.processors.useReplaceAll.desc'))
+                .setName(tFragment('settings.processors.useReplaceAllName'))
+                .setDesc(tFragment('settings.processors.useReplaceAllDesc'))
                 .addToggle((t) => {
                   t.setValue(processor.useReplaceAll ?? false).onChange((v) =>
                     handleUpdate('useReplaceAll' as keyof ProcessorOfKind<K>, v as ProcessorOfKind<K>['useReplaceAll']),
@@ -372,8 +374,8 @@ export function ProcessorItem<K extends ProcessorKind>({
             <Setting
               build={(s) =>
                 s
-                  .setName(tFragment('settings.processors.fitToNoteWidth.name'))
-                  .setDesc(tFragment('settings.processors.fitToNoteWidth.desc'))
+                  .setName(tFragment('settings.processors.fitToNoteName'))
+                  .setDesc(tFragment('settings.processors.fitToNoteDesc'))
                   .addToggle((t) => {
                     const p = processor as ProcessorWithFit;
                     t.setValue(p.fitToNoteWidth ?? false).onChange((v) => {
@@ -387,8 +389,8 @@ export function ProcessorItem<K extends ProcessorKind>({
             <Setting
               build={(s) =>
                 s
-                  .setName(tFragment('settings.processors.noPreamble.name'))
-                  .setDesc(tFragment('settings.processors.noPreamble.desc'))
+                  .setName(tFragment('settings.processors.noPreambleName'))
+                  .setDesc(tFragment('settings.processors.noPreambleDesc'))
                   .addToggle((t) => {
                     const p = processor as ProcessorWithPreamble;
                     t.setValue(p.noPreamble ?? false).onChange((v) => {
@@ -407,14 +409,14 @@ export function ProcessorItem<K extends ProcessorKind>({
 function getSyntaxModeIcon(kind: ProcessorKind, syntaxMode?: SyntaxMode): ComponentChildren {
   switch (syntaxMode) {
     case SyntaxMode.Markup:
-      return ICONS.Heading1;
+      return ICONS.MarkupMode;
     case SyntaxMode.Math:
-      return ICONS.SquareFunction;
+      return ICONS.MathMode;
     case SyntaxMode.Code:
-      return ICONS.Code;
-    case SyntaxMode.Opaque:
-      return ICONS.CircleDashed;
+      return ICONS.CodeMode;
+    case SyntaxMode.Plain:
+      return ICONS.PlainMode;
     default:
-      return kind === 'codeblock' || kind === 'excalidraw' ? ICONS.Heading1 : ICONS.SquareFunction;
+      return kind === 'inline' || kind === 'display' ? ICONS.MathMode : ICONS.MarkupMode;
   }
 }

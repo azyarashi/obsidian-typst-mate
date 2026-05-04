@@ -1,8 +1,7 @@
 import { MarkdownView, Menu, type MenuItem, Notice } from 'obsidian';
 import type { Diagnostic as WasmDiagnostic } from '@/../pkg/typst_wasm';
 import { DEFAULT_FONT_SIZE } from '@/constants';
-import { updateDiagnosticEffect } from '@/editor/shared/extensions/Linter/extension';
-import { getActiveRegion } from '@/editor/shared/utils/core';
+import { getActiveRegion, updateDiagnosticEffect } from '@/editor';
 import { t } from '@/i18n';
 import { appUtils, settingsManager, typstManager } from '@/libs';
 import { type Processor, type ProcessorKind, RenderingEngine } from '@/libs/processor';
@@ -31,14 +30,14 @@ export default abstract class TypstElement extends HTMLElement {
     // ? キャンバスなどで呼ばれたとき用
     const view = appUtils.app.workspace.getActiveFileView();
     if (view instanceof MarkdownView)
-      setTimeout(() => {
+      requestAnimationFrame(() => {
         updateDiagnosticEffect(view.editor.cm, {
           diagnostics: result.diags,
           processor: this.processor,
           noDiag: this.noDiag,
           offset: this.offset,
         });
-      }, 0);
+      });
 
     typstManager.beforeKind = this.kind;
   }
@@ -65,7 +64,7 @@ export default abstract class TypstElement extends HTMLElement {
           noDiag: this.noDiag,
           offset: this.offset,
         });
-      }, 0);
+      });
     }
     if (view instanceof MarkdownView) {
       const region = getActiveRegion(view.editor.cm);
@@ -77,7 +76,8 @@ export default abstract class TypstElement extends HTMLElement {
 
     const diagEl = document.createElement('span');
     diagEl.className = 'typstmate-element-error typstmate-temporary';
-    diagEl.textContent = diag.message;
+    // TODO
+    diagEl.textContent = diag?.message ?? 'Runtime Error';
 
     this.replaceChildren(diagEl);
   }
@@ -86,9 +86,9 @@ export default abstract class TypstElement extends HTMLElement {
     event.preventDefault();
 
     const menu = new Menu().addItem((item: MenuItem) => {
-      item.setTitle(t('contextMenu.copyAsScript')).onClick(() => {
+      item.setTitle(t('contextMenu.copyAsCode')).onClick(async () => {
         const { formatted } = format(this.source, this.kind, this.processor);
-        navigator.clipboard.writeText(
+        await navigator.clipboard.writeText(
           formatted.replaceAll('fontsize', `${(appUtils.app.vault.config.baseFontSize ?? DEFAULT_FONT_SIZE) / 1.25}pt`),
         );
         new Notice(t('notices.copiedToClipboard'));

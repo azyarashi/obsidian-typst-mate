@@ -1,10 +1,10 @@
-import { Setting } from '@components/obsidian/Setting';
 import { useEffect, useState } from 'preact/hooks';
 import { TypstMate } from '@/api';
 import { tFragment } from '@/i18n';
 import { fileManager } from '@/libs';
-import { LoadedFontList } from './loadedFontList';
-import { SystemFontList } from './systemFontList';
+import { Setting } from '@/ui/components/obsidian/Setting';
+import { LoadedFontList } from './imported';
+import { SystemFontList } from './local';
 
 export function FontListContainer() {
   const [importedFonts, setImportedFonts] = useState<string[]>([]);

@@ -1,4 +1,4 @@
-import { type App, Modal, Notice, Setting } from 'obsidian';
+import { type App, Modal, Setting } from 'obsidian';
 import type { HtmlEOptions, PdfEOptions } from '@/../pkg/typst_wasm';
 import { t, tFragment } from '@/i18n';
 import { fileManager, settingsManager, typstManager } from '@/libs';
@@ -12,6 +12,7 @@ import {
   type PngExportOptions,
   type SvgExportOptions,
 } from '@/utils/export';
+import { noticeError } from '@/utils/notice';
 
 export type ExportOptions = {
   format: ExportFormat;
@@ -287,8 +288,10 @@ export class ExportToolModal extends Modal {
           break;
       }
     } catch (e) {
-      console.error('[TypstMate] ExportTool.export failed:', e);
-      new Notice(t('notices.exportFailed'));
+      noticeError(t('notices.exportFailed'), {
+        message: 'ExportTool.export failed:',
+        obj: e,
+      });
     }
   }
 }

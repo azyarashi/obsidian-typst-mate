@@ -7,3 +7,10 @@
 .vertical-tab-content:has(.typstmate-settingstab) {
   scrollbar-gutter: stable;
 }
+
+input.is-invalid {
+  border-color: var(--text-error) !important;
+}
+input.is-invalid:focus {
+  box-shadow: 0 0 0 2px var(--text-error) !important;
+}

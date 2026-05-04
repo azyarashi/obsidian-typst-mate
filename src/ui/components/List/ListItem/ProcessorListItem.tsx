@@ -1,4 +1,4 @@
-import { ToggleComponent } from '../../obsidian/components';
+import { ToggleComponent } from '@/ui/components/obsidian/components';
 import { ListItem } from './index';
 
 import './ProcessorListItem.css';

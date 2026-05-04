@@ -1,7 +1,7 @@
 import { MarkdownView, type Menu, type MenuItem, Notice } from 'obsidian';
 import type { Diagnostic, SvgMResult } from '@/../pkg/typst_wasm';
 import { BASE_COLOR_VAR } from '@/constants';
-import { jumpFromClickPlugin } from '@/editor/shared/extensions/JumpFromClick';
+import { previewJumpPlugin } from '@/editor';
 import { t } from '@/i18n';
 import { appUtils, settingsManager, typstManager } from '@/libs';
 import { ErrorCode } from '@/libs/typstManager/worker';
@@ -157,7 +157,7 @@ export default class TypstSVGElement extends TypstElement {
     if (result) {
       const view = appUtils.app.workspace.getActiveFileView();
       if (!(view instanceof MarkdownView)) return;
-      view.editor.cm.plugin(jumpFromClickPlugin)?.jumpTo(result, event, this);
+      view.editor.cm.plugin(previewJumpPlugin)?.jumpTo(result, event, this);
     }
   }
 }

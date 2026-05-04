@@ -24,7 +24,13 @@
         "useIframeTitle": "off"
       },
       "style": {
-        "noNonNullAssertion": "off"
+        "noNonNullAssertion": "off",
+        "noRestrictedImports": {
+          "level": "error",
+          "options": {
+            "patterns": [{ "group": ["../../**", "@/../../**"] }, { "group": ["@/editor/**", "!@/editor"] }]
+          }
+        }
       },
       "security": {
         "noDangerouslySetInnerHtml": "off"
@@ -56,9 +62,9 @@
     "ignoreUnknown": false,
     "includes": [
       "src/**",
+      "packages/**",
       "tests/**",
       "scripts/*",
-      "packages/**",
       "vite.config.ts",
       "postcss.config.cjs",
       "tsconfig.json",
@@ -75,7 +81,7 @@
         "organizeImports": {
           "level": "on",
           "options": {
-            "groups": ["@resources/**", "@components/**", "@settings/**", "@typstmate/**", "@main.ts"]
+            "groups": ["@resources/**", "@ui/components/**", "@settings/**", "@typstmate/**", "@main.ts"]
           }
         }
       }

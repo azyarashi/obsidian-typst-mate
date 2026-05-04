@@ -9,17 +9,21 @@ import {
   type ViewStateResult,
   type WorkspaceLeaf,
 } from 'obsidian';
-import { formatterSettingsFacet } from '@/editor/shared/extensions';
-import { updateDiagnosticEffect } from '@/editor/shared/extensions/Linter/extension';
-import { buildTypstTextExtensions } from '@/editor/typst/build';
-import { codeJumpTargetFacet } from '@/editor/typst/extensions/CodeJump';
-import { vimQuitFacet, vimSaveFacet } from '@/editor/typst/extensions/Vim';
+import {
+  buildTypstTextExtensions,
+  codeJumpTargetFacet,
+  formatterSettingsFacet,
+  updateDiagnosticEffect,
+  vimQuitFacet,
+  vimSaveFacet,
+} from '@/editor';
 import { t } from '@/i18n';
 import { fileManager, settingsManager, typstManager } from '@/libs';
 import { viewTracker } from '@/libs/extensionManager';
+import { ExportToolModal } from '@/ui/modals/exportTool';
+import { TypstPreviewView } from '@/ui/views/typst-preview';
 import { exportToPdf } from '@/utils/export';
-import { ExportToolModal } from '../../modals/exportTool';
-import { TypstPreviewView } from '../typst-preview';
+import { consoleError } from '@/utils/notice';
 
 import './typst-file.css';
 
@@ -119,7 +123,8 @@ export class TypstFileView extends TextFileView {
         try {
           this.app.openWithDefaultApp(this.vpath);
         } catch (e) {
-          console.error('[Typst Mate] app.openWithDefaultApp failed', e);
+          // TODO
+          consoleError('app.openWithDefaultApp failed', e);
         }
       });
     });
@@ -138,14 +143,14 @@ export class TypstFileView extends TextFileView {
     await this.compileAndUpdate(content);
 
     // タグの更新
-    const importPath = settingsManager.settings.importPath;
-    if (!this.vpath.startsWith(`${importPath}/tags/`)) return;
+    const resourcesPath = settingsManager.settings.resourcesPath;
+    if (!this.vpath.startsWith(`${resourcesPath}/tags/`)) return;
 
-    const typstPath = this.vpath.slice(importPath.length);
+    const typstPath = this.vpath.slice(resourcesPath.length);
     typstManager.wasm.store({ files: new Map([[typstPath, content]]) });
 
     const tag = typstPath
-      .slice(importPath.length + 1) // importPath + "/" の分
+      .slice(resourcesPath.length + 1) // resourcesPath + "/" の分
       .slice(5) // "tags/" の分
       .slice(0, -4) // ".typ" の分
       .replaceAll('.', '/');

@@ -2,7 +2,7 @@ import { setTooltip } from 'obsidian';
 import type { ComponentChildren } from 'preact';
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { ICONS } from '@/constants/icons';
-import { IconS } from '../../Icon';
+import { IconS } from '@/ui/components/Icon';
 
 export interface SortableItemProps {
   uuid: string;

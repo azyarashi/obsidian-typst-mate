@@ -1,7 +1,7 @@
 import type { EditorView } from '@codemirror/view';
 import { render } from 'preact';
 import { getExtraHints } from '@/constants/extraHints';
-import type { TypstDiagnostic } from '@/editor/shared/extensions/Linter/extension';
+import type { TypstDiagnostic } from '@/editor';
 
 import './Diagnostic.css';
 
@@ -22,6 +22,7 @@ export function Diagnostic({ diagnostic, state }: DiagnosticProps) {
           <div className="typstmate-diag-hint-label">
             {severity === 'error' ? 'How to fix this?' : "What's this about?"}
           </div>
+
           <div className="typstmate-diag-hints">
             {allHints.map((hint, i) => (
               <div key={i} className="typstmate-diag-hint">

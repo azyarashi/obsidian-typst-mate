@@ -1,8 +1,8 @@
-import { Setting } from '@components/obsidian/Setting';
 import { useEffect, useState } from 'preact/hooks';
 import { t } from '@/i18n';
 import { settingsManager } from '@/libs';
 import { features, watcher } from '@/libs/features';
+import { Setting } from '@/ui/components/obsidian/Setting';
 
 export function WatcherListContainer() {
   const [subscriptionPaths, setSubscriptionPaths] = useState<string[]>([]);
@@ -25,15 +25,15 @@ export function WatcherListContainer() {
           setting
             .setHeading()
             .setName(t('settings.compiler.watcher.heading'))
-            .setDesc(t('settings.compiler.watcher.desc'))
+            .setDesc(t('settings.compiler.watcherDesc'))
         }
       />
 
       <Setting
         build={(setting) =>
           setting
-            .setName(t('settings.compiler.watcher.enableWatcher.name'))
-            .setDesc(t('settings.compiler.watcher.enableWatcher.desc'))
+            .setName(t('settings.compiler.watcherEnableWatcherName'))
+            .setDesc(t('settings.compiler.watcherEnableWatcherDesc'))
             .addToggle((toggle) =>
               toggle.setValue(settingsManager.settings.enableWatcher).onChange(async (val) => {
                 settingsManager.settings.enableWatcher = val;
@@ -46,8 +46,8 @@ export function WatcherListContainer() {
       <Setting
         build={(setting) =>
           setting
-            .setName(t('settings.compiler.watcher.enablePackageWatch.name'))
-            .setDesc(t('settings.compiler.watcher.enablePackageWatch.desc'))
+            .setName(t('settings.compiler.watcherEnablePackageWatchName'))
+            .setDesc(t('settings.compiler.watcherEnablePackageWatchDesc'))
             .addToggle((toggle) =>
               toggle.setValue(settingsManager.settings.enablePackageWatch).onChange(async (val) => {
                 settingsManager.settings.enablePackageWatch = val;
@@ -60,8 +60,8 @@ export function WatcherListContainer() {
       <Setting
         build={(setting) =>
           setting
-            .setName(t('settings.compiler.watcher.watchExtensions.name'))
-            .setDesc(t('settings.compiler.watcher.watchExtensions.desc'))
+            .setName(t('settings.compiler.watcherWatchExtensionsName'))
+            .setDesc(t('settings.compiler.watcherWatchExtensionsDesc'))
             .addTextArea((text) =>
               text
                 .setValue(settingsManager.settings.watchExtensions.join(', '))

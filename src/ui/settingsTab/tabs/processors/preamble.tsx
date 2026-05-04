@@ -1,12 +1,13 @@
-import { Setting } from '@components/obsidian/Setting';
-import { type TabDefinition, Tabs } from '@components/Tabs';
 import { EditorState } from '@codemirror/state';
 import { EditorView } from '@codemirror/view';
 import { debounce } from 'obsidian';
 import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
+import { buildTypstSimpleEditorExtensions } from '@/editorSimple/typst';
 import { t, tFragment } from '@/i18n';
-import { extensionManager, settingsManager } from '@/libs';
+import { settingsManager } from '@/libs';
 import { RenderingEngine } from '@/libs/processor';
+import { Setting } from '@/ui/components/obsidian/Setting';
+import { type TabDefinition, Tabs } from '@/ui/components/Tabs';
 
 export function Preamble() {
   const [activePreambleRenderingEngine, setActivePreambleRenderingEngineInternal] = useState<RenderingEngine>(
@@ -64,7 +65,7 @@ export function Preamble() {
       const state = EditorState.create({
         doc: preamble,
         extensions: [
-          ...extensionManager.buildSettingsEditorExtensions(),
+          ...buildTypstSimpleEditorExtensions(),
           EditorView.updateListener.of((update) => {
             if (update.docChanged) {
               const val = update.state.doc.toString();
@@ -121,11 +122,11 @@ export function Preamble() {
         <Setting
           build={(setting) =>
             setting
-              .setName(`${isOpen ? '▼' : '▶︎'} ${t('settings.processors.preamble.name')}`)
+              .setName(`${isOpen ? '▼' : '▶︎'} ${t('settings.processors.preambleName')}`)
               .addButton((b) => {
                 b.setIcon('info');
               })
-              .setDesc(tFragment('settings.processors.preamble.desc'))
+              .setDesc(tFragment('settings.processors.preambleDesc'))
           }
         />
       </summary>

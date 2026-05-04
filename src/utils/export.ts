@@ -1,7 +1,6 @@
-import { fileManager } from '@/libs';
-import { typstManager } from '@/libs/typstManager';
+import type { HtmlEOptions, PdfEOptions, PngEOptions, SvgEOptions } from '@wasm';
+import { fileManager, typstManager } from '@/libs';
 import type { VPath } from '@/libs/typstManager/worker';
-import type { HtmlEOptions, PdfEOptions, PngEOptions, SvgEOptions } from '../../pkg/typst_wasm';
 
 export type SvgExportOptions = SvgEOptions & { filenameTemplate: string };
 export type PngExportOptions = PngEOptions & { filenameTemplate: string };

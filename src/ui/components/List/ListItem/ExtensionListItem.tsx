@@ -3,12 +3,12 @@ import { useLayoutEffect, useRef, useState } from 'preact/hooks';
 import { ICONS } from '@/constants/icons';
 import { extensionManager, settingsManager } from '@/libs';
 import type { EditorContext, ExtensionPackage } from '@/libs/extensionManager';
-import { Icon } from '../../decorations';
-import { Setting } from '../../obsidian/Setting';
+import { Icon } from '@/ui/components/decorations';
+import { Setting } from '@/ui/components/obsidian/Setting';
 import { ListItem } from './index';
 import './ExtensionListItem.css';
 
-function RawMarkup({ content, className }: { content: string | DocumentFragment; className?: string }) {
+function RawMarkup({ content, className }: { content?: string | DocumentFragment | null; className?: string }) {
   const ref = useRef<HTMLSpanElement>(null);
   useLayoutEffect(() => {
     if (!ref.current) return;
@@ -96,7 +96,7 @@ export function ExtensionListItem({
                   s.addToggle((t) =>
                     t
                       .setValue(enabled)
-                      .setDisabled(pkg.isBuiltin)
+                      .setDisabled(pkg.isBuiltin ?? false)
                       .onChange(async (v) => {
                         setEnabled(v);
                         await updateSettings({ enabled: v });
@@ -108,7 +108,7 @@ export function ExtensionListItem({
                 {pkg.scope.map((s: any) => (
                   <Icon
                     key={s}
-                    icon={s === 'markdown' ? ICONS.Pencil : ICONS.TypstStroke}
+                    icon={s === 'markdown' ? ICONS.Markdown : ICONS.TypstStroke}
                     className="typstmate-extension-scope-icon"
                     title={s}
                   />
