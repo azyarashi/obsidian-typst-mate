@@ -1,10 +1,10 @@
 import { SyntaxMode } from '@typstmate/typst-syntax';
 import type { EditorView } from '@codemirror/view';
-import { formatterSettingsFacet } from '@/editor/shared/extensions';
-import { formatTypst } from '@/editor/shared/extensions/Formatter';
-import { getActiveRegion } from '@/editor/shared/utils/core';
+import { formatTypst, formatterSettingsFacet, getActiveRegion } from '@/editor';
 import { t } from '@/i18n';
+import { consoleWarn } from '@/utils/notice';
 import { appUtils } from '../appUtils';
+import { RenderingEngine } from '../processor';
 import type { CommandGen } from '.';
 
 export const formatTypstCommand: CommandGen = () => {
@@ -20,10 +20,13 @@ export const formatTypstCommand: CommandGen = () => {
   };
 };
 
+// TODO
 export async function formatTypstInView(view: EditorView) {
   // 判定
   const region = getActiveRegion(view);
-  if (!region || region.mode === SyntaxMode.Plain) return;
+  if (!region) return;
+  if (region.mode === SyntaxMode.Plain || region.processor?.renderingEngine === RenderingEngine.MathJax) return;
+
   const settings = view.state.facet(formatterSettingsFacet);
   if (!settings) return;
 
@@ -108,7 +111,7 @@ export async function formatTypstInView(view: EditorView) {
       });
     }
   } catch (e) {
-    console.warn('[Typst Mate] formatTypstInView failed', e);
+    consoleWarn('formatTypstInView failed', e);
   }
 }
 

@@ -4,20 +4,20 @@ import type pathModule from 'node:path';
 import { expose } from 'comlink';
 import type { TarFile } from 'untar-sync';
 import untar from 'untar-sync';
-import init, { Wasm } from '@/../pkg/typst_wasm.js';
-import type { Features } from '../features';
+import init, { Wasm } from '@wasm';
+import type { Features } from '@/libs/features';
 
 // wasm types
 
 // markdown
-import type { HtmlMResult, SvgMResult } from '@/../pkg/typst_wasm.js';
+import type { HtmlMResult, SvgMResult } from '@wasm';
 // preview
-import type { SvgPResult } from '@/../pkg/typst_wasm.js';
+import type { SvgPResult } from '@wasm';
 // export
 // biome-ignore format: 可読性のため
-import type { SvgEOptions, SvgEResult, HtmlEOptions, HtmlEResult, PdfEOptions, PdfEResult, PngEOptions, PngEResult } from '@/../pkg/typst_wasm.js';
+import type { SvgEOptions, SvgEResult, HtmlEOptions, HtmlEResult, PdfEOptions, PdfEResult, PngEOptions, PngEResult } from '@wasm';
 // その他
-import type { FontInfo, FormatOptions, FormatResult, PackageSpec } from '@/../pkg/typst_wasm.js';
+import type { FontInfo, FormatOptions, FormatResult, PackageSpec } from '@wasm';
 
 /**
  * * Mobile App: normalized path
@@ -67,7 +67,9 @@ export default class WasmAdapter {
   }
 
   async free() {
-    this.wasm?.free();
+    try {
+      this.wasm?.free();
+    } catch {} // runtime error
   }
 
   // post

@@ -2,6 +2,7 @@ import { appUtils } from '@/libs/appUtils';
 import { settingsManager } from '@/libs/settingsManager';
 import type ObsidianTypstMate from '@/main';
 import type { Singleton } from '@/types/singleton';
+import { consoleError } from '@/utils/notice';
 import type { TMAction } from './definition';
 import { importRaw, normalizeTMActionRaw } from './utils';
 
@@ -12,11 +13,11 @@ export type {
   TMActionContext,
   TMActionExtraAction,
   TMActionRaw,
-  TMActionRequirement,
+  TMActionRestriction,
   Trigger,
   TriggerType,
 } from './definition';
-export { ActionTypes, TMActionContexts, TMActionExtraActions, TMActionRequirements, TriggerTypes } from './definition';
+export { ActionTypes, TMActionContexts, TMActionExtraActions, TMActionRestrictions, TriggerTypes } from './definition';
 export { importRaw, normalizeTMActionRaw, validateTMAction } from './utils';
 
 class TMActionsManager implements Singleton {
@@ -35,7 +36,8 @@ class TMActionsManager implements Singleton {
     let source: string;
 
     if (settings.useTmactionsFile) {
-      const path = settings.tmactionsFileNPath;
+      // TODO
+      const path = `${settings.resourcesPath}/tmactions`;
       if (!path) {
         this.tmactions = [];
         return;
@@ -44,7 +46,7 @@ class TMActionsManager implements Singleton {
       try {
         source = await appUtils.app.vault.adapter.read(path);
       } catch (e) {
-        console.error('[Typst Mate] Failed to read TMActions file:', e);
+        consoleError('Failed to read TMActions file', e);
         this.tmactions = [];
         return;
       }
@@ -58,13 +60,13 @@ class TMActionsManager implements Singleton {
     try {
       const raw = await importRaw(source);
       if (!Array.isArray(raw)) {
-        console.error('[Typst Mate] TMActions must export an array');
+        consoleError('TMActions must export an array');
         this.tmactions = [];
         return;
       }
       this.tmactions = raw.map((item: unknown) => normalizeTMActionRaw(item as any));
     } catch (e) {
-      console.error('[Typst Mate] Failed to load TMActions:', e);
+      consoleError('Failed to load TMActions', e);
       this.tmactions = [];
     }
   }

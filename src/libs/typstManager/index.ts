@@ -1,6 +1,6 @@
+import type { PackageSpec } from '@wasm';
 import { proxy, type Remote, wrap } from 'comlink';
 import { type CachedMetadata, getAllTags, MarkdownPreviewRenderer, Notice, requestUrl, type TFile } from 'obsidian';
-import type { PackageSpec } from '@/../pkg/typst_wasm';
 import { Phase, State, TypstMate } from '@/api';
 import { DEFAULT_FONT_SIZE } from '@/constants';
 import { DEFAULT_SETTINGS, type Settings } from '@/data/settings';
@@ -24,6 +24,8 @@ import WasmWorker from './worker?worker&inline';
 import './index.css';
 
 const re = /\n([ \t]*> )/g;
+
+// TODO runtime errror の誘導
 
 export class TypstManager implements Singleton {
   plugin!: ObsidianTypstMate;
@@ -392,12 +394,12 @@ export class TypstManager implements Singleton {
   async collectTagFiles() {
     const files: Map<string, string> = new Map();
     const { settings } = settingsManager;
-    if (!settings.importPath) return files;
+    if (!settings.resourcesPath) return files;
 
-    const importPath = settings.importPath;
-    if (!(await this.plugin.app.vault.adapter.exists(importPath))) return files;
+    const resourcesPath = settings.resourcesPath;
+    if (!(await this.plugin.app.vault.adapter.exists(resourcesPath))) return files;
 
-    const filePaths = await this.plugin.app.vault.adapter.list(importPath);
+    const filePaths = await this.plugin.app.vault.adapter.list(resourcesPath);
 
     // Import dependency files
     for (const file of filePaths.files) {
@@ -407,10 +409,10 @@ export class TypstManager implements Singleton {
       files.set(`/${file}`, contents);
     }
 
-    const tags = `${importPath}/tags`;
-    if (!filePaths.folders.contains(tags)) return files;
+    const tagsPath = `${resourcesPath}/tags`;
+    if (!filePaths.folders.contains(tagsPath)) return files;
 
-    const list = await this.plugin.app.vault.adapter.list(tags);
+    const list = await this.plugin.app.vault.adapter.list(tagsPath);
     for (const file of list.files) {
       if (!file.endsWith('.typ')) continue;
 
@@ -421,7 +423,7 @@ export class TypstManager implements Singleton {
       // So we remove the folder and the .typ then get the tag back
       this.tagFiles.add(
         file
-          .slice(importPath.length + 1) // importPath + "/" の分
+          .slice(resourcesPath.length + 1) // resourcesPath + "/" の分
           .slice(5) // "tags/" の分
           .slice(0, -4) // ".typ" の分
           .replaceAll('.', '/'),
@@ -444,7 +446,7 @@ export class TypstManager implements Singleton {
     this.preamble = '';
     const { settings } = settingsManager;
     for (const tag of tags)
-      this.preamble += `#import "${fileManager.baseDirPath}/${settings.importPath}/tags/${tag.replaceAll('/', '.')}.typ": *;`;
+      this.preamble += `#import "${fileManager.baseDirPath}/${settings.resourcesPath}/tags/${tag.replaceAll('/', '.')}.typ": *;`;
     // Frontmatter variable definitions
     for (const i of imports) this.preamble += `#import ${i};`;
     for (const d of definitions) this.preamble += `#let ${d};`;

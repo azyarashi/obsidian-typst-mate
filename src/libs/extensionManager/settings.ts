@@ -17,8 +17,8 @@ export interface HeaderSetting {
 
 interface BaseSetting<T> {
   key: string;
-  title: string | DocumentFragment;
-  description: string | DocumentFragment;
+  title: string;
+  description: DocumentFragment;
   defaultValue: T;
 }
 

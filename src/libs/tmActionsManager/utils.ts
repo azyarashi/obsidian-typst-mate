@@ -1,10 +1,14 @@
 import {
   type Action,
+  type ScriptFn,
   type TMAction,
+  type TMActionContext,
   TMActionContexts,
+  type TMActionExtraAction,
   TMActionExtraActions,
   type TMActionRaw,
-  TMActionRequirements,
+  type TMActionRestriction,
+  TMActionRestrictions,
   type Trigger,
 } from './definition';
 
@@ -40,8 +44,20 @@ export async function importRaw(source: string): Promise<unknown> {
 }
 
 export function normalizeTMActionRaw(tmaction: TMActionRaw): TMAction {
-  const { c: contextsRaw, trigger: triggerRaw, action: actionRaw } = tmaction;
-  const contexts = contextsRaw ?? ['typm'];
+  const {
+    id,
+    r: requirementsRaw,
+    e: extraActionsRaw,
+    c: contextsRaw,
+    trigger: triggerRaw,
+    action: actionRaw,
+    p,
+  } = tmaction;
+  const restrictions: TMActionRestriction[] | undefined =
+    typeof requirementsRaw === 'string' ? (requirementsRaw.split('') as TMActionRestriction[]) : requirementsRaw;
+  const extraActions: TMActionExtraAction[] | undefined =
+    typeof extraActionsRaw === 'string' ? (extraActionsRaw.split('') as TMActionExtraAction[]) : extraActionsRaw;
+  const contexts: TMActionContext[] = typeof contextsRaw === 'string' ? [contextsRaw] : (contextsRaw ?? ['typm']);
 
   const trigger: Trigger =
     typeof triggerRaw === 'string'
@@ -51,17 +67,30 @@ export function normalizeTMActionRaw(tmaction: TMActionRaw): TMAction {
         }
       : triggerRaw;
 
-  const action: Action =
-    typeof actionRaw === 'string'
-      ? {
-          t: 'snippet',
-          v: actionRaw,
-        }
-      : actionRaw;
+  let action: Action;
+  switch (typeof actionRaw) {
+    case 'string':
+      action = {
+        t: 'snippet',
+        v: actionRaw,
+      };
+      break;
+    case 'function':
+      action = {
+        t: 'script',
+        v: actionRaw as ScriptFn,
+      };
+      break;
+    default:
+      action = actionRaw;
+      break;
+  }
 
   return {
-    ...tmaction,
-    id: tmaction.id ?? '',
+    p,
+    id: id || Math.random().toString(36).slice(2, 10),
+    r: restrictions,
+    e: extraActions,
     c: contexts,
     trigger,
     action,
@@ -85,7 +114,7 @@ export function validateTMAction(tmaction: MaybeTMAction): asserts tmaction is T
   // r
   if (r) {
     if (!Array.isArray(r)) throw new Error('Requirements is not an array');
-    const requirementsLength = r.filter((requirement) => TMActionRequirements.includes(requirement)).length;
+    const requirementsLength = r.filter((restriction) => TMActionRestrictions.includes(restriction)).length;
     if (requirementsLength !== r.length) throw new Error('Invalid requirement is included');
   }
 
@@ -125,11 +154,13 @@ export function validateTMAction(tmaction: MaybeTMAction): asserts tmaction is T
   if (!('v' in action)) throw new Error('Action value is missing');
   switch (action.t) {
     case 'snippet':
-    case 'script':
     case 'commands':
     case 'actions':
       if (typeof action.v !== 'string') throw new Error('Action value is not a string');
       if (action.v.length === 0) throw new Error('Action value is empty');
+      break;
+    case 'script':
+      if (typeof action.v !== 'function') throw new Error('Action value is not a function');
       break;
     default:
       throw new Error('Action type is invalid');

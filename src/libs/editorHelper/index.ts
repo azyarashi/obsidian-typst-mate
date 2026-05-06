@@ -1,13 +1,10 @@
 import { Prec } from '@codemirror/state';
 import type { EditorView } from '@codemirror/view';
 import { debounce, type Editor } from 'obsidian';
+import { buildMarkdownExtension as buildSharedExtensions, collectRegions } from '@/editor';
 import type ObsidianTypstMate from '@/main';
 import type { Singleton } from '@/types/singleton';
 import type TypstSVGElement from '@/ui/elements/SVG';
-import { buildExtension as buildSharedExtensions } from '../../editor/markdown/build';
-
-import '../../editor/shared/css';
-import { collectRegions } from '@/editor/markdown/extensions/MarkdownCore';
 import { typstManager } from '../typstManager';
 
 export class EditorHelper implements Singleton {

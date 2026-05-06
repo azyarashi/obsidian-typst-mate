@@ -1,5 +1,5 @@
 import type { EditorView } from '@codemirror/view';
-import { getActiveRegion } from '@/editor/shared/utils/core';
+import { getActiveRegion } from '@/editor';
 import { t } from '@/i18n';
 import type { CommandGen } from '..';
 

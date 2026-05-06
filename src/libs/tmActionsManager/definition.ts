@@ -1,3 +1,6 @@
+import * as codemirrorCommands from '@codemirror/commands';
+import type { TypstMate } from '@/api';
+
 /** 文脈
  * `c` で指定
  */
@@ -9,37 +12,44 @@ export const TMActionContexts = [
   'typm', // Typst math
   'plain', // Typst plain
 ] as const;
+/**
+ * - `md`: Markdown
+ * - `mjx`: MathJax
+ * - `typ`: Typst
+ * - `typc`: Typst code
+ * - `typm`: Typst math
+ * - `plain`: Typst plain
+ */
 export type TMActionContext = (typeof TMActionContexts)[number];
 
-/** 要件
- * `r` で指定
- */
-export const TMActionRequirements = [
-  'i', // inline math only (`typm`)
-  'b', // block math only (`typm`)
-  'I', // inline math only (`mjx`)
-  'D', // display math only (`mjx`)
-  'T', // `.typ` editor only
-  'H', // start of line only
-  'E', // end of line only
-  'V', // vim normal mode
-  'K', // ime conversion mode
-] as const;
-export type TMActionRequirement = (typeof TMActionRequirements)[number];
-
+export const TMActionRestrictions = ['i', 'b', 'I', 'D', 'M', 't', 'H', 'E', 'V'] as const;
 /**
- * `e` で指定
+ * - `i`: inline math only (`typm`)
+ * - `b`: block math only (`typm`)
+ * - `I`: inline math only (`mjx`)
+ * - `D`: display math only (`mjx`)
+ * - `M`: Markdown editor only
+ * - `t`: `.typ` editor only
+ * - `H`: start of line only
+ * - `E`: end of line only
+ * - `V`: vim normal mode
  */
-export const TMActionExtraActions = [
-  'SC', // suggest complete after execute action
-  'IS', // insert space beside inserted text
-] as const;
+export type TMActionRestriction = (typeof TMActionRestrictions)[number];
+
+export const TMActionExtraActions = ['C', 'B', 'l', 's', 'H'] as const;
+/**
+ * - `C`: show complete
+ * - `B`: insert space before
+ * - `l`: newline
+ * - `s`: next space
+ * - `H`: if markup, insert '#' before trigger
+ */
 export type TMActionExtraAction = (typeof TMActionExtraActions)[number];
 
-/**
- * lowest, low, default, high, highest
- */
 export const TMActionPrecedences = [-2, -1, 0, 1, 2] as const;
+/**
+ * - `lowest`, `low`, `default`, `high`, `highest`
+ */
 export type TMActionPrecedence = (typeof TMActionPrecedences)[number];
 
 export type TMPriority = number;
@@ -60,12 +70,18 @@ export interface HotkeyTrigger {
   t: 'hotkey';
   v: string;
   p?: TMActionPrecedence;
+  mac?: string;
+  win?: string;
+  linux?: string;
 }
 
 export interface LongPressTrigger {
   t: 'long-press';
   v: string;
   p?: TMActionPrecedence;
+  mac?: string;
+  win?: string;
+  linux?: string;
 }
 
 export interface TypeTrigger {
@@ -95,9 +111,26 @@ export interface SnippetAction {
   v: string;
 }
 
+const typstMateCommands = {
+  // Tabjump
+
+  // Zoom
+  zoom: '',
+  minimize: '',
+};
+export const Commands = {
+  ...codemirrorCommands,
+  ...typstMateCommands,
+};
+
+export type ScriptFn = (
+  match: string | RegExpMatchArray | undefined,
+  cmds: typeof Commands,
+  ctx: typeof TypstMate.ctx,
+) => string | boolean;
 export interface ScriptAction {
   t: 'script';
-  v: string;
+  v: ScriptFn;
 }
 
 export interface CommandsAction {
@@ -115,9 +148,9 @@ export type Action = SnippetAction | ScriptAction | CommandsAction | ActionsActi
 export interface TMActionRaw {
   id?: string;
   /** undefined なら自動的に typm */
-  c?: TMActionContext[];
-  r?: TMActionRequirement[];
-  e?: TMActionExtraAction[];
+  c?: TMActionContext | TMActionContext[];
+  r?: TMActionRestriction | TMActionRestriction[];
+  e?: TMActionExtraAction | TMActionExtraAction[];
 
   /** stringの場合, 1文字なら自動的に 'long-press', そうじゃなければ 'type' */
   trigger: Trigger | string;
@@ -128,9 +161,9 @@ export interface TMActionRaw {
 }
 
 export interface TMAction {
-  id?: string;
+  id: string;
   c: TMActionContext[];
-  r?: TMActionRequirement[];
+  r?: TMActionRestriction[];
   e?: TMActionExtraAction[];
   trigger: Trigger;
   action: Action;

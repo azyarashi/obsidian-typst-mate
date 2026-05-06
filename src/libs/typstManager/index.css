@@ -1,4 +1,6 @@
 .typstmate-codeblock-internal {
   background-color: var(--background-primary);
   color: var(--text-normal);
+  margin-top: 1em;
+  margin-bottom: 1em;
 }

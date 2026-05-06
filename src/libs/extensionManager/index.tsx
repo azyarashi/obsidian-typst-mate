@@ -19,7 +19,7 @@ export interface ExtensionPackage {
   // UI
   readonly name: string;
   readonly icon: ComponentChildren;
-  readonly description: string | DocumentFragment;
+  readonly description?: DocumentFragment;
   readonly tags: readonly Tag[];
 
   // 設定
@@ -28,9 +28,8 @@ export interface ExtensionPackage {
 
   // メタ
   readonly id: string;
-  readonly isBuiltin: boolean;
-  readonly isHidden?: boolean;
-  readonly defaultEnabled?: boolean;
+  readonly isBuiltin?: boolean;
+  readonly defaultEnabled?: boolean; // default: true
   readonly displayOrder?: number;
 }
 

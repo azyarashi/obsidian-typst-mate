@@ -1,4 +1,5 @@
 import type { Subscription } from '@typst-mate/watcher';
+import type { PackageSpec } from '@wasm';
 import {
   type DataAdapter,
   type FileSystemAdapter,
@@ -8,7 +9,6 @@ import {
   type TFile,
   type TFolder,
 } from 'obsidian';
-import type { PackageSpec } from '@/../pkg/typst_wasm';
 import { TypstMate } from '@/api';
 import { t } from '@/i18n';
 import { features, fs, initWatcherNode, loadWatcherModule, os, path, watcher } from '@/libs/features';
