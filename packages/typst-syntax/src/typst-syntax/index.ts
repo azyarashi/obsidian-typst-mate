@@ -4,21 +4,26 @@
 export * as package_ from './package';
 
 export { FileId } from './file';
-export { CSSClass, highlight } from './highlight';  // TODO Tag
+export { CSSClass, highlight } from './highlight'; // TODO Tag
 export { SyntaxKind } from './kind';
 export {
-  isIdContinue, isIdStart, isIdent, isNewline, isValidLabelLiteralId,
-  linkPrefix, splitNewlines,
+  isIdContinue,
+  isIdStart,
+  isIdent,
+  isNewline,
+  isValidLabelLiteralId,
+  linkPrefix,
+  splitNewlines,
 } from './lexer';
 export { Lines } from './lines';
-export { LinkedNode, Side, SyntaxErrorNode as SyntaxError, SyntaxNode } from './node';  // TODO LinkedChildren
+export { LinkedNode, Side, SyntaxErrorNode as SyntaxError, SyntaxNode } from './node'; // TODO LinkedChildren
 export { parse, parseCode, parseMath } from './parser';
 export { VirtualPath } from './path';
 // TODO Source
 export { Span, Spanned } from './span';
 
 export { Lexer } from './lexer';
-export { reparse } from './reparser';  // TODO reparseBlock, reparseMarkup
+export { reparse } from './reparser'; // TODO reparseBlock, reparseMarkup
 
 /** The syntax mode of a portion of Typst code. */
 export enum SyntaxMode {
