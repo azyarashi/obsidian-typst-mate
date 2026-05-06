@@ -1,5 +1,7 @@
-import type { Gradient } from '@/../pkg/typst_wasm';
+import type { Gradient } from '@wasm';
+import type { FormattedValue } from '.';
+import { wrapWithTypcInline } from './utils';
 
-export function formatGradient(val: Gradient): string {
-  return `**gradient:** \`${val.repr}\``;
+export function formatGradient(val: Gradient): FormattedValue {
+  return { top: wrapWithTypcInline(val.repr) };
 }

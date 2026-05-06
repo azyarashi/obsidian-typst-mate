@@ -1,5 +1,7 @@
-import type { Bytes } from '@/../pkg/typst_wasm';
+import type { Bytes } from '@wasm';
+import type { FormattedValue } from '.';
+import { wrapWithTypcInline } from './utils';
 
-export function formatBytes(val: Bytes): string {
-  return `**bytes:** \`${val.length} bytes\``;
+export function formatBytes(val: Bytes): FormattedValue {
+  return { top: wrapWithTypcInline(`${val.length} bytes`) };
 }

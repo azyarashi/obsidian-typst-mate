@@ -1,5 +1,6 @@
-import type { Relative } from '@/../pkg/typst_wasm';
+import type { Relative } from '@wasm';
+import type { FormattedValue } from './types';
 
-export function formatRelative(val: Relative): string {
-  return `**relative:** \`${val.percentage}\``;
+export function formatRelative(val: Relative): FormattedValue {
+  return { top: `**relative:** \`${val.percentage}\`` };
 }

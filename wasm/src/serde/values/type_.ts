@@ -1,5 +1,7 @@
-import type { Type } from '@/../pkg/typst_wasm';
+import type { Type } from '@wasm';
+import type { FormattedValue } from './';
+import { wrapWithTypcInline } from './utils';
 
-export function formatType(type_: Type): string {
-  return type_.docs;
+export function formatType(type_: Type): FormattedValue {
+  return { top: wrapWithTypcInline(type_.repr), bottom: type_.docs };
 }

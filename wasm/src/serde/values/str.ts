@@ -1,7 +1,7 @@
-import type { Dyn } from '@wasm';
+import type { Str } from '@wasm';
 import type { FormattedValue } from '.';
 import { wrapWithTypcInline } from './utils';
 
-export function formatDyn(v: Dyn): FormattedValue {
+export function formatStr(v: Str): FormattedValue {
   return { top: wrapWithTypcInline(v.repr) };
 }

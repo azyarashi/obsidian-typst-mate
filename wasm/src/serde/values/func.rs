@@ -4,27 +4,28 @@ use tsify::Tsify;
 use crate::utils::resolve_docs;
 use typst::foundations::{CastInfo, Func as TypstFunc, Repr};
 
+// TODO: elem
 #[derive(Serialize, Tsify)]
 #[serde(rename_all = "camelCase")]
 pub struct Func {
-    pub name: Option<String>,
-    pub repr: String,
-    pub docs: String,
-    pub params: Vec<Param>,
-    pub output: Option<String>,
+    name: Option<String>,
+    repr: String,
+    docs: String,
+    params: Vec<Param>,
 }
 
 #[derive(Serialize, Tsify)]
 #[serde(rename_all = "camelCase")]
 pub struct Param {
-    pub name: String,
-    pub docs: String,
-    pub types: Vec<CastItem>,
-    pub default: Option<String>,
-    pub named: bool,
-    pub positional: bool,
-    pub required: bool,
-    pub variadic: bool,
+    name: String,
+    docs: String,
+    types: Vec<CastItem>,
+    default: Option<String>,
+    named: bool,
+    positional: bool,
+    required: bool,
+    variadic: bool,
+    settable: bool,
 }
 
 #[derive(Serialize, Tsify)]
@@ -55,9 +56,9 @@ impl From<&TypstFunc> for Func {
                     positional: p.positional,
                     required: p.required,
                     variadic: p.variadic,
+                    settable: p.settable,
                 })
                 .collect(),
-            output: None,
         }
     }
 }
@@ -67,7 +68,7 @@ fn cast_info_to_types(cast_info: &CastInfo) -> Vec<CastItem> {
     match cast_info {
         CastInfo::Any => items.push(CastItem::Any),
         CastInfo::Value(v, _) => items.push(CastItem::Value(v.repr().to_string())),
-        CastInfo::Type(t) => items.push(CastItem::Type(t.title().to_string())),
+        CastInfo::Type(t) => items.push(CastItem::Type(t.short_name().to_string())),
         CastInfo::Union(v) => {
             for sub in v {
                 items.extend(cast_info_to_types(sub));

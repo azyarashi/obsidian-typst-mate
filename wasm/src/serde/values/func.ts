@@ -1,63 +1,52 @@
-import type { Func, Param } from '@/../pkg/typst_wasm';
+import type { Func, Param } from '@wasm';
+import type { FormattedValue } from '.';
+import { wrapWithTypcBlock } from './utils';
 
-export function formatFunc(func: Func): string {
-  let markdown = '';
-  const tooltipData: Record<string, { types: string; default?: string }> = {};
-
-  function formatParamTypes (p: Param, index?: number) {
-    const typesStr = p.types.map((t) => t.type).join(' | ');
-    const defaultVal = p.default ? ` = ${p.default}` : '';
-    const full = `type: ${typesStr}${defaultVal}`;
-
-    // For signature block highlights
-    if (index !== undefined && typesStr.length > 50) {
-      const key = `[[TM_TP:${index}]]`;
-      tooltipData[key] = { types: typesStr, default: p.default ?? undefined };
-      return `${key}${defaultVal}`;
-    }
-
-    // For detailed parameter sections
-    if (typesStr.length > 50) {
-      return `<details class="typstmate-details"><summary>type: ...${p.default ? ` = ${p.default}` : ''}</summary>\n\n\`\`\`typc\n${full}\n\`\`\`\n</details>`;
-    }
-    return `\`\`\`typc\n${full}\n\`\`\``;
-  };
-
+export function formatFunc(func: Func): FormattedValue {
+  // * top
+  let top: string | undefined;
   if (func.params) {
     const signatureParams = func.params
-      .map((p, i) => {
-        let paramStr = `${p.name}: ${formatParamTypes(p, i)}`;
-        if (p.variadic) paramStr = `..${paramStr}`;
-        return `  ${paramStr}`;
+      .map((p) => {
+        return `  ${formatParamTypes(p, true)},`;
       })
-      .join(',\n');
-    markdown += `\`\`\`typstmate-typc\n${func.name}(\n${signatureParams}\n)\n\`\`\`\n\n`;
+      .join('\n');
+
+    top = wrapWithTypcBlock(`${func.name}(\n${signatureParams}\n)`);
   }
 
-  if (func.docs !== 'no_doc') {
-    markdown += `${func.docs}\n\n`;
-  }
-
+  // * bottom
+  let bottom = '';
   const positional = func.params?.filter((p) => p.positional) || [];
   const named = func.params?.filter((p) => p.named) || [];
 
-  if (positional.length > 0) {
-    markdown += '# Positional Parameters\n';
-    for (const p of positional) {
-      markdown += `## ${p.name}\n${formatParamTypes(p)}\n${p.docs}\n\n`;
-    }
+  if (0 < named.length) {
+    bottom += '# Named Parameters\n';
+    for (const p of named) bottom += formatParam(p);
   }
 
-  if (named.length > 0) {
-    markdown += '# Named Parameters\n';
-    for (const p of named) {
-      markdown += `## ${p.name}\n${formatParamTypes(p)}\n${p.docs}\n\n`;
-    }
+  if (0 < positional.length) {
+    bottom += '# Positional Parameters\n';
+    for (const p of positional) bottom += formatParam(p);
   }
 
-  if (Object.keys(tooltipData).length > 0) {
-    markdown += `\n<!-- TM_TOOLTIP_DATA:${JSON.stringify(tooltipData)} -->\n`;
-  }
+  // * return
+  return { top, bottom };
+}
 
-  return markdown;
+function formatParam(p: Param) {
+  const requiredStr = p.required ? ' #required' : '';
+  const settableStr = p.settable ? ' #settable' : '';
+  return `## ${p.name}${requiredStr}${settableStr}\n${wrapWithTypcBlock(formatParamTypes(p, false))}\n${p.docs}\n`;
+}
+
+function formatParamTypes(p: Param, isSignature: boolean) {
+  const variadicStr = p.variadic ? '..' : '';
+  const typesStr =
+    p.types.length <= 10
+      ? p.types.map((t) => (t.type === 'any' ? 'any' : t.value)).join(' | ') // 短い場合は列挙
+      : [...new Set(p.types.map((t) => t.type))].join(' | '); // 長い場合は型のみ
+  const defaultStr = p.default ? ` = ${p.default}` : '';
+
+  return `${variadicStr}${isSignature ? `${p.name}: ${typesStr}${defaultStr}` : `(${typesStr})`}`;
 }

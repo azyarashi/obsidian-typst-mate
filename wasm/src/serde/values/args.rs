@@ -3,19 +3,17 @@ use tsify::Tsify;
 
 use typst::foundations::{Args as TypstArgs, Repr};
 
-use crate::serde::values::Value;
-
 #[derive(Serialize, Tsify)]
-pub struct Arg {
-    name: String,
-    value: Value,
-    is_positional: bool,
+pub struct Args {
+    repr: String,
+    args: Vec<Arg>,
 }
 
 #[derive(Serialize, Tsify)]
-pub struct Args {
-    pub repr: String,
-    args: Vec<Arg>,
+pub struct Arg {
+    name: Option<String>,
+    docs: Option<String>,
+    repr: String,
 }
 
 impl From<&TypstArgs> for Args {
@@ -26,9 +24,9 @@ impl From<&TypstArgs> for Args {
                 .items
                 .iter()
                 .map(|arg| Arg {
-                    name: arg.name.as_ref().map(|s| s.to_string()).unwrap_or_default(),
-                    value: (&arg.value.v).into(),
-                    is_positional: arg.name.is_none(),
+                    name: arg.name.as_ref().map(|n| n.to_string()),
+                    repr: arg.repr().to_string(),
+                    docs: arg.value.v.docs().map(|d| d.to_string()),
                 })
                 .collect(),
         }

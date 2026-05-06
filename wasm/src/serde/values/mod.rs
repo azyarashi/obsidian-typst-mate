@@ -5,7 +5,7 @@ use typst::foundations::Value as TypstValue;
 
 pub mod angle;
 pub mod args;
-pub mod array;
+pub mod array_;
 pub mod auto;
 pub mod bool;
 pub mod bytes;
@@ -29,14 +29,14 @@ pub mod ratio;
 pub mod relative;
 pub mod str;
 pub mod styles;
-pub mod symbol;
+pub mod symbol_;
 pub mod tiling;
 pub mod type_;
 pub mod version;
 
 pub use angle::Angle;
 pub use args::Args;
-pub use array::Array;
+pub use array_::Array_;
 pub use auto::Auto;
 pub use bool::Bool;
 pub use bytes::Bytes;
@@ -60,7 +60,7 @@ pub use ratio::Ratio;
 pub use relative::Relative;
 pub use str::Str;
 pub use styles::Styles;
-pub use symbol::Symbol;
+pub use symbol_::Symbol_;
 pub use tiling::Tiling;
 pub use type_::Type;
 pub use version::Version;
@@ -82,7 +82,7 @@ pub enum Value {
     Color(Color),
     Gradient(Gradient),
     Tiling(Tiling),
-    Symbol(Symbol),
+    Symbol(Symbol_),
     Version(Version),
     Str(Str),
     Bytes(Bytes),
@@ -92,7 +92,7 @@ pub enum Value {
     Duration(DurationValue),
     Content(Content),
     Styles(Styles),
-    Array(Array),
+    Array(Array_),
     Dict(Dict),
     Func(Func),
     Args(Args),
@@ -117,7 +117,7 @@ impl From<&TypstValue> for Value {
             TypstValue::Color(v) => Value::Color(Color::from(v)),
             TypstValue::Gradient(v) => Value::Gradient(Gradient::from(v)),
             TypstValue::Tiling(v) => Value::Tiling(Tiling::from(v)),
-            TypstValue::Symbol(v) => Value::Symbol(Symbol::from(v)),
+            TypstValue::Symbol(v) => Value::Symbol(Symbol_::from(v)),
             TypstValue::Version(v) => Value::Version(Version::from(v)),
             TypstValue::Str(v) => Value::Str(Str::from(v)),
             TypstValue::Bytes(v) => Value::Bytes(Bytes::from(v)),
@@ -127,7 +127,7 @@ impl From<&TypstValue> for Value {
             TypstValue::Duration(v) => Value::Duration(DurationValue::from(v)),
             TypstValue::Content(v) => Value::Content(Content::from(v)),
             TypstValue::Styles(v) => Value::Styles(Styles::from(v)),
-            TypstValue::Array(v) => Value::Array(Array::from(v)),
+            TypstValue::Array(v) => Value::Array(Array_::from(v)),
             TypstValue::Dict(v) => Value::Dict(Dict::from(v)),
             TypstValue::Func(v) => Value::Func(Func::from(v)),
             TypstValue::Args(v) => Value::Args(Args::from(v)),

@@ -1,6 +1,6 @@
 use serde::Serialize;
-use typst::foundations::Repr;
 use tsify::Tsify;
+use typst::foundations::Repr;
 
 use typst::layout::Angle as TypstAngle;
 

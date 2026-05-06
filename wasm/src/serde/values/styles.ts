@@ -1,5 +1,7 @@
-import type { Styles } from '@/../pkg/typst_wasm';
+import type { Styles } from '@wasm';
+import type { FormattedValue } from '.';
+import { wrapWithTypcInline } from './utils';
 
-export function formatStyles(val: Styles): string {
-  return `**styles:** \`${val.repr}\``;
+export function formatStyles(val: Styles): FormattedValue {
+  return { top: wrapWithTypcInline(val.repr) };
 }

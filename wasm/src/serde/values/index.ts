@@ -1,8 +1,7 @@
-import type { Definition, DefinitionValue, Jump, Str } from '@/../pkg/typst_wasm';
-
+import type { Definition, DefinitionValue, Jump } from '@wasm';
 import { formatAngle } from './angle';
 import { formatArgs } from './args';
-import { formatArray } from './array';
+import { formatArray } from './array_';
 import { formatBytes } from './bytes';
 import { formatColor } from './color';
 import { formatContent } from './content';
@@ -19,15 +18,16 @@ import { formatLength } from './length';
 import { formatModule } from './module';
 import { formatRatio } from './ratio';
 import { formatRelative } from './relative';
+import { formatStr } from './str';
 import { formatStyles } from './styles';
-import { formatSymbol } from './symbol';
+import { formatSymbol } from './symbol_';
 import { formatTiling } from './tiling';
 import { formatType } from './type_';
 import { formatVersion } from './version';
 
 export * from './angle';
 export * from './args';
-export * from './array';
+export * from './array_';
 export * from './bytes';
 export * from './color';
 export * from './content';
@@ -44,86 +44,112 @@ export * from './length';
 export * from './module';
 export * from './ratio';
 export * from './relative';
+export * from './str';
 export * from './styles';
-export * from './symbol';
+export * from './symbol_';
 export * from './tiling';
 export * from './type_';
 export * from './version';
 
-export function formatInt(v: { value: number }): string {
-  return `**int(Integer):** \`${v.value}\``;
+export interface FormattedValue {
+  top?: string;
+  bottom?: string;
 }
 
-export function formatFloat(v: { value: number }): string {
-  return `**float(Float):** \`${v.value}\``;
+export function formatInt(v: { value: number }): FormattedValue {
+  return { top: `\`${v.value}\`` };
 }
 
-export function formatBool(v: { value: boolean }): string {
-  return `**bool(Boolean):** \`${v.value}\``;
+export function formatFloat(v: { value: number }): FormattedValue {
+  return { top: `\`${v.value}\`` };
 }
 
-export function formatAuto(): string {
-  return '`auto`';
+export function formatBool(v: { value: boolean }): FormattedValue {
+  return { top: `\`${v.value}\`` };
 }
 
-export function formatNone(): string {
-  return '`none`';
-}
-
-export function formatStr(v: Str): string {
-  return `**string:** \`"${v.value}"\``;
-}
-
-export function formatSpan(v: Jump): string {
+export function formatSpan(v: Jump): FormattedValue {
   if (v.type === 'file') {
     const pkg = v.package ? ` (package: \`${v.package}\`)` : '';
-    return `**definition:** points to \`${v.path}\`${pkg}`;
+    return { top: `**definition:** points to \`${v.path}\`${pkg}` };
   } else if (v.type === 'url') {
-    return `**url:** [${v.url}](${v.url})`;
+    return { top: `**url:** [${v.url}](${v.url})` };
   } else if (v.type === 'position') {
-    return `**position:** page ${v.page}, x: ${v.x.toFixed(1)}pt, y: ${v.y.toFixed(1)}pt`;
+    return { top: `**position:** page ${v.page}, x: ${v.y.toFixed(1)} line ${v.x.toFixed(1)} col` };
   }
 
-  return '';
+  return { top: '' };
 }
 
-export function formatDefinition(v: Definition): string {
+export function formatDefinition(v: Definition): FormattedValue {
   return formatDefinitionValue(v.value);
 }
 
-export function formatDefinitionValue(v: DefinitionValue): string {
+export function formatDefinitionValue(v: DefinitionValue): FormattedValue {
   switch (v.type) {
-    case 'angle': return formatAngle(v.value);
-    case 'args': return formatArgs(v.value);
-    case 'array': return formatArray(v.value);
-    case 'auto': return formatAuto();
-    case 'bool': return formatBool(v.value);
-    case 'bytes': return formatBytes(v.value);
-    case 'color': return formatColor(v.value);
-    case 'content': return formatContent(v.value);
-    case 'datetime': return formatDatetime(v.value);
-    case 'decimal': return formatDecimal(v.value);
-    case 'dict': return formatDict(v.value);
-    case 'duration': return formatDuration(v.value);
-    case 'dyn': return formatDyn(v.value);
-    case 'float': return formatFloat(v.value);
-    case 'fraction': return formatFraction(v.value);
-    case 'func': return formatFunc(v.value);
-    case 'gradient': return formatGradient(v.value);
-    case 'int': return formatInt(v.value);
-    case 'label': return formatLabel(v.value);
-    case 'length': return formatLength(v.value);
-    case 'module': return formatModule(v.value);
-    case 'none': return formatNone();
-    case 'ratio': return formatRatio(v.value);
-    case 'relative': return formatRelative(v.value);
-    case 'str': return formatStr(v.value);
-    case 'styles': return formatStyles(v.value);
-    case 'symbol': return formatSymbol(v.value);
-    case 'tiling': return formatTiling(v.value);
-    case 'type': return formatType(v.value);
-    case 'version': return formatVersion(v.value);
-    case 'span': return formatSpan(v.value);
-    default: return 'Unknown value';
+    case 'angle':
+      return formatAngle(v.value);
+    case 'args':
+      return formatArgs(v.value);
+    case 'array':
+      return formatArray(v.value);
+    case 'auto':
+      return {};
+    case 'bool':
+      return formatBool(v.value);
+    case 'bytes':
+      return formatBytes(v.value);
+    case 'color':
+      return formatColor(v.value);
+    case 'content':
+      return formatContent(v.value);
+    case 'datetime':
+      return formatDatetime(v.value);
+    case 'decimal':
+      return formatDecimal(v.value);
+    case 'dict':
+      return formatDict(v.value);
+    case 'duration':
+      return formatDuration(v.value);
+    case 'dyn':
+      return formatDyn(v.value);
+    case 'float':
+      return formatFloat(v.value);
+    case 'fraction':
+      return formatFraction(v.value);
+    case 'func':
+      return formatFunc(v.value);
+    case 'gradient':
+      return formatGradient(v.value);
+    case 'int':
+      return formatInt(v.value);
+    case 'label':
+      return formatLabel(v.value);
+    case 'length':
+      return formatLength(v.value);
+    case 'module':
+      return formatModule(v.value);
+    case 'none':
+      return {};
+    case 'ratio':
+      return formatRatio(v.value);
+    case 'relative':
+      return formatRelative(v.value);
+    case 'str':
+      return formatStr(v.value);
+    case 'styles':
+      return formatStyles(v.value);
+    case 'symbol':
+      return formatSymbol(v.value);
+    case 'tiling':
+      return formatTiling(v.value);
+    case 'type':
+      return formatType(v.value);
+    case 'version':
+      return formatVersion(v.value);
+    case 'span':
+      return formatSpan(v.value);
+    default:
+      return { top: 'Unknown value' };
   }
 }

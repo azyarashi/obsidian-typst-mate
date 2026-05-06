@@ -1,5 +1,6 @@
-import type { Ratio } from '@/../pkg/typst_wasm';
+import type { Ratio } from '@wasm';
+import type { FormattedValue } from './types';
 
-export function formatRatio(val: Ratio): string {
-  return `**ratio:** \`${val.percentage}\``;
+export function formatRatio(val: Ratio): FormattedValue {
+  return { top: `**ratio:** \`${val.percentage}\`` };
 }
