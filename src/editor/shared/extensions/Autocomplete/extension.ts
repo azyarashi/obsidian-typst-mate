@@ -1,8 +1,8 @@
 import { SyntaxKind, SyntaxMode } from '@typstmate/typst-syntax';
 import { Prec } from '@codemirror/state';
 import { type EditorView, keymap, type PluginValue, ViewPlugin, type ViewUpdate } from '@codemirror/view';
+import type { Completion, CompletionKind } from '@wasm';
 import { setIcon } from 'obsidian';
-import type { Completion, CompletionKind } from '@/../pkg/typst_wasm';
 import SYMBOLS_BY_NAME from '@/data/symbols.json';
 import {
   calculatePopOverPositionByCursor,
@@ -155,7 +155,7 @@ export class AutocompletePlugin implements PluginValue {
     const mode = region.activeMode ?? region.mode;
     const kindLeft = region.activeKindLeft;
 
-    if (kindLeft === SyntaxKind.Space || kindLeft === SyntaxKind.Hash) {
+    if (kindLeft === SyntaxKind.Space || kindLeft === SyntaxKind.Parbreak || kindLeft === SyntaxKind.Hash) {
       this.reset();
       return;
     }
