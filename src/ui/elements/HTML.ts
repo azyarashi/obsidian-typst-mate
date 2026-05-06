@@ -1,5 +1,5 @@
+import type { HtmlMResult } from '@wasm';
 import { type Menu, type MenuItem, Notice } from 'obsidian';
-import type { HtmlMResult } from '@/../pkg/typst_wasm';
 import { t } from '@/i18n';
 import { typstManager } from '@/libs';
 import TypstElement from './Typst';

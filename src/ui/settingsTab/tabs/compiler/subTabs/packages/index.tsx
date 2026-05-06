@@ -1,5 +1,5 @@
+import type { PackageSpec } from '@wasm';
 import { useEffect, useState } from 'preact/hooks';
-import type { PackageSpec } from '@/../pkg/typst_wasm';
 import { t } from '@/i18n';
 import { fileManager } from '@/libs';
 import { Setting } from '@/ui/components/obsidian/Setting';

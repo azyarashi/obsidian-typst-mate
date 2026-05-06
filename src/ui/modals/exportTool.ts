@@ -1,5 +1,5 @@
+import type { HtmlEOptions, PdfEOptions } from '@wasm';
 import { type App, Modal, Setting } from 'obsidian';
-import type { HtmlEOptions, PdfEOptions } from '@/../pkg/typst_wasm';
 import { t, tFragment } from '@/i18n';
 import { fileManager, settingsManager, typstManager } from '@/libs';
 import type { VPath } from '@/libs/typstManager/worker';

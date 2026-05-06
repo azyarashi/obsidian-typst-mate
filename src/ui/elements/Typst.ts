@@ -1,5 +1,5 @@
+import type { Diagnostic as WasmDiagnostic } from '@wasm';
 import { MarkdownView, Menu, type MenuItem, Notice } from 'obsidian';
-import type { Diagnostic as WasmDiagnostic } from '@/../pkg/typst_wasm';
 import { DEFAULT_FONT_SIZE } from '@/constants';
 import { getActiveRegion, updateDiagnosticEffect } from '@/editor';
 import { t } from '@/i18n';

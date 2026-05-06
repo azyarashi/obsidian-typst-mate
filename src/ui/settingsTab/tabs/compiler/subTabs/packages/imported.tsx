@@ -1,5 +1,5 @@
+import type { PackageSpec } from '@wasm';
 import { Notice } from 'obsidian';
-import type { PackageSpec } from '@/../pkg/typst_wasm';
 import { t } from '@/i18n';
 import { appUtils, fileManager } from '@/libs';
 import { features, path, url } from '@/libs/features';

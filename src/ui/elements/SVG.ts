@@ -1,5 +1,5 @@
+import type { Diagnostic, SvgMResult } from '@wasm';
 import { MarkdownView, type Menu, type MenuItem, Notice } from 'obsidian';
-import type { Diagnostic, SvgMResult } from '@/../pkg/typst_wasm';
 import { BASE_COLOR_VAR } from '@/constants';
 import { previewJumpPlugin } from '@/editor';
 import { t } from '@/i18n';

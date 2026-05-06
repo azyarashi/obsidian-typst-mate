@@ -1,5 +1,5 @@
+import type { FontInfo } from '@wasm';
 import { type App, Modal, Notice, Setting } from 'obsidian';
-import type { FontInfo } from '@/../pkg/typst_wasm';
 import { type TranslationKey, t } from '@/i18n';
 
 import './font.css';

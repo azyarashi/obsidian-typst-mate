@@ -4,7 +4,8 @@ import { appUtils, fileManager, typstManager } from '@/libs';
 import { path } from '@/libs/features';
 
 import './typst-embed.css';
-import { consoleError } from '@/utils/notice';
+import type { Diagnostic } from '@wasm';
+import { t } from '@/i18n';
 
 export class TypstEmbedComponent extends Component implements EmbedComponent {
   private isLoading = false;
@@ -33,7 +34,7 @@ export class TypstEmbedComponent extends Component implements EmbedComponent {
       this.containerEl.empty();
 
       if (!result?.svgp || result.svgp.length === 0) {
-        this.containerEl.setText('No pages rendered.');
+        this.containerEl.setText(t('embeds.typst.noPagesRendered'));
         return;
       }
 
@@ -42,11 +43,9 @@ export class TypstEmbedComponent extends Component implements EmbedComponent {
         const pageContainer = wrapper.createDiv({ cls: 'typstmate-embed-page' });
         pageContainer.innerHTML = svg;
       }
-    } catch (err) {
-      // TODO: Use notice
-      consoleError('Embed render failed:', err);
+    } catch (err: unknown) {
       this.containerEl.empty();
-      this.containerEl.setText('Failed to render Typst file.');
+      this.containerEl.setText((err as Diagnostic[])?.at(0)?.message!);
     } finally {
       this.isLoading = false;
     }
