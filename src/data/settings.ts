@@ -100,6 +100,7 @@ export interface Settings {
   editorStates: Record<string, { cursor: number; expiredOn: number }>;
 
   snippets: any[];
+  preamble: string;
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -316,4 +317,5 @@ export const DEFAULT_SETTINGS: Settings = {
 
   /* 古い設定 */
   snippets: [],
+  preamble: '',
 };
