@@ -1,14 +1,17 @@
 import { debounce } from 'obsidian';
 import { useEffect, useMemo, useState } from 'preact/hooks';
-import { t, tFragment } from '@/i18n';
-import { checkPluginFeatures, features, rendererManager, settingsManager } from '@/libs';
 import {
   type CodeblockProcessor,
+  checkPluginFeatures,
   DefaultNewProcessor,
+  features,
   type Processor,
   type ProcessorKind,
   type ProcessorOfKind,
-} from '@/libs/processor';
+  rendererManager,
+  settingsManager,
+} from '@/libs';
+import { t, tFragment } from '@/libs/i18n';
 import { getSortableUuid, List, useSortableList } from '@/ui/components/List/ListContainer';
 import { Setting } from '@/ui/components/obsidian/Setting';
 import { ProcessorItem } from './processorItem';

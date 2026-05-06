@@ -1,8 +1,8 @@
 import { type App, PluginSettingTab } from 'obsidian';
 import { render } from 'preact';
 import { useMemo, useState } from 'preact/hooks';
-import { t } from '@/i18n';
 import { settingsManager } from '@/libs';
+import { t } from '@/libs/i18n';
 import type ObsidianTypstMate from '@/main';
 import { type TabDefinition, Tabs } from '@/ui/components/Tabs';
 import { ActionsTab, AdvancedTab, CompilerTab, ExtensionsTab, ProcessorsTab, RendererTab } from './tabs';

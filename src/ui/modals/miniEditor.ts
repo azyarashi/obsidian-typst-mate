@@ -11,7 +11,7 @@ import {
   keymap,
 } from '@codemirror/view';
 import { obsidianTheme, typstSyntaxHighlighting, typstTextCore } from '@/editor';
-import { RenderingEngine } from '@/libs/processor';
+import { RenderingEngine } from '@/libs';
 
 export const getMiniEditorExtensions = (engine?: RenderingEngine): Extension[] => {
   const extensions: Extension[] = [];

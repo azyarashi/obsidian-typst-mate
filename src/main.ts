@@ -1,6 +1,6 @@
 /** biome-ignore-all lint/style/noRestrictedImports: main */
 import { debounce, loadMathJax, Platform, Plugin, renderMath } from 'obsidian';
-import { initI18n, t } from '@/i18n';
+import { initI18n, t } from '@/libs/i18n';
 import { Phase, TypstMate } from './api';
 import { markdownExtensionEntries, sharedExtensionEntries, typstExtensionEntries } from './editor';
 // biome-ignore format: readability

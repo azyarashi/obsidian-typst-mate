@@ -2,9 +2,15 @@ import type { Diagnostic as WasmDiagnostic } from '@wasm';
 import { MarkdownView, Menu, type MenuItem, Notice } from 'obsidian';
 import { DEFAULT_FONT_SIZE } from '@/constants';
 import { getActiveRegion, updateDiagnosticEffect } from '@/editor';
-import { t } from '@/i18n';
-import { appUtils, rendererManager, settingsManager } from '@/libs';
-import { type MarkdownProcessor, type ProcessorKind, RenderingEngine } from '@/libs/processor';
+import {
+  appUtils,
+  type MarkdownProcessor,
+  type ProcessorKind,
+  RenderingEngine,
+  rendererManager,
+  settingsManager,
+} from '@/libs';
+import { t } from '@/libs/i18n';
 
 import './Typst.css';
 

@@ -5,7 +5,6 @@ import { debounce } from 'obsidian';
 import type { ComponentChildren } from 'preact';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'preact/hooks';
 import { ICONS } from '@/constants/icons';
-import { t, tFragment } from '@/i18n';
 import {
   type CodeblockProcessor,
   CodeblockStyling,
@@ -23,7 +22,8 @@ import {
   RenderingEngine,
   type Styling,
   type Processor as TypstProcessor,
-} from '@/libs/processor';
+} from '@/libs';
+import { t, tFragment } from '@/libs/i18n';
 import { IconS } from '@/ui/components/Icon';
 import { SortableItem } from '@/ui/components/List/ListContainer';
 import { Setting } from '@/ui/components/obsidian/Setting';

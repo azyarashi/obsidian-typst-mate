@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'preact/hooks';
 import { TypstMate } from '@/api';
-import { tFragment } from '@/i18n';
 import { fileManager } from '@/libs';
+import { tFragment } from '@/libs/i18n';
 import { Setting } from '@/ui/components/obsidian/Setting';
 import { LoadedFontList } from './imported';
 import { SystemFontList } from './local';

@@ -17,9 +17,9 @@ import {
   vimQuitFacet,
   vimSaveFacet,
 } from '@/editor';
-import { t } from '@/i18n';
 import { fileManager, rendererManager, settingsManager } from '@/libs';
 import { viewTracker } from '@/libs/extensionManager';
+import { t } from '@/libs/i18n';
 import { ExportToolModal } from '@/ui/modals/exportTool';
 import { TypstPreviewView } from '@/ui/views/typst-preview';
 import { exportToPdf } from '@/utils/export';

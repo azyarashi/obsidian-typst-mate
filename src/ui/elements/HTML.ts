@@ -1,7 +1,7 @@
 import type { HtmlMResult } from '@wasm';
 import { type Menu, type MenuItem, Notice } from 'obsidian';
-import { t } from '@/i18n';
 import { rendererManager } from '@/libs';
+import { t } from '@/libs/i18n';
 import TypstElement from './Typst';
 
 import './HTML.css';

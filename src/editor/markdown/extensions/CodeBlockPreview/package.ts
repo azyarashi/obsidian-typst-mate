@@ -1,6 +1,6 @@
 import { ICONS } from '@/constants/icons';
-import { t, tFragment } from '@/i18n';
 import type { ExtensionPackageFn } from '@/libs/extensionManager';
+import { t, tFragment } from '@/libs/i18n';
 
 export const codeblockPreviewPackage: ExtensionPackageFn = () => ({
   id: 'codeblock-preview',

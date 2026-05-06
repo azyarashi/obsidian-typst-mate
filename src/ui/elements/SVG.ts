@@ -2,8 +2,8 @@ import type { Diagnostic, SvgMResult } from '@wasm';
 import { MarkdownView, type Menu, type MenuItem, Notice } from 'obsidian';
 import { BASE_COLOR_VAR } from '@/constants';
 import { previewJumpPlugin } from '@/editor';
-import { t } from '@/i18n';
 import { appUtils, rendererManager, settingsManager } from '@/libs';
+import { t } from '@/libs/i18n';
 import { ErrorCode } from '@/libs/rendererManager/worker';
 import TypstElement from './Typst';
 

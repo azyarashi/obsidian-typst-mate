@@ -1,7 +1,7 @@
 import { ButtonComponent, DropdownComponent, ItemView, Platform } from 'obsidian';
 import { render } from 'preact';
-import { t } from '@/i18n';
 import { settingsManager } from '@/libs';
+import { t } from '@/libs/i18n';
 import { Actions } from './tools/Actions';
 import { Converter } from './tools/Converter';
 import { Detypify } from './tools/Detypify';

@@ -1,6 +1,6 @@
 import { DEFAULT_SETTINGS } from '@/data/settings';
-import type { DisplayProcessor, InlineProcessor, MathProcessor } from '@/libs/processor';
 import { settingsManager } from '@/libs/settingsManager';
+import type { DisplayProcessor, InlineProcessor, MathProcessor } from './processor';
 
 const NO_MORE_FLICKERING_MATH_DELIMITER = '{}';
 const ZWSP = '​';

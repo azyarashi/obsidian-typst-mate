@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'preact/hooks';
-import { t } from '@/i18n';
 import { settingsManager } from '@/libs';
 import { features, watcher } from '@/libs/features';
+import { t } from '@/libs/i18n';
 import { Setting } from '@/ui/components/obsidian/Setting';
 
 export function WatcherListContainer() {

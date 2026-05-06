@@ -1,7 +1,7 @@
 import { type Menu, setIcon, setTooltip, TextFileView, type TFile } from 'obsidian';
 import { previewJumpExtension } from '@/editor';
-import { t } from '@/i18n';
 import { rendererManager } from '@/libs';
+import { t } from '@/libs/i18n';
 import { TypstFileView } from '@/ui/views';
 import { consoleError } from '@/utils/notice';
 

@@ -1,6 +1,6 @@
 import { type Menu, type TAbstractFile, TFolder } from 'obsidian';
-import { t } from '@/i18n';
 import { appUtils, fileManager } from '@/libs';
+import { t } from '@/libs/i18n';
 import { TemplateSelectModal } from '@/ui/modals/templateSelect';
 
 export function onFileMenu(menu: Menu, file: TAbstractFile) {

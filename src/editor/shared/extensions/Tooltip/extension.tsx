@@ -2,8 +2,7 @@ import { isIdent } from '@typstmate/typst-syntax';
 import { type EditorView, hoverTooltip } from '@codemirror/view';
 import { render } from 'preact';
 import { getActiveRegion } from '@/editor';
-import { rendererManager } from '@/libs';
-import { RenderingEngine } from '@/libs/processor';
+import { RenderingEngine, rendererManager } from '@/libs';
 import { Center, Header, Left, Right } from './components';
 import { createTooltipData } from './utils';
 

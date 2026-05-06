@@ -7,7 +7,7 @@ import {
 } from '@typstmate/typst-syntax';
 import type { EditorView } from '@codemirror/view';
 import { collectRegions, markdownCore, parseRegion, typstTextCore } from '@/editor';
-import type { Processor, ProcessorKind } from '@/libs/processor';
+import type { Processor, ProcessorKind } from '@/libs';
 
 export enum RegionContext {
   Markdown,

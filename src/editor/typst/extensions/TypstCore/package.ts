@@ -1,5 +1,5 @@
 import { ICONS } from '@/constants/icons';
-import { t } from '@/i18n';
+import { t } from '@/libs/i18n';
 
 export const typstCorePackage = () =>
   ({

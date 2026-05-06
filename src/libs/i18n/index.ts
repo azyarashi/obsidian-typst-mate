@@ -19,9 +19,9 @@ function detectLocale(): SupportedLngs {
   return 'en';
 }
 
-export async function initI18n(): Promise<void> {
+export async function initI18n(locale?: SupportedLngs): Promise<void> {
   await i18n.init({
-    lng: detectLocale(),
+    lng: locale ?? detectLocale(),
     fallbackLng: 'en',
     defaultNS: 'translation',
     resources,

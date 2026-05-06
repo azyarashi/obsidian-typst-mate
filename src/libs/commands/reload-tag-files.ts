@@ -1,5 +1,5 @@
-import { t } from '@/i18n';
 import { rendererManager } from '@/libs';
+import { t } from '@/libs/i18n';
 import type { CommandGen } from '.';
 
 export const reloadTagFilesCommand: CommandGen = () => {

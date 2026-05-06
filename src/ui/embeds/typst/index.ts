@@ -5,7 +5,7 @@ import { path } from '@/libs/features';
 
 import './typst-embed.css';
 import type { Diagnostic } from '@wasm';
-import { t } from '@/i18n';
+import { t } from '@/libs/i18n';
 
 export class TypstEmbedComponent extends Component implements EmbedComponent {
   private isLoading = false;

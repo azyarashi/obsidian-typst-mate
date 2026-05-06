@@ -1,23 +1,25 @@
 /** biome-ignore-all assist/source/organizeImports: initialization order must be preserved */
 
-export { crashTracker } from '../utils/crashTracker';
+export * from '../utils/crashTracker';
 
 // singletons
-export { settingsManager } from './settingsManager';
-export { appUtils } from './appUtils';
-export { fileManager } from './fileManager';
-export { features, checkPluginFeatures } from './features';
+export * from './settingsManager';
+export * from './appUtils';
+export * from './fileManager';
+export * from './features';
 
-export { editorHelper } from './editorHelper';
-export { extensionManager, EditorContextFacet } from './extensionManager';
+export * from './editorHelper';
+export * from './extensionManager';
 
-export { rendererManager, extarctCMMath, sanitizeDisplayMathCode } from './rendererManager';
-export { tmActionsManager } from './tmActionsManager';
+export * from './rendererManager';
+export * from './tmActionsManager';
 
-export { registerEvents } from './events';
-export { registerCommands } from './commands';
-export { registerProtocolHandlers } from './protocolHandlers';
+export * from './events';
+export * from './commands';
+export * from './protocolHandlers';
 
-export type { EditorContext } from './extensionManager';
+export * from './extensionManager';
 
-export { applyAllPatches, detachAllPatches } from './patches';
+export * from './patches';
+
+export * from './i18n';

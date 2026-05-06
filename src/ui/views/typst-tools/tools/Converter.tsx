@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { TypstMate } from '@/api';
-import { t } from '@/i18n';
 import { rendererManager } from '@/libs';
+import { t } from '@/libs/i18n';
 
 type ConverterMode = 'math-eq' | 'markup-doc' | 'cetz-tikz';
 

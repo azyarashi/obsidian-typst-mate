@@ -1,7 +1,7 @@
 import type { PackageSpec } from '@wasm';
 import { useEffect, useState } from 'preact/hooks';
-import { t } from '@/i18n';
 import { fileManager } from '@/libs';
+import { t } from '@/libs/i18n';
 import { Setting } from '@/ui/components/obsidian/Setting';
 import { CachedPackageList } from './imported';
 import { LocalPackageList } from './local';

@@ -1,6 +1,6 @@
 import { useState } from 'preact/hooks';
-import { t } from '@/i18n';
 import { extensionManager, settingsManager, tmActionsManager } from '@/libs';
+import { t } from '@/libs/i18n';
 import { Setting } from '@/ui/components/obsidian/Setting';
 
 export function ActionSettingsTab() {

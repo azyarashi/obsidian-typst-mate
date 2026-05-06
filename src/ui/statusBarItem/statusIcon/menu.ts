@@ -1,8 +1,8 @@
 import { Menu } from 'obsidian';
 import { TypstMate } from '@/api';
-import { t } from '@/i18n';
 import { appUtils, rendererManager, settingsManager } from '@/libs';
 import { toggleBackgroundRendering } from '@/libs/commands/toggle-background-rendering';
+import { t } from '@/libs/i18n';
 
 export function showStatusBarMenu(event: MouseEvent) {
   const menu = new Menu();

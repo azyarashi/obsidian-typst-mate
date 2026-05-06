@@ -1,5 +1,5 @@
 import type { Menu, WorkspaceLeaf } from 'obsidian';
-import { t } from '@/i18n';
+import { t } from '@/libs/i18n';
 import { isTypstFileView, TypstPreviewView } from '@/ui/views';
 
 export function onLeafMenu(menu: Menu, leaf: WorkspaceLeaf) {

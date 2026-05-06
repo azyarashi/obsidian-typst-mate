@@ -3,9 +3,8 @@ import { EditorView } from '@codemirror/view';
 import { debounce } from 'obsidian';
 import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
 import { buildTypstSimpleEditorExtensions } from '@/editorSimple/typst';
-import { t, tFragment } from '@/i18n';
-import { settingsManager } from '@/libs';
-import { RenderingEngine } from '@/libs/processor';
+import { RenderingEngine, settingsManager } from '@/libs';
+import { t, tFragment } from '@/libs/i18n';
 import { Setting } from '@/ui/components/obsidian/Setting';
 import { type TabDefinition, Tabs } from '@/ui/components/Tabs';
 

@@ -1,6 +1,6 @@
 import type { EditorView } from '@codemirror/view';
 import { getActiveRegion } from '@/editor';
-import { t } from '@/i18n';
+import { t } from '@/libs/i18n';
 import type { CommandGen } from '..';
 
 export const boxEquationCommand: CommandGen = () => {

@@ -1,5 +1,5 @@
-import { t } from '@/i18n';
 import { appUtils, settingsManager } from '@/libs';
+import { t } from '@/libs/i18n';
 import type { CommandGen } from '.';
 
 export const toggleBackgroundRenderingCommand: CommandGen = () => {

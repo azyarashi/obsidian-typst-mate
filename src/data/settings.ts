@@ -1,5 +1,4 @@
 import { SyntaxMode } from '@typstmate/typst-syntax';
-import type { EditorContext, ExtensionSetting, Tag } from '@/libs/extensionManager';
 import {
   type CodeblockProcessor,
   CodeblockStyling,
@@ -10,8 +9,9 @@ import {
   InlineStyling,
   type ProcessorKind,
   RenderingEngine,
-} from '@/libs/processor';
-import type { WidthProfile } from '@/libs/profile';
+} from '@/libs';
+import type { EditorContext, ExtensionSetting, Tag } from '@/libs/extensionManager';
+import type { WidthProfile } from '@/libs/rendererManager/utils/profile';
 import type { Tab } from '@/ui/settingsTab';
 import type { ActionsSubTab } from '@/ui/settingsTab/tabs/actions';
 import type { CompilerSubTab } from '@/ui/settingsTab/tabs/compiler';

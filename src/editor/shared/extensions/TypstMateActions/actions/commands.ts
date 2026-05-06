@@ -1,7 +1,7 @@
 import type { EditorView } from '@codemirror/view';
 import { Notice } from 'obsidian';
-import { t } from '@/i18n';
 import { appUtils } from '@/libs';
+import { t } from '@/libs/i18n';
 
 export function executeCommand(commandId: string, view: EditorView, from: number, to: number): boolean {
   const command = appUtils.app.commands.findCommand(commandId);

@@ -1,6 +1,6 @@
 import type { FontInfo } from '@wasm';
 import { type App, Modal, Notice, Setting } from 'obsidian';
-import { type TranslationKey, t } from '@/i18n';
+import { type TranslationKey, t } from '@/libs/i18n';
 
 import './font.css';
 

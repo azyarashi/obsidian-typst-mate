@@ -1,6 +1,6 @@
 import { Notice } from 'obsidian';
-import { t } from '@/i18n';
 import { editorHelper } from '@/libs';
+import { t } from '@/libs/i18n';
 import type { CommandGen } from '.';
 
 export const tex2typCommand: CommandGen = () => {

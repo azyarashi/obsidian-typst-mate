@@ -4,16 +4,9 @@ import { type CachedMetadata, getAllTags, MarkdownPreviewRenderer, Notice, reque
 import { Phase, State, TypstMate } from '@/api';
 import { DEFAULT_FONT_SIZE } from '@/constants';
 import { DEFAULT_SETTINGS } from '@/data/settings';
-import { t } from '@/i18n';
 import { crashTracker, fileManager, settingsManager } from '@/libs';
 import { features } from '@/libs/features';
-import {
-  type CodeblockProcessor,
-  type MarkdownProcessor,
-  type Processor,
-  type ProcessorKind,
-  RenderingEngine,
-} from '@/libs/processor';
+import { t } from '@/libs/i18n';
 import type ObsidianTypstMate from '@/main';
 import type { PackageAsset } from '@/types/global';
 import type { NPath } from '@/types/obsidian';
@@ -24,7 +17,17 @@ import type TypstElement from '@/ui/elements/Typst';
 import { TypstFileView, type TypstPreviewView } from '@/ui/views';
 import { overwriteCustomElements } from '@/utils/custromElementRegistry';
 import { expandHierarchicalTags } from '@/utils/tags';
-import { extarctCMMath, getNDirAndNPath, getParentNPathByFileNPath, sanitizeDisplayMathCode } from './utils';
+import {
+  type CodeblockProcessor,
+  extarctCMMath,
+  getNDirAndNPath,
+  getParentNPathByFileNPath,
+  type MarkdownProcessor,
+  type Processor,
+  type ProcessorKind,
+  RenderingEngine,
+  sanitizeDisplayMathCode,
+} from './utils';
 import type WasmAdapter from './worker';
 import Wasm, { ErrorCode } from './worker';
 import WasmWorker from './worker?worker&inline';
@@ -362,7 +365,8 @@ export class RendererManager implements Singleton {
 
         break;
       }
-      case 'codeblock': {
+      default: {
+        // * codeblock
         processor =
           settings.processor.codeblock?.processors.find((p) => p.id === kind) ??
           settings.processor.codeblock?.processors.at(-1) ??
@@ -376,8 +380,6 @@ export class RendererManager implements Singleton {
         kind = 'codeblock';
         break;
       }
-      default:
-        throw Error(`Unknown processor kind: ${kind}`);
     }
     this.beforeProcessor = processor;
     if (processor.renderingEngine === 'mathjax') {

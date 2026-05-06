@@ -6,8 +6,8 @@ import { debounce, Notice, TFile } from 'obsidian';
 import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
 // TODO import { obsidianTheme } from '@/editor';
 import { buildJSSimpleEditorExtensions } from '@/editorSimple/js';
-import { t } from '@/i18n';
 import { appUtils, extensionManager, settingsManager, tmActionsManager } from '@/libs';
+import { t } from '@/libs/i18n';
 import { importRaw, normalizeTMActionRaw, validateTMAction } from '@/libs/tmActionsManager/utils';
 import { Setting } from '@/ui/components/obsidian/Setting';
 

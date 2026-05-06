@@ -1,7 +1,7 @@
 import { Prec } from '@codemirror/state';
 import { type EditorView, keymap } from '@codemirror/view';
 import { getActiveRegion, nextSnippetField, type ParsedRegion, prevSnippetField } from '@/editor';
-import { RenderingEngine } from '@/libs/processor';
+import { RenderingEngine } from '@/libs';
 
 export function jumpOutsideBracket(
   view: EditorView,

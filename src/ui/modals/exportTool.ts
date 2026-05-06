@@ -1,7 +1,7 @@
 import type { HtmlEOptions, PdfEOptions } from '@wasm';
 import { type App, Modal, Setting } from 'obsidian';
-import { t, tFragment } from '@/i18n';
 import { fileManager, rendererManager, settingsManager } from '@/libs';
+import { t, tFragment } from '@/libs/i18n';
 import type { VPath } from '@/libs/rendererManager/worker';
 import {
   type ExportFormat,

@@ -1,5 +1,5 @@
 import { ICONS } from '@/constants/icons';
-import { t, tFragment } from '@/i18n';
+import { t, tFragment } from '@/libs/i18n';
 
 export const errorLensPackage = () =>
   ({

@@ -1,7 +1,7 @@
 import { Facet } from '@codemirror/state';
 import { ICONS } from '@/constants/icons';
-import { t, tFragment } from '@/i18n';
 import type { ExtensionPackage, InferSettingsFromPackage } from '@/libs/extensionManager';
+import { t, tFragment } from '@/libs/i18n';
 
 export const symbolConcealPackage = () =>
   ({

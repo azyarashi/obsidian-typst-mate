@@ -1,6 +1,6 @@
 import { useState } from 'preact/hooks';
-import { t } from '@/i18n';
 import { settingsManager } from '@/libs';
+import { t } from '@/libs/i18n';
 import { type TabDefinition, Tabs } from '@/ui/components/Tabs';
 import { ActionCodeTab, ActionSettingsTab } from './subTabs';
 

@@ -1,10 +1,10 @@
 import { SyntaxMode } from '@typstmate/typst-syntax';
 import type { EditorView } from '@codemirror/view';
 import { formatTypst, formatterSettingsFacet, getActiveRegion } from '@/editor';
-import { t } from '@/i18n';
+import { RenderingEngine } from '@/libs';
+import { t } from '@/libs/i18n';
 import { consoleWarn } from '@/utils/notice';
 import { appUtils } from '../appUtils';
-import { RenderingEngine } from '../processor';
 import type { CommandGen } from '.';
 
 export const formatTypstCommand: CommandGen = () => {

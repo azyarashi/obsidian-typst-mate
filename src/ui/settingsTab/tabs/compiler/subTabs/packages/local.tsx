@@ -1,8 +1,8 @@
 import { Notice, Platform } from 'obsidian';
 import { useState } from 'preact/hooks';
-import { t } from '@/i18n';
 import { fileManager } from '@/libs';
 import { features, fs, path } from '@/libs/features';
+import { t } from '@/libs/i18n';
 import type { PackageSpecWithPath } from '@/types/typst';
 import { Setting } from '@/ui/components/obsidian/Setting';
 import { SimpleList } from '@/ui/components/SimpleList';

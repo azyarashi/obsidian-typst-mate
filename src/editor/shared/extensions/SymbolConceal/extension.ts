@@ -4,7 +4,7 @@ import { Decoration, type DecorationSet, EditorView, ViewPlugin, type ViewUpdate
 import { setTooltip } from 'obsidian';
 import symbolData from '@/data/symbols.json';
 import { getActiveRegion, type SymbolData } from '@/editor';
-import { RenderingEngine } from '@/libs/processor';
+import { RenderingEngine } from '@/libs';
 import type { SymbolConcealSettings } from './package';
 
 export const SYMBOL_MAP = new Map<string, SymbolData>();

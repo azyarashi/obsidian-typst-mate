@@ -1,6 +1,6 @@
 import { type App, Modal, Notice, Setting, type TFile, type TFolder } from 'obsidian';
-import { t } from '@/i18n';
 import { fileManager, settingsManager } from '@/libs';
+import { t } from '@/libs/i18n';
 
 export class TemplateSelectModal extends Modal {
   target: TFile | TFolder;

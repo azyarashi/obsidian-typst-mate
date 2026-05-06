@@ -10,8 +10,7 @@ import { syntaxTree } from '@codemirror/language';
 import { type EditorView, type PluginValue, ViewPlugin, type ViewUpdate } from '@codemirror/view';
 import { TypstMate } from '@/api';
 import { getModeAndKindFromRegion, type ParsedRegion, RegionContext } from '@/editor';
-import { editorHelper, extarctCMMath, settingsManager } from '@/libs';
-import { type ProcessorKind, RenderingEngine } from '@/libs/processor';
+import { editorHelper, extarctCMMath, type ProcessorKind, RenderingEngine, settingsManager } from '@/libs';
 
 interface Region {
   /** right after the delimiter */

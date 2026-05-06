@@ -1,7 +1,6 @@
 import { useMemo, useState } from 'preact/hooks';
-import { t, tFragment } from '@/i18n';
-import { features, settingsManager } from '@/libs';
-import { type ProcessorKind, ProcessorKindTokens } from '@/libs/processor';
+import { features, type ProcessorKind, ProcessorKindTokens, settingsManager } from '@/libs';
+import { t, tFragment } from '@/libs/i18n';
 import { Setting } from '@/ui/components/obsidian/Setting';
 import { type TabDefinition, Tabs } from '@/ui/components/Tabs';
 import { Preamble } from './preamble';

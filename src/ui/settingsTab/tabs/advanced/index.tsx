@@ -1,8 +1,8 @@
 import { debounce, Notice } from 'obsidian';
 import { useState } from 'preact/hooks';
 import { DEFAULT_SETTINGS } from '@/data/settings';
-import { t, tFragment } from '@/i18n';
 import { appUtils, rendererManager, settingsManager } from '@/libs';
+import { t, tFragment } from '@/libs/i18n';
 import { Setting } from '@/ui/components/obsidian/Setting';
 
 export function AdvancedTab() {

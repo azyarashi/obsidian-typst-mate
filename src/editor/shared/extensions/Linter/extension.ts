@@ -4,7 +4,7 @@ import { type EditorView, ViewPlugin, type ViewUpdate } from '@codemirror/view';
 import type { Diagnostic as WasmDiagnostic } from '@wasm';
 import { State, TypstMate } from '@/api';
 import { getActiveRegion } from '@/editor';
-import type { Processor } from '@/libs/processor';
+import type { Processor } from '@/libs';
 import { renderDiagnosticMessage } from '@/ui/components/Diagnostic';
 
 import './Diagnostic.css';

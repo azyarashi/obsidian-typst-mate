@@ -10,8 +10,8 @@ import {
   type TFolder,
 } from 'obsidian';
 import { TypstMate } from '@/api';
-import { t } from '@/i18n';
 import { features, fs, initWatcherNode, loadWatcherModule, os, path, watcher } from '@/libs/features';
+import { t } from '@/libs/i18n';
 import ObsidianTypstMate from '@/main';
 import type { GitHubAsset, PackageAsset } from '@/types/global';
 import type { NPath } from '@/types/obsidian';

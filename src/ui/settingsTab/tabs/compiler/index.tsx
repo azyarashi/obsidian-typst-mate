@@ -1,7 +1,7 @@
 import { useState } from 'preact/hooks';
-import { t } from '@/i18n';
 import { settingsManager } from '@/libs';
 import { features } from '@/libs/features';
+import { t } from '@/libs/i18n';
 import { type TabDefinition, Tabs } from '@/ui/components/Tabs';
 import { FontListContainer, PackagesListContainer, WatcherListContainer } from '@/ui/settingsTab/tabs/compiler/subTabs';
 
