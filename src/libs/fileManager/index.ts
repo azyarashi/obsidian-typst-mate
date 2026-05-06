@@ -14,8 +14,9 @@ import { t } from '@/i18n';
 import { features, fs, initWatcherNode, loadWatcherModule, os, path, watcher } from '@/libs/features';
 import ObsidianTypstMate from '@/main';
 import type { GitHubAsset, PackageAsset } from '@/types/global';
+import type { NPath } from '@/types/obsidian';
 import type { Singleton } from '@/types/singleton';
-import type { VPath } from '../typstManager/worker';
+import type { VPath } from '../rendererManager/worker';
 import { arrayBufferLikeToArrayBuffer, filterWithExtensions } from './utils';
 
 /**
@@ -36,17 +37,17 @@ export class FileManager implements Singleton {
   baseDirPath!: string;
 
   /** Example: `.obsidian/plugins/typst-mate` */
-  pluginDirNPath!: string;
-  pluginDirPath!: string;
+  pluginDirNPath!: NPath;
+  pluginDirPath!: NPath;
 
-  wasmNPath!: string;
-  watcherModuleNPath!: string;
-  watcherNodeNPath!: string;
+  wasmNPath!: NPath;
+  watcherModuleNPath!: NPath;
+  watcherNodeNPath!: NPath;
 
-  fontsDirNPath!: string;
-  vaultPackagesDirNPath!: string;
+  fontsDirNPath!: NPath;
+  vaultPackagesDirNPath!: NPath;
   // TODO: vaultPackagesDirNPaths!: string;
-  localPackagesDirPaths: string[] = [];
+  localPackagesDirPaths: NPath[] = [];
 
   async init(plugin: ObsidianTypstMate) {
     this.plugin = plugin;

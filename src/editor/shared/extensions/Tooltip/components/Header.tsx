@@ -1,7 +1,5 @@
-export function Header(type?: string) {
-  return (
-    <p>
-      <pre>{type}</pre>
-    </p>
-  );
+import './Header.css';
+
+export function Header({ title }: { title: string }) {
+  return <div className="typstmate-tooltip-header">{title}</div>;
 }

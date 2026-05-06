@@ -1,7 +1,7 @@
 import type { HtmlMResult } from '@wasm';
 import { type Menu, type MenuItem, Notice } from 'obsidian';
 import { t } from '@/i18n';
-import { typstManager } from '@/libs';
+import { rendererManager } from '@/libs';
 import TypstElement from './Typst';
 
 import './HTML.css';
@@ -17,7 +17,7 @@ export default class TypstHTMLElement extends TypstElement {
     const formatted = this.format();
 
     try {
-      const result = await typstManager.wasm.htmlmAsync(this.ndir, this.kind, this.id, formatted);
+      const result = await rendererManager.wasm.htmlmAsync(this.ndir, this.kind, this.id, formatted);
       if (result) this.postProcess(result);
     } catch (err) {
       this.handleError(err as any);
@@ -30,7 +30,7 @@ export default class TypstHTMLElement extends TypstElement {
     const formatted = this.format();
 
     try {
-      const result = typstManager.wasm.htmlm(this.ndir, this.kind, this.id, formatted);
+      const result = rendererManager.wasm.htmlm(this.ndir, this.kind, this.id, formatted);
       if (result instanceof Promise) result.then((r: HtmlMResult) => this.postProcess(r));
       else if (result) this.postProcess(result);
     } catch (err) {

@@ -3,8 +3,8 @@ import { MarkdownView, type Menu, type MenuItem, Notice } from 'obsidian';
 import { BASE_COLOR_VAR } from '@/constants';
 import { previewJumpPlugin } from '@/editor';
 import { t } from '@/i18n';
-import { appUtils, settingsManager, typstManager } from '@/libs';
-import { ErrorCode } from '@/libs/typstManager/worker';
+import { appUtils, rendererManager, settingsManager } from '@/libs';
+import { ErrorCode } from '@/libs/rendererManager/worker';
 import TypstElement from './Typst';
 
 import './SVG.css';
@@ -114,7 +114,7 @@ export default class TypstSVGElement extends TypstElement {
 
     try {
       // TODO
-      const result = await typstManager.wasm.svgmAsync(this.ndir, this.kind, this.id, formatted);
+      const result = await rendererManager.wasm.svgmAsync(this.ndir, this.kind, this.id, formatted);
       this.postProcess(result);
     } catch (err) {
       if (err === ErrorCode.Pending) return this;
@@ -128,7 +128,7 @@ export default class TypstSVGElement extends TypstElement {
     const formatted = this.format();
 
     try {
-      const result = typstManager.wasm.svgm(this.ndir, this.kind, this.id, formatted);
+      const result = rendererManager.wasm.svgm(this.ndir, this.kind, this.id, formatted);
       if (result instanceof Promise) result.then((r: SvgMResult) => this.postProcess(r));
       else this.postProcess(result);
     } catch (err) {
@@ -151,9 +151,9 @@ export default class TypstSVGElement extends TypstElement {
     const x = (event.clientX - rect.left) / (rect.width / svg.viewBox.baseVal.width);
     const y = (event.clientY - rect.top) / (rect.height / svg.viewBox.baseVal.height);
 
-    await typstManager.wasm.svgmAsync(this.ndir, this.kind, this.id, this.format()); // フレーム生成のための副作用
+    await rendererManager.wasm.svgmAsync(this.ndir, this.kind, this.id, this.format()); // フレーム生成のための副作用
 
-    const result = await typstManager.wasm.jumpFromClickAsync(x, y);
+    const result = await rendererManager.wasm.jumpFromClickAsync(x, y);
     if (result) {
       const view = appUtils.app.workspace.getActiveFileView();
       if (!(view instanceof MarkdownView)) return;

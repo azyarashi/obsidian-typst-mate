@@ -4,7 +4,7 @@ import { initI18n, t } from '@/i18n';
 import { Phase, TypstMate } from './api';
 import { markdownExtensionEntries, sharedExtensionEntries, typstExtensionEntries } from './editor';
 // biome-ignore format: readability
-import { applyAllPatches, appUtils, crashTracker, detachAllPatches, editorHelper, extensionManager, fileManager, registerCommands, registerEvents, registerProtocolHandlers, settingsManager, tmActionsManager, typstManager } from './libs';
+import { applyAllPatches, appUtils, crashTracker, detachAllPatches, editorHelper, extensionManager, fileManager, registerCommands, registerEvents, registerProtocolHandlers, rendererManager, settingsManager, tmActionsManager } from './libs';
 import { hideStatusBarItem, registerEmbeds, registerViews, SettingsTab, setStatusBarItem } from './ui';
 import { noticeError, noticeMessage } from './utils/notice';
 
@@ -76,10 +76,10 @@ export default class ObsidianTypstMate extends Plugin {
       registerEmbeds(this);
       this.detaches.unshift(() => this.app.embedRegistry.unregisterExtension('typ'));
 
-      // * typstManager
-      await typstManager.init(this);
-      this.detaches.unshift(async () => await typstManager.detach());
-      typstManager.registerOnce();
+      // * rendererManager
+      await rendererManager.init(this);
+      this.detaches.unshift(async () => await rendererManager.detach());
+      rendererManager.registerOnce();
 
       this.app.workspace.onLayoutReady(() => {
         this.onLayoutReady()
@@ -145,11 +145,11 @@ export default class ObsidianTypstMate extends Plugin {
 
     // * wasm
     TypstMate.setPhase(Phase.InitializingWasm);
-    await typstManager.prepareWasm();
+    await rendererManager.prepareWasm();
     this.detaches.unshift(() => delete window.TypstMate!.wasm);
 
     TypstMate.setPhase(Phase.PreparingAssets);
-    await typstManager.prepareAssets();
+    await rendererManager.prepareAssets();
 
     // * tmActionsManager
     await tmActionsManager.init(this);
@@ -178,7 +178,7 @@ export default class ObsidianTypstMate extends Plugin {
     this.detaches.unshift(() => detachAllPatches());
 
     // * TypstMate API
-    TypstMate.wasm = typstManager.wasm;
+    TypstMate.wasm = rendererManager.wasm;
     crashTracker.updateCrashStatus(false);
   }
 

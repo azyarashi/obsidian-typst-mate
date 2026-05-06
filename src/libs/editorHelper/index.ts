@@ -5,7 +5,7 @@ import { buildMarkdownExtension as buildSharedExtensions, collectRegions } from 
 import type ObsidianTypstMate from '@/main';
 import type { Singleton } from '@/types/singleton';
 import type TypstSVGElement from '@/ui/elements/SVG';
-import { typstManager } from '../typstManager';
+import { rendererManager } from '../rendererManager';
 
 export class EditorHelper implements Singleton {
   init(plugin: ObsidianTypstMate) {
@@ -52,13 +52,13 @@ export class EditorHelper implements Singleton {
     ).filter((region) => region.kind !== 'codeblock');
 
     if (selection.empty && regions.length === 0) {
-      editor.replaceSelection(await typstManager.wasm.latexeq_to_typm(editor.getSelection()));
+      editor.replaceSelection(await rendererManager.wasm.latexeq_to_typm(editor.getSelection()));
       return;
     }
 
     for (const region of regions) {
       const content = view.state.sliceDoc(region.from, region.to);
-      const math = await typstManager.wasm.latexeq_to_typm(content);
+      const math = await rendererManager.wasm.latexeq_to_typm(content);
       const fromPosition = editor.offsetToPos(region.from);
       const toPosition = editor.offsetToPos(region.to);
       editor.replaceRange(math, fromPosition, toPosition);

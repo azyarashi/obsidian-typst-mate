@@ -1,0 +1,67 @@
+.typstmate-tooltip-left {
+  flex: 0 0 30px;
+  border-right: 1px solid var(--background-modifier-border);
+  padding-right: 4px;
+  font-family: var(--font-monospace);
+  font-size: 1.1em;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  padding-bottom: 12px;
+}
+
+.typstmate-left-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.typstmate-signature-inline-toggle {
+  cursor: pointer;
+  color: var(--interactive-accent);
+  user-select: none;
+  font-weight: bold;
+}
+.typstmate-signature-inline-toggle:hover {
+  text-decoration: underline;
+}
+
+.typstmate-signature-header {
+  font-weight: bold;
+  margin-bottom: 4px;
+}
+.typstmate-signature-inline-toggle {
+  cursor: pointer;
+  color: var(--interactive-accent);
+  font-family: var(--font-monospace);
+  margin-left: 4px;
+  user-select: none;
+}
+.typstmate-signature-inline-toggle:hover {
+  text-decoration: underline;
+}
+.typstmate-func-name {
+  color: var(--text-accent);
+}
+.typstmate-signature-params {
+  padding-left: 16px;
+}
+.typstmate-signature-param {
+  margin-bottom: 2px;
+}
+.typstmate-param-name {
+  color: var(--text-normal);
+}
+.typstmate-param-type {
+  color: var(--text-muted);
+}
+.typstmate-signature-footer {
+  font-weight: bold;
+  margin-top: 4px;
+}
+.typstmate-signature-return {
+  margin-top: 4px;
+  padding-left: 16px;
+  font-style: italic;
+}

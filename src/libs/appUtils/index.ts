@@ -4,8 +4,8 @@ import { t } from '@/i18n';
 import ObsidianTypstMate from '@/main';
 import { TextFileView, type Tool, TypstFileView, TypstPreviewView, TypstToolsView } from '@/ui/views';
 import { checkPluginFeatures } from '../features';
+import { rendererManager } from '../rendererManager';
 import { settingsManager } from '../settingsManager';
-import { typstManager } from '../typstManager';
 
 class AppUtils {
   app!: App;
@@ -109,7 +109,7 @@ class AppUtils {
   }
 
   getNoteWidth(): string {
-    if (typstManager.currentNoteWidth !== undefined) return typstManager.currentNoteWidth;
+    if (rendererManager.currentNoteWidth !== undefined) return rendererManager.currentNoteWidth;
 
     const view = this.app.workspace.getActiveViewOfType(MarkdownView);
     let width = Infinity;

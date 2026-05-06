@@ -1,8 +1,8 @@
 import { Modal } from 'obsidian';
 import type ObsidianTypstMate from '@/main';
 import type { Singleton } from '@/types/singleton';
+import { rendererManager } from '../rendererManager';
 import { settingsManager } from '../settingsManager';
-import { typstManager } from '../typstManager';
 
 class ModalOpenPatch implements Singleton {
   private modalOpenOrig = Modal.prototype.open;
@@ -32,16 +32,16 @@ class ModalOpenPatch implements Singleton {
             const before = settingsManager.settings.enableBackgroundRendering;
             if (before) {
               settingsManager.settings.enableBackgroundRendering = false;
-              await typstManager.refreshWasm();
+              await rendererManager.refreshWasm();
             }
 
             return await printToPdfOrig(args).then(async () => {
               if (profileName) settingsManager.settings.fitToNoteWidthProfile = oldProfileName;
-              typstManager.updateNoteWidth();
+              rendererManager.updateNoteWidth();
 
               if (before) {
                 settingsManager.settings.enableBackgroundRendering = true;
-                await typstManager.refreshWasm();
+                await rendererManager.refreshWasm();
               }
             });
           };

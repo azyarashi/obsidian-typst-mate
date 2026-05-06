@@ -1,7 +1,7 @@
 import { useState } from 'preact/hooks';
 import { DEFAULT_SETTINGS } from '@/data/settings';
 import { t, tFragment } from '@/i18n';
-import { appUtils, settingsManager, typstManager } from '@/libs';
+import { appUtils, rendererManager, settingsManager } from '@/libs';
 import { Setting } from '@/ui/components/obsidian/Setting';
 
 import './renderer.css';
@@ -26,7 +26,7 @@ export function RendererTab() {
     setProfiles([...newProfiles]);
     settingsManager.settings.fitToNoteWidthProfiles = newProfiles;
     await settingsManager.saveSettings();
-    typstManager.updateNoteWidth();
+    rendererManager.updateNoteWidth();
   };
 
   const profileOptions: Record<string, string> = { Live: 'Live' };
@@ -119,7 +119,7 @@ export function RendererTab() {
                   setOffset(v);
                   settingsManager.settings.offset = v;
                   await settingsManager.saveSettings();
-                  await typstManager.wasm.setOffset(v);
+                  await rendererManager.wasm.setOffset(v);
                 }),
             )
         }
@@ -159,7 +159,7 @@ export function RendererTab() {
                   setFitProfile(v);
                   settingsManager.settings.fitToNoteWidthProfile = v;
                   await settingsManager.saveSettings();
-                  typstManager.updateNoteWidth();
+                  rendererManager.updateNoteWidth();
                 }),
             )
         }

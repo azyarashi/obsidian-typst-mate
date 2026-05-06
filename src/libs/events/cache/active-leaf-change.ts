@@ -1,5 +1,5 @@
 import type { MarkdownView, WorkspaceLeaf } from 'obsidian';
-import { appUtils, typstManager } from '@/libs';
+import { appUtils, rendererManager } from '@/libs';
 
 export async function onActiveLeafChange(leaf: WorkspaceLeaf | null) {
   const { app } = appUtils;
@@ -8,5 +8,5 @@ export async function onActiveLeafChange(leaf: WorkspaceLeaf | null) {
   if (!path) return;
 
   const cache = app.metadataCache.getCache(path);
-  if (cache) typstManager.syncFileCache(cache);
+  if (cache) rendererManager.syncFileCache(cache);
 }

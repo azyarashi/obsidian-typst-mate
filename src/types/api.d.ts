@@ -2,7 +2,7 @@ import type { EditorView } from '@codemirror/view';
 import type { Remote } from 'comlink';
 import type { Phase, State } from '../api';
 import type { ParsedRegion } from '../editor/shared/utils/core';
-import type WasmAdapter from '../libs/typstManager/worker';
+import type WasmAdapter from '../libs/rendererManager/worker';
 
 export type * as Wasm from '@wasm';
 export type { ParsedRegion, Status };

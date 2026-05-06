@@ -11,7 +11,7 @@ export { features, checkPluginFeatures } from './features';
 export { editorHelper } from './editorHelper';
 export { extensionManager, EditorContextFacet } from './extensionManager';
 
-export { typstManager, extarctCMMath, ctxToNDir } from './typstManager';
+export { rendererManager, extarctCMMath, sanitizeDisplayMathCode } from './rendererManager';
 export { tmActionsManager } from './tmActionsManager';
 
 export { registerEvents } from './events';

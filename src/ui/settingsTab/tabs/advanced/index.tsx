@@ -2,7 +2,7 @@ import { debounce, Notice } from 'obsidian';
 import { useState } from 'preact/hooks';
 import { DEFAULT_SETTINGS } from '@/data/settings';
 import { t, tFragment } from '@/i18n';
-import { appUtils, settingsManager, typstManager } from '@/libs';
+import { appUtils, rendererManager, settingsManager } from '@/libs';
 import { Setting } from '@/ui/components/obsidian/Setting';
 
 export function AdvancedTab() {
@@ -16,10 +16,10 @@ export function AdvancedTab() {
   const debouncedUpdate = debounce(async (path: string) => {
     settingsManager.settings.resourcesPath = path;
     await settingsManager.saveSettings();
-    const files = await typstManager.collectTagFiles();
-    await typstManager.wasm.store({ files });
+    const files = await rendererManager.collectTagFiles();
+    await rendererManager.wasm.store({ files });
     new Notice(t('notices.filesUpdated'));
-    typstManager.rerenderAll();
+    rendererManager.rerenderAll();
   }, 500);
 
   return (

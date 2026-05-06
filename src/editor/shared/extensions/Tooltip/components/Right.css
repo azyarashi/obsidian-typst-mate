@@ -1,0 +1,75 @@
+.typstmate-tooltip-right {
+  flex: 0 0 200px;
+  width: 200px;
+  border-left: 1px solid var(--background-modifier-border);
+  padding-left: 16px;
+  font-size: 0.9em;
+  position: relative;
+}
+
+.typstmate-tooltip-right-collapsed {
+  flex: 0 0 24px;
+  width: 24px;
+  border-left: 1px solid var(--background-modifier-border);
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  cursor: pointer;
+  padding-top: 8px;
+  color: var(--text-muted);
+}
+
+.typstmate-tooltip-right-collapsed:hover {
+  color: var(--text-normal);
+  background-color: var(--background-modifier-hover);
+}
+
+.typstmate-right-toggle {
+  cursor: pointer;
+  color: var(--text-muted);
+  font-size: 0.8em;
+  margin-bottom: 8px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.typstmate-right-toggle:hover {
+  color: var(--text-normal);
+}
+.typstmate-outline-list,
+.typstmate-outline-sublist {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.typstmate-outline-list > li {
+  margin-bottom: 8px;
+}
+.typstmate-outline-list li {
+  cursor: pointer;
+  color: var(--text-muted);
+}
+.typstmate-outline-list li:hover > code,
+.typstmate-outline-list li:hover > .typstmate-outline-subtitle,
+.typstmate-outline-list li:hover {
+  color: var(--text-accent);
+}
+.typstmate-outline-subtitle {
+  font-weight: 600;
+  display: block;
+  margin-bottom: 4px;
+}
+.typstmate-outline-sublist {
+  padding-left: 12px;
+  border-left: 1px solid var(--background-modifier-border);
+  margin-left: 4px;
+}
+.typstmate-outline-sublist li {
+  margin-bottom: 4px;
+  font-size: 0.9em;
+}
+.typstmate-outline-type {
+  font-family: var(--font-monospace);
+  font-size: 0.85em;
+  opacity: 0.8;
+}

@@ -18,7 +18,7 @@ import {
   vimSaveFacet,
 } from '@/editor';
 import { t } from '@/i18n';
-import { fileManager, settingsManager, typstManager } from '@/libs';
+import { fileManager, rendererManager, settingsManager } from '@/libs';
 import { viewTracker } from '@/libs/extensionManager';
 import { ExportToolModal } from '@/ui/modals/exportTool';
 import { TypstPreviewView } from '@/ui/views/typst-preview';
@@ -147,19 +147,19 @@ export class TypstFileView extends TextFileView {
     if (!this.vpath.startsWith(`${resourcesPath}/tags/`)) return;
 
     const typstPath = this.vpath.slice(resourcesPath.length);
-    typstManager.wasm.store({ files: new Map([[typstPath, content]]) });
+    rendererManager.wasm.store({ files: new Map([[typstPath, content]]) });
 
     const tag = typstPath
       .slice(resourcesPath.length + 1) // resourcesPath + "/" の分
       .slice(5) // "tags/" の分
       .slice(0, -4) // ".typ" の分
       .replaceAll('.', '/');
-    typstManager.tagFiles.add(tag);
+    rendererManager.tagFiles.add(tag);
   }
 
   private async compileAndUpdate(content: string): Promise<void> {
     if (!this.vpath) return;
-    if (!typstManager.ready) return;
+    if (!rendererManager.ready) return;
     this.removeWaiting();
 
     if (!this.extensionsInitialized) {
@@ -170,7 +170,7 @@ export class TypstFileView extends TextFileView {
     }
 
     try {
-      const result = await typstManager.wasm.svgpAsync(this.vpath, content);
+      const result = await rendererManager.wasm.svgpAsync(this.vpath, content);
 
       updateDiagnosticEffect(this.view, {
         diagnostics: result.diags,
@@ -272,7 +272,7 @@ export class TypstFileView extends TextFileView {
 
     this.findAndLinkPreview();
 
-    if (!typstManager.ready) this.renderWaiting();
+    if (!rendererManager.ready) this.renderWaiting();
     else this.compileAndUpdate(fileContent);
   }
 

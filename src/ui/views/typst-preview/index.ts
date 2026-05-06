@@ -1,7 +1,7 @@
 import { type Menu, setIcon, setTooltip, TextFileView, type TFile } from 'obsidian';
 import { previewJumpExtension } from '@/editor';
 import { t } from '@/i18n';
-import { typstManager } from '@/libs';
+import { rendererManager } from '@/libs';
 import { TypstFileView } from '@/ui/views';
 import { consoleError } from '@/utils/notice';
 
@@ -73,7 +73,7 @@ export class TypstPreviewView extends TextFileView {
 
     this.findAndLinkParent();
 
-    if (!typstManager.ready) {
+    if (!rendererManager.ready) {
       this.renderWaiting();
       return;
     }
@@ -81,7 +81,7 @@ export class TypstPreviewView extends TextFileView {
     try {
       this.vpath = file.path;
       this.fileContent = await this.app.vault.read(file);
-      const result = await typstManager.wasm!.svgpAsync(this.vpath, this.fileContent);
+      const result = await rendererManager.wasm!.svgpAsync(this.vpath, this.fileContent);
       this.svgPages = result.svgp;
 
       await this.renderPreview();
@@ -97,7 +97,7 @@ export class TypstPreviewView extends TextFileView {
 
   override async onModify(file: TFile): Promise<void> {
     if (this.parentFileView) return;
-    if (!typstManager.ready) return;
+    if (!rendererManager.ready) return;
 
     if (!this.viewerAreaEl) {
       await this.onLoadFile(file);
@@ -110,7 +110,7 @@ export class TypstPreviewView extends TextFileView {
 
     try {
       this.fileContent = await this.app.vault.read(file);
-      const result = await typstManager.wasm!.svgpAsync(this.vpath, this.fileContent);
+      const result = await rendererManager.wasm!.svgpAsync(this.vpath, this.fileContent);
       this.svgPages = result.svgp;
 
       if (!this.pageContainerEl || !this.viewerAreaEl) return;
@@ -556,8 +556,8 @@ export class TypstPreviewView extends TextFileView {
     const x = (event.clientX - rect.left) / (rect.width / svg.viewBox.baseVal.width);
     const y = (event.clientY - rect.top) / (rect.height / svg.viewBox.baseVal.height);
 
-    await typstManager.wasm!.svgpAsync(this.vpath, this.fileContent || '');
-    const result = await typstManager.wasm!.jumpFromClickPAsync(pageIndex, x, y);
+    await rendererManager.wasm!.svgpAsync(this.vpath, this.fileContent || '');
+    const result = await rendererManager.wasm!.jumpFromClickPAsync(pageIndex, x, y);
 
     if (!result || !this.parentFileView) return;
 

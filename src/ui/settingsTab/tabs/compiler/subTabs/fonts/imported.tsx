@@ -1,6 +1,6 @@
 import { Notice } from 'obsidian';
 import { t } from '@/i18n';
-import { appUtils, fileManager, typstManager } from '@/libs';
+import { appUtils, fileManager, rendererManager } from '@/libs';
 import { features, path, url } from '@/libs/features';
 import { Setting } from '@/ui/components/obsidian/Setting';
 import { SimpleList } from '@/ui/components/SimpleList';
@@ -56,7 +56,7 @@ export function LoadedFontList({ fonts, onRemove }: LoadedFontListProps) {
                     button.setTooltip(t('settings.compiler.fonts.tooltips.getInfo'));
                     button.onClick(async () => {
                       const fontData = await appUtils.app.vault.adapter.readBinary(fontPath);
-                      const info = await (typstManager.wasm as any).parseFont(fontData);
+                      const info = await (rendererManager.wasm as any).parseFont(fontData);
                       new FontModal(appUtils.app, info).open();
                     });
                   })

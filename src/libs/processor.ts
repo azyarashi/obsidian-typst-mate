@@ -23,28 +23,33 @@ export enum CodeblockStyling {
 }
 export type Styling = InlineStyling | DisplayStyling | CodeblockStyling;
 
-export interface ProcessorBase<S extends Styling> {
+export interface ProcessorBase {
   id: string;
   renderingEngine: RenderingEngine;
   format: string;
-  styling: S;
-  useReplaceAll?: boolean;
   syntaxMode?: SyntaxMode;
 }
 
-export type InlineProcessor = ProcessorBase<InlineStyling> & {
-  noPreamble?: boolean;
-};
-export type DisplayProcessor = ProcessorBase<DisplayStyling> & {
-  fitToNoteWidth?: boolean;
-  noPreamble?: boolean;
-};
-export type CodeblockProcessor = ProcessorBase<CodeblockStyling> & {
-  fitToNoteWidth?: boolean;
-  noPreamble?: boolean;
-};
-export type ExcalidrawProcessor = ProcessorBase<CodeblockStyling>;
+export interface ProcessorMarkdownBase<S extends Styling> extends ProcessorBase {
+  styling: S;
+  useReplaceAll?: boolean;
+}
 
+export type InlineProcessor = ProcessorMarkdownBase<InlineStyling> & {
+  noPreamble?: boolean;
+};
+export type DisplayProcessor = ProcessorMarkdownBase<DisplayStyling> & {
+  fitToNoteWidth?: boolean;
+  noPreamble?: boolean;
+};
+export type CodeblockProcessor = ProcessorMarkdownBase<CodeblockStyling> & {
+  fitToNoteWidth?: boolean;
+  noPreamble?: boolean;
+};
+export type ExcalidrawProcessor = ProcessorBase;
+
+export type MathProcessor = InlineProcessor | DisplayProcessor;
+export type MarkdownProcessor = InlineProcessor | DisplayProcessor | CodeblockProcessor;
 export type Processor = InlineProcessor | DisplayProcessor | CodeblockProcessor | ExcalidrawProcessor;
 
 export const ProcessorKindTokens = ['inline', 'display', 'codeblock', 'excalidraw'] as const;
@@ -105,9 +110,6 @@ export const DefaultNewExcalidrawProcessor: ExcalidrawProcessor = {
   id: 'new',
   renderingEngine: RenderingEngine.TypstSVG,
   format: '#set page(margin: 0.5em)\n${CODE}$',
-  styling: CodeblockStyling.BlockCenter,
-  useReplaceAll: false,
-  syntaxMode: SyntaxMode.Markup,
 };
 
 export const DefaultNewProcessor: Record<ProcessorKind, Processor> = {

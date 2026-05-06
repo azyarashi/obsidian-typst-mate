@@ -3,8 +3,8 @@ import { MarkdownView, Menu, type MenuItem, Notice } from 'obsidian';
 import { DEFAULT_FONT_SIZE } from '@/constants';
 import { getActiveRegion, updateDiagnosticEffect } from '@/editor';
 import { t } from '@/i18n';
-import { appUtils, settingsManager, typstManager } from '@/libs';
-import { type Processor, type ProcessorKind, RenderingEngine } from '@/libs/processor';
+import { appUtils, rendererManager, settingsManager } from '@/libs';
+import { type MarkdownProcessor, type ProcessorKind, RenderingEngine } from '@/libs/processor';
 
 import './Typst.css';
 
@@ -13,7 +13,7 @@ export default abstract class TypstElement extends HTMLElement {
   npath?: string;
   kind!: ProcessorKind;
   source!: string;
-  processor!: Processor;
+  processor!: MarkdownProcessor;
 
   noDiag!: boolean;
   offset: number = 0;
@@ -39,7 +39,7 @@ export default abstract class TypstElement extends HTMLElement {
         });
       });
 
-    typstManager.beforeKind = this.kind;
+    rendererManager.beforeKind = this.kind;
   }
 
   format() {
@@ -50,7 +50,7 @@ export default abstract class TypstElement extends HTMLElement {
   }
 
   handleError(diags: WasmDiagnostic[]) {
-    typstManager.beforeKind = this.kind;
+    rendererManager.beforeKind = this.kind;
     if (diags.length === 0) return;
     const diag = diags[0]!;
     this.isErr = true;
@@ -110,7 +110,7 @@ export default abstract class TypstElement extends HTMLElement {
   }
 }
 
-export function format(source: string, kind: ProcessorKind, processor: Processor) {
+export function format(source: string, kind: ProcessorKind, processor: MarkdownProcessor) {
   if (!processor) return { formatted: source, offset: 0 };
 
   let formatted =
@@ -122,12 +122,12 @@ export function format(source: string, kind: ProcessorKind, processor: Processor
   const preamble =
     processor.renderingEngine === RenderingEngine.TypstHTML ? settings.preambleHtml : settings.preambleSvg;
 
-  formatted = `${typstManager.preamble}\n${formatted}${kind === 'inline' && processor.renderingEngine === RenderingEngine.TypstSVG ? '#text(size:0pt)[mnomnomno]' : ''}`;
+  formatted = `${rendererManager.preamble}\n${formatted}${kind === 'inline' && processor.renderingEngine === RenderingEngine.TypstSVG ? '#text(size:0pt)[mnomnomno]' : ''}`;
   const noPreamble = 'noPreamble' in processor ? (processor.noPreamble ?? false) : false;
   formatted = noPreamble ? formatted : `${preamble}\n${formatted}`;
 
   let offset =
-    -processor.format.indexOf('{CODE}') - (noPreamble ? 0 : preamble.length + 1) - typstManager.preamble.length - 1;
+    -processor.format.indexOf('{CODE}') - (noPreamble ? 0 : preamble.length + 1) - rendererManager.preamble.length - 1;
 
   if ('fitToNoteWidth' in processor && processor.fitToNoteWidth) {
     const width = appUtils.getNoteWidth();

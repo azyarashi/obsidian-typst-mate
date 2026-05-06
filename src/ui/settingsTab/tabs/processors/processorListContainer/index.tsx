@@ -1,7 +1,7 @@
 import { debounce } from 'obsidian';
 import { useEffect, useMemo, useState } from 'preact/hooks';
 import { t, tFragment } from '@/i18n';
-import { checkPluginFeatures, features, settingsManager, typstManager } from '@/libs';
+import { checkPluginFeatures, features, rendererManager, settingsManager } from '@/libs';
 import {
   type CodeblockProcessor,
   DefaultNewProcessor,
@@ -28,7 +28,7 @@ export function ProcessorsContainer<K extends ProcessorKind>({ kind }: { kind: K
   const debouncedRename = useMemo(
     () =>
       debounce((oldId: string, newProcessor: CodeblockProcessor) => {
-        typstManager.renameCodeblockProcessor(oldId, newProcessor);
+        rendererManager.renameCodeblockProcessor(oldId, newProcessor);
       }, 500),
     [],
   );
@@ -55,7 +55,7 @@ export function ProcessorsContainer<K extends ProcessorKind>({ kind }: { kind: K
   const handleDelete = async (uuid: string) => {
     if (kind === 'codeblock') {
       const processor = processors.find((p) => getSortableUuid(p as Processor) === uuid) as CodeblockProcessor;
-      if (processor) typstManager.unregisterCodeblockProcessor(processor.id);
+      if (processor) rendererManager.unregisterCodeblockProcessor(processor.id);
     }
     await deleteItem(uuid);
   };

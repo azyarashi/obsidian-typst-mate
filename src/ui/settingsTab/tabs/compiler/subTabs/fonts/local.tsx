@@ -1,7 +1,7 @@
 import { Notice } from 'obsidian';
 import { useState } from 'preact/hooks';
 import { t } from '@/i18n';
-import { appUtils, fileManager, typstManager } from '@/libs';
+import { appUtils, fileManager, rendererManager } from '@/libs';
 import { features } from '@/libs/features';
 import type { FontData } from '@/types/global';
 import { Setting } from '@/ui/components/obsidian/Setting';
@@ -40,7 +40,7 @@ export function SystemFontList({ onImport, importedFonts }: SystemFontListProps)
     const fontArrayBuffer = await (await fontData.blob()).arrayBuffer();
 
     await appUtils.app.vault.adapter.writeBinary(targetPath, fontArrayBuffer);
-    await typstManager.wasm.store({
+    await rendererManager.wasm.store({
       fonts: [fontArrayBuffer],
     });
 
@@ -91,7 +91,9 @@ export function SystemFontList({ onImport, importedFonts }: SystemFontListProps)
                     button.setIcon('info');
                     button.setTooltip(t('settings.compiler.fonts.tooltips.getInfo'));
                     button.onClick(async () => {
-                      const info = await (typstManager.wasm as any).parseFont(await (await font.blob()).arrayBuffer());
+                      const info = await (rendererManager.wasm as any).parseFont(
+                        await (await font.blob()).arrayBuffer(),
+                      );
                       new FontModal(appUtils.app, info).open();
                     });
                   })

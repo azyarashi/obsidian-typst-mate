@@ -1,0 +1,123 @@
+.typstmate-tooltip-header {
+  position: absolute;
+  top: -1px; /* Align precisely with top border */
+  left: -1px; /* Align precisely with left border */
+  transform: translateY(-100%); /* Move entirely outside */
+
+  background-color: var(--interactive-accent);
+  color: var(--text-on-accent);
+  padding: 4px 10px;
+  font-weight: 600;
+  font-size: 0.8em;
+  text-transform: capitalize;
+
+  border-top-left-radius: 4px;
+  border-top-right-radius: 4px;
+  border: 1px solid var(--background-modifier-border);
+  border-bottom: none; /* Combine seamlessly with the tooltip */
+}
+
+.pill {
+  display: inline-block;
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-family:
+    Cascadia Mono,
+    Courier New,
+    Courier,
+    monospace;
+  font-size: 14px;
+  font-weight: 400;
+  white-space: nowrap;
+}
+a.pill {
+  color: inherit !important;
+  text-decoration: none !important;
+}
+.pill + .pill {
+  margin-inline-start: 4px;
+}
+.pill-con {
+  background: #a6ebe6;
+}
+.pill-str {
+  background: #d1ffe2;
+}
+.pill-kw {
+  background: color(display-p3 1 0.83 0.8, #ffcbc4);
+}
+.pill-num {
+  background: color(display-p3 1 0.93 0.77, #ffedc1);
+}
+.pill-obj {
+  background: #eff0f3;
+}
+.pill-collect {
+  background: #f9dfff;
+  background: color(display-p3 0.97 0.88 1);
+}
+.pill-fn {
+  background: #d1d4fd;
+}
+.pill-meta {
+  background: #c6d6ec;
+}
+.pill-layout {
+  background: #a6eaff;
+}
+.pill-date:before {
+  content: "";
+  display: block;
+  background-image: conic-gradient(
+    from 30deg,
+    #020513,
+    #041529 7%,
+    #a07aaa 18%,
+    #a6aff6 28%,
+    #89c8e5 35%,
+    #b7daec 66%,
+    #dcac68 73%,
+    #47232d 79%,
+    #041529 89%,
+    #020513
+  );
+  width: max(60em, 50vmax);
+  height: max(60em, 50vmax);
+  left: calc(max(60em, 50vmax) * -0.4);
+  top: calc(max(60em, 50vmax) * -0.4);
+  margin: auto;
+  position: absolute;
+  animation: 120s infinite linear day-bg;
+  z-index: -1;
+  opacity: 0.25;
+}
+.pill-date {
+  position: relative;
+  overflow: hidden;
+  vertical-align: text-bottom;
+  z-index: 0;
+}
+.pill-tiling {
+  background: repeating-linear-gradient(45deg, transparent, transparent 0.4em, #c6feff 0, #c6feff 0.8em);
+  background-color: #ffd2ec;
+  background: repeating-linear-gradient(
+    45deg,
+    transparent,
+    transparent 0.4em,
+    color(display-p3 0.82 0.99 1) 0,
+    color(display-p3 0.82 0.99 1) 0.8em
+  );
+  background-color: color(display-p3 1 0.83 0.92);
+}
+@keyframes day-bg {
+  0% {
+    rotate: 40deg;
+  }
+  to {
+    rotate: 400deg;
+  }
+}
+.pill-col {
+  background: #7cd5ff;
+  background: linear-gradient(83deg, #7cd5ff, #a6fbca, #fff37c 66%, #ffa49d);
+}

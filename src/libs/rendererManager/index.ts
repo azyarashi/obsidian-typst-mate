@@ -1,15 +1,22 @@
 import type { PackageSpec } from '@wasm';
 import { proxy, type Remote, wrap } from 'comlink';
-import { type CachedMetadata, getAllTags, MarkdownPreviewRenderer, Notice, requestUrl, type TFile } from 'obsidian';
+import { type CachedMetadata, getAllTags, MarkdownPreviewRenderer, Notice, requestUrl } from 'obsidian';
 import { Phase, State, TypstMate } from '@/api';
 import { DEFAULT_FONT_SIZE } from '@/constants';
-import { DEFAULT_SETTINGS, type Settings } from '@/data/settings';
+import { DEFAULT_SETTINGS } from '@/data/settings';
 import { t } from '@/i18n';
 import { crashTracker, fileManager, settingsManager } from '@/libs';
 import { features } from '@/libs/features';
-import { type CodeblockProcessor, type Processor, type ProcessorKind, RenderingEngine } from '@/libs/processor';
+import {
+  type CodeblockProcessor,
+  type MarkdownProcessor,
+  type Processor,
+  type ProcessorKind,
+  RenderingEngine,
+} from '@/libs/processor';
 import type ObsidianTypstMate from '@/main';
 import type { PackageAsset } from '@/types/global';
+import type { NPath } from '@/types/obsidian';
 import type { Singleton } from '@/types/singleton';
 import TypstHTMLElement from '@/ui/elements/HTML';
 import TypstSVGElement from '@/ui/elements/SVG';
@@ -17,17 +24,18 @@ import type TypstElement from '@/ui/elements/Typst';
 import { TypstFileView, type TypstPreviewView } from '@/ui/views';
 import { overwriteCustomElements } from '@/utils/custromElementRegistry';
 import { expandHierarchicalTags } from '@/utils/tags';
+import { extarctCMMath, getNDirAndNPath, getParentNPathByFileNPath, sanitizeDisplayMathCode } from './utils';
 import type WasmAdapter from './worker';
 import Wasm, { ErrorCode } from './worker';
 import WasmWorker from './worker?worker&inline';
 
-import './index.css';
+export * from './utils';
 
-const re = /\n([ \t]*> )/g;
+import './index.css';
 
 // TODO runtime errror の誘導
 
-export class TypstManager implements Singleton {
+export class RendererManager implements Singleton {
   plugin!: ObsidianTypstMate;
   ready = false;
 
@@ -170,7 +178,7 @@ export class TypstManager implements Singleton {
       const content = el.textContent!;
 
       const file = this.plugin.app.workspace.getActiveFile();
-      const ndir = file?.parent ? ctxToNDir(file.path) : '/';
+      const ndir = file?.parent?.path ?? '/';
       const npath = file?.path;
 
       el.empty();
@@ -185,6 +193,7 @@ export class TypstManager implements Singleton {
     // TODO
     this.registerCodeblockProcessors();
 
+    // TODO typstmate-example
     for (const lang of ['typ', 'typc', 'typm']) {
       this.plugin.registerMarkdownCodeBlockProcessor(`typstmate-${lang}`, async (source, el, ctx) => {
         const npath = ctx.sourcePath;
@@ -222,15 +231,16 @@ export class TypstManager implements Singleton {
         container.className = 'Mathjax';
         container.setAttribute('jax', 'CHTML');
 
-        const npath = ctx.sourcePath;
-        const ndir = ctxToNDir(npath);
-
         // TODO
         if (!this.ready) {
           container.textContent = text;
           container.addClass('typstmate-waiting');
           container.setAttribute('kind', inline ? 'inline' : 'display');
-        } else mel.replaceChildren(this.render(text, container, inline ? 'inline' : 'display', ndir, npath));
+        } else {
+          const npath = ctx.sourcePath;
+          const ndir = getParentNPathByFileNPath(npath);
+          mel.replaceChildren(this.render(text, container, inline ? 'inline' : 'display', ndir, npath));
+        }
 
         mel.setAttribute('contenteditable', 'false');
         mel.addClass('is-loaded');
@@ -253,8 +263,7 @@ export class TypstManager implements Singleton {
       }
 
       const file = this.plugin.app.workspace.getActiveFile();
-      const ndir = file?.parent ? ctxToNDir(file.path) : '/';
-      const npath = file?.path;
+      const { ndir, npath } = getNDirAndNPath(file);
 
       return this.render(e, container, r.display ? 'display' : 'inline', ndir, npath);
     };
@@ -282,7 +291,7 @@ export class TypstManager implements Singleton {
         }
 
         const npath = ctx.sourcePath;
-        const ndir = ctxToNDir(npath);
+        const ndir = getParentNPathByFileNPath(npath);
 
         return Promise.resolve(this.render(source, el, processor.id, ndir, npath));
       });
@@ -319,7 +328,7 @@ export class TypstManager implements Singleton {
     }
   }
 
-  render(code: string, containerEl: Element, kind: string, ndir: string, npath?: string): HTMLElement {
+  render(code: string, containerEl: Element, kind: string, ndir: NPath, npath?: NPath): HTMLElement {
     if (npath) {
       const metadata = this.plugin.app.metadataCache.getCache(npath);
       if (metadata) {
@@ -337,30 +346,38 @@ export class TypstManager implements Singleton {
     const { settings } = settingsManager;
 
     // プロセッサーを決定
-    let processor: Processor;
+    let processor: MarkdownProcessor;
 
     switch (kind) {
       case 'inline':
       case 'display': {
-        const { eqStart, eqEnd, processor: processor_ } = extarctCMMath(settings, code, kind === 'display');
+        const isDisplay = kind === 'display';
+
+        const { eqStart, eqEnd, processor: processor_ } = extarctCMMath(code, isDisplay);
+        processor = processor_;
+
         if (eqEnd !== 0) code = code.slice(eqStart, -eqEnd);
         else code = code.slice(eqStart);
-        processor = processor_;
+        if (isDisplay) code = sanitizeDisplayMathCode(code);
 
         break;
       }
-      default:
+      case 'codeblock': {
         processor =
           settings.processor.codeblock?.processors.find((p) => p.id === kind) ??
           settings.processor.codeblock?.processors.at(-1) ??
           DEFAULT_SETTINGS.processor.codeblock!.processors.at(-1)!;
 
-        if (processor.styling === 'codeblock') {
+        if (processor?.styling === 'codeblock') {
           containerEl.addClass('HyperMD-codeblock', 'HyperMD-codeblock-bg');
           containerEl = containerEl.createEl('code');
         }
 
         kind = 'codeblock';
+        break;
+      }
+      default:
+        throw Error(`Unknown processor kind: ${kind}`);
     }
     this.beforeProcessor = processor;
     if (processor.renderingEngine === 'mathjax') {
@@ -488,59 +505,4 @@ export class TypstManager implements Singleton {
   }
 }
 
-export const typstManager = new TypstManager();
-
-/**
- * CMMath は, `({} )(id)(Inline Processor における区切り文字 :)(数式)( {})` の形式をとる
- */
-export const extarctCMMath = (settings: Settings, code: string, display: boolean) => {
-  /** {}, id, : を含まない */
-  let eqStart = 0;
-  /** {} を含まない */
-  let eqEnd = 0;
-
-  let processor: Processor;
-  if (display) {
-    // Display
-    code = code.replaceAll('<br>', '​​​​'); // ? 文字の長さを合わせる
-    code = code.replace(re, (_, s) => `\n${'​'.repeat(s.length)}`); // ? 文字の長さを合わせる
-
-    // プロセッサー選択
-    const processors = settings.processor.display?.processors;
-    processor =
-      processors?.find((p) => code.startsWith(p.id)) ??
-      processors?.at(-1) ??
-      DEFAULT_SETTINGS.processor.display!.processors.at(-1)!;
-    if (0 < processor.id.length) eqStart += processor.id.length;
-  } else {
-    // Inline
-    if (code.startsWith('{}')) {
-      if (code.startsWith('{} ')) eqStart += 3;
-      else eqStart += 2;
-    }
-    if (code.endsWith('{}')) {
-      if (code.endsWith(' {}')) eqEnd += 3;
-      else eqEnd += 2;
-    }
-
-    // プロセッサー選択
-    code = code.slice(eqStart);
-    const processors = settings.processor.inline?.processors;
-    processor =
-      processors?.find((p) => code.startsWith(`${p.id}:`)) ??
-      processors.at(-1) ??
-      DEFAULT_SETTINGS.processor.inline!.processors.at(-1)!;
-    if (0 < processor.id.length) eqStart += processor.id.length + 1; // ? : の分
-  }
-
-  return { eqStart, eqEnd, processor };
-};
-
-export function getNdirAndNPath(file: TFile | null): { ndir: string; npath?: string } {
-  return { ndir: file?.parent ? ctxToNDir(file.path) : '/', npath: file?.path };
-}
-
-export function ctxToNDir(s: string): string {
-  const i = s.lastIndexOf('/');
-  return i === -1 ? '/' : `/${s.slice(0, i + 1)}`;
-}
+export const rendererManager = new RendererManager();

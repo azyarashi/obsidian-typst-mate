@@ -1,0 +1,88 @@
+.typstmate-sidebar-left {
+  flex: 0 0 var(--clickable-icon-size);
+  border-right: 1px solid var(--background-modifier-border);
+  padding-right: var(--size-4-1);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  padding-bottom: var(--size-4-4);
+}
+
+.typstmate-sidebar-left-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: var(--size-4-2);
+}
+
+.typstmate-sidebar-left-icon {
+  cursor: pointer;
+  color: var(--interactive-accent);
+  user-select: none;
+  font-weight: bold;
+  font-family: var(--font-monospace);
+  font-size: var(--font-ui-smaller);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: var(--icon-m);
+  height: var(--icon-m);
+}
+
+.typstmate-sidebar-left-icon:hover {
+  text-decoration: underline;
+}
+
+.typstmate-sidebar-right {
+  display: flex;
+  flex-direction: column;
+  font-size: var(--font-ui-smaller);
+  max-height: 400px;
+}
+
+.typstmate-sidebar-right.expanded {
+  flex: 0 0 200px;
+  width: 200px;
+  border-left: 1px solid var(--background-modifier-border);
+}
+
+.typstmate-sidebar-right.collapsed {
+  flex: 0 0 auto;
+  width: max-content;
+  align-self: flex-end; /* Defeats align-items: stretch to only take vertical space at the bottom */
+}
+
+.typstmate-sidebar-right-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--size-4-4);
+}
+
+.typstmate-sidebar-right-toggle {
+  flex: 0 0 auto;
+  margin-top: auto; /* Pushes to bottom in expanded state */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: var(--clickable-icon-size);
+  height: var(--clickable-icon-size);
+  cursor: pointer;
+  color: var(--text-muted);
+}
+
+/* Add a border above the toggle only when expanded */
+.typstmate-sidebar-right.expanded .typstmate-sidebar-right-toggle {
+  border-top: 1px solid var(--background-modifier-border);
+}
+
+.typstmate-sidebar-right-toggle:hover {
+  color: var(--text-normal);
+  background-color: var(--background-modifier-hover);
+}
+
+.typstmate-sidebar-right-toggle-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--icon-xs);
+}

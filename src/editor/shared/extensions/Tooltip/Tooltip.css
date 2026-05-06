@@ -1,27 +1,28 @@
-.typstmate-hover-tooltip {
-  padding: 4px 8px;
+.typstmate-tooltip {
+  padding: 0;
   border-radius: 4px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
   border: 1px solid var(--background-modifier-border);
   color: var(--text-normal);
-  max-width: 480px;
-  max-height: 500px;
-  overflow: auto;
+  max-width: 900px !important;
+  width: max-content;
+  overflow: visible;
   word-wrap: break-word;
   box-sizing: border-box;
+  background-color: var(--background-primary);
 
   min-height: 1em;
   display: block !important;
 
   user-select: text;
-  resize: both;
 
   z-index: var(--layer-tooltip);
+  position: relative;
 }
 
-.typstmate-hover-tooltip .markdown-rendered,
-.typstmate-hover-tooltip .markdown-preview-view,
-.typstmate-hover-tooltip .markdown-rendered > div {
+.typstmate-tooltip .markdown-rendered,
+.typstmate-tooltip .markdown-preview-view,
+.typstmate-tooltip .markdown-rendered > div {
   min-height: 0 !important;
   height: auto !important;
   padding: 0 !important;
@@ -29,21 +30,21 @@
   display: block !important;
 }
 
-.typstmate-hover-tooltip .markdown-rendered > *:first-child {
+.typstmate-tooltip .markdown-rendered > *:first-child {
   margin-top: 0 !important;
 }
-.typstmate-hover-tooltip .markdown-rendered > *:last-child {
+.typstmate-tooltip .markdown-rendered > *:last-child {
   margin-bottom: 0 !important;
 }
 
-.typstmate-hover-tooltip p {
+.typstmate-tooltip p {
   margin: 2px 0 !important;
   padding: 0 !important;
   line-height: 1.4 !important;
   min-height: 0 !important;
 }
 
-.typstmate-hover-tooltip .typstmate-signature {
+.typstmate-tooltip .typstmate-signature {
   font-family: var(--font-monospace);
   white-space: pre-wrap;
   background: rgba(0, 0, 0, 0.2) !important;
@@ -55,7 +56,7 @@
   display: block !important;
 }
 
-.typstmate-hover-tooltip .typstmate-signature-types {
+.typstmate-tooltip .typstmate-signature-types {
   border-bottom: 1px dotted var(--text-muted);
   cursor: help;
   position: relative;
@@ -81,8 +82,8 @@
 }
 
 /* コードブロック */
-.typstmate-hover-tooltip pre,
-.typstmate-hover-tooltip .typstmate-codeblock {
+.typstmate-tooltip pre,
+.typstmate-tooltip .typstmate-codeblock {
   margin: 4px 0 !important;
   padding: 6px 8px !important;
   background: rgba(0, 0, 0, 0.2) !important;
@@ -97,7 +98,7 @@
 }
 
 /* Color プレビュー */
-.typstmate-hover-tooltip span[style*="background-color"] {
+.typstmate-tooltip span[style*="background-color"] {
   display: inline-block !important;
   width: 12px !important;
   height: 12px !important;
@@ -107,20 +108,29 @@
   border-radius: 2px;
 }
 
-.typstmate-hover-tooltip strong {
+.typstmate-tooltip strong {
   color: var(--text-accent) !important;
 }
 
-.typstmate-hover-tooltip code {
+.typstmate-tooltip code {
   color: var(--text-normal);
   font-family: var(--font-monospace);
 }
 
-.typstmate-hover-tooltip-origin {
+.typstmate-tooltip-origin {
   display: block;
   font-size: 0.8em;
   color: var(--text-muted);
   border-bottom: 1px solid var(--background-modifier-border);
   margin-bottom: 6px;
   padding-bottom: 4px;
+}
+
+/* Tooltip Layout Components */
+.typstmate-tooltip-container {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  gap: 16px;
+  max-width: 1200px;
 }

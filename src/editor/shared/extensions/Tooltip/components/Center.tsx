@@ -1,40 +1,46 @@
-import type { Definition } from '@wasm';
-import { formatDefinitionValue } from '@wasm-values';
 import { Component, MarkdownRenderer } from 'obsidian';
+import { useEffect, useRef } from 'preact/hooks';
 import { appUtils } from '@/libs';
 
-const separator = '\n\n---\n';
-const component = new Component();
+import './Center.css';
 
-// [aaa](file://../)
-export function Center(definition?: Definition, sampledValues?: string) {
-  const el = document.createElement('div');
-  let markdown = '';
+import type { TooltipData } from '../utils';
 
-  // * value
-  const value = definition?.value;
-  if (value) markdown += formatDefinitionValue(value);
+export function Center({ tooltipData }: { tooltipData: TooltipData }) {
+  const ref = useRef<HTMLDivElement>(null);
 
-  // * docs
-  if (value && 'docs' in value && value.docs !== '') {
-    if (markdown !== '') markdown += separator;
+  useEffect(() => {
+    if (!ref.current) return;
 
-    markdown += value.docs;
-  }
+    const container = document.createElement('div');
+    ref.current.appendChild(container);
 
-  // * sampled values
-  if (sampledValues) {
-    if (markdown !== '') markdown += separator;
+    const component = new Component();
+    component.load();
 
-    markdown += `## Sampled Values\n`;
-    markdown += `\`\`\`typc\n${sampledValues}\n\`\`\``;
-  }
+    MarkdownRenderer.render(appUtils.app, tooltipData.markdown, container, '', component).then(() => {
+      // * go to
+      console.log(tooltipData.links);
+      if (0 < tooltipData.links.length) {
+        const gotoContainer = document.createElement('div');
+        gotoContainer.className = 'typstmate-goto-links';
+        for (const link of tooltipData.links) {
+          const linkElement = document.createElement('a');
+          linkElement.href = link.url;
+          linkElement.innerText = link.title;
+          linkElement.target = '_blank';
+          linkElement.rel = 'noopener noreferrer';
+          gotoContainer.appendChild(linkElement);
+        }
+        container.appendChild(gotoContainer);
+      }
+    });
 
-  // * preprocessor
-  markdown = markdown.replaceAll('```example', '```typ').replaceAll('```typ', '```typstmate-typ');
+    return () => {
+      component.unload();
+      container.remove();
+    };
+  }, [tooltipData]);
 
-  // * render
-  MarkdownRenderer.render(appUtils.app, markdown, el, '', component);
-
-  return el;
+  return <div className="typstmate-tooltip-center" ref={ref} />;
 }

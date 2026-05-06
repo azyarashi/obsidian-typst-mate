@@ -217,7 +217,7 @@ export function parseRegion(view: EditorView, region: Region, skipParse = false)
 
   const isDisplay = region.kind === 'display';
   const content = view.state.sliceDoc(region.from, region.to);
-  const { processor, eqStart, eqEnd } = extarctCMMath(settingsManager.settings, content, isDisplay);
+  const { processor, eqStart, eqEnd } = extarctCMMath(content, isDisplay);
 
   if (region.to < region.from + eqStart) return null;
 

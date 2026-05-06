@@ -1,6 +1,6 @@
 import { Facet } from '@codemirror/state';
 import { EditorView, ViewPlugin } from '@codemirror/view';
-import { typstManager } from '@/libs';
+import { rendererManager } from '@/libs';
 import { consoleError } from '@/utils/notice';
 
 export type CodeJumpTarget = {
@@ -25,7 +25,7 @@ class CodeJumpPluginValue {
     if (!target) return;
 
     try {
-      const position = (await typstManager.wasm.jumpFromCursorPAsync(pos))[0];
+      const position = (await rendererManager.wasm.jumpFromCursorPAsync(pos))[0];
       if (position && position.type === 'position') {
         await target.jumpToPosition(position);
         target.reveal();

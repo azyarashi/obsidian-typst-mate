@@ -7,16 +7,21 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'preact/hooks'
 import { ICONS } from '@/constants/icons';
 import { t, tFragment } from '@/i18n';
 import {
+  type CodeblockProcessor,
   CodeblockStyling,
+  type DisplayProcessor,
   DisplayStyling,
   hasFitToNoteWidth,
   hasNoPreamble,
+  type InlineProcessor,
   InlineStyling,
   type ProcessorKind,
+  type ProcessorMarkdownBase,
   type ProcessorOfKind,
   type ProcessorWithFit,
   type ProcessorWithPreamble,
   RenderingEngine,
+  type Styling,
   type Processor as TypstProcessor,
 } from '@/libs/processor';
 import { IconS } from '@/ui/components/Icon';
@@ -57,8 +62,10 @@ export function ProcessorItem<K extends ProcessorKind>({
   const handleUpdate = useCallback(
     <T extends keyof ProcessorOfKind<K>>(field: T, value: ProcessorOfKind<K>[T]) => {
       const partial: Partial<TypstProcessor> = { [field]: value };
-      if (field === 'renderingEngine' && value === RenderingEngine.MathJax) {
-        partial.syntaxMode = SyntaxMode.Plain;
+      if (hasNoPreamble(kind)) {
+        if (field === 'renderingEngine' && value === RenderingEngine.MathJax) {
+          (partial as ProcessorMarkdownBase<Styling>).syntaxMode = SyntaxMode.Plain;
+        }
       }
       onUpdate(uuid, partial);
     },
@@ -73,8 +80,11 @@ export function ProcessorItem<K extends ProcessorKind>({
     () =>
       debounce((format: string) => {
         const p = processorRef.current;
-        if (p.renderingEngine === RenderingEngine.MathJax) {
-          if (p.syntaxMode !== SyntaxMode.Plain) {
+        if (!hasNoPreamble(kind)) return;
+        const pm = p as ProcessorMarkdownBase<Styling>;
+
+        if (pm.renderingEngine === RenderingEngine.MathJax) {
+          if (pm.syntaxMode !== SyntaxMode.Plain) {
             (handleUpdateRef.current as (field: 'syntaxMode', value: SyntaxMode) => void)(
               'syntaxMode',
               SyntaxMode.Plain,
@@ -89,7 +99,8 @@ export function ProcessorItem<K extends ProcessorKind>({
 
           if (codeIndex === -1) {
             // Revert to default if {CODE} is missing
-            if (p.syntaxMode !== defaultMode) {
+            const pm = p as ProcessorMarkdownBase<Styling>;
+            if (pm.syntaxMode !== defaultMode) {
               (handleUpdateRef.current as (field: 'syntaxMode', value: SyntaxMode) => void)('syntaxMode', defaultMode);
             }
             return;
@@ -99,7 +110,8 @@ export function ProcessorItem<K extends ProcessorKind>({
           const tree = parse(dummy);
           const { mode } = getSyntaxContextAt(tree, codeIndex, defaultMode);
 
-          if (mode !== undefined && mode !== null && mode !== p.syntaxMode) {
+          const pm = p as ProcessorMarkdownBase<Styling>;
+          if (mode !== undefined && mode !== null && pm.syntaxMode !== mode) {
             (handleUpdateRef.current as (field: 'syntaxMode', value: SyntaxMode) => void)(
               'syntaxMode',
               mode as SyntaxMode,
@@ -220,76 +232,98 @@ export function ProcessorItem<K extends ProcessorKind>({
             </select>
           </label>
           {/* Styling */}
-          <label>
-            <select
-              onChange={(e) =>
-                handleUpdate('styling', (e.target as HTMLSelectElement).value as ProcessorOfKind<K>['styling'])
-              }
-              onClick={preventAccordion}
-              onKeyDown={preventAccordion}
-            >
-              {kind === 'inline' && (
-                <>
-                  <option value={InlineStyling.Inline} selected={processor.styling === InlineStyling.Inline}>
-                    {t('settings.processors.stylingOptions.inline')}
-                  </option>
-                  <option value={InlineStyling.Baseline} selected={processor.styling === InlineStyling.Baseline}>
-                    {t('settings.processors.stylingOptions.baseline')}
-                  </option>
-                  <option value={InlineStyling.Middle} selected={processor.styling === InlineStyling.Middle}>
-                    {t('settings.processors.stylingOptions.middle')}
-                  </option>
-                </>
-              )}
-              {kind === 'display' && (
-                <>
-                  <option value={DisplayStyling.Block} selected={processor.styling === DisplayStyling.Block}>
-                    {t('settings.processors.stylingOptions.block')}
-                  </option>
-                  <option
-                    value={DisplayStyling.BlockCenter}
-                    selected={processor.styling === DisplayStyling.BlockCenter}
-                  >
-                    {t('settings.processors.stylingOptions.blockCenter')}
-                  </option>
-                </>
-              )}
-              {kind === 'codeblock' && (
-                <>
-                  <option value={CodeblockStyling.Block} selected={processor.styling === CodeblockStyling.Block}>
-                    {t('settings.processors.stylingOptions.block')}
-                  </option>
-                  <option
-                    value={CodeblockStyling.BlockCenter}
-                    selected={processor.styling === CodeblockStyling.BlockCenter}
-                  >
-                    {t('settings.processors.stylingOptions.blockCenter')}
-                  </option>
-                  <option
-                    value={CodeblockStyling.Codeblock}
-                    selected={processor.styling === CodeblockStyling.Codeblock}
-                  >
-                    {t('settings.processors.stylingOptions.codeblock')}
-                  </option>
-                </>
-              )}
-            </select>
-          </label>
+          {hasNoPreamble(kind) && (
+            <label>
+              <select
+                onChange={(e) =>
+                  (handleUpdate as (field: 'styling', value: Styling) => void)(
+                    'styling',
+                    (e.target as HTMLSelectElement).value as Styling,
+                  )
+                }
+                onClick={preventAccordion}
+                onKeyDown={preventAccordion}
+              >
+                {kind === 'inline' && (
+                  <>
+                    <option
+                      value={InlineStyling.Inline}
+                      selected={(processor as InlineProcessor).styling === InlineStyling.Inline}
+                    >
+                      {t('settings.processors.stylingOptions.inline')}
+                    </option>
+                    <option
+                      value={InlineStyling.Baseline}
+                      selected={(processor as InlineProcessor).styling === InlineStyling.Baseline}
+                    >
+                      {t('settings.processors.stylingOptions.baseline')}
+                    </option>
+                    <option
+                      value={InlineStyling.Middle}
+                      selected={(processor as InlineProcessor).styling === InlineStyling.Middle}
+                    >
+                      {t('settings.processors.stylingOptions.middle')}
+                    </option>
+                  </>
+                )}
+                {kind === 'display' && (
+                  <>
+                    <option
+                      value={DisplayStyling.Block}
+                      selected={(processor as DisplayProcessor).styling === DisplayStyling.Block}
+                    >
+                      {t('settings.processors.stylingOptions.block')}
+                    </option>
+                    <option
+                      value={DisplayStyling.BlockCenter}
+                      selected={(processor as DisplayProcessor).styling === DisplayStyling.BlockCenter}
+                    >
+                      {t('settings.processors.stylingOptions.blockCenter')}
+                    </option>
+                  </>
+                )}
+                {kind === 'codeblock' && (
+                  <>
+                    <option
+                      value={CodeblockStyling.Block}
+                      selected={(processor as CodeblockProcessor).styling === CodeblockStyling.Block}
+                    >
+                      {t('settings.processors.stylingOptions.block')}
+                    </option>
+                    <option
+                      value={CodeblockStyling.BlockCenter}
+                      selected={(processor as CodeblockProcessor).styling === CodeblockStyling.BlockCenter}
+                    >
+                      {t('settings.processors.stylingOptions.blockCenter')}
+                    </option>
+                    <option
+                      value={CodeblockStyling.Codeblock}
+                      selected={(processor as CodeblockProcessor).styling === CodeblockStyling.Codeblock}
+                    >
+                      {t('settings.processors.stylingOptions.codeblock')}
+                    </option>
+                  </>
+                )}
+              </select>
+            </label>
+          )}
         </>
       }
       quickIcons={
         <>
-          <IconS
-            icon={ICONS.ReplaceAll}
-            title={t('settings.processors.tooltips.useReplaceAll')}
-            isActive={processor.useReplaceAll ?? false}
-            onClick={() => {
-              (handleUpdate as (field: 'useReplaceAll', value: boolean) => void)(
-                'useReplaceAll',
-                !(processor.useReplaceAll ?? false),
-              );
-            }}
-          />
+          {hasNoPreamble(kind) && (
+            <IconS
+              icon={ICONS.ReplaceAll}
+              title={t('settings.processors.tooltips.useReplaceAll')}
+              isActive={(processor as ProcessorMarkdownBase<Styling>).useReplaceAll ?? false}
+              onClick={() => {
+                (handleUpdate as (field: 'useReplaceAll', value: boolean) => void)(
+                  'useReplaceAll',
+                  !((processor as ProcessorMarkdownBase<Styling>).useReplaceAll ?? false),
+                );
+              }}
+            />
+          )}
           {hasFitToNoteWidth(kind) && (
             <IconS
               icon={ICONS.MoveHorizontal}
@@ -316,13 +350,23 @@ export function ProcessorItem<K extends ProcessorKind>({
             />
           )}
           <IconS
-            icon={isDetecting ? ICONS.Loading : getSyntaxModeIcon(kind, processor.syntaxMode)}
+            icon={
+              isDetecting
+                ? ICONS.Loading
+                : getSyntaxModeIcon(
+                    kind,
+                    hasNoPreamble(kind) ? (processor as ProcessorMarkdownBase<Styling>).syntaxMode : undefined,
+                  )
+            }
             className={isDetecting ? 'typstmate-spinner' : ''}
             title={
               isDetecting
                 ? t('settings.processors.tooltips.syntaxModeAnalyzing')
                 : (() => {
-                    switch (processor.syntaxMode) {
+                    const syntaxMode = hasNoPreamble(kind)
+                      ? (processor as ProcessorMarkdownBase<Styling>).syntaxMode
+                      : undefined;
+                    switch (syntaxMode) {
                       case SyntaxMode.Markup:
                         return t('settings.processors.tooltips.syntaxModeMarkup');
                       case SyntaxMode.Math:
@@ -358,18 +402,20 @@ export function ProcessorItem<K extends ProcessorKind>({
       }
       detailsContent={
         <>
-          <Setting
-            build={(s) =>
-              s
-                .setName(tFragment('settings.processors.useReplaceAllName'))
-                .setDesc(tFragment('settings.processors.useReplaceAllDesc'))
-                .addToggle((t) => {
-                  t.setValue(processor.useReplaceAll ?? false).onChange((v) =>
-                    handleUpdate('useReplaceAll' as keyof ProcessorOfKind<K>, v as ProcessorOfKind<K>['useReplaceAll']),
-                  );
-                })
-            }
-          />
+          {hasNoPreamble(kind) && (
+            <Setting
+              build={(s) =>
+                s
+                  .setName(tFragment('settings.processors.useReplaceAllName'))
+                  .setDesc(tFragment('settings.processors.useReplaceAllDesc'))
+                  .addToggle((t) => {
+                    t.setValue((processor as ProcessorMarkdownBase<Styling>).useReplaceAll ?? false).onChange((v) =>
+                      (handleUpdate as (field: 'useReplaceAll', value: boolean) => void)('useReplaceAll', v),
+                    );
+                  })
+              }
+            />
+          )}
           {hasFitToNoteWidth(kind) && (
             <Setting
               build={(s) =>

@@ -1,8 +1,8 @@
 import type { HtmlEOptions, PdfEOptions } from '@wasm';
 import { type App, Modal, Setting } from 'obsidian';
 import { t, tFragment } from '@/i18n';
-import { fileManager, settingsManager, typstManager } from '@/libs';
-import type { VPath } from '@/libs/typstManager/worker';
+import { fileManager, rendererManager, settingsManager } from '@/libs';
+import type { VPath } from '@/libs/rendererManager/worker';
 import {
   type ExportFormat,
   exportToHtml,
@@ -136,7 +136,7 @@ export class ExportToolModal extends Modal {
         .setName(t('modals.exportTool.pdf.standardsName'))
         .setDesc(tFragment('modals.exportTool.pdf.standardsDesc'))
         .addDropdown(async (dropdown) => {
-          const standards: Record<string, string> = await typstManager.wasm.get_pdf_standards();
+          const standards: Record<string, string> = await rendererManager.wasm.get_pdf_standards();
           dropdown
             .addOptions(standards)
             .setValue(this.options.pdf.standards[0] ?? '')

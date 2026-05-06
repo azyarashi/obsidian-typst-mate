@@ -12,7 +12,7 @@ import {
   type SymbolData,
   searchSymbols,
 } from '@/editor';
-import { typstManager } from '@/libs';
+import { rendererManager } from '@/libs';
 import { tmActionsManager } from '@/libs/tmActionsManager';
 import { format } from '@/ui/elements/Typst';
 import { checkActionContext, executeAction, resolveActionContext } from '../TypstMateActions/actions';
@@ -207,7 +207,7 @@ export class AutocompletePlugin implements PluginValue {
     let wasmFrom = cursor;
 
     try {
-      const raw = await typstManager.wasm.autocompleteAsync(innerOffset, formatted);
+      const raw = await rendererManager.wasm.autocompleteAsync(innerOffset, formatted);
       if (requestId !== this.lastRequestId) return; // 破棄
       if (raw?.completions && 0 < raw.completions.length) {
         wasmCompletions = raw.completions;

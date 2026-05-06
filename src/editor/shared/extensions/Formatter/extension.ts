@@ -1,4 +1,4 @@
-import { typstManager } from '@/libs';
+import { rendererManager } from '@/libs';
 import type { FormatterSettings } from './package';
 
 export const typstFormatterPlugin = [];
@@ -8,7 +8,7 @@ export async function formatTypst(
   settings: FormatterSettings,
   range?: [number, number],
 ): Promise<{ content: string; range: [number, number] }> {
-  const result = await typstManager.wasm.format(source, {
+  const result = await rendererManager.wasm.format(source, {
     tabSpaces: settings.tabSpaces as number,
     maxWidth: settings.maxWidth as number,
     blankLinesUpperBound: settings.blankLinesUpperBound as number,
@@ -19,10 +19,14 @@ export async function formatTypst(
   });
 
   return {
-    content: result.content
-      .split('\n')
-      .map((line: string) => line.trimEnd())
-      .join('\n'),
+    content: result.content,
     range: result.range,
   };
 }
+
+/** TODO: range
+  const re = /[ \t]+$/gm;
+  function trimTrailingSpaces(source: string): string {
+    return source.replace(re, '');
+  }
+*/
