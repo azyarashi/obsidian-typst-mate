@@ -62,6 +62,7 @@
     "ignoreUnknown": false,
     "includes": [
       "src/**",
+      "wasm/src/serde/values/**",
       "packages/**",
       "tests/**",
       "scripts/*",
