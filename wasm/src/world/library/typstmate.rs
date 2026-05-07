@@ -16,8 +16,7 @@ pub fn setup(library: &mut Library) {
         .define("typstmate", typstmate_module);
 }
 
-/// ## Implementation
-/// ## Example
+/// # Example
 /// ```example
 /// #typstmate.wikilink("MyFile#Header")
 /// #typstmate.wikilink("MyFile#Header")[Display Content]
