@@ -8,7 +8,6 @@ import { crashTracker, fileManager, settingsManager } from '@/libs';
 import { features } from '@/libs/features';
 import { t } from '@/libs/i18n';
 import type ObsidianTypstMate from '@/main';
-import type { PackageAsset } from '@/types/global';
 import type { NPath } from '@/types/obsidian';
 import type { Singleton } from '@/types/singleton';
 import TypstHTMLElement from '@/ui/elements/HTML';
@@ -35,6 +34,7 @@ import WasmWorker from './worker?worker&inline';
 export * from './utils';
 
 import './index.css';
+import type { PackageAsset } from '@/types/typst';
 
 // TODO runtime errror の誘導
 

@@ -1,10 +1,9 @@
 /** biome-ignore-all lint/style/noRestrictedImports: main */
 import { debounce, loadMathJax, Platform, Plugin, renderMath } from 'obsidian';
-import { initI18n, t } from '@/libs/i18n';
 import { Phase, TypstMate } from './api';
 import { markdownExtensionEntries, sharedExtensionEntries, typstExtensionEntries } from './editor';
 // biome-ignore format: readability
-import { applyAllPatches, appUtils, crashTracker, detachAllPatches, editorHelper, extensionManager, fileManager, registerCommands, registerEvents, registerProtocolHandlers, rendererManager, settingsManager, tmActionsManager } from './libs';
+import { applyAllPatches, appUtils, crashTracker, detachAllPatches, editorHelper, extensionManager, fileManager, initI18n, registerCommands, registerEvents, registerProtocolHandlers, rendererManager, settingsManager, t, tmActionsManager } from './libs';
 import { hideStatusBarItem, registerEmbeds, registerViews, SettingsTab, setStatusBarItem } from './ui';
 import { noticeError, noticeMessage } from './utils/notice';
 

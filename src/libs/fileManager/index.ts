@@ -13,9 +13,10 @@ import { TypstMate } from '@/api';
 import { features, fs, initWatcherNode, loadWatcherModule, os, path, watcher } from '@/libs/features';
 import { t } from '@/libs/i18n';
 import ObsidianTypstMate from '@/main';
-import type { GitHubAsset, PackageAsset } from '@/types/global';
+import type { GitHubAsset } from '@/types/github';
 import type { NPath } from '@/types/obsidian';
 import type { Singleton } from '@/types/singleton';
+import type { PackageAsset } from '@/types/typst';
 import type { VPath } from '../rendererManager/worker';
 import { arrayBufferLikeToArrayBuffer, filterWithExtensions } from './utils';
 

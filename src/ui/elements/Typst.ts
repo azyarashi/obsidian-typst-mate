@@ -5,6 +5,7 @@ import { getActiveRegion, updateDiagnosticEffect } from '@/editor';
 import {
   appUtils,
   type MarkdownProcessor,
+  type Processor,
   type ProcessorKind,
   RenderingEngine,
   rendererManager,
@@ -116,11 +117,11 @@ export default abstract class TypstElement extends HTMLElement {
   }
 }
 
-export function format(source: string, kind: ProcessorKind, processor: MarkdownProcessor) {
+export function format(source: string, kind: ProcessorKind, processor: Processor) {
   if (!processor) return { formatted: source, offset: 0 };
 
   let formatted =
-    (processor.useReplaceAll ?? false)
+    (processor?.useReplaceAll ?? false)
       ? processor.format.replaceAll('{CODE}', source)
       : processor.format.replace('{CODE}', source);
 

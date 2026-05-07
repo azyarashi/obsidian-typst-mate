@@ -3,7 +3,7 @@ import { useState } from 'preact/hooks';
 import { appUtils, fileManager, rendererManager } from '@/libs';
 import { features } from '@/libs/features';
 import { t } from '@/libs/i18n';
-import type { FontData } from '@/types/global';
+import type { FontData } from '@/types/obsidian';
 import { Setting } from '@/ui/components/obsidian/Setting';
 import { SimpleList } from '@/ui/components/SimpleList';
 import { FontModal } from '@/ui/modals/font';
