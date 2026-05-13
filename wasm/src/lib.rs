@@ -14,10 +14,12 @@ use typst::{
     World,
     diag::{SourceResult, Warned},
     foundations::{Bytes, Module, Version as TypstVersion},
-    layout::{Abs, PageRanges, PagedDocument, Point},
-    syntax::{FileId, Side, VirtualPath, package::PackageSpec},
+    introspection::PagedPosition,
+    layout::{Abs, PageRanges, Point},
+    syntax::{FileId, RootedPath, Side, VirtualPath, VirtualRoot, package::PackageSpec},
     text::FontInfo,
 };
+use typst_layout::PagedDocument;
 
 mod serde;
 mod utils;
@@ -91,8 +93,8 @@ impl Wasm {
     }
 
     pub fn init_internal_packages(&mut self, fontsize: f64) {
-        let lib_vpath = VirtualPath::new("lib.typ");
-        let manifest_vpath = VirtualPath::new("typst.toml");
+        let lib_vpath = VirtualPath::new("lib.typ").unwrap();
+        let manifest_vpath = VirtualPath::new("typst.toml").unwrap();
         fn get_manifest(name: &str) -> String {
             format!("[package]\nname = \"{name}\"\nversion = \"1.0.0\"\nentrypoint = \"lib.typ\"")
         }
@@ -127,12 +129,15 @@ impl Wasm {
             document.push_str(&format!("#viewport.insert(\"width\", {});", width));
         }
 
-        self.world
-            .add_package_text(&self.variables_spec, VirtualPath::new("lib.typ"), document);
+        self.world.add_package_text(
+            &self.variables_spec,
+            VirtualPath::new("lib.typ").unwrap(),
+            document,
+        );
     }
 
     pub fn update_frontmatter(&mut self, frontmatter: String) {
-        let vpath = VirtualPath::new("frontmatter.typ");
+        let vpath = VirtualPath::new("frontmatter.typ").unwrap();
         self.world.add_file_text(vpath, frontmatter);
     }
 
@@ -148,7 +153,9 @@ impl Wasm {
         let files: FxHashMap<String, String> = serde_wasm_bindgen::from_value(files)
             .map_err(|e| JsValue::from_str(&format!("failed to deserialize files: {}", e)))?;
         for (path, text) in files {
-            self.world.add_file_text(VirtualPath::new(path), text);
+            if let Ok(vpath) = VirtualPath::new(&path) {
+                self.world.add_file_text(vpath, text);
+            }
         }
 
         Ok(())
@@ -180,9 +187,12 @@ impl Wasm {
     }
 
     pub fn list_fonts(&self) -> JsFontInfoArray {
-        let families = self.world.book().families();
-        let infos_ser: Vec<font::FontInfo> = families
-            .flat_map(|(_, infos)| infos.map(Into::into))
+        let book = self.world.book();
+        let infos_ser: Vec<font::FontInfo> = book
+            .families()
+            .flat_map(|(_, indices)| {
+                indices.filter_map(|index| book.info(index).map(|info| info.into()))
+            })
             .collect();
 
         to_value(&infos_ser)
@@ -351,10 +361,12 @@ impl Wasm {
     pub fn jump_from_clickm(&self, x: f64, y: f64) -> Option<JsJump> {
         match &self.last_document {
             Some(document) => {
-                let frame = &document.pages[0].frame;
-                let point = Point::new(Abs::pt(x), Abs::pt(y));
-                let point = typst_ide::jump_from_click(&self.world, document, frame, point);
-                point.map(|point| {
+                let position = PagedPosition {
+                    page: std::num::NonZeroUsize::new(1).unwrap(),
+                    point: Point::new(Abs::pt(x), Abs::pt(y)),
+                };
+                let result = typst_ide::jump_from_click(&self.world, document, &position);
+                result.map(|point| {
                     let jump_ser = jump::Jump::from_jump(&point, &self.world);
                     to_value(&jump_ser)
                         .unwrap_or(JsValue::NULL)
@@ -368,13 +380,15 @@ impl Wasm {
     pub fn jump_from_clickp(&self, page: usize, x: f64, y: f64) -> Option<JsJump> {
         match &self.last_document {
             Some(document) => {
-                if document.pages.len() <= page {
+                if document.pages().len() <= page {
                     return None;
                 }
-                let frame = &document.pages[page].frame;
-                let point = Point::new(Abs::pt(x), Abs::pt(y));
-                let point = typst_ide::jump_from_click(&self.world, document, frame, point);
-                point.map(|point| {
+                let position = PagedPosition {
+                    page: std::num::NonZeroUsize::new(page + 1).unwrap(),
+                    point: Point::new(Abs::pt(x), Abs::pt(y)),
+                };
+                let result = typst_ide::jump_from_click(&self.world, document, &position);
+                result.map(|point| {
                     let jump_ser = jump::Jump::from_jump(&point, &self.world);
                     to_value(&jump_ser)
                         .unwrap_or(JsValue::NULL)
@@ -432,19 +446,20 @@ impl Wasm {
             self.last_kind = kind.to_string();
             self.last_id = id.to_string();
 
-            self.update_source(VirtualPath::new(path), code);
+            self.update_source(path, code);
         }
         let Warned { output, warnings } = typst::compile::<PagedDocument>(&mut self.world);
 
         let document = self.export_result(output)?;
 
-        if document.pages.is_empty() {
+        if document.pages().is_empty() {
             return Err(JsValue::from_str("document has no pages"));
         }
 
-        let mut document = document;
-        let page = &mut document.pages[0];
-        if None == page.fill_or_transparent() {
+        let document = document;
+        // Clone first page to modify fill if needed
+        let mut page = document.pages()[0].clone();
+        if page.fill_or_transparent().is_none() {
             page.fill = typst::foundations::Smart::Custom(None);
         };
         let frame = &page.frame;
@@ -487,7 +502,7 @@ impl Wasm {
             self.last_kind = kind.to_string();
             self.last_id = id.to_string();
 
-            self.update_source(VirtualPath::new(path), code);
+            self.update_source(path, code);
         }
         let Warned { output, warnings } =
             typst::compile::<typst_html::HtmlDocument>(&mut self.world);
@@ -503,13 +518,13 @@ impl Wasm {
 #[wasm_bindgen]
 impl Wasm {
     pub fn svgp(&mut self, path: &str, code: &str) -> Result<JsSvgPResult, JsValue> {
-        self.update_source(VirtualPath::new(path), code);
+        self.update_source(path, code);
         let Warned { output, warnings } = typst::compile::<PagedDocument>(&mut self.world);
 
-        let mut document = self.export_result(output)?;
+        let document = self.export_result(output)?;
 
         let mut svgs = Vec::new();
-        for page in &mut document.pages {
+        for page in document.pages() {
             let svg = typst_svg::svg(page);
             svgs.push(svg);
         }
@@ -536,11 +551,14 @@ impl Wasm {
             .map_err(|e| JsValue::from_str(&format!("failed to deserialize options: {}", e)))?;
 
         self.world.update_now();
-        self.update_source(VirtualPath::new(path), code);
+        self.update_source(path, code);
         let Warned { output, warnings } = typst::compile::<PagedDocument>(&mut self.world);
 
         let mut document = self.export_result(output)?;
-        document.info.title.get_or_insert_with(|| filename.into());
+        document
+            .info_mut()
+            .title
+            .get_or_insert_with(|| filename.into());
 
         let mut options = typst_pdf::PdfOptions::default();
         options.tagged = options_ser.tagged;
@@ -598,7 +616,7 @@ impl Wasm {
             .map_err(|e| JsValue::from_str(&format!("failed to deserialize options: {}", e)))?;
 
         self.world.update_now();
-        self.update_source(VirtualPath::new(path), code);
+        self.update_source(path, code);
         let Warned { output, warnings } = typst::compile::<PagedDocument>(&mut self.world);
 
         let document = self.export_result(output)?;
@@ -608,7 +626,7 @@ impl Wasm {
             .as_ref()
             .and_then(|s| utils::parse_page_ranges(s));
         let mut images = Vec::new();
-        for (i, page) in document.pages.iter().enumerate() {
+        for (i, page) in document.pages().iter().enumerate() {
             if let Some(ranges) = &page_ranges {
                 if !ranges.includes_page_index(i) {
                     continue;
@@ -633,7 +651,7 @@ impl Wasm {
             .map_err(|e| JsValue::from_str(&format!("failed to deserialize options: {}", e)))?;
 
         self.world.update_now();
-        self.update_source(VirtualPath::new(path), code);
+        self.update_source(path, code);
         let Warned { output, warnings } = typst::compile::<PagedDocument>(&mut self.world);
 
         let document = self.export_result(output)?;
@@ -642,7 +660,7 @@ impl Wasm {
             .as_ref()
             .and_then(|s| utils::parse_page_ranges(s));
         let mut svgs = Vec::new();
-        for (i, page) in document.pages.iter().enumerate() {
+        for (i, page) in document.pages().iter().enumerate() {
             if let Some(ranges) = &page_ranges {
                 if !ranges.includes_page_index(i) {
                     continue;
@@ -667,7 +685,7 @@ impl Wasm {
             .map_err(|e| JsValue::from_str(&format!("failed to deserialize options: {}", e)))?;
 
         self.world.update_now();
-        self.update_source(VirtualPath::new(path), code);
+        self.update_source(path, code);
         let Warned { output, warnings } =
             typst::compile::<typst_html::HtmlDocument>(&mut self.world);
 
@@ -761,8 +779,12 @@ impl Wasm {
 
 /// utils
 impl Wasm {
-    fn update_source(&mut self, vpath: VirtualPath, code: &str) {
-        let file_id = FileId::new(None, vpath.clone());
+    fn update_source(&mut self, path: &str, code: &str) {
+        let vpath = match VirtualPath::new(path) {
+            Ok(vp) => vp,
+            Err(_) => return,
+        };
+        let file_id = FileId::new(RootedPath::new(VirtualRoot::Project, vpath.clone()));
         let result = self.world.source(file_id);
 
         match result {

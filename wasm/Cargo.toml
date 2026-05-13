@@ -13,13 +13,15 @@ typst-library = "0.14.2"
 typst-macros = "0.14.2"
 typst-assets = { version = "0.14.2", features = ["fonts"] }
 typst-timing = "0.14.2"
+typst-utils = "0.14.2"
+typst-layout = "0.14.2"
 
 typst-pdf = "0.14.2"
 typst-svg = "0.14.2"
 typst-html = "0.14.2"
 typst-render = "0.14.2"
 
-typst-docs = { path = "../typst/docs" }
+
 
 comemo = "^0"
 unscanny = "^0.1"
@@ -57,6 +59,9 @@ typst-library = { path = "../typst/crates/typst-library" }
 typst-macros = { path = "../typst/crates/typst-macros" }
 typst-timing = { path = "../typst/crates/typst-timing" }
 typst-render = { path = "../typst/crates/typst-render" }
+typst-utils = { path = "../typst/crates/typst-utils" }
+typst-layout = { path = "../typst/crates/typst-layout" }
+typstyle-core = { path = "patches/typstyle-core" }
 
 [profile.release]
 lto = true

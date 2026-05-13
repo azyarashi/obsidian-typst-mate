@@ -3,7 +3,20 @@ use typst::{
     foundations::Regex,
     layout::{Abs, Frame, FrameItem, PageRanges},
 };
-use typst_docs::link::resolve;
+
+fn resolve_typst_link(dest: &str, base: &str) -> String {
+    if dest.starts_with("http://") || dest.starts_with("https://") {
+        return dest.to_string();
+    }
+    if dest.starts_with('#') {
+        return format!("{base}{}", &dest[1..]);
+    }
+    if dest.starts_with('$') {
+        // e.g. $text -> functions/text
+        return format!("{base}reference/{}/", &dest[1..]);
+    }
+    dest.to_string()
+}
 
 pub fn parse_page_ranges(s: &str) -> Option<PageRanges> {
     let mut ranges = Vec::new();
@@ -74,8 +87,7 @@ pub fn resolve_docs(docs: &str) -> String {
             return caps[0].to_string();
         }
 
-        let resolved =
-            resolve(dest, "https://typst.app/docs/").unwrap_or_else(|_| dest.to_string());
+        let resolved = resolve_typst_link(dest, "https://typst.app/docs/");
         format!("[{label}]({resolved})")
     })
     .into_owned()

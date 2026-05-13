@@ -45,7 +45,7 @@ impl Definition {
                 let range = world.range(span)?;
                 let jump = Jump::from_jump(&typst_ide::Jump::File(id, range.start), world);
 
-                let origin = if let Some(package) = id.package() {
+                let origin = if let typst::syntax::VirtualRoot::Package(package) = id.root() {
                     Origin::Package {
                         name: package.to_string(),
                     }

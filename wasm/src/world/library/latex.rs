@@ -1,5 +1,5 @@
 use typst::foundations::{Content, Module, NativeElement, Scope, Smart, Value, func};
-use typst::layout::{Abs, BoxElem, Corners, Em, Length, Rel, Sides, Sizing};
+use typst::layout::{Abs, BaselinePos, BoxElem, Corners, Em, Length, Rel, Sides, Sizing};
 use typst::visualize::{Color, Paint, Stroke};
 
 pub fn get_module() -> Module {
@@ -61,7 +61,9 @@ fn boxed(args: &mut typst::foundations::Args) -> typst::diag::SourceResult<Conte
         box_elem = box_elem.with_height(height);
     }
     if let Some(baseline) = args.named::<Rel<Length>>("baseline")? {
-        box_elem = box_elem.with_baseline(baseline);
+        use typst::foundations::{FromValue, IntoValue};
+        let baseline_pos = BaselinePos::from_value(baseline.into_value()).unwrap_or_default();
+        box_elem = box_elem.with_baseline(baseline_pos);
     }
     if let Some(fill) = args.named::<Option<Paint>>("fill")? {
         box_elem = box_elem.with_fill(fill);

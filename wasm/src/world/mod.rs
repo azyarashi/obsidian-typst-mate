@@ -17,7 +17,9 @@ use self::state::PENDING;
 
 use typst::foundations::{Bytes, Datetime};
 
-use typst::syntax::{FileId, Source, VirtualPath, package::PackageSpec as TypstPackageSpec};
+use typst::syntax::{
+    FileId, RootedPath, Source, VirtualPath, VirtualRoot, package::PackageSpec as TypstPackageSpec,
+};
 use typst::text::{Font, FontBook};
 use typst::{
     Library, World,
@@ -52,7 +54,10 @@ impl WasmWorld {
         download_package: js_sys::Function,
     ) -> Self {
         // ファイルシステムを設定
-        let main = FileId::new(None, VirtualPath::new("main.typ"));
+        let main = FileId::new(RootedPath::new(
+            VirtualRoot::Project,
+            VirtualPath::new("main.typ").unwrap(),
+        ));
         let mut slots = FxHashMap::default();
         slots.insert(main, FileSlot::new_from_text(main, "".into()));
 
@@ -100,7 +105,7 @@ impl WasmWorld {
 
     pub fn add_file_text(&self, vpath: VirtualPath, text: String) {
         let mut m = self.slots.lock().unwrap();
-        let file_id = FileId::new(None, vpath);
+        let file_id = FileId::new(RootedPath::new(VirtualRoot::Project, vpath));
 
         m.insert(file_id, FileSlot::new_from_text(file_id, text));
     }
@@ -108,7 +113,7 @@ impl WasmWorld {
     #[allow(dead_code)]
     pub fn add_file_bytes(&self, vpath: VirtualPath, bytes: Vec<u8>) {
         let mut m = self.slots.lock().unwrap();
-        let file_id = FileId::new(None, vpath);
+        let file_id = FileId::new(RootedPath::new(VirtualRoot::Project, vpath));
 
         m.insert(file_id, FileSlot::new_from_bytes(file_id, bytes));
     }
@@ -117,7 +122,7 @@ impl WasmWorld {
 impl WasmWorld {
     pub fn add_package_text(&mut self, spec: &TypstPackageSpec, vpath: VirtualPath, text: String) {
         let mut m = self.slots.lock().unwrap();
-        let file_id = FileId::new(Some(spec.clone()), vpath);
+        let file_id = FileId::new(RootedPath::new(VirtualRoot::Package(spec.clone()), vpath));
         m.insert(file_id, FileSlot::new_from_text(file_id, text));
 
         self.packages.insert(spec.clone());
@@ -131,7 +136,7 @@ impl WasmWorld {
         bytes: Vec<u8>,
     ) {
         let mut m = self.slots.lock().unwrap();
-        let file_id = FileId::new(Some(spec.clone()), vpath);
+        let file_id = FileId::new(RootedPath::new(VirtualRoot::Package(spec.clone()), vpath));
         m.insert(file_id, FileSlot::new_from_bytes(file_id, bytes));
 
         self.packages.insert(spec.clone());
@@ -262,12 +267,13 @@ impl WasmWorld {
         let needs_fetch = m.get(&id).map_or(true, |slot| slot.bytes().is_err());
 
         if needs_fetch {
-            let result = if let Some(spec) = id.package() {
+            let result = if let VirtualRoot::Package(spec) = id.root() {
                 // パッケージファイル:
                 //   まず readPackageFile でローカルキャッシュを参照し、
                 //   NotFound なら downloadPackage でネットワーク取得を要求する。
                 //   @ プレフィックスや path 組み立ては JS 側の責務。
-                let vpath = id.vpath().as_rootless_path().to_str().unwrap().to_string();
+                let vpath = id.vpath().get_without_slash().to_string();
+                let spec = spec.clone();
                 match self.call_read_package_file_result(vpath, &spec) {
                     Err(FileError::NotFound(_)) => self.request_download(&spec),
                     other => other,
@@ -275,7 +281,7 @@ impl WasmWorld {
             } else {
                 // 通常ファイル: readFile のみ。
                 // @ プレフィックスなし、パス解決も JS 側が行う。
-                let path = id.vpath().as_rooted_path().to_str().unwrap().to_string();
+                let path = id.vpath().get_with_slash().to_string();
                 self.call_read_file_result(path)
             };
 
@@ -341,12 +347,13 @@ impl World for WasmWorld {
         Some(self.fonts[index].clone())
     }
 
-    fn today(&self, offset: Option<i64>) -> Option<Datetime> {
+    fn today(&self, offset: Option<typst::foundations::Duration>) -> Option<Datetime> {
         let local_datetime = match offset {
             None => self.now.with_timezone(&Local).fixed_offset(),
-            Some(hours) => {
-                let seconds = i32::try_from(hours).ok()?.checked_mul(3600)?;
-                self.now.with_timezone(&FixedOffset::east_opt(seconds)?)
+            Some(dur) => {
+                let seconds = dur.seconds() as i64;
+                let seconds_i32 = i32::try_from(seconds).ok()?;
+                self.now.with_timezone(&FixedOffset::east_opt(seconds_i32)?)
             }
         };
 

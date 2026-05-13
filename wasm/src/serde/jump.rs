@@ -2,6 +2,7 @@ use serde::Serialize;
 use tsify::Tsify;
 
 use typst::World;
+use typst::introspection::PagedPosition;
 use typst_ide::Jump as TypstJump;
 
 #[derive(Serialize, Tsify)]
@@ -29,8 +30,11 @@ impl Jump {
     {
         match jump {
             TypstJump::File(id, pos) => {
-                let package = id.package().map(|spec| spec.to_string());
-                let path = id.vpath().as_rootless_path().to_string_lossy().to_string();
+                let package = match id.root() {
+                    typst::syntax::VirtualRoot::Project => None,
+                    typst::syntax::VirtualRoot::Package(spec) => Some(spec.to_string()),
+                };
+                let path = id.vpath().get_without_slash().to_string();
 
                 let source = world.source(*id).unwrap();
                 let pos = source.lines().byte_to_utf16(*pos).unwrap_or(0);
@@ -48,14 +52,14 @@ impl Jump {
         }
     }
 
-    pub fn from_position(pos: typst::layout::Position) -> Self {
+    pub fn from_position(pos: PagedPosition) -> Self {
         PointPosition::from_position(pos)
     }
 }
 
 pub struct PointPosition;
 impl PointPosition {
-    pub fn from_position(pos: typst::layout::Position) -> Jump {
+    pub fn from_position(pos: PagedPosition) -> Jump {
         Jump::Position {
             page: pos.page.get(),
             x: pos.point.x.to_pt(),

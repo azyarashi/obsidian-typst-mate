@@ -45,18 +45,22 @@ impl From<&TypstFunc> for Func {
             docs: resolve_docs(&func.docs().unwrap_or_default()),
             params: func
                 .params()
-                .into_iter()
-                .flatten()
                 .map(|p| Param {
-                    name: p.name.to_string(),
-                    docs: resolve_docs(&p.docs),
-                    types: cast_info_to_types(&p.input),
-                    default: p.default.map(|f| f().repr().to_string()),
-                    named: p.named,
-                    positional: p.positional,
-                    required: p.required,
-                    variadic: p.variadic,
-                    settable: p.settable,
+                    name: p.name().unwrap_or("").to_string(),
+                    docs: resolve_docs(match &p {
+                        typst::foundations::ParamInfo::Native(info) => info.docs,
+                        _ => "",
+                    }),
+                    types: match &p {
+                        typst::foundations::ParamInfo::Native(info) => cast_info_to_types(&info.input),
+                        _ => vec![CastItem::Any],
+                    },
+                    default: p.default().map(|v| v.repr().to_string()),
+                    named: p.named(),
+                    positional: p.positional(),
+                    required: p.required(),
+                    variadic: p.variadic(),
+                    settable: p.settable(),
                 })
                 .collect(),
         }
