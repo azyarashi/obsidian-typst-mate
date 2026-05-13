@@ -89,16 +89,21 @@ export function highlight(node: LinkedNode): CSSClass | null {
       return CSSClass.Text;
     case SyntaxKind.MathIdent:
       return highlightIdent(node);
+    case SyntaxKind.MathFieldAccess:
+      return null;
     case SyntaxKind.MathShorthand:
       return CSSClass.Escape;
     case SyntaxKind.MathAlignPoint:
       return CSSClass.MathOperator;
+    case SyntaxKind.MathCall:
+    case SyntaxKind.MathArgs:
     case SyntaxKind.MathDelimited:
     case SyntaxKind.MathAttach:
     case SyntaxKind.MathFrac:
     case SyntaxKind.MathRoot:
-    case SyntaxKind.MathPrimes:
       return null;
+    case SyntaxKind.MathPrimes:
+      return CSSClass.MathOperator;
 
     case SyntaxKind.Hash:
       return highlightHash(node);
@@ -124,7 +129,6 @@ export function highlight(node: LinkedNode): CSSClass | null {
     case SyntaxKind.Slash:
       return node.parentKind() === SyntaxKind.MathFrac ? CSSClass.MathOperator : CSSClass.Operator;
     case SyntaxKind.Hat:
-    case SyntaxKind.Prime:
       return CSSClass.MathOperator;
     case SyntaxKind.Dot:
       return CSSClass.Punctuation;
@@ -145,6 +149,8 @@ export function highlight(node: LinkedNode): CSSClass | null {
       return CSSClass.Operator;
     case SyntaxKind.Root:
       return CSSClass.MathOperator;
+    case SyntaxKind.Bang:
+      return null;
 
     case SyntaxKind.Not:
     case SyntaxKind.And:
@@ -236,7 +242,7 @@ function highlightIdent(node: LinkedNode): CSSClass | null {
   )
     return CSSClass.Function;
 
-  if (node.kind() === SyntaxKind.MathIdent) return CSSClass.Interpolated;
+  if (node.kind() === SyntaxKind.MathIdent || node.kind() === SyntaxKind.MathFieldAccess) return CSSClass.Interpolated;
 
   let ancestor: LinkedNode | null = node;
   while (ancestor !== null && ancestor.parentKind() === SyntaxKind.FieldAccess) ancestor = ancestor.parent ?? null;

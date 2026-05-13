@@ -500,9 +500,12 @@ export class Lexer {
     else if (c === '$') kind = SyntaxKind.Dollar;
     else if (c === '/') kind = SyntaxKind.Slash;
     else if (c === '^') kind = SyntaxKind.Hat;
-    else if (c === "'") kind = SyntaxKind.Prime;
-    else if (c === '&') kind = SyntaxKind.MathAlignPoint;
+    else if (c === "'") {
+      this.s.eatWhile("'");
+      kind = SyntaxKind.MathPrimes;
+    } else if (c === '&') kind = SyntaxKind.MathAlignPoint;
     else if (c === '√' || c === '∛' || c === '∜') kind = SyntaxKind.Root;
+    else if (c === '!') kind = SyntaxKind.Bang;
     else if (isMathIdStart(c) && this.s.at(isMathIdContinue)) {
       this.s.eatWhile(isMathIdContinue);
       const [k, node] = this.mathIdentOrField(start);

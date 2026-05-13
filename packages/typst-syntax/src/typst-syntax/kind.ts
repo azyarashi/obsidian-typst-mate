@@ -63,19 +63,25 @@ export enum SyntaxKind {
   TermItem,
   /** Introduces a term item: `/` */
   TermMarker,
+
   /** A mathematical equation: `$x$`, `$ x^2 $` */
   Equation,
-
   /** The contents of a mathematical equation: `x^2 + 1` */
   Math,
   /** A lone text fragment in math: `x`, `25`, `3.1415`, `=`, `|`, `[` */
   MathText,
   /** An identifier in math: `pi` */
   MathIdent,
+  /** A field access in math: `arrow.r.long.double.bar` */
+  MathFieldAccess,
   /** A shorthand for a unicode codepoint in math: `a <= b` */
   MathShorthand,
   /** An alignment point in math: `&` */
   MathAlignPoint,
+  /** A function call in math: `mat(delim: "[", a, b; ..#($c$,), d)` */
+  MathCall,
+  /** Function arguments in math: `(delim: "[", a, b; ..#($c$,), d)` */
+  MathArgs,
   /** Matched delimiters in math: `[x + y]` */
   MathDelimited,
   /** A base with optional attachments in math: `a_1^2` */
@@ -96,7 +102,7 @@ export enum SyntaxKind {
   /** A left square bracket, starting a content block: `[` */
   LeftBracket,
   /** A right square bracket, terminating a content block: `]` */
-  RightBracket, // wait, skipping this
+  RightBracket,
   /** A left round parenthesis: `(` */
   LeftParen,
   /** A right round parenthesis, terminating a grouped expression... */
@@ -121,8 +127,6 @@ export enum SyntaxKind {
   Slash,
   /** The superscript operator in math: `^` */
   Hat,
-  /** The prime in math: `'` */
-  Prime,
   /** The field access and method call operator: `.` */
   Dot,
   /** The assignment operator: `=` */
@@ -153,6 +157,8 @@ export enum SyntaxKind {
   Arrow,
   /** A root: `√`, `∛` or `∜` */
   Root,
+  /** An exclamation mark; groups with directly preceding text in math: `!` */
+  Bang,
 
   /** The `not` operator */
   Not,
@@ -437,20 +443,26 @@ export namespace SyntaxKind {
         return 'math text';
       case SyntaxKind.MathIdent:
         return 'math identifier';
+      case SyntaxKind.MathFieldAccess:
+        return 'math field access';
       case SyntaxKind.MathShorthand:
         return 'math shorthand';
       case SyntaxKind.MathAlignPoint:
         return 'math alignment point';
+      case SyntaxKind.MathCall:
+        return 'math function call';
+      case SyntaxKind.MathArgs:
+        return 'math call arguments';
       case SyntaxKind.MathDelimited:
         return 'delimited math';
       case SyntaxKind.MathAttach:
         return 'math attachments';
+      case SyntaxKind.MathPrimes:
+        return 'math primes';
       case SyntaxKind.MathFrac:
         return 'math fraction';
       case SyntaxKind.MathRoot:
         return 'math root';
-      case SyntaxKind.MathPrimes:
-        return 'math primes';
       case SyntaxKind.Hash:
         return 'hash';
       case SyntaxKind.LeftBrace:
@@ -485,8 +497,6 @@ export namespace SyntaxKind {
         return 'slash';
       case SyntaxKind.Hat:
         return 'hat';
-      case SyntaxKind.Prime:
-        return 'prime';
       case SyntaxKind.Dot:
         return 'dot';
       case SyntaxKind.Eq:
@@ -517,6 +527,8 @@ export namespace SyntaxKind {
         return 'arrow';
       case SyntaxKind.Root:
         return 'root';
+      case SyntaxKind.Bang:
+        return 'exclamation mark';
       case SyntaxKind.Not:
         return 'operator `not`';
       case SyntaxKind.And:

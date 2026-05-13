@@ -3,7 +3,7 @@ import { class_ as mathClass } from '../unicode-math-class/index';
 import { SyntaxMode } from '.';
 import { SyntaxKind } from './kind';
 import { Lexer } from './lexer';
-import { InnerNode, LeafNode, SyntaxErrorNode, SyntaxNode } from './node';
+import { type InnerNode, SyntaxErrorNode, SyntaxNode } from './node';
 import {
   ARG,
   ARRAY_OR_DICT_ITEM,
@@ -548,151 +548,167 @@ export class Parser {
   }
 
   public mathExpr() {
-    this.mathExprPrec(0, SyntaxKind.End);
+    this.mathExprPrec(0, SyntaxSet.empty());
   }
 
-  public mathExprPrec(minPrec: number, stop: SyntaxKind) {
+  public mathExprPrec(minPrec: number, stopSet: SyntaxSet) {
     const m = this.marker();
     let continuable = false;
     switch (this.current()) {
       case SyntaxKind.Hash:
         this.embeddedCodeExpr();
         break;
+
       case SyntaxKind.MathIdent:
-      case SyntaxKind.FieldAccess:
+      case SyntaxKind.MathFieldAccess:
         continuable = true;
         this.eat();
-        if (minPrec < 3 && this.directlyAt(SyntaxKind.MathText) && this.currentText() === '(') {
+        if (2 >= minPrec && this.directlyAt(SyntaxKind.LeftParen)) {
           this.mathArgs();
-          this.wrap(m, SyntaxKind.FuncCall);
+          this.wrap(m, SyntaxKind.MathCall);
           continuable = false;
         }
         break;
+
+      case SyntaxKind.LeftBrace:
+      case SyntaxKind.LeftParen:
+        this.mathDelimited();
+        break;
+
+      case SyntaxKind.RightBrace:
+        if (this.currentText() === '|]') {
+          this.convertAndEat(SyntaxKind.MathShorthand);
+        } else {
+          this.convertAndEat(SyntaxKind.MathText);
+        }
+        break;
+
       case SyntaxKind.Dot:
+      case SyntaxKind.Bang:
       case SyntaxKind.Comma:
       case SyntaxKind.Semicolon:
       case SyntaxKind.RightParen:
         this.convertAndEat(SyntaxKind.MathText);
         break;
-      case SyntaxKind.Text:
+
       case SyntaxKind.MathText:
-      case SyntaxKind.MathShorthand:
-        continuable =
-          mathClass(this.currentText()) === MathClass.Alphabetic ||
-          Array.from(this.currentText()).every((c) => c.toLowerCase() !== c.toUpperCase());
-        if (!this.maybeDelimited()) {
-          this.eat();
-        }
-        break;
-      case SyntaxKind.Linebreak:
-      case SyntaxKind.MathAlignPoint:
+        continuable = this.isMathAlphabetic(this.currentText());
         this.eat();
         break;
+
+      case SyntaxKind.Linebreak:
+      case SyntaxKind.MathAlignPoint:
+      case SyntaxKind.MathShorthand:
+        this.eat();
+        break;
+
+      case SyntaxKind.MathPrimes:
       case SyntaxKind.Escape:
       case SyntaxKind.Str:
         continuable = true;
         this.eat();
         break;
-      case SyntaxKind.Root:
-        if (minPrec < 3) {
-          this.eat();
-          const m2 = this.marker();
-          this.mathExprPrec(2, stop);
-          this.mathUnparen(m2);
-          this.wrap(m, SyntaxKind.MathRoot);
-        }
+
+      case SyntaxKind.Root: {
+        this.eat();
+        const m2 = this.marker();
+        this.mathExprPrec(2, SyntaxSet.empty());
+        this.mathUnparen(m2);
+        this.wrap(m, SyntaxKind.MathRoot);
         break;
-      case SyntaxKind.Prime:
-        continuable = true;
-        while (this.at(SyntaxKind.Prime)) {
-          const m2 = this.marker();
-          this.eat();
-          while (this.eatIfDirect(SyntaxKind.Prime)) {}
-          this.wrap(m2, SyntaxKind.MathPrimes);
-        }
-        break;
+      }
+
       default:
         this.expected('expression');
         break;
     }
 
-    if (continuable && minPrec < 3 && !this.hadTrivia() && this.maybeDelimited()) {
+    if (
+      continuable &&
+      2 >= minPrec &&
+      !this.hadTrivia() &&
+      this.atSet(SyntaxSet.create(SyntaxKind.LeftBrace, SyntaxKind.LeftParen))
+    ) {
+      this.mathDelimited();
       this.wrap(m, SyntaxKind.Math);
     }
 
-    let primed = false;
+    while (!this.atSet(stopSet) && this.mathOp(this.current(), this.hadTrivia()) !== null) {
+      const opKind = this.current();
+      const opResult = this.mathOp(opKind, this.hadTrivia())!;
+      const [wrapper, infixAssoc, prec] = opResult;
 
-    while (!this.end() && !this.at(stop)) {
-      if (this.directlyAt(SyntaxKind.MathText) && this.currentText() === '!') {
+      if (prec < minPrec) break;
+
+      let chainSet = SyntaxSet.empty();
+      if (wrapper === SyntaxKind.MathAttach) {
+        chainSet = SyntaxSet.create(SyntaxKind.Hat, SyntaxKind.Underscore);
+        if (SyntaxSet.contains(chainSet, opKind)) {
+          chainSet &= ~(1n << BigInt(opKind));
+        }
+      }
+
+      if (opKind === SyntaxKind.Bang) {
+        this.convertAndEat(SyntaxKind.MathText);
+      } else {
         this.eat();
-        this.wrap(m, SyntaxKind.Math);
-        continue;
       }
 
-      const primeMarker = this.marker();
-      if (this.eatIfDirect(SyntaxKind.Prime)) {
-        while (this.eatIfDirect(SyntaxKind.Prime)) {}
-        this.wrap(primeMarker, SyntaxKind.MathPrimes);
-
-        if (this.at(stop)) {
-          this.wrap(m, SyntaxKind.MathAttach);
-        }
-        primed = true;
-        continue;
-      }
-
-      const op = this.mathOp(this.current());
-      if (!op) {
-        if (primed) {
-          this.wrap(m, SyntaxKind.MathAttach);
-        }
-        break;
-      }
-
-      const [kind, opStop, assoc, opPrec] = op;
-      let prec = opPrec;
-
-      if (primed && kind === SyntaxKind.MathFrac) {
-        this.wrap(m, SyntaxKind.MathAttach);
-      }
-
-      if (prec < minPrec) {
-        break;
-      }
-
-      if (assoc === Assoc.Left) {
-        prec += 1;
-      }
-
-      if (kind === SyntaxKind.MathFrac) {
+      if (wrapper === SyntaxKind.MathFrac) {
         this.mathUnparen(m);
       }
 
-      this.eat();
-      const m2 = this.marker();
-      this.mathExprPrec(prec, opStop);
-      this.mathUnparen(m2);
-
-      if (this.eatIf(SyntaxKind.Underscore) || this.eatIf(SyntaxKind.Hat)) {
-        const m3 = this.marker();
-        this.mathExprPrec(prec, SyntaxKind.End);
-        this.mathUnparen(m3);
+      if (infixAssoc !== null) {
+        const nextPrec = infixAssoc === Assoc.Left ? prec + 1 : prec;
+        const mRhs = this.marker();
+        this.mathExprPrec(nextPrec, chainSet);
+        this.mathUnparen(mRhs);
       }
 
-      this.wrap(m, kind);
+      if (!(opKind === SyntaxKind.MathPrimes && this.atSet(stopSet))) {
+        while (this.atSet(chainSet)) {
+          const curOp = this.current();
+          if (SyntaxSet.contains(chainSet, curOp)) {
+            chainSet &= ~(1n << BigInt(curOp));
+          }
+          this.eat();
+          const mChainRhs = this.marker();
+          this.mathExprPrec(prec, chainSet);
+          this.mathUnparen(mChainRhs);
+        }
+      }
+
+      this.wrap(m, wrapper);
     }
   }
 
-  public mathOp(kind: SyntaxKind): [SyntaxKind, SyntaxKind, Assoc, number] | null {
+  public mathOp(kind: SyntaxKind, hadTrivia: boolean): [SyntaxKind, Assoc | null, number] | null {
     switch (kind) {
-      case SyntaxKind.Underscore:
-        return [SyntaxKind.MathAttach, SyntaxKind.Hat, Assoc.Right, 2];
-      case SyntaxKind.Hat:
-        return [SyntaxKind.MathAttach, SyntaxKind.Underscore, Assoc.Right, 2];
       case SyntaxKind.Slash:
-        return [SyntaxKind.MathFrac, SyntaxKind.End, Assoc.Left, 1];
+        return [SyntaxKind.MathFrac, Assoc.Left, 1];
+      case SyntaxKind.Underscore:
+        return [SyntaxKind.MathAttach, Assoc.Right, 2];
+      case SyntaxKind.Hat:
+        return [SyntaxKind.MathAttach, Assoc.Right, 2];
+      case SyntaxKind.MathPrimes:
+        if (!hadTrivia) return [SyntaxKind.MathAttach, null, 2];
+        return null;
+      case SyntaxKind.Bang:
+        if (!hadTrivia) return [SyntaxKind.Math, null, 3];
+        return null;
       default:
         return null;
+    }
+  }
+
+  private isMathAlphabetic(text: string): boolean {
+    if (text.length === 0) return false;
+    const chars = Array.from(text);
+    if (chars.length === 1) {
+      const c = chars[0]!;
+      return c.toLowerCase() !== c.toUpperCase() || mathClass(c) === MathClass.Alphabetic;
+    } else {
+      return chars.every((c) => c.toLowerCase() !== c.toUpperCase());
     }
   }
 
@@ -750,30 +766,15 @@ export class Parser {
     const m = this.marker();
     this.convertAndEat(SyntaxKind.LeftParen);
 
-    let positional = true;
-    let hasArrays = false;
-
-    let maybeArrayStart = this.marker();
     const seen = new Set<string>();
 
     while (!this.atSet(SyntaxSet.create(SyntaxKind.End, SyntaxKind.Dollar, SyntaxKind.RightParen))) {
-      positional = this.mathArg(seen);
+      this.mathArg(seen);
 
       switch (this.current()) {
         case SyntaxKind.Comma:
-          this.eat();
-          if (!positional) {
-            maybeArrayStart = this.marker();
-          }
-          break;
         case SyntaxKind.Semicolon:
-          if (!positional) {
-            maybeArrayStart = this.marker();
-          }
-          this.wrap(maybeArrayStart, SyntaxKind.Array);
           this.eat();
-          maybeArrayStart = this.marker();
-          hasArrays = true;
           break;
         case SyntaxKind.End:
         case SyntaxKind.Dollar:
@@ -785,64 +786,36 @@ export class Parser {
       }
     }
 
-    if (maybeArrayStart.index !== this.marker().index && hasArrays && positional) {
-      this.wrap(maybeArrayStart, SyntaxKind.Array);
-    }
-
     this.expectClosingDelimiter(m, SyntaxKind.RightParen);
-    this.wrap(m, SyntaxKind.Args);
+    this.wrap(m, SyntaxKind.MathArgs);
   }
 
-  public mathArg(seen: Set<string>): boolean {
+  public mathArg(seen: Set<string>) {
     const m = this.marker();
     const start = this.currentStart();
 
-    if (this.at(SyntaxKind.Dot)) {
-      const spread = this.lexer.maybeMathSpreadArg(start);
-      if (spread) {
-        this.token.node = spread;
-        this.eat();
-        const mArg = this.marker();
-        const count = this.mathExprs(
-          SyntaxSet.create(
-            SyntaxKind.End,
-            SyntaxKind.Dollar,
-            SyntaxKind.Comma,
-            SyntaxKind.Semicolon,
-            SyntaxKind.RightParen,
-          ),
-        );
-        if (count === 0) {
-          const dots = [
-            new LeafNode(SyntaxKind.MathText, '.', this.token.node.span()),
-            new LeafNode(SyntaxKind.MathText, '.', this.token.node.span()),
-          ];
-          this.nodes[m.index] = new InnerNode(SyntaxKind.Math, dots);
-        } else {
-          if (count > 1) this.wrap(mArg, SyntaxKind.Math);
-          this.wrap(m, SyntaxKind.Spread);
-        }
-        return true;
+    let argKind: SyntaxKind | null = null;
+
+    const spread = this.lexer.maybeMathSpreadArg(start);
+    const named = this.lexer.maybeMathNamedArg(start);
+
+    if (spread) {
+      argKind = SyntaxKind.Spread;
+      this.token.node = spread;
+      this.eat();
+    } else if (named) {
+      argKind = SyntaxKind.Named;
+      this.token.node = named;
+      const text = this.currentText();
+      this.eat();
+      this.convertAndEat(SyntaxKind.Colon);
+      if (seen.has(text)) {
+        this.nodes[m.index]!.convertToError(`duplicate argument: ${text}`);
       }
+      seen.add(text);
     }
 
-    let positional = true;
-    if (this.atSet(SyntaxSet.create(SyntaxKind.MathText, SyntaxKind.MathIdent, SyntaxKind.Underscore))) {
-      const named = this.lexer.maybeMathNamedArg(start);
-      if (named) {
-        this.token.node = named;
-        const text = this.currentText();
-        this.eat();
-        this.convertAndEat(SyntaxKind.Colon);
-        if (seen.has(text)) {
-          this.nodes[m.index]!.convertToError(`duplicate argument: ${text}`);
-        }
-        seen.add(text);
-        positional = false;
-      }
-    }
-
-    const arg = this.marker();
+    const mArg = this.marker();
     const count = this.mathExprs(
       SyntaxSet.create(
         SyntaxKind.End,
@@ -852,19 +825,20 @@ export class Parser {
         SyntaxKind.RightParen,
       ),
     );
+
     if (count === 0) {
-      if (!positional) this.expected('expression');
-      this.flushTrivia();
+      if (argKind === SyntaxKind.Named) {
+        this.expected('expression');
+      }
     }
 
     if (count !== 1) {
-      this.wrap(arg, SyntaxKind.Math);
+      this.wrap(mArg, SyntaxKind.Math);
     }
 
-    if (!positional) {
-      this.wrap(m, SyntaxKind.Named);
+    if (argKind !== null) {
+      this.wrap(m, argKind);
     }
-    return positional;
   }
 
   /// Parses the contents of a code block.

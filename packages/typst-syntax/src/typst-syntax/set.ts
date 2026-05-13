@@ -47,20 +47,23 @@ export const STMT = SyntaxSet.create(
 export const MATH_EXPR = SyntaxSet.create(
   SyntaxKind.Hash,
   SyntaxKind.MathIdent,
-  SyntaxKind.FieldAccess,
+  SyntaxKind.MathFieldAccess,
   SyntaxKind.Dot,
   SyntaxKind.Comma,
   SyntaxKind.Semicolon,
+  SyntaxKind.LeftBrace,
+  SyntaxKind.RightBrace,
+  SyntaxKind.LeftParen,
   SyntaxKind.RightParen,
-  SyntaxKind.Text,
   SyntaxKind.MathText,
   SyntaxKind.MathShorthand,
   SyntaxKind.Linebreak,
   SyntaxKind.MathAlignPoint,
+  SyntaxKind.MathPrimes,
   SyntaxKind.Escape,
   SyntaxKind.Str,
   SyntaxKind.Root,
-  SyntaxKind.Prime,
+  SyntaxKind.Bang,
 );
 
 export const UNARY_OP = SyntaxSet.create(SyntaxKind.Plus, SyntaxKind.Minus, SyntaxKind.Not);
