@@ -50,7 +50,6 @@ impl WasmWorld {
         read_file: js_sys::Function,
         read_package_file: js_sys::Function,
         download_package: js_sys::Function,
-        fontsize: f64,
     ) -> Self {
         // ファイルシステムを設定
         let main = FileId::new(None, VirtualPath::new("main.typ"));
@@ -68,7 +67,7 @@ impl WasmWorld {
         }
 
         // ライブラリを設定
-        let library = build_library(fontsize);
+        let library = build_library();
 
         Self {
             main,
@@ -85,7 +84,9 @@ impl WasmWorld {
             packages: FxHashSet::default(),
         }
     }
+}
 
+impl WasmWorld {
     pub fn set_main(&mut self, id: FileId) {
         self.main = id;
     }
@@ -111,34 +112,54 @@ impl WasmWorld {
 
         m.insert(file_id, FileSlot::new_from_bytes(file_id, bytes));
     }
+}
+
+impl WasmWorld {
+    pub fn add_package_text(&mut self, spec: &TypstPackageSpec, vpath: VirtualPath, text: String) {
+        let mut m = self.slots.lock().unwrap();
+        let file_id = FileId::new(Some(spec.clone()), vpath);
+        m.insert(file_id, FileSlot::new_from_text(file_id, text));
+
+        self.packages.insert(spec.clone());
+    }
 
     #[allow(dead_code)]
-    pub fn add_package_file(&mut self, spec: TypstPackageSpec, vpath: &str, bytes: Vec<u8>) {
+    pub fn add_package_bytes(
+        &mut self,
+        spec: &TypstPackageSpec,
+        vpath: VirtualPath,
+        bytes: Vec<u8>,
+    ) {
         let mut m = self.slots.lock().unwrap();
-        let file_id = FileId::new(Some(spec.clone()), VirtualPath::new(vpath));
+        let file_id = FileId::new(Some(spec.clone()), vpath);
         m.insert(file_id, FileSlot::new_from_bytes(file_id, bytes));
 
-        self.packages.insert(spec);
+        self.packages.insert(spec.clone());
     }
 
     pub fn list_packages(&self) -> Vec<TypstPackageSpec> {
         self.packages.iter().cloned().collect()
     }
+}
 
+impl WasmWorld {
     pub fn add_font(&mut self, data: Bytes) {
         for f in Font::iter(data) {
             self.book.push(f.info().clone());
             self.fonts.push(f);
         }
     }
+}
 
+impl WasmWorld {
     pub fn take_pending(&mut self) -> bool {
         PENDING.swap(false, Ordering::Relaxed)
     }
 
     fn map_js_err(&self, e: JsValue, path: &str, spec: Option<&TypstPackageSpec>) -> FileError {
         if let Some(value) = e.as_f64() {
-            return match value as i64 {
+            let code = value as i64;
+            return match code {
                 0 => {
                     PENDING.store(true, Ordering::Relaxed);
                     FileError::Other(Some("pending async load".into()))
@@ -151,17 +172,23 @@ impl WasmWorld {
                 14 => FileError::InvalidUtf8,
                 15 => FileError::Other(Some("unknown file error".into())),
 
-                20 => FileError::Package(PackageError::NotFound(
-                    spec.ok_or_else(|| FileError::Other(Some("package spec missing".into())))
-                        .unwrap()
-                        .clone(),
-                )),
-                21 => FileError::Package(PackageError::VersionNotFound(
-                    spec.ok_or_else(|| FileError::Other(Some("package spec missing".into())))
-                        .unwrap()
-                        .clone(),
-                    spec.unwrap().version.clone(),
-                )),
+                20 => {
+                    if let Some(spec) = spec {
+                        FileError::Package(PackageError::NotFound(spec.clone()))
+                    } else {
+                        FileError::Other(Some("package spec missing for NotFound".into()))
+                    }
+                }
+                21 => {
+                    if let Some(spec) = spec {
+                        FileError::Package(PackageError::VersionNotFound(
+                            spec.clone(),
+                            spec.version.clone(),
+                        ))
+                    } else {
+                        FileError::Other(Some("package spec missing for VersionNotFound".into()))
+                    }
+                }
                 22 => FileError::Package(PackageError::NetworkFailed(Some(
                     "network connection error".into(),
                 ))),
@@ -214,15 +241,14 @@ impl WasmWorld {
         let pkg_spec_ser = PackageSpec::from(spec);
         let pkg_spec_js = serde_wasm_bindgen::to_value(&pkg_spec_ser).unwrap();
 
-        match self.download_package.call1(&JsValue::NULL, &pkg_spec_js) {
-            Ok(_) => {
+        let display_path = format!("@{}", spec);
+        self.download_package
+            .call1(&JsValue::NULL, &pkg_spec_js)
+            .map_err(|e| self.map_js_err(e, &display_path, Some(spec)))
+            .and_then(|_| {
                 PENDING.store(true, Ordering::Relaxed);
                 Err(FileError::Other(Some("pending async load".into())))
-            }
-            Err(_) => Err(FileError::Package(PackageError::NetworkFailed(Some(
-                "download request failed".into(),
-            )))),
-        }
+            })
     }
 
     fn read<F, T>(&self, id: FileId, f: F) -> FileResult<T>
@@ -269,7 +295,9 @@ impl WasmWorld {
 
         f(m.get_mut(&id).unwrap())
     }
+}
 
+impl WasmWorld {
     pub fn update_now(&mut self) {
         use chrono::TimeZone;
         let now_ms = js_sys::Date::now();

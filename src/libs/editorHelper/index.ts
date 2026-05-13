@@ -1,10 +1,9 @@
 import { Prec } from '@codemirror/state';
 import type { EditorView } from '@codemirror/view';
-import { debounce, type Editor } from 'obsidian';
+import type { Editor } from 'obsidian';
 import { buildMarkdownExtension as buildSharedExtensions, collectRegions } from '@/editor';
 import type ObsidianTypstMate from '@/main';
 import type { Singleton } from '@/types/singleton';
-import type TypstSVGElement from '@/ui/elements/SVG';
 import { rendererManager } from '../rendererManager';
 
 export class EditorHelper implements Singleton {
@@ -31,17 +30,6 @@ export class EditorHelper implements Singleton {
       ripple.remove();
     }, 900);
   }
-
-  refresh = debounce(
-    () => {
-      const svgs = document.querySelectorAll('typstmate-svg') as NodeListOf<TypstSVGElement> | undefined;
-      if (!svgs) return;
-      for (const svg of svgs)
-        if (svg.processor && 'fitToNoteWidth' in svg.processor && svg.processor.fitToNoteWidth) svg.render();
-    },
-    100,
-    true,
-  );
 
   async replaceTexWithTypst(editor: Editor, view: EditorView) {
     const selection = view.state.selection.main;

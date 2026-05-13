@@ -133,14 +133,8 @@ export function format(source: string, kind: ProcessorKind, processor: Processor
   const noPreamble = 'noPreamble' in processor ? (processor.noPreamble ?? false) : false;
   formatted = noPreamble ? formatted : `${preamble}\n${formatted}`;
 
-  let offset =
+  const offset =
     -processor.format.indexOf('{CODE}') - (noPreamble ? 0 : preamble.length + 1) - rendererManager.preamble.length - 1;
-
-  if ('fitToNoteWidth' in processor && processor.fitToNoteWidth) {
-    const width = appUtils.getNoteWidth();
-    formatted = `#let WIDTH = ${width}\n${formatted}`;
-    offset -= 14 + width.length;
-  }
 
   return { formatted, offset };
 }

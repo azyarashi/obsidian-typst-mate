@@ -25,7 +25,7 @@ export function ProcessorsContainer<K extends ProcessorKind>({ kind }: { kind: K
   }, []);
 
   const [processors, setProcessors] = useState<ProcessorOfKind<K>[]>([
-    ...settingsManager.settings.processor[kind].processors,
+    ...settingsManager.settings.processors[kind],
   ] as ProcessorOfKind<K>[]);
 
   const debouncedRename = useMemo(
@@ -68,7 +68,7 @@ export function ProcessorsContainer<K extends ProcessorKind>({ kind }: { kind: K
     const newProcessors = [newProcessor, ...processors];
 
     setProcessors(newProcessors);
-    (settingsManager.settings.processor[kind] as { processors: ProcessorOfKind<K>[] }).processors = newProcessors;
+    (settingsManager.settings.processors[kind] as ProcessorOfKind<K>[]) = newProcessors;
     await settingsManager.saveSettings();
   };
 

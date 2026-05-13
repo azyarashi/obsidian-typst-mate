@@ -4,7 +4,7 @@ import { Phase, TypstMate } from './api';
 import { markdownExtensionEntries, sharedExtensionEntries, typstExtensionEntries } from './editor';
 // biome-ignore format: readability
 import { applyAllPatches, appUtils, crashTracker, detachAllPatches, editorHelper, extensionManager, fileManager, initI18n, registerCommands, registerEvents, registerProtocolHandlers, rendererManager, settingsManager, t, tmActionsManager } from './libs';
-import { hideStatusBarItem, registerEmbeds, registerViews, SettingsTab, setStatusBarItem } from './ui';
+import { registerEmbeds, registerViews, removeStatusBarItem, SettingsTab, setStatusBarItem } from './ui';
 import { noticeError, noticeMessage } from './utils/notice';
 
 import './ui/styles';
@@ -47,7 +47,7 @@ export default class ObsidianTypstMate extends Plugin {
       if (Platform.isDesktopApp) {
         const statusBarItemEl = this.addStatusBarItem();
         setStatusBarItem(statusBarItemEl);
-        this.detaches.unshift(() => hideStatusBarItem(statusBarItemEl));
+        this.detaches.unshift(() => removeStatusBarItem(statusBarItemEl));
       }
 
       // * MathJax
@@ -84,8 +84,7 @@ export default class ObsidianTypstMate extends Plugin {
         this.onLayoutReady()
           .then(() => {
             TypstMate.setPhase(Phase.Ready);
-
-            if (!this.hasLoadedInVault) appUtils.openTypstTools(true);
+            this.finish();
           })
           .catch((e) => {
             TypstMate.setPhase(Phase.Error);
@@ -128,6 +127,7 @@ export default class ObsidianTypstMate extends Plugin {
   private async prepareMathJaxOnce() {
     await loadMathJax();
     if (window.MathJax?.tex2chtml === undefined) this.blockStart();
+
     renderMath('', false); // ? 副作用 (スタイル) のため
     TypstMate.tex2chtmlOrig = window.MathJax.tex2chtml;
   }
@@ -178,7 +178,15 @@ export default class ObsidianTypstMate extends Plugin {
 
     // * TypstMate API
     TypstMate.wasm = rendererManager.wasm;
+  }
+
+  /* finish */
+
+  private async finish() {
     crashTracker.updateCrashStatus(false);
+
+    if (!this.hasLoadedInVault) appUtils.openTypstTools(true);
+    await rendererManager.renderPendingElements();
   }
 
   /* onunload */

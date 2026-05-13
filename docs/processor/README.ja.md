@@ -12,3 +12,7 @@
 ## プロセッサーの動作
 
 ## プロセッサーのオプション
+
+## その他の注意
+
+codeblock processor で, `typstmate-typ`, `typstmate-typm`, `typstmate-typc` は内部的に使用されているので不可

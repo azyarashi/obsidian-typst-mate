@@ -16,35 +16,36 @@
 		"@vimee/core": "^0.3.0",
 		"@vimee/plugin-codemirror": "^0.2.0",
 		"comlink": "^4.4.2",
+		"monkey-around": "^3.0.0",
 		"preact": "^10.29.1",
 		"untar-sync": "^1.0.4"
 	},
 	"devDependencies": {
-		"@biomejs/biome": "^2.4.13",
-		"@codemirror/autocomplete": "^6.20.1",
+		"@biomejs/biome": "^2.4.15",
+		"@codemirror/autocomplete": "^6.20.2",
 		"@codemirror/commands": "^6.10.3",
 		"@codemirror/language": "^6.12.3",
-		"@codemirror/lint": "^6.9.5",
+		"@codemirror/lint": "^6.9.6",
 		"@codemirror/search": "^6.7.0",
 		"@codemirror/state": "^6.6.0",
-		"@codemirror/view": "^6.41.1",
+		"@codemirror/view": "^6.42.1",
 		"@lezer/common": "^1.5.2",
 		"@types/bun": "^1.3.13",
-		"@typescript/native-preview": "^7.0.0-dev.20260430.1",
+		"@typescript/native-preview": "^7.0.0-dev.20260512.1",
 		"autoprefixer": "^10.5.0",
-		"builtin-modules": "^5.1.0",
+		"builtin-modules": "^5.2.0",
 		"esbuild": "^0.28.0",
 		"obsidian": "^1.12.3",
 		"obsidian-latex-suite": "github:artisticat1/obsidian-latex-suite#main",
-		"postcss": "^8.5.13",
+		"postcss": "^8.5.14",
 		"obsidian-typings": "^5.21.0",
-		"vite": "^8.0.10",
+		"vite": "^8.0.12",
 		"vite-plugin-json5": "^1.4.4",
 		"vite-plugin-static-copy": "^4.1.0"
 	},
 	"peerDependencies": {
 		"typescript": "^6.0.3",
-		"puppeteer": "^24.42.0"
+		"puppeteer": "^24.43.1"
 	},
 	"workspaces": [
 		"packages/*"

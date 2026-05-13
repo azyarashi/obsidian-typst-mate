@@ -1,6 +1,6 @@
 import { DEFAULT_SETTINGS } from '@/data/settings';
+import type { DisplayProcessor, InlineProcessor, MathProcessor } from '@/libs/processorManager';
 import { settingsManager } from '@/libs/settingsManager';
-import type { DisplayProcessor, InlineProcessor, MathProcessor } from './processor';
 
 const NO_MORE_FLICKERING_MATH_DELIMITER = '{}';
 const ZWSP = '​';
@@ -46,26 +46,26 @@ export function extarctCMMath(codeRaw: string, display: boolean): CMMathInfo {
   return { eqStart, eqEnd, processor };
 }
 
-export function sanitizeDisplayMathCode(code: string): string {
+export function normalizeDisplayMathCode(code: string): string {
   code = code.replaceAll(BR_TAG, BR_REPLACEMENT); // ? 文字の長さを合わせる
   code = code.replace(QUOTE_RE, (_, s) => `\n${ZWSP.repeat(s.length)}`); // ? 文字の長さを合わせる
   return code;
 }
 
 function getInlineProcessorByCode(code: string): InlineProcessor {
-  const inlineProcessors = settingsManager.settings.processor.inline?.processors;
+  const inlineProcessors = settingsManager.settings.processors.inline;
   return (
     inlineProcessors?.find((p) => code.startsWith(`${p.id}:`)) ??
     inlineProcessors.at(-1) ??
-    DEFAULT_SETTINGS.processor.inline!.processors.at(-1)!
+    DEFAULT_SETTINGS.processors.inline!.at(-1)!
   );
 }
 
 function getDisplayProcessorByCode(code: string): DisplayProcessor {
-  const displayProcessors = settingsManager.settings.processor.display?.processors;
+  const displayProcessors = settingsManager.settings.processors.display;
   return (
     displayProcessors?.find((p) => code.startsWith(p.id)) ??
     displayProcessors?.at(-1) ??
-    DEFAULT_SETTINGS.processor.display!.processors.at(-1)!
+    DEFAULT_SETTINGS.processors.display.at(-1)!
   );
 }

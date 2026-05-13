@@ -37,7 +37,8 @@ export default class WasmAdapter {
   baseDirPath: string;
   vaultPackagesDirNPath: string;
   localPackagesDirPaths: string[];
-  private inFlightDownloads: Set<string> = new Set();
+  private downloadingPackages: Set<string> = new Set();
+  private failedPackages: Map<string, ErrorCode> = new Map();
   private pendings: Promise<unknown>[] = [];
 
   private fs?: typeof fsModule;
@@ -73,18 +74,12 @@ export default class WasmAdapter {
   }
 
   // post
-  async init(wasm: ArrayBuffer, fontsize: number, offset: number): Promise<void> {
+  async init(wasm: ArrayBuffer): Promise<void> {
     this.free();
     await init({
       module_or_path: await WebAssembly.compile(wasm),
     });
-    this.wasm = new Wasm(
-      this.readFile.bind(this),
-      this.readPackageFile.bind(this),
-      this.downloadPackage.bind(this),
-      fontsize,
-      offset,
-    );
+    this.wasm = new Wasm(this.readFile.bind(this), this.readPackageFile.bind(this), this.downloadPackage.bind(this));
   }
 
   store(args: Args): void {
@@ -93,8 +88,24 @@ export default class WasmAdapter {
     this.wasm!.store(args.fonts ?? [], files);
   }
 
-  setOffset(offset: number): void {
+  setOffset(offset: number) {
     this.wasm!.set_offset(offset);
+  }
+
+  setFontsize(font_size: number) {
+    this.wasm!.set_fontsize(font_size);
+  }
+
+  setViewportWidth(width: string) {
+    this.wasm!.set_viewport_width(width);
+  }
+
+  initInternalPackages(font_size: number) {
+    this.wasm!.init_internal_packages(font_size);
+  }
+
+  updateVariables() {
+    this.wasm!.update_variables();
   }
 
   // * get
@@ -125,6 +136,8 @@ export default class WasmAdapter {
     } else {
       fileMap.clear();
       packagesMap.clear();
+      this.downloadingPackages.clear();
+      this.failedPackages.clear();
       obsidianResultsCache.clear();
     }
   }
@@ -249,6 +262,8 @@ export default class WasmAdapter {
 
   readPackageFile(spec: PackageSpec, vpath: string): Uint8Array {
     const specKey = `${spec.namespace}/${spec.name}/${spec.version}`;
+    if (this.failedPackages.has(specKey)) throw this.failedPackages.get(specKey)!;
+
     let packageMap = packagesMap.get(specKey);
     if (!packageMap) {
       packageMap = new Map();
@@ -262,7 +277,7 @@ export default class WasmAdapter {
     }
 
     // ダウンロード中
-    if (this.inFlightDownloads.has(specKey)) throw ErrorCode.Pending;
+    if (this.downloadingPackages.has(specKey)) throw ErrorCode.Pending;
 
     // 1. Vault
     try {
@@ -314,8 +329,8 @@ export default class WasmAdapter {
 
   downloadPackage(spec: PackageSpec): void {
     const pkgKey = `${spec.namespace}/${spec.name}/${spec.version}`;
-    if (this.inFlightDownloads.has(pkgKey)) return;
-    this.inFlightDownloads.add(pkgKey);
+    if (this.downloadingPackages.has(pkgKey)) return;
+    this.downloadingPackages.add(pkgKey);
 
     this.main.notice(`Downloading ${spec.name}...`, 500);
 
@@ -346,9 +361,10 @@ export default class WasmAdapter {
         })
         .catch((e) => {
           console.error('[typst-mate] package download failed:', e);
+          this.failedPackages.set(pkgKey, e);
         })
         .finally(() => {
-          this.inFlightDownloads.delete(pkgKey);
+          this.downloadingPackages.delete(pkgKey);
         }),
     );
   }

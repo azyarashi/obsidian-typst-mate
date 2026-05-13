@@ -1,12 +1,9 @@
 import { SyntaxMode } from '@typstmate/typst-syntax';
 import {
-  type CodeblockProcessor,
   CodeblockStyling,
-  type DisplayProcessor,
   DisplayStyling,
-  type ExcalidrawProcessor,
-  type InlineProcessor,
   InlineStyling,
+  type Processor,
   type ProcessorKind,
   RenderingEngine,
 } from '@/libs';
@@ -53,20 +50,7 @@ export interface Settings {
   textViewExtensions: string[];
 
   /* その他の設定 */
-  processor: {
-    inline: {
-      processors: InlineProcessor[];
-    };
-    display: {
-      processors: DisplayProcessor[];
-    };
-    codeblock: {
-      processors: CodeblockProcessor[];
-    };
-    excalidraw: {
-      processors: ExcalidrawProcessor[];
-    };
-  };
+  processors: { [K in ProcessorKind]: Processor<K>[] };
   extensionSettings: Record<EditorContext, Record<string, ExtensionSetting>>;
 
   /* 内部設定 */
@@ -156,122 +140,114 @@ export const DEFAULT_SETTINGS: Settings = {
   textViewExtensions: ['html', 'toml', 'js', 'tmTheme', 'sublime-color-scheme'],
 
   /* その他の設定 */
-  processor: {
-    inline: {
-      processors: [
-        {
-          id: 'ce',
-          renderingEngine: RenderingEngine.TypstSVG,
-          format: [
-            '#import "@preview/typsium:0.3.1": ce',
-            '#show math.equation: set text(font: ("New Computer Modern Math", "Noto Serif CJK SC"))',
-            '#ce[{CODE}]',
-          ].join('\n'),
-          styling: InlineStyling.Inline,
-          useReplaceAll: false,
-          noPreamble: false,
-          syntaxMode: SyntaxMode.Markup,
-        },
-        {
-          id: 'tex',
-          renderingEngine: RenderingEngine.MathJax,
-          format: '',
-          styling: InlineStyling.Inline,
-          useReplaceAll: false,
-          noPreamble: false,
-          syntaxMode: SyntaxMode.Plain,
-        },
-        {
-          id: 'display',
-          renderingEngine: RenderingEngine.TypstSVG,
-          format: '#set page(margin: (x: 0pt, y: 0.3125em))\n#math.equation($ {CODE} $, block: false)',
-          styling: InlineStyling.Inline,
-          useReplaceAll: false,
-          noPreamble: false,
-          syntaxMode: SyntaxMode.Math,
-        },
-        {
-          id: '',
-          renderingEngine: RenderingEngine.TypstSVG,
-          format: '#set page(margin: (x: 0pt, y: 0.3125em))\n${CODE}$',
-          styling: InlineStyling.Inline,
-          useReplaceAll: false,
-          noPreamble: false,
-          syntaxMode: SyntaxMode.Math,
-        },
-      ],
-    },
-    display: {
-      processors: [
-        {
-          id: 'block',
-          renderingEngine: RenderingEngine.TypstSVG,
-          format: '$ {CODE} $',
-          styling: DisplayStyling.Block,
-          useReplaceAll: false,
-          fitToNoteWidth: false,
-          noPreamble: false,
-          syntaxMode: SyntaxMode.Math,
-        },
-        {
-          id: '',
-          renderingEngine: RenderingEngine.TypstSVG,
-          format: '$ {CODE} $',
-          styling: DisplayStyling.BlockCenter,
-          useReplaceAll: false,
-          fitToNoteWidth: false,
-          noPreamble: false,
-          syntaxMode: SyntaxMode.Math,
-        },
-      ],
-    },
-    codeblock: {
-      processors: [
-        {
-          id: 'typst',
-          renderingEngine: RenderingEngine.TypstSVG,
-          format: '{CODE}',
-          styling: CodeblockStyling.BlockCenter,
-          useReplaceAll: false,
-          fitToNoteWidth: true,
-          noPreamble: false,
-          syntaxMode: SyntaxMode.Markup,
-        },
-        {
-          id: 'fletcher',
-          renderingEngine: RenderingEngine.TypstSVG,
-          format: '#import "@preview/fletcher:0.5.8" as fletcher: diagram, node, edge\n{CODE}',
-          styling: CodeblockStyling.BlockCenter,
-          useReplaceAll: false,
-          fitToNoteWidth: false,
-          noPreamble: false,
-          syntaxMode: SyntaxMode.Markup,
-        },
-        {
-          id: 'lovelace',
-          renderingEngine: RenderingEngine.TypstSVG,
-          format: '#import "@preview/lovelace:0.3.1": *\n#pseudocode-list[\n{CODE}\n]',
-          styling: CodeblockStyling.Block,
-          useReplaceAll: false,
-          fitToNoteWidth: false,
-          noPreamble: false,
-          syntaxMode: SyntaxMode.Markup,
-        },
-        {
-          id: 'lilaq',
-          renderingEngine: RenderingEngine.TypstSVG,
-          format: '#import "@preview/lilaq:0.6.0" as lq\n{CODE}',
-          styling: CodeblockStyling.BlockCenter,
-          useReplaceAll: false,
-          fitToNoteWidth: false,
-          noPreamble: false,
-          syntaxMode: SyntaxMode.Markup,
-        },
-      ],
-    },
-    excalidraw: {
-      processors: [],
-    },
+  processors: {
+    inline: [
+      {
+        id: 'ce',
+        renderingEngine: RenderingEngine.TypstSVG,
+        format: [
+          '#import "@preview/typsium:0.3.1": ce',
+          '#show math.equation: set text(font: ("New Computer Modern Math", "Noto Serif CJK SC"))',
+          '#ce[{CODE}]',
+        ].join('\n'),
+        styling: InlineStyling.Inline,
+        useReplaceAll: false,
+        noPreamble: false,
+        syntaxMode: SyntaxMode.Markup,
+      },
+      {
+        id: 'tex',
+        renderingEngine: RenderingEngine.MathJax,
+        format: '',
+        styling: InlineStyling.Inline,
+        useReplaceAll: false,
+        noPreamble: false,
+        syntaxMode: SyntaxMode.Plain,
+      },
+      {
+        id: 'display',
+        renderingEngine: RenderingEngine.TypstSVG,
+        format: '#set page(margin: (x: 0pt, y: 0.3125em))\n#math.equation($ {CODE} $, block: false)',
+        styling: InlineStyling.Inline,
+        useReplaceAll: false,
+        noPreamble: false,
+        syntaxMode: SyntaxMode.Math,
+      },
+      {
+        id: '',
+        renderingEngine: RenderingEngine.TypstSVG,
+        format: '#set page(margin: (x: 0pt, y: 0.3125em))\n${CODE}$',
+        styling: InlineStyling.Inline,
+        useReplaceAll: false,
+        noPreamble: false,
+        syntaxMode: SyntaxMode.Math,
+      },
+    ],
+    display: [
+      {
+        id: 'block',
+        renderingEngine: RenderingEngine.TypstSVG,
+        format: '$ {CODE} $',
+        styling: DisplayStyling.Block,
+        useReplaceAll: false,
+        fitToNoteWidth: false,
+        noPreamble: false,
+        syntaxMode: SyntaxMode.Math,
+      },
+      {
+        id: '',
+        renderingEngine: RenderingEngine.TypstSVG,
+        format: '$ {CODE} $',
+        styling: DisplayStyling.BlockCenter,
+        useReplaceAll: false,
+        fitToNoteWidth: false,
+        noPreamble: false,
+        syntaxMode: SyntaxMode.Math,
+      },
+    ],
+    codeblock: [
+      {
+        id: 'typst',
+        renderingEngine: RenderingEngine.TypstSVG,
+        format: '{CODE}',
+        styling: CodeblockStyling.BlockCenter,
+        useReplaceAll: false,
+        fitToNoteWidth: true,
+        noPreamble: false,
+        syntaxMode: SyntaxMode.Markup,
+      },
+      {
+        id: 'fletcher',
+        renderingEngine: RenderingEngine.TypstSVG,
+        format: '#import "@preview/fletcher:0.5.8" as fletcher: diagram, node, edge\n{CODE}',
+        styling: CodeblockStyling.BlockCenter,
+        useReplaceAll: false,
+        fitToNoteWidth: false,
+        noPreamble: false,
+        syntaxMode: SyntaxMode.Markup,
+      },
+      {
+        id: 'lovelace',
+        renderingEngine: RenderingEngine.TypstSVG,
+        format: '#import "@preview/lovelace:0.3.1": *\n#pseudocode-list[\n{CODE}\n]',
+        styling: CodeblockStyling.Block,
+        useReplaceAll: false,
+        fitToNoteWidth: false,
+        noPreamble: false,
+        syntaxMode: SyntaxMode.Markup,
+      },
+      {
+        id: 'lilaq',
+        renderingEngine: RenderingEngine.TypstSVG,
+        format: '#import "@preview/lilaq:0.6.0" as lq\n{CODE}',
+        styling: CodeblockStyling.BlockCenter,
+        useReplaceAll: false,
+        fitToNoteWidth: false,
+        noPreamble: false,
+        syntaxMode: SyntaxMode.Markup,
+      },
+    ],
+    excalidraw: [],
   },
 
   /**
@@ -318,4 +294,5 @@ export const DEFAULT_SETTINGS: Settings = {
   /* 古い設定 */
   snippets: [],
   preamble: '',
+  processor: {},
 };

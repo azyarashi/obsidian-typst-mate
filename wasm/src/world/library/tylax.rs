@@ -1,16 +1,15 @@
 use tylax::{latex_document_to_typst, latex_to_typst, typst_document_to_latex, typst_to_latex};
-use typst::Library;
 use typst::diag::SourceResult;
 use typst::ecow::EcoString;
 use typst::foundations::{Args, Module, Scope, Value, func};
 
-pub fn setup(library: &mut Library) {
-    let mut tylax_scope = Scope::new();
-    tylax_scope.define_func::<latex_to_typst_func>();
-    tylax_scope.define_func::<typst_to_latex_func>();
+pub fn get_module() -> Module {
+    let mut scope = Scope::new();
+    scope.define_func::<latex_to_typst_func>();
+    scope.define_func::<typst_to_latex_func>();
 
-    let tylax_module = Module::new("tylax", tylax_scope);
-    library.global.scope_mut().define("tylax", tylax_module);
+    let module = Module::new("tylax", scope);
+    module
 }
 
 /// ```example

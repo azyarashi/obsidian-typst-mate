@@ -1,19 +1,15 @@
-use typst::Library;
 use typst::diag::SourceResult;
 use typst::ecow::EcoString;
 use typst::foundations::{Args, Content, Module, NativeElement, Scope, Value, func};
 use typst::model::{Destination, LinkElem, Url};
 use typst::text::{TextElem, UnderlineElem};
 
-pub fn setup(library: &mut Library) {
-    let mut typstmate_scope = Scope::new();
-    typstmate_scope.define_func::<wikilink>();
+pub fn get_module() -> Module {
+    let mut scope = Scope::new();
+    scope.define_func::<wikilink>();
 
-    let typstmate_module = Module::new("typstmate", typstmate_scope);
-    library
-        .global
-        .scope_mut()
-        .define("typstmate", typstmate_module);
+    let module = Module::new("obsidian", scope);
+    module
 }
 
 /// # Example

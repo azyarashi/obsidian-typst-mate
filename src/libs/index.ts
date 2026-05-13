@@ -23,3 +23,5 @@ export * from './extensionManager';
 export * from './patches';
 
 export * from './i18n';
+
+export * from './processorManager';

@@ -3,5 +3,5 @@ import type { FormattedValue } from '.';
 import { wrapWithTypcInline } from './utils';
 
 export function formatDecimal(val: Decimal): FormattedValue {
-  return { top: wrapWithTypcInline(val.value) };
+  return { top: wrapWithTypcInline(`${val.value}`) };
 }

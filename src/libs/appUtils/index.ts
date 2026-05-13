@@ -4,7 +4,6 @@ import { t } from '@/libs/i18n';
 import ObsidianTypstMate from '@/main';
 import { TextFileView, type Tool, TypstFileView, TypstPreviewView, TypstToolsView } from '@/ui/views';
 import { checkPluginFeatures } from '../features';
-import { rendererManager } from '../rendererManager';
 import { settingsManager } from '../settingsManager';
 
 class AppUtils {
@@ -106,41 +105,6 @@ class AppUtils {
     const types = [TypstFileView.viewtype, TypstPreviewView.viewtype, TypstToolsView.viewtype, TextFileView.viewtype];
 
     for (const type of types) for (const leaf of (app ?? this.app).workspace.getLeavesOfType(type)) leaf.rebuildView();
-  }
-
-  getNoteWidth(): string {
-    if (rendererManager.currentNoteWidth !== undefined) return rendererManager.currentNoteWidth;
-
-    const view = this.app.workspace.getActiveViewOfType(MarkdownView);
-    let width = Infinity;
-
-    if (view) {
-      const sizer = view?.editor.editorComponent?.sizerEl;
-      const sizerWidth = sizer?.clientWidth ? sizer.clientWidth : Infinity;
-
-      if (view.getMode() === 'preview') {
-        const divElP = view?.contentEl.find('div.el-p p');
-
-        const pWidth = divElP?.clientWidth ? divElP.clientWidth : Infinity;
-
-        width = Math.min(sizerWidth, pWidth);
-      } else {
-        const cmLine = sizer?.find('.cm-line');
-        const cmContent = sizer?.find('.cm-content');
-
-        const lineWidth = cmLine?.clientWidth ? cmLine.clientWidth : Infinity;
-        const contentWidth = cmContent?.clientWidth ? cmContent?.clientWidth : Infinity;
-
-        width = Math.min(sizerWidth, lineWidth, contentWidth);
-      }
-    } else {
-      // TODO: キャンバス とか Kanban とか
-    }
-
-    const fileLineWidth = parseInt(getComputedStyle(document.body).getPropertyValue('--file-line-width'), 10);
-    const typstWidth = (width === Infinity ? (Number.isNaN(fileLineWidth) ? 700 : fileLineWidth) : width) * 0.75;
-
-    return `${typstWidth}pt`;
   }
 
   getActiveMarkdownView() {

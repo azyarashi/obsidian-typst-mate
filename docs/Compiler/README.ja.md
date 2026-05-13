@@ -16,7 +16,7 @@
 ### `boxed` (`function`)
 
 グローバルスコープと数学スコープの両方に、TeX における [amsmath パッケージ](https://ctan.org/pkg/amsmath) の `\boxed` に相当する関数が定義されています。
-これは [コマンド `box-equation`](../Commands/README.ja.md#) で使用されます。
+これは [コマンド `box-equation`](../Commands/README.ja.md) で使用されます。
 
 ```typst
 #let boxed(it) = box(

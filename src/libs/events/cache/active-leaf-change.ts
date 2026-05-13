@@ -3,10 +3,21 @@ import { appUtils, rendererManager } from '@/libs';
 
 export async function onActiveLeafChange(leaf: WorkspaceLeaf | null) {
   const { app } = appUtils;
-  if (leaf?.view.getViewType() !== 'markdown') return;
-  const path = (leaf?.view as MarkdownView).file?.path;
-  if (!path) return;
 
+  const view = leaf?.view as MarkdownView | undefined;
+  if (view?.getViewType() !== 'markdown') return;
+  console.log(view);
+
+  // * viewport
+  requestAnimationFrame(() => {
+    const width = rendererManager.getNoteWidth(view);
+    rendererManager.wasm.setViewportWidth(width);
+    rendererManager.wasm.updateVariables();
+  });
+
+  // * cache
+  const path = view.file?.path;
+  if (!path) return;
   const cache = app.metadataCache.getCache(path);
   if (cache) rendererManager.syncFileCache(cache);
 }

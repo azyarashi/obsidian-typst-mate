@@ -47,7 +47,6 @@ export class TypstFileView extends TextFileView {
   }
 
   private resolveVPath(): string | undefined {
-    if (this.vpath) return this.vpath;
     this.vpath = this.file?.path;
     return this.vpath;
   }
@@ -259,6 +258,8 @@ export class TypstFileView extends TextFileView {
   }
 
   override async onLoadFile(file: TFile): Promise<void> {
+    this.view?.destroy();
+    this.vpath = file.path;
     this.contentEl.empty();
 
     const fileContent = await this.app.vault.read(file);

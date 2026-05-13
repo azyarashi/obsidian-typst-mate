@@ -13,8 +13,9 @@ export function setStatusBarItem(containerEl: HTMLElement) {
   render(<StatusBarItem containerEl={containerEl} />, containerEl);
 }
 
-export function hideStatusBarItem(containerEl: HTMLElement) {
+export function removeStatusBarItem(containerEl: HTMLElement) {
   render(null, containerEl);
+  containerEl.remove();
 }
 
 export function StatusBarItem({ containerEl }: { containerEl: HTMLElement }) {

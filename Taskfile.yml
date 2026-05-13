@@ -30,7 +30,9 @@ tasks:
       - cp -f manifest.json '{{.PLUGIN_DIR}}'
       - rm -f '{{.PLUGIN_DIR}}/watcher-'*.node
       - rm -f '{{.PLUGIN_DIR}}/watcher-'*.js
-      - for f in node_modules/@parcel/watcher-*; do if [ -f "$f/watcher.node" ]; then cp -f "$f/watcher.node" "{{.PLUGIN_DIR}}/$(basename $f)-{{.version}}.node"; fi; done
+      - for f in node_modules/@parcel/watcher-*; do if [ -f "$f/watcher.node" ];
+        then cp -f "$f/watcher.node" "{{.PLUGIN_DIR}}/$(basename
+        $f)-{{.version}}.node"; fi; done
     desc: "Copy static files to plugin directory"
   wasm:
     vars:
@@ -54,15 +56,18 @@ tasks:
     desc: "Build WASM file and copy to plugin directory"
   dev:
     cmds:
-      - bunx --bun vite build -w -m development --outDir '{{.CONFIG_DIR}}/plugins/{{.PLUGIN_ID}}'
+      - bunx --bun vite build -w -m development --outDir
+        '{{.CONFIG_DIR}}/plugins/{{.PLUGIN_ID}}'
     desc: "Build in development mode and copy to plugin directory"
 
   fetch_unicode_math_table:
     cmds:
-      - curl -sL https://raw.githubusercontent.com/wspr/unicode-math/master/unicode-math-table.tex -o wasm/src/tools/unicode-math-table.tex
+      - curl -sL
+        https://raw.githubusercontent.com/wspr/unicode-math/master/unicode-math-table.tex
+        -o wasm/src/tools/unicode-math-table.tex
     desc: "Fetch latest unicode-math-table.tex from GitHub"
     status:
-      - 'test "{{.UPDATE}}" != "true"'
+      - "test \"{{.UPDATE}}\" != \"true\""
       - "test -f wasm/src/tools/unicode-math-table.tex"
 
   update_symbols:
@@ -77,8 +82,9 @@ tasks:
       tag:
         sh: "bun scripts/version.ts --type {{.TYPE}}"
     cmds:
-      - git add manifest.json versions.json
-      - 'git commit -m "release: {{.tag}}"'
+      - bunx --bun vite build -c vite.config.types.ts
+      - git add manifest.json versions.json docs/API/api.d.ts
+      - "git commit -m \"release: {{.tag}}\""
       - git tag "{{.tag}}"
       - git push
       - git push origin "{{.tag}}"
@@ -98,6 +104,8 @@ tasks:
         ignore_error: true
       - cmd: git tag -d "{{.tag}}"
         ignore_error: true
+      - bunx --bun vite build -c vite.config.types.ts
+      - git add docs/API/api.d.ts
       - git tag "{{.tag}}"
       - git push origin "{{.tag}}"
       - echo "Tag {{.tag}} re-pushed. Workflow will be triggered."

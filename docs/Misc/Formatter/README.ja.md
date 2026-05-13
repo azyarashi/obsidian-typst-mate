@@ -1,0 +1,11 @@
+# フォーマッター
+
+\[[English](./README.md) | 日本語\]
+
+> [!INFO]
+> これは翻訳版です。最新の変更が反映されていない可能性があります。
+
+## 準備中
+
+- `// @typstyle off all`
+- `/* @typstyle off all */`

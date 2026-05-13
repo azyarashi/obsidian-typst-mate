@@ -1,10 +1,9 @@
-import type { PackageSpec } from '@wasm';
 import { proxy, type Remote, wrap } from 'comlink';
-import { type CachedMetadata, getAllTags, MarkdownPreviewRenderer, Notice, requestUrl } from 'obsidian';
-import { Phase, State, TypstMate } from '@/api';
+import { type CachedMetadata, getAllTags, MarkdownView, Notice, type TFile } from 'obsidian';
+import { TypstMate } from '@/api';
 import { DEFAULT_FONT_SIZE } from '@/constants';
 import { DEFAULT_SETTINGS } from '@/data/settings';
-import { crashTracker, fileManager, settingsManager } from '@/libs';
+import { fileManager, settingsManager } from '@/libs';
 import { features } from '@/libs/features';
 import { t } from '@/libs/i18n';
 import type ObsidianTypstMate from '@/main';
@@ -13,28 +12,17 @@ import type { Singleton } from '@/types/singleton';
 import TypstHTMLElement from '@/ui/elements/HTML';
 import TypstSVGElement from '@/ui/elements/SVG';
 import type TypstElement from '@/ui/elements/Typst';
-import { TypstFileView, type TypstPreviewView } from '@/ui/views';
+import { TypstFileView, TypstPreviewView } from '@/ui/views';
 import { overwriteCustomElements } from '@/utils/custromElementRegistry';
 import { expandHierarchicalTags } from '@/utils/tags';
-import {
-  type CodeblockProcessor,
-  extarctCMMath,
-  getNDirAndNPath,
-  getParentNPathByFileNPath,
-  type MarkdownProcessor,
-  type Processor,
-  type ProcessorKind,
-  RenderingEngine,
-  sanitizeDisplayMathCode,
-} from './utils';
+import { extarctCMMath, getMain, getNDirAndNPath, getParentNPathByFileNPath, normalizeDisplayMathCode } from './utils';
 import type WasmAdapter from './worker';
-import Wasm, { ErrorCode } from './worker';
+import Wasm from './worker';
 import WasmWorker from './worker?worker&inline';
 
 export * from './utils';
 
 import './index.css';
-import type { PackageAsset } from '@/types/typst';
 
 // TODO runtime errror の誘導
 
@@ -44,7 +32,6 @@ export class RendererManager implements Singleton {
 
   wasm!: WasmAdapter | Remote<WasmAdapter>;
   private worker?: Worker;
-  private renderTimer?: ReturnType<typeof setTimeout>;
 
   registeredCodeblockProcessorIds: Set<string> = new Set();
 
@@ -54,7 +41,9 @@ export class RendererManager implements Singleton {
 
   lastStateHash?: string;
   tagFiles: Set<string> = new Set();
-  currentNoteWidth?: string;
+
+  metadataCache: Map<NPath, CachedMetadata> = new Map();
+  frontmatterPreamble: string = '';
 
   preamble: string = '';
 
@@ -62,54 +51,11 @@ export class RendererManager implements Singleton {
     this.plugin = plugin;
   }
 
+  // * wasm
+
   async prepareWasm() {
     const { settings } = settingsManager;
-    const { adapter } = this.plugin.app.vault;
-
-    const main = {
-      notice(message: string, duration?: number) {
-        new Notice(message, duration);
-      },
-
-      async readBinary(p: string) {
-        return await adapter.readBinary(p);
-      },
-
-      async writePackage(spec: PackageSpec, files: PackageAsset) {
-        await fileManager.writePackage(spec, files);
-      },
-
-      /**
-       * @see https://github.com/typst/typst/blob/main/crates/typst-kit/src/packages.rs
-       */
-      async fetchPackage(spec: PackageSpec): Promise<ArrayBuffer> {
-        const { namespace, name, version } = spec;
-        if (namespace !== 'preview') throw ErrorCode.PackageErrorNotFound;
-
-        const res = await requestUrl({
-          url: `https://packages.typst.org/${namespace}/${name}-${version}.tar.gz`,
-          method: 'GET',
-          throw: false,
-        });
-
-        if (res.status === 404) throw ErrorCode.PackageErrorNotFound;
-        if (res.status !== 200) throw ErrorCode.PackageErrorNetworkFailed;
-
-        return res.arrayBuffer;
-      },
-
-      updateStatus: (status: { isRendering: boolean; message?: string }) => {
-        if (this.renderTimer) clearTimeout(this.renderTimer);
-
-        if (status.isRendering) TypstMate.setStatus({ state: State.Rendering, message: status.message });
-        else {
-          this.renderTimer = setTimeout(() => {
-            this.renderTimer = undefined;
-            TypstMate.setStatus({ state: State.Idle });
-          }, 250);
-        }
-      },
-    };
+    const main = getMain();
 
     if (settings.enableBackgroundRendering) {
       this.worker = new WasmWorker();
@@ -132,11 +78,11 @@ export class RendererManager implements Singleton {
       this.wasm.setMain(main);
     }
 
-    await this.wasm.init(
-      await this.plugin.app.vault.adapter.readBinary(fileManager.wasmNPath),
-      this.plugin.app.vault.config.baseFontSize ?? DEFAULT_FONT_SIZE,
-      settings.offset,
-    );
+    await this.wasm.init(await this.plugin.app.vault.adapter.readBinary(fileManager.wasmNPath));
+    await this.wasm.setOffset(settings.offset);
+    await this.wasm.initInternalPackages(this.plugin.app.vault.config.baseFontSize ?? DEFAULT_FONT_SIZE);
+
+    // await this.wasm.initInternalPackages(this.plugin.app.vault.config.baseFontSize ?? DEFAULT_FONT_SIZE);
 
     TypstMate.typstVersion = await this.wasm.version();
 
@@ -173,21 +119,23 @@ export class RendererManager implements Singleton {
     await this.wasm.store({ fonts, files });
 
     this.ready = true;
-    TypstMate.setPhase(Phase.Ready);
-    crashTracker.updateCrashStatus(false);
-
-    const waitingElements = document.querySelectorAll('.typstmate-waiting');
-    for (const el of waitingElements) {
-      const content = el.textContent!;
-
-      const file = this.plugin.app.workspace.getActiveFile();
-      const ndir = file?.parent?.path ?? '/';
-      const npath = file?.path;
-
-      el.empty();
-      this.render(content, el, el.getAttribute('kind')!, ndir, npath);
-    }
   }
+
+  private async clearWasm() {
+    await this.wasm.free();
+    await this.wasm.clearCache();
+    this.worker?.terminate();
+    this.worker = undefined;
+  }
+
+  async refreshWasm() {
+    await this.clearWasm();
+
+    await this.prepareWasm();
+    await this.prepareAssets();
+  }
+
+  // * register
 
   registerOnce() {
     overwriteCustomElements('typstmate-svg', TypstSVGElement);
@@ -237,7 +185,7 @@ export class RendererManager implements Singleton {
         // TODO
         if (!this.ready) {
           container.textContent = text;
-          container.addClass('typstmate-waiting');
+          container.addClass('typstmate-pending');
           container.setAttribute('kind', inline ? 'inline' : 'display');
         } else {
           const npath = ctx.sourcePath;
@@ -251,7 +199,9 @@ export class RendererManager implements Singleton {
     }, -100);
 
     // MathJax をオーバライド
-    window.MathJax!.tex2chtml = (e: string, r: { display?: boolean }) => {
+    window.MathJax!.tex2chtml = (e: string, r: { display?: boolean; file?: TFile }) => {
+      const { display, file } = r;
+
       // タグ名，クラス名，属性がこれ以外だと認識されないない
       const container = document.createElement('mjx-container');
       container.className = 'Mathjax';
@@ -259,63 +209,37 @@ export class RendererManager implements Singleton {
 
       if (!this.ready) {
         container.textContent = e;
-        container.addClass('typstmate-waiting');
-        container.setAttribute('kind', r.display ? 'display' : 'inline');
+        container.addClass('typstmate-pending');
+        container.setAttribute('kind', display ? 'display' : 'inline');
 
         return container;
       }
 
-      const file = this.plugin.app.workspace.getActiveFile();
       const { ndir, npath } = getNDirAndNPath(file);
-
-      return this.render(e, container, r.display ? 'display' : 'inline', ndir, npath);
+      return this.render(e, container, display ? 'display' : 'inline', ndir, npath);
     };
   }
 
-  // TODO
-  registerCodeblockProcessors() {
-    // MarkdownPreviewRenderer.codeBlockPostProcessors
-    for (const id of this.registeredCodeblockProcessorIds) MarkdownPreviewRenderer.unregisterCodeBlockPostProcessor(id);
-    this.registeredCodeblockProcessorIds.clear();
+  // * rendering
 
-    const codeblockProcessors = settingsManager.settings.processor.codeblock.processors;
-    for (const processor of codeblockProcessors) this.registerCodeblockProcessor(processor);
-  }
+  async renderPendingElements() {
+    const waitingElements = document.querySelectorAll('.typstmate-pending');
+    for (const el of waitingElements) {
+      const content = el.textContent!;
 
-  registerCodeblockProcessor(processor: CodeblockProcessor) {
-    try {
-      this.plugin.registerMarkdownCodeBlockProcessor(processor.id, (source, el, ctx) => {
-        if (!this.ready) {
-          el.textContent = source;
-          el.addClass('typstmate-waiting');
-          el.setAttribute('kind', processor.id);
+      // TODO
 
-          return Promise.resolve(el as HTMLElement);
-        }
+      const file = this.plugin.app.workspace.getActiveFile();
+      const ndir = file?.parent?.path ?? '/';
+      const npath = file?.path;
 
-        const npath = ctx.sourcePath;
-        const ndir = getParentNPathByFileNPath(npath);
-
-        return Promise.resolve(this.render(source, el, processor.id, ndir, npath));
-      });
-
-      this.registeredCodeblockProcessorIds.add(processor.id);
-    } catch {
-      new Notice(t('notices.alreadyRegisteredCodeblock', { id: processor.id }));
+      el.empty();
+      this.render(content, el, el.getAttribute('kind')!, ndir, npath);
     }
   }
 
-  unregisterCodeblockProcessor(id: string) {
-    MarkdownPreviewRenderer.unregisterCodeBlockPostProcessor(id);
-    this.registeredCodeblockProcessorIds.delete(id);
-  }
-
-  renameCodeblockProcessor(oldId: string, newProcessor: CodeblockProcessor) {
-    this.unregisterCodeblockProcessor(oldId);
-    this.registerCodeblockProcessor(newProcessor);
-  }
-
   async rerenderAll(elOnly = false) {
+    // TODO docId
     const els = document.querySelectorAll('typstmate-svg, typstmate-html') as NodeListOf<TypstElement>;
     for (const el of els) await el.render();
     if (elOnly) return;
@@ -325,7 +249,7 @@ export class RendererManager implements Singleton {
       view.debouncedCompile();
     }
 
-    for (const leaf of this.plugin.app.workspace.getLeavesOfType('typst-preview')) {
+    for (const leaf of this.plugin.app.workspace.getLeavesOfType(TypstPreviewView.viewtype)) {
       const view = leaf.view as TypstPreviewView;
       if (view.file) view.onModify(view.file);
     }
@@ -361,16 +285,16 @@ export class RendererManager implements Singleton {
 
         if (eqEnd !== 0) code = code.slice(eqStart, -eqEnd);
         else code = code.slice(eqStart);
-        if (isDisplay) code = sanitizeDisplayMathCode(code);
+        if (isDisplay) code = normalizeDisplayMathCode(code);
 
         break;
       }
       default: {
         // * codeblock
         processor =
-          settings.processor.codeblock?.processors.find((p) => p.id === kind) ??
-          settings.processor.codeblock?.processors.at(-1) ??
-          DEFAULT_SETTINGS.processor.codeblock!.processors.at(-1)!;
+          settings.processors.codeblock?.find((p) => p.id === kind) ??
+          settings.processors.codeblock?.at(-1) ??
+          DEFAULT_SETTINGS.processors.codeblock!.at(-1)!;
 
         if (processor?.styling === 'codeblock') {
           containerEl.addClass('HyperMD-codeblock', 'HyperMD-codeblock-bg');
@@ -473,31 +397,75 @@ export class RendererManager implements Singleton {
     return true;
   }
 
-  updateNoteWidth() {
+  // * profile
+
+  updateNoteWidth(): boolean {
+    switch (settingsManager.settings.fitToNoteWidthProfile) {
+      case 'Live':
+        return this.updateNoteWidthWithLive();
+      default:
+        return this.updateNoteWidthWithProfile();
+    }
+  }
+
+  updateNoteWidthWithProfile(): boolean {
     const profileName = settingsManager.settings.fitToNoteWidthProfile;
     if (profileName !== 'Live') {
       const profile = settingsManager.settings.fitToNoteWidthProfiles.find((p) => p.name === profileName);
-      if (!profile) return;
+      if (!profile) return false;
 
-      this.currentNoteWidth = profile.width;
-      return;
+      const width = profile.width;
+      this.wasm.setViewportWidth(width);
+      this.wasm.updateVariables();
+      return true;
     }
-    this.currentNoteWidth = undefined;
+
+    return false;
   }
 
-  private async clearWasm() {
-    await this.wasm.free();
-    await this.wasm.clearCache();
-    this.worker?.terminate();
-    this.worker = undefined;
+  updateNoteWidthWithLive(): boolean {
+    if (settingsManager.settings.fitToNoteWidthProfile !== 'Live') return false;
+
+    const width = this.getNoteWidth();
+    this.wasm.setViewportWidth(width);
+    this.wasm.updateVariables();
+    return true;
   }
 
-  async refreshWasm() {
-    await this.clearWasm();
+  getNoteWidth(view?: MarkdownView | null): string {
+    view = view ?? this.plugin.app.workspace.getActiveViewOfType(MarkdownView);
+    let width = Infinity;
 
-    await this.prepareWasm();
-    await this.prepareAssets();
+    if (view) {
+      const sizer = view?.editor.editorComponent?.sizerEl;
+      const sizerWidth = sizer?.clientWidth ? sizer.clientWidth : Infinity;
+
+      if (view.getMode() === 'preview') {
+        const divElP = view?.contentEl.find('div.el-p p');
+
+        const pWidth = divElP?.clientWidth ? divElP.clientWidth : Infinity;
+
+        width = Math.min(sizerWidth, pWidth);
+      } else {
+        const cmLine = sizer?.find('.cm-line');
+        const cmContent = sizer?.find('.cm-content');
+
+        const lineWidth = cmLine?.clientWidth ? cmLine.clientWidth : Infinity;
+        const contentWidth = cmContent?.clientWidth ? cmContent?.clientWidth : Infinity;
+
+        width = Math.min(sizerWidth, lineWidth, contentWidth);
+      }
+    } else {
+      // TODO: キャンバス とか Kanban とか
+    }
+
+    const fileLineWidth = parseInt(getComputedStyle(document.body).getPropertyValue('--file-line-width'), 10);
+    const typstWidth = (width === Infinity ? (Number.isNaN(fileLineWidth) ? 700 : fileLineWidth) : width) * 0.75;
+
+    return `${typstWidth}pt`;
   }
+
+  // * detach
 
   async detach() {
     (this as any).plugin = undefined;

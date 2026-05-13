@@ -28,29 +28,33 @@ export interface ProcessorBase {
   renderingEngine: RenderingEngine;
   format: string;
   syntaxMode?: SyntaxMode;
+
+  styling?: any;
+  useReplaceAll?: any;
+  fitToNoteWidth?: any;
+  noPreamble?: any;
 }
 
 export interface ProcessorMarkdownBase<S extends Styling> extends ProcessorBase {
   styling: S;
   useReplaceAll?: boolean;
+  noPreamble?: boolean;
 }
 
 export type InlineProcessor = ProcessorMarkdownBase<InlineStyling> & {
-  noPreamble?: boolean;
+  fitToNoteWidth: undefined;
 };
 export type DisplayProcessor = ProcessorMarkdownBase<DisplayStyling> & {
   fitToNoteWidth?: boolean;
-  noPreamble?: boolean;
 };
 export type CodeblockProcessor = ProcessorMarkdownBase<CodeblockStyling> & {
   fitToNoteWidth?: boolean;
-  noPreamble?: boolean;
 };
 export type ExcalidrawProcessor = ProcessorBase;
 
 export type MathProcessor = InlineProcessor | DisplayProcessor;
 export type MarkdownProcessor = InlineProcessor | DisplayProcessor | CodeblockProcessor;
-export type Processor = InlineProcessor | DisplayProcessor | CodeblockProcessor | ExcalidrawProcessor;
+export type Processor<K extends ProcessorKind = ProcessorKind> = ProcessorOfKind<K>;
 
 export const ProcessorKindTokens = ['inline', 'display', 'codeblock', 'excalidraw'] as const;
 export type ProcessorKind = (typeof ProcessorKindTokens)[number];
@@ -82,18 +86,16 @@ export const DefaultNewInlineProcessor: InlineProcessor = {
   renderingEngine: RenderingEngine.TypstSVG,
   format: '#set page(margin: (x: 0pt, y: 0.3125em))\n${CODE}$',
   styling: InlineStyling.Inline,
-  useReplaceAll: false,
-  noPreamble: false,
   syntaxMode: SyntaxMode.Math,
+
+  fitToNoteWidth: undefined,
 };
 export const DefaultNewDisplayProcessor: DisplayProcessor = {
   id: 'new',
   renderingEngine: RenderingEngine.TypstSVG,
   format: '$ {CODE} $',
   styling: DisplayStyling.BlockCenter,
-  useReplaceAll: false,
-  fitToNoteWidth: false,
-  noPreamble: false,
+
   syntaxMode: SyntaxMode.Math,
 };
 export const DefaultNewCodeblockProcessor: CodeblockProcessor = {
@@ -101,15 +103,13 @@ export const DefaultNewCodeblockProcessor: CodeblockProcessor = {
   renderingEngine: RenderingEngine.TypstSVG,
   format: '{CODE}',
   styling: CodeblockStyling.BlockCenter,
-  useReplaceAll: false,
-  fitToNoteWidth: false,
-  noPreamble: false,
+
   syntaxMode: SyntaxMode.Markup,
 };
 export const DefaultNewExcalidrawProcessor: ExcalidrawProcessor = {
   id: 'new',
   renderingEngine: RenderingEngine.TypstSVG,
-  format: '#set page(margin: 0.5em)\n${CODE}$',
+  format: '#set page(margin: 0.25em)\n${CODE}$',
 };
 
 export const DefaultNewProcessor: Record<ProcessorKind, Processor> = {

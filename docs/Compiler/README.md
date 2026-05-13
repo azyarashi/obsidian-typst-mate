@@ -13,7 +13,7 @@ Defined in the global scope, it is equal to the Obsidian font size multiplied by
 ### `boxed` (`function`)
 
 Defined in both global and math scopes, it acts as an equivalent to the `\boxed` command from TeX's [amsmath package](https://ctan.org/pkg/amsmath).
-This is utilized by the [`box-equation` command](../Commands/README.md#).
+This is utilized by the [`box-equation` command](../Commands/README.md).
 
 ```typst
 #let boxed(it) = box(

@@ -1,8 +1,5 @@
 {
   common: {
-    markdown: 'Markdown',
-    typst: 'Typst',
-    processor: 'Processor',
     openDetails: '詳細を開く',
     waitingForLoad: 'プラグインの読み込みを待機中...',
     openTypstTools: 'Typst ツールを開く',
@@ -56,7 +53,7 @@
         blockCenter: '中央寄せブロック',
         codeblock: 'コードブロック',
       },
-      iconTooltips: {
+      tooltips: {
         useReplaceAll: '{CODE} を全て置換する',
         fitToNote: 'ノートの幅に合わせる',
         noPreamble: 'プリアンブルを使用しない',
@@ -64,7 +61,7 @@
         syntaxModeMarkup: 'マークアップモード',
         syntaxModeMath: '数式モード',
         syntaxModeCode: 'コードモード',
-        syntaxModeNull: '解析なし',
+        syntaxModePlain: 'コメント、文字列リテラル、コードなど',
         openMoreSettings: '詳細設定を開く',
       },
       formatPlaceholder: 'フォーマット',
@@ -108,35 +105,34 @@
         tooltip: 'リンクを開く ({{key}} + click)',
       },
       codeblockPreview: {
-        name: 'Codeblock Preview',
+        name: 'コードブロックプレビュー',
         desc: 'コードブロックの下部にプレビューを表示します。',
       },
       debugger: {
         name: 'Debugger',
-        desc: '',
+        desc: '説明なし',
       },
-      inlinePreview: {
-        name: 'Inline Preview',
+      inlineMathPreview: {
+        name: 'インライン数式プレビュー',
         desc: 'インライン数式のプレビューを表示する吹き出しを追加します。',
         disableOnMathJaxName: 'MathJax の場合は無効にする',
-        disableOnMathJaxDesc: 'MathJax を使用している数式ブロックでは、プレビューを表示しません。',
+        disableOnMathJaxDesc: 'MathJax が指定されているプロセッサーでは、プレビューを表示しません。',
       },
       latexSuiteIntegration: {
-        name: 'LaTeX Suite Integration',
-        desc: 'TypstMate の数式ブロック内では LaTeX Suite の機能を無効化し、競合を防ぎます。',
+        name: 'LaTeX Suite 統合',
+        desc: 'TypstMate の数式・コードブロック内では、<a href="https://www.obsidianstats.com/plugins/obsidian-latex-suite">LaTeX Suite</a> の機能を無効化し、競合を防ぎます。',
       },
       markdownCore: {
-        name: 'Markdown Core',
-        desc: '',
+        name: 'Markdown コア',
       },
       autocomplete: {
-        name: 'Autocomplete',
+        name: '自動補完',
         desc: '変数やパッケージ、フォント情報などを補完します。',
         useUnicodeSymbolsName: '記号を Unicode 文字で補完する',
         useUnicodeSymbolsDesc: '記号 (<code>symbol</code>) を補完するとき、対応する Unicode 文字に置き換えます。',
       },
       formatter: {
-        name: 'Formatter',
+        name: 'フォーマッター',
         desc: '<a href="https://typstyle-rs.github.io/typstyle/">Typstyle</a> によるフォーマットを実行します',
         formatOnSaveName: '保存時のフォーマット',
         formatOnSaveDesc: '保存時のフォーマット',
@@ -154,24 +150,25 @@
         wrapTextName: 'テキストの折り返し',
         wrapTextDesc: 'テキストの折り返し',
       },
-      jumpPreview: {
-        desc: 'レンダリング結果をクリックしてコードに飛びます (Typst SVG のみ有効)。',
-      },
       linter: {
+        name: 'リンター',
         desc: 'エラーや警告を波線で表示します。',
       },
       pairHighlight: {
+        name: 'ペアハイライト',
         desc: '括弧などのペアをハイライトします。',
       },
       symbolConceal: {
         desc: 'Math モード内の記号をユニコード文字で表示します。',
         revealDelayName: '数式記号の表示遅延',
         revealDelayDesc: 'カーソルが近づいたときに、非表示にされている数式記号を表示するまでの遅延を追加します。',
+        name: 'スマート表示 (記号)',
       },
       syntaxHighlight: {
         desc: 'シンタックスハイライト',
         useObsidianThemeName: 'Obsidian テーマを使用',
         useObsidianThemeDesc: 'Typst Playground のテーマの代わりに、Obsidian テーマを使用します。',
+        name: 'シンタックスハイライト',
       },
       tabJump: {
         desc: 'Tab キーでさまざまな場所にジャンプします。',
@@ -186,17 +183,21 @@
       },
       tooltip: {
         desc: 'ホバーしてツールチップを表示します。',
+        name: 'ツールチップ',
       },
       typstMateActions: {
         desc: 'TypstMate のアクション。',
         longPressDurationName: 'ロングプレス アクションの遅延時間',
         longPressDurationDesc: 'ロングプレス アクションが実行されるまで',
+        name: 'Typst Mate アクション',
       },
       errorLens: {
         desc: 'エラーや警告を行末に表示します。',
+        name: 'Error Lens',
       },
       indentRainbow: {
         desc: 'インデントレインボー',
+        name: 'Indent Rainbow',
       },
       codePreview: {
         desc: 'TODO',
@@ -206,22 +207,26 @@
       },
       vim: {
         desc: '<a href="https://vimee.dev">Vimee</a> による Vim キーバインドを有効にします。',
+        name: 'Vim',
       },
       typstCore: {
-        desc: 'Typst エディターの基本機能。',
+        name: 'Typst コア',
       },
       codeJump: {
-        desc: ''
+        name: 'プレビューへジャンプ',
+        desc: 'コードをクリックして対応するプレビューの位置に移動します。',
       },
       previewJump: {
-        desc: ''
+        name: 'コードへジャンプ',
+        desc: 'プレビューをクリックして対応するコードの位置に飛びます。',
       },
     },
     compiler: {
-      disablePackageCacheName: 'パッケージキャッシュを無効にする',
-      disablePackageCacheDesc: 'インポートされたパッケージのキャッシュを無効にします。メモリの少ない環境で便利ですが、パッケージの再ダウンロードが必要になります。',
-      skipStartupName: '起動時の準備をスキップ',
-      skipStartupDesc: '起動時の初期化を遅らせます（モバイルでは不安定）。起動時間を短縮しますが、最初のレンダリングが遅れます。',
+      subTabs: {
+        fonts: 'フォント',
+        packages: 'パッケージ',
+        watcher: 'ファイル監視',
+      },
       fonts: {
         desc: 'Typst CLI に含まれる標準フォント (<a href="https://github.com/typst/typst-assets/tree/{{version}}/files/fonts">一覧はこちら</a>) は埋め込まれています。',
         clickToLoad: 'クリックしてシステムフォント一覧を読み込む',
@@ -252,11 +257,6 @@
           openFolder: 'フォルダを開く',
           remove: '削除',
         },
-      },
-      subTabs: {
-        fonts: 'フォント',
-        packages: 'パッケージ',
-        watcher: 'ファイル監視',
       },
       watcher: {
         heading: 'ファイル監視',
@@ -299,8 +299,8 @@
       applyProcessorToMathJaxName: 'プロセッサを MathJax に適用する',
       enableMathjaxFallbackName: 'MathJax フォールバックを有効にする',
       enableMathjaxFallbackDesc: 'パフォーマンス上の理由から推奨されません。有効にすると、<b>Typst のエラー、警告、ヒントが利用できなくなります。</b>',
-      importPathName: 'Typst ファイルのインポートパス',
-      importPathDesc: 'インポートする Typst ファイルを探す vault 内のディレクトリ。パスが存在しないか空の場合、この機能は無効になります。',
+      resourcesPathName: 'Typst ファイルのインポートパス',
+      resourcesPathDesc: 'インポートする Typst ファイルを探す vault 内のディレクトリ。パスが存在しないか空の場合、この機能は無効になります。',
       openDetailsName: '詳細を開く',
       openSnippetManager: 'スニペットマネージャーを開く',
       openTypstToolsOnStartupName: '起動時に Typst ツールを開く',
@@ -422,7 +422,7 @@
     },
   },
   notices: {
-    crashAutoDisabled: '[Typst Mate] 3回連続で起動に失敗したため、自動的に無効化されました。',
+    crashAutoDisabled: '3 回連続で起動に失敗したため、自動的に無効化されました。',
     failedToOpenTypstTools: 'Typst ツールを開けませんでした。',
     commandNotFound: 'コマンド {{id}} が見つかりませんでした',
     commandNotExecuted: 'コマンド {{id}} が実行されませんでした',
@@ -460,6 +460,8 @@
     typstDirNotExist: 'Typst ディレクトリが存在しません。高度な設定を確認してください。',
     assetDownloaded: '{{asset}} をダウンロードしました！',
     wasmDownloaded: 'Wasm をダウンロードしました！',
+    failedToLoadFont: 'フォント {{name}} の読み込みに失敗しました。',
+    unloadDidNotComplete: 'プラグインの終了処理が正しく完了しませんでした',
   },
   commands: {
     boxEquation: '数式を囲む',
@@ -471,8 +473,8 @@
   },
   statusBar: {
     toggleBackgroundRendering: 'バックグラウンドレンダリングを切り替える',
-    refreshWasm: 'WASM を再初期化 (キャッシュクリア)',
-    refreshView: '表示を更新',
+    refreshViews: '表示を更新',
+    refreshWasmRuntime: 'WASM を再初期化 (キャッシュクリア)',
   },
   contextMenu: {
     copyAsImgTag: '画像埋め込み要素としてコピー',
@@ -481,10 +483,16 @@
     copyAsCode: 'コードとしてコピー',
     copyAsSvgTypst: 'SVG としてコピー',
     copyAsSvgObsidian: 'SVG (Obsidian テーマ) としてコピー',
+    copyAsHtml: 'HTML としてコピー',
     newTypstFile: 'Typst ファイルを作成',
     newTypstFileWithTemplate: 'テンプレートから Typst ファイルを作成',
     openAsPreview: 'プレビューとして開く',
     openAsText: 'テキストとして開く',
     openWithDefaultApp: 'デフォルトアプリで開く',
+  },
+  embeds: {
+    typst: {
+      noPagesRendered: 'ページがありません',
+    },
   },
 }

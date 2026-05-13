@@ -1,7 +1,7 @@
 import type { TFile } from 'obsidian';
 import type { NPath } from '@/types/obsidian';
 
-export function getNDirAndNPath(file: TFile | null): { ndir: NPath; npath?: NPath } {
+export function getNDirAndNPath(file: TFile | null | undefined): { ndir: NPath; npath?: NPath } {
   const parent = file?.parent;
   return { ndir: parent ? parent.path : '/', npath: file?.path };
 }

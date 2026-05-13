@@ -1,7 +1,7 @@
 use js_sys::{ArrayBuffer, Uint8Array};
 use rustc_hash::FxHashMap;
 use serde_wasm_bindgen::to_value;
-use std::path::Path;
+use std::{path::Path, str::FromStr};
 use tylax::{
     latex_document_to_typst, latex_to_typst,
     tikz::{convert_cetz_to_tikz, convert_tikz_to_cetz},
@@ -15,7 +15,7 @@ use typst::{
     diag::{SourceResult, Warned},
     foundations::{Bytes, Module, Version as TypstVersion},
     layout::{Abs, PageRanges, PagedDocument, Point},
-    syntax::{FileId, Side, VirtualPath},
+    syntax::{FileId, Side, VirtualPath, package::PackageSpec},
     text::FontInfo,
 };
 
@@ -35,6 +35,12 @@ pub struct Wasm {
     world: WasmWorld,
     offset: f64,
 
+    variables_spec: PackageSpec,
+    fontsize: f64, // pt
+    viewport_width: Option<String>,
+
+    frontmatter_spec: PackageSpec,
+
     last_kind: String,
     last_id: String,
     last_document: Option<PagedDocument>,
@@ -48,20 +54,86 @@ impl Wasm {
         read_file: js_sys::Function,
         read_package_file: js_sys::Function,
         download_package: js_sys::Function,
-        fontsize: f64,
-        offset: f64,
     ) -> Self {
         #[cfg(debug_assertions)]
         console_error_panic_hook::set_once();
 
         Self {
-            world: WasmWorld::new(read_file, read_package_file, download_package, fontsize),
-            offset,
+            world: WasmWorld::new(read_file, read_package_file, download_package),
+            offset: 0.0,
+
+            variables_spec: PackageSpec::from_str("@typstmate/variables:1.0.0").unwrap(),
+            fontsize: 16.0,
+            viewport_width: None,
+
+            frontmatter_spec: PackageSpec::from_str("@typstmate/frontmatter:1.0.0").unwrap(),
 
             last_kind: String::new(),
             last_id: String::new(),
             last_document: None,
         }
+    }
+
+    pub fn set_offset(&mut self, offset: f64) {
+        self.offset = offset;
+    }
+
+    pub fn set_fontsize(&mut self, size: f64) {
+        self.fontsize = size * 0.75;
+    }
+
+    pub fn set_viewport_width(&mut self, width: String) {
+        self.viewport_width = Some(width);
+    }
+
+    pub fn clear_viewport_width(&mut self) {
+        self.viewport_width = None;
+    }
+
+    pub fn init_internal_packages(&mut self, fontsize: f64) {
+        let lib_vpath = VirtualPath::new("lib.typ");
+        let manifest_vpath = VirtualPath::new("typst.toml");
+        fn get_manifest(name: &str) -> String {
+            format!("[package]\nname = \"{name}\"\nversion = \"1.0.0\"\nentrypoint = \"lib.typ\"")
+        }
+
+        self.set_fontsize(fontsize);
+        self.update_variables();
+        self.world.add_package_text(
+            &self.variables_spec,
+            manifest_vpath.clone(),
+            get_manifest("variables"),
+        );
+
+        for name in ["latex", "obsidian", "tylax"] {
+            let lib = format!("#import _typstmate: {name};#import {name}: *");
+            let spec = PackageSpec::from_str(&format!("@typstmate/{}:1.0.0", name)).unwrap();
+            let menifest = get_manifest(name);
+
+            self.world.add_package_text(&spec, lib_vpath.clone(), lib);
+            self.world
+                .add_package_text(&spec, manifest_vpath.clone(), menifest);
+        }
+    }
+
+    pub fn update_variables(&mut self) {
+        let mut document = String::from("#import _typstmate: *;");
+        document.push_str(&format!(
+            "#let fontsize = {}pt;#let viewport = (:);",
+            self.fontsize
+        ));
+
+        if let Some(width) = &self.viewport_width {
+            document.push_str(&format!("#viewport.insert(\"width\", {});", width));
+        }
+
+        self.world
+            .add_package_text(&self.variables_spec, VirtualPath::new("lib.typ"), document);
+    }
+
+    pub fn update_frontmatter(&mut self, frontmatter: String) {
+        let vpath = VirtualPath::new("frontmatter.typ");
+        self.world.add_file_text(vpath, frontmatter);
     }
 
     pub fn store(&mut self, fonts: Vec<ArrayBuffer>, files: JsValue) -> Result<(), JsValue> {
@@ -80,10 +152,6 @@ impl Wasm {
         }
 
         Ok(())
-    }
-
-    pub fn set_offset(&mut self, offset: f64) {
-        self.offset = offset;
     }
 
     fn export_result<T>(&self, result: SourceResult<T>) -> Result<T, JsValue> {
