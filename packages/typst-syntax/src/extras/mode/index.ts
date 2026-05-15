@@ -1,4 +1,4 @@
-import { LinkedNode, Side, SyntaxKind, SyntaxMode, type SyntaxNode } from '../../typst-syntax';
+import { LinkedNode, Side, SyntaxKind, SyntaxMode, type SyntaxNode } from '@/typst-syntax';
 
 export interface SyntaxContext {
   mode: SyntaxMode | null;
