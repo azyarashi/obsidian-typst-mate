@@ -41,7 +41,8 @@ pub struct Wasm {
     fontsize: f64, // pt
     viewport_width: Option<String>,
 
-    frontmatter_spec: PackageSpec,
+    metadata_spec: PackageSpec,
+    metadata_document: String,
 
     last_kind: String,
     last_id: String,
@@ -68,7 +69,8 @@ impl Wasm {
             fontsize: 16.0,
             viewport_width: None,
 
-            frontmatter_spec: PackageSpec::from_str("@typstmate/frontmatter:1.0.0").unwrap(),
+            metadata_spec: PackageSpec::from_str("@typstmate/metadata:1.0.0").unwrap(),
+            metadata_document: String::new(),
 
             last_kind: String::new(),
             last_id: String::new(),
@@ -78,6 +80,38 @@ impl Wasm {
 
     pub fn set_offset(&mut self, offset: f64) {
         self.offset = offset;
+    }
+
+    pub fn init_internal_packages(&mut self) {
+        let lib_vpath = VirtualPath::new("lib.typ").unwrap();
+        let manifest_vpath = VirtualPath::new("typst.toml").unwrap();
+        fn get_manifest(name: &str) -> String {
+            format!("[package]\nname = \"{name}\"\nversion = \"1.0.0\"\nentrypoint = \"lib.typ\"")
+        }
+
+        self.update_variables();
+        self.world.add_package_text(
+            &self.variables_spec,
+            manifest_vpath.clone(),
+            get_manifest("variables"),
+        );
+
+        self.update_metadata();
+        self.world.add_package_text(
+            &self.metadata_spec,
+            manifest_vpath.clone(),
+            get_manifest("metadata"),
+        );
+
+        for name in ["latex", "obsidian", "tylax"] {
+            let lib = format!("#import _typstmate: {name};#import {name}: *");
+            let spec = PackageSpec::from_str(&format!("@typstmate/{}:1.0.0", name)).unwrap();
+            let menifest = get_manifest(name);
+
+            self.world.add_package_text(&spec, lib_vpath.clone(), lib);
+            self.world
+                .add_package_text(&spec, manifest_vpath.clone(), menifest);
+        }
     }
 
     pub fn set_fontsize(&mut self, size: f64) {
@@ -90,32 +124,6 @@ impl Wasm {
 
     pub fn clear_viewport_width(&mut self) {
         self.viewport_width = None;
-    }
-
-    pub fn init_internal_packages(&mut self, fontsize: f64) {
-        let lib_vpath = VirtualPath::new("lib.typ").unwrap();
-        let manifest_vpath = VirtualPath::new("typst.toml").unwrap();
-        fn get_manifest(name: &str) -> String {
-            format!("[package]\nname = \"{name}\"\nversion = \"1.0.0\"\nentrypoint = \"lib.typ\"")
-        }
-
-        self.set_fontsize(fontsize);
-        self.update_variables();
-        self.world.add_package_text(
-            &self.variables_spec,
-            manifest_vpath.clone(),
-            get_manifest("variables"),
-        );
-
-        for name in ["latex", "obsidian", "tylax"] {
-            let lib = format!("#import _typstmate: {name};#import {name}: *");
-            let spec = PackageSpec::from_str(&format!("@typstmate/{}:1.0.0", name)).unwrap();
-            let menifest = get_manifest(name);
-
-            self.world.add_package_text(&spec, lib_vpath.clone(), lib);
-            self.world
-                .add_package_text(&spec, manifest_vpath.clone(), menifest);
-        }
     }
 
     pub fn update_variables(&mut self) {
@@ -136,9 +144,16 @@ impl Wasm {
         );
     }
 
-    pub fn update_frontmatter(&mut self, frontmatter: String) {
-        let vpath = VirtualPath::new("frontmatter.typ").unwrap();
-        self.world.add_file_text(vpath, frontmatter);
+    pub fn set_metadata(&mut self, metadata: String) {
+        self.metadata_document = metadata;
+    }
+
+    pub fn update_metadata(&mut self) {
+        self.world.add_package_text(
+            &self.metadata_spec,
+            VirtualPath::new("lib.typ").unwrap(),
+            self.metadata_document.clone(),
+        );
     }
 
     pub fn store(&mut self, fonts: Vec<ArrayBuffer>, files: JsValue) -> Result<(), JsValue> {
@@ -475,9 +490,9 @@ impl Wasm {
         let svg = typst_svg::svg(&page)
             .replace("#000000", "var(--typst-base-color)")
             .replacen(
-                "<svg class",
+                "<svg",
                 format!(
-                    "<svg style=\"overflow: visible; vertical-align: {:.3}pt;\" class",
+                    "<svg style=\"overflow: visible; vertical-align: {:.3}pt;\"",
                     descent
                 )
                 .as_str(),
