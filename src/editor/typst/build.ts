@@ -10,7 +10,7 @@ import {
   lineNumbers,
 } from '@codemirror/view';
 import { clickableLinkExtension, diagnosticsState } from '@/editor';
-import { textViewTheme } from '@/editorSimple/extensions/Theme';
+import { textViewTheme } from '@/editor/editorSimple/extensions/Theme';
 import { extensionManager, viewTracker } from '@/libs/extensionManager';
 import { typstTextCore } from './extensions/TypstCore';
 import { typstFoldingExtension } from './internal/Folding';

@@ -1,11 +1,12 @@
+import type { TarFile } from 'untar-sync';
 import { State, TypstMate } from '@/api';
 import { appUtils, fileManager } from '@/libs';
 import type { PackageAsset, PackageSpec } from '@/types/typst';
-import { ErrorCode, type Main } from '../worker';
+import { ErrorCode } from './shared';
 
 let renderTimer: ReturnType<typeof setTimeout> | undefined;
 
-export function getMain(): Main {
+export function getMain() {
   const adapter = appUtils.app.vault.adapter;
 
   return {
@@ -53,3 +54,11 @@ export function getMain(): Main {
     },
   };
 }
+
+export type Main = {
+  notice(message: string, duration?: number): void;
+  updateStatus(status: { isRendering: boolean; message?: string }): void;
+  readBinary(path: string): Uint8Array | Promise<ArrayBuffer>;
+  writePackage(spec: PackageSpec, files: TarFile[]): Promise<void>;
+  fetchPackage(spec: PackageSpec): Promise<ArrayBuffer>;
+};

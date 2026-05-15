@@ -49,7 +49,7 @@ export const pairHighlightExtension = ViewPlugin.fromClass(
 
     buildDecorations(view: EditorView): DecorationSet {
       const context = view.state.facet(EditorContextFacet);
-      const setting = settingsManager.settings.extensionSettings[context]['pair-highlight'];
+      const setting = settingsManager.settings.extensionSettings[context]?.['pair-highlight'];
 
       const enabled = setting?.enabled ?? true;
       if (!enabled) return Decoration.none;

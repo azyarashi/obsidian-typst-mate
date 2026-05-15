@@ -1,8 +1,7 @@
 import { Modal } from 'obsidian';
+import { rendererManager, settingsManager, variablesManager } from '@/libs';
 import type ObsidianTypstMate from '@/main';
 import type { Singleton } from '@/types/singleton';
-import { rendererManager } from '../rendererManager';
-import { settingsManager } from '../settingsManager';
 
 class ModalOpenPatch implements Singleton {
   private modalOpenOrig = Modal.prototype.open;
@@ -37,7 +36,7 @@ class ModalOpenPatch implements Singleton {
 
             return await printToPdfOrig(args).then(async () => {
               if (profileName) settingsManager.settings.fitToNoteWidthProfile = oldProfileName;
-              rendererManager.updateNoteWidth();
+              variablesManager.syncNoteWidth();
 
               if (before) {
                 settingsManager.settings.enableBackgroundRendering = true;
@@ -61,7 +60,7 @@ class ModalOpenPatch implements Singleton {
     };
   }
 
-  detach() {
+  async detach() {
     Modal.prototype.open = this.modalOpenOrig;
   }
 }

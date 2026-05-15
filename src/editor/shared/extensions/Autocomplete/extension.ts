@@ -3,6 +3,7 @@ import { Prec } from '@codemirror/state';
 import { type EditorView, keymap, type PluginValue, ViewPlugin, type ViewUpdate } from '@codemirror/view';
 import type { Completion, CompletionKind } from '@wasm';
 import { setIcon } from 'obsidian';
+import { TypstMate } from '@/api';
 import SYMBOLS_BY_NAME from '@/data/symbols.json';
 import {
   calculatePopOverPositionByCursor,
@@ -12,7 +13,7 @@ import {
   type SymbolData,
   searchSymbols,
 } from '@/editor';
-import { rendererManager } from '@/libs';
+import { $, renderManager } from '@/libs';
 import { tmActionsManager } from '@/libs/tmActionsManager';
 import { format } from '@/ui/elements/Typst';
 import { checkActionContext, executeAction, resolveActionContext } from '../TypstMateActions/actions';
@@ -207,7 +208,8 @@ export class AutocompletePlugin implements PluginValue {
     let wasmFrom = cursor;
 
     try {
-      const raw = await rendererManager.wasm.autocompleteAsync(innerOffset, formatted);
+      if (!$.wasm) return;
+      const raw = await $.wasm.autocompleteAsync(innerOffset, formatted);
       if (requestId !== this.lastRequestId) return; // 破棄
       if (raw?.completions && 0 < raw.completions.length) {
         wasmCompletions = raw.completions;

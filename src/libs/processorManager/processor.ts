@@ -28,11 +28,6 @@ export interface ProcessorBase {
   renderingEngine: RenderingEngine;
   format: string;
   syntaxMode?: SyntaxMode;
-
-  styling?: any;
-  useReplaceAll?: any;
-  fitToNoteWidth?: any;
-  noPreamble?: any;
 }
 
 export interface ProcessorMarkdownBase<S extends Styling> extends ProcessorBase {
@@ -41,15 +36,14 @@ export interface ProcessorMarkdownBase<S extends Styling> extends ProcessorBase 
   noPreamble?: boolean;
 }
 
-export type InlineProcessor = ProcessorMarkdownBase<InlineStyling> & {
-  fitToNoteWidth: undefined;
-};
-export type DisplayProcessor = ProcessorMarkdownBase<DisplayStyling> & {
+export type InlineProcessor = ProcessorMarkdownBase<InlineStyling>;
+
+export interface DisplayProcessor extends ProcessorMarkdownBase<DisplayStyling> {
   fitToNoteWidth?: boolean;
-};
-export type CodeblockProcessor = ProcessorMarkdownBase<CodeblockStyling> & {
+}
+export interface CodeblockProcessor extends ProcessorMarkdownBase<CodeblockStyling> {
   fitToNoteWidth?: boolean;
-};
+}
 export type ExcalidrawProcessor = ProcessorBase;
 
 export type MathProcessor = InlineProcessor | DisplayProcessor;
@@ -87,8 +81,6 @@ export const DefaultNewInlineProcessor: InlineProcessor = {
   format: '#set page(margin: (x: 0pt, y: 0.3125em))\n${CODE}$',
   styling: InlineStyling.Inline,
   syntaxMode: SyntaxMode.Math,
-
-  fitToNoteWidth: undefined,
 };
 export const DefaultNewDisplayProcessor: DisplayProcessor = {
   id: 'new',

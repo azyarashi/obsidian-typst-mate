@@ -1,4 +1,4 @@
-import { rendererManager } from '@/libs';
+import { $ } from '@/libs';
 import type { FormatterSettings } from './package';
 
 export const typstFormatterPlugin = [];
@@ -8,7 +8,8 @@ export async function formatTypst(
   settings: FormatterSettings,
   range?: [number, number],
 ): Promise<{ content: string; range: [number, number] }> {
-  const result = await rendererManager.wasm.format(source, {
+  if (!$.wasm) return { content: source, range: range ?? [0, source.length] };
+  const result = await $.wasm.format(source, {
     tabSpaces: settings.tabSpaces as number,
     maxWidth: settings.maxWidth as number,
     blankLinesUpperBound: settings.blankLinesUpperBound as number,

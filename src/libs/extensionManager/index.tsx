@@ -144,7 +144,7 @@ export class ExtensionManager implements Singleton {
 
   /* detach */
 
-  detach() {
+  async detach() {
     this.entries = [];
     this.views = { markdown: [], typst: [] };
   }

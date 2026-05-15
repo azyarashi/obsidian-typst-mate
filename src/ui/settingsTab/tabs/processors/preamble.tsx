@@ -2,7 +2,7 @@ import { EditorState } from '@codemirror/state';
 import { EditorView } from '@codemirror/view';
 import { debounce } from 'obsidian';
 import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
-import { buildTypstSimpleEditorExtensions } from '@/editorSimple/typst';
+import { buildTypstSimpleEditorExtensions } from '@/editor/editorSimple/typst';
 import { RenderingEngine, settingsManager } from '@/libs';
 import { t, tFragment } from '@/libs/i18n';
 import { Setting } from '@/ui/components/obsidian/Setting';

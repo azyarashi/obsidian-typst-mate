@@ -2,7 +2,6 @@
 import type fsModule from 'node:fs';
 import type pathModule from 'node:path';
 import { expose } from 'comlink';
-import type { TarFile } from 'untar-sync';
 import untar from 'untar-sync';
 import init, { Wasm } from '@wasm';
 import type { Features } from '@/libs/features';
@@ -18,12 +17,10 @@ import type { SvgPResult } from '@wasm';
 import type { SvgEOptions, SvgEResult, HtmlEOptions, HtmlEResult, PdfEOptions, PdfEResult, PngEOptions, PngEResult } from '@wasm';
 // その他
 import type { FontInfo, FormatOptions, FormatResult, PackageSpec } from '@wasm';
+import type { Main } from './main';
+import { ErrorCode } from './shared';
+import type { VPath } from '@/types/obsidian';
 
-/**
- * * Mobile App: normalized path
- * * Desktop App: absolute path (os-native path format)
- */
-export type VPath = string;
 type FileMap = Map<VPath, Uint8Array | undefined>;
 
 const fileMap: FileMap = new Map();
@@ -74,7 +71,7 @@ export default class WasmAdapter {
   }
 
   // post
-  async init(wasm: ArrayBuffer): Promise<void> {
+  async load(wasm: ArrayBuffer): Promise<void> {
     this.free();
     await init({
       module_or_path: await WebAssembly.compile(wasm),
@@ -100,12 +97,16 @@ export default class WasmAdapter {
     this.wasm!.set_viewport_width(width);
   }
 
-  initInternalPackages(font_size: number) {
-    this.wasm!.init_internal_packages(font_size);
+  initInternalPackages() {
+    this.wasm!.init_internal_packages();
   }
 
   updateVariables() {
     this.wasm!.update_variables();
+  }
+
+  set_metadata(metadata: string) {
+    this.wasm!.set_metadata(metadata);
   }
 
   // * get
@@ -492,30 +493,3 @@ type Args = {
   fonts?: ArrayBuffer[];
   files?: Map<string, string>;
 };
-
-export interface Main {
-  notice(message: string, duration?: number): void;
-  updateStatus(status: { isRendering: boolean; message?: string }): void;
-  readBinary(path: string): Uint8Array | Promise<ArrayBuffer>;
-  writePackage(spec: PackageSpec, files: TarFile[]): Promise<void>;
-  fetchPackage(spec: PackageSpec): Promise<ArrayBuffer>;
-}
-
-/** https://docs.rs/typst/latest/typst/diag/enum.FileError.html */
-export enum ErrorCode {
-  /** ファイル読み込みなど */
-  Pending = 0,
-
-  FileErrorNotFound = 10,
-  FileErrorAccessDenied,
-  FileErrorIsDirectory,
-  FileErrorNotSource,
-  FileErrorInvalidUtf8,
-  FileErrorOther,
-
-  PackageErrorNotFound = 20,
-  PackageErrorVersionNotFound,
-  PackageErrorNetworkFailed,
-  PackageErrorMalformedArchive,
-  PackageErrorOther,
-}

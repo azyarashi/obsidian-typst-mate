@@ -1,6 +1,6 @@
 import { Component, type TFile } from 'obsidian';
 import type { EmbedComponent } from 'obsidian-typings';
-import { appUtils, fileManager, rendererManager } from '@/libs';
+import { $, appUtils, fileManager } from '@/libs';
 import { path } from '@/libs/features';
 
 import './typst-embed.css';
@@ -8,6 +8,7 @@ import type { Diagnostic } from '@wasm';
 import { t } from '@/libs/i18n';
 
 export class TypstEmbedComponent extends Component implements EmbedComponent {
+  static readonly ext = 'typ';
   private isLoading = false;
 
   public constructor(
@@ -29,7 +30,11 @@ export class TypstEmbedComponent extends Component implements EmbedComponent {
       const code = await appUtils.app.vault.read(this.file);
       const fullPath = path ? path.join(fileManager.baseDirPath, this.file.path) : this.file.path;
 
-      const result = await rendererManager.wasm.svgpAsync(fullPath, code);
+      if (!$.wasm) {
+        this.containerEl.setText(t('common.waitingForLoad'));
+        return;
+      }
+      const result = await $.wasm.svgpAsync(fullPath, code);
 
       this.containerEl.empty();
 

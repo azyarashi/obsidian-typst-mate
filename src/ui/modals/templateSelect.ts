@@ -16,7 +16,7 @@ export class TemplateSelectModal extends Modal {
 
     const resourcesPath = settingsManager.settings.resourcesPath;
     if (!(await app.vault.adapter.exists(resourcesPath))) {
-      new Notice(t('notices.resourcesDirNotExist'));
+      new Notice(t('notices.typstDirNotExist'));
       this.close();
       return;
     }

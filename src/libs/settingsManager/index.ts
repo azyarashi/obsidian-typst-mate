@@ -1,6 +1,6 @@
 import { TypstMate } from '@/api';
-import { DEFAULT_SETTINGS, type Settings } from '@/data/settings';
 import type ObsidianTypstMate from '@/main';
+import { DEFAULT_SETTINGS, type Settings } from '@/settings';
 import type { Singleton } from '@/types/singleton';
 import { migrations } from './migration';
 
@@ -51,16 +51,14 @@ class SettingsManager implements Singleton {
   }
 
   private normalizeSettings() {
-    for (const key of Object.keys(this.settings) as (keyof Settings)[]) {
-      if (key in DEFAULT_SETTINGS) continue;
+    const oldKeys = Object.keys(this.settings) as (keyof Settings)[];
+    const newKeys = Object.keys(DEFAULT_SETTINGS);
 
-      delete this.settings[key];
-    }
+    for (const key of oldKeys) if (!newKeys.includes(key)) delete this.settings[key];
   }
 
   async saveSettings() {
     if (!this.plugin) return;
-
     await this.plugin.saveData(this.settings);
   }
 

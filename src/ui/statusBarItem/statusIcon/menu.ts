@@ -1,6 +1,6 @@
 import { Menu } from 'obsidian';
 import { TypstMate } from '@/api';
-import { appUtils, rendererManager, settingsManager } from '@/libs';
+import { $, appUtils, metadataManager, renderManager, settingsManager } from '@/libs';
 import { toggleBackgroundRendering } from '@/libs/commands/toggle-background-rendering';
 import { t } from '@/libs/i18n';
 
@@ -28,7 +28,7 @@ export function showStatusBarMenu(event: MouseEvent) {
         .onClick(async () => {
           settingsManager.settings.fitToNoteWidthProfile = 'Live';
           await settingsManager.saveSettings();
-          await rendererManager.rerenderAll();
+          await renderManager.rerenderAll();
         });
     });
 
@@ -41,7 +41,7 @@ export function showStatusBarMenu(event: MouseEvent) {
           .onClick(async () => {
             settingsManager.settings.fitToNoteWidthProfile = profile.name;
             await settingsManager.saveSettings();
-            await rendererManager.rerenderAll();
+            await renderManager.rerenderAll();
           });
       });
     }
@@ -55,7 +55,8 @@ export function showStatusBarMenu(event: MouseEvent) {
 
   menu.addItem((item) => {
     item.setTitle(t('statusBar.refreshWasmRuntime')).onClick(async () => {
-      await rendererManager.refreshWasm();
+      const files = await metadataManager.collectTagFiles();
+      await $.refreshWasm(files);
       appUtils.refreshView();
     });
   });

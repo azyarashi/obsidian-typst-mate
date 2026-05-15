@@ -1,8 +1,9 @@
 import { debounce, Notice } from 'obsidian';
 import { useState } from 'preact/hooks';
-import { DEFAULT_SETTINGS } from '@/data/settings';
-import { appUtils, rendererManager, settingsManager } from '@/libs';
+import { TypstMate } from '@/api';
+import { $, appUtils, metadataManager, renderManager, settingsManager } from '@/libs';
 import { t, tFragment } from '@/libs/i18n';
+import { DEFAULT_SETTINGS } from '@/settings';
 import { Setting } from '@/ui/components/obsidian/Setting';
 
 export function AdvancedTab() {
@@ -16,10 +17,12 @@ export function AdvancedTab() {
   const debouncedUpdate = debounce(async (path: string) => {
     settingsManager.settings.resourcesPath = path;
     await settingsManager.saveSettings();
-    const files = await rendererManager.collectTagFiles();
-    await rendererManager.wasm.store({ files });
-    new Notice(t('notices.filesUpdated'));
-    rendererManager.rerenderAll();
+    const files = await metadataManager.collectTagFiles();
+    if ($.wasm) {
+      await $.wasm.store({ files });
+      new Notice(t('notices.filesUpdated'));
+      renderManager.rerenderAll();
+    }
   }, 500);
 
   return (
@@ -28,8 +31,8 @@ export function AdvancedTab() {
       <Setting
         build={(setting) => {
           setting
-            .setName(t('settings.advanced.importPath.name'))
-            .setDesc(tFragment('settings.advanced.importPath.desc'))
+            .setName(t('settings.advanced.resourcesPathName'))
+            .setDesc(tFragment('settings.advanced.resourcesPathDesc'))
             .addText((text) =>
               text.setValue(importPath).onChange((val) => {
                 setImportPath(val);
@@ -41,7 +44,7 @@ export function AdvancedTab() {
           const nameEl = setting.nameEl;
           nameEl.createSpan({ text: ' ' });
           const githubLink = nameEl.createEl('a', {
-            text: t('settings.advanced.openDetails.name'),
+            text: t('settings.advanced.openDetailsName'),
             href: 'https://github.com/azyarashi/obsidian-typst-mate/releases/tag/2.2.28',
           });
           githubLink.target = '_blank';
@@ -52,7 +55,7 @@ export function AdvancedTab() {
       {/* Apply Processor to MathJax */}
       <Setting
         build={(setting) =>
-          setting.setName(t('settings.advanced.applyProcessorToMathJax.name')).addToggle((toggle) =>
+          setting.setName(t('settings.advanced.applyProcessorToMathJaxName')).addToggle((toggle) =>
             toggle.setValue(applyProcessorToMathJax).onChange(async (v) => {
               setApplyProcessorToMathJax(v);
               settingsManager.settings.applyProcessorToMathJax = v;
@@ -66,8 +69,8 @@ export function AdvancedTab() {
       <Setting
         build={(setting) =>
           setting
-            .setName(t('settings.advanced.textViewExtensions.name'))
-            .setDesc(t('settings.advanced.textViewExtensions.desc'))
+            .setName(t('settings.advanced.textViewExtensionsName'))
+            .setDesc(t('settings.advanced.textViewExtensionsDesc'))
             .addText((text) =>
               text.setValue(settingsManager.settings.textViewExtensions.join(', ')).onChange(async (val) => {
                 const exts = val
@@ -84,7 +87,7 @@ export function AdvancedTab() {
       {/* Reload Plugin */}
       <Setting
         build={(setting) =>
-          setting.setName(t('settings.advanced.reloadPlugin.name')).addButton((button) =>
+          setting.setName(t('settings.advanced.reloadPluginName')).addButton((button) =>
             button.setButtonText(t('settings.advanced.buttons.reloadPlugin')).onClick(async () => {
               await appUtils.reloadPlugin(true);
               new Notice(t('notices.pluginReloaded'));

@@ -2,9 +2,9 @@ import type { Diagnostic, SvgMResult } from '@wasm';
 import { MarkdownView, type Menu, type MenuItem, Notice } from 'obsidian';
 import { BASE_COLOR_VAR } from '@/constants';
 import { previewJumpPlugin } from '@/editor';
-import { appUtils, rendererManager, settingsManager } from '@/libs';
+import { $, appUtils, settingsManager } from '@/libs';
 import { t } from '@/libs/i18n';
-import { ErrorCode } from '@/libs/rendererManager/worker';
+import { ErrorCode } from '@/libs/wasmManager/shared';
 import TypstElement from './Typst';
 
 import './SVG.css';
@@ -113,8 +113,7 @@ export default class TypstSVGElement extends TypstElement {
     const formatted = this.format();
 
     try {
-      // TODO
-      const result = await rendererManager.wasm.svgmAsync(this.ndir, this.kind, this.id, formatted);
+      const result = await $.wasm!.svgmAsync(this.ndir, this.kind, this.processor.id, formatted);
       this.postProcess(result);
     } catch (err) {
       if (err === ErrorCode.Pending) return this;
@@ -128,7 +127,7 @@ export default class TypstSVGElement extends TypstElement {
     const formatted = this.format();
 
     try {
-      const result = rendererManager.wasm.svgm(this.ndir, this.kind, this.id, formatted);
+      const result = $.wasm!.svgm(this.ndir, this.kind, this.processor.id, formatted);
       if (result instanceof Promise) result.then((r: SvgMResult) => this.postProcess(r));
       else this.postProcess(result);
     } catch (err) {
@@ -151,9 +150,9 @@ export default class TypstSVGElement extends TypstElement {
     const x = (event.clientX - rect.left) / (rect.width / svg.viewBox.baseVal.width);
     const y = (event.clientY - rect.top) / (rect.height / svg.viewBox.baseVal.height);
 
-    await rendererManager.wasm.svgmAsync(this.ndir, this.kind, this.id, this.format()); // フレーム生成のための副作用
+    await $.wasm?.svgmAsync(this.ndir, this.kind, this.processor.id, this.format()); // フレーム生成のための副作用
 
-    const result = await rendererManager.wasm.jumpFromClickAsync(x, y);
+    const result = await $.wasm?.jumpFromClickAsync(x, y);
     if (result) {
       const view = appUtils.app.workspace.getActiveFileView();
       if (!(view instanceof MarkdownView)) return;

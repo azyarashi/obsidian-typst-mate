@@ -6,9 +6,9 @@ import { t, tFragment } from '@/libs/i18n';
 export const tabJumpPackage = () =>
   ({
     id: 'tab-jump',
-    name: t('settings.extensions.tabJumpName'),
+    name: t('settings.extensions.tabJump.name'),
     icon: ICONS.None,
-    description: tFragment('settings.extensions.tabJumpDesc'),
+    description: tFragment('settings.extensions.tabJump.desc'),
     tags: ['action', 'navigation'],
     scope: ['markdown', 'typst'],
     isBuiltin: false,
@@ -30,15 +30,15 @@ export const tabJumpPackage = () =>
       {
         key: 'preferInlineExitForSingleLineDisplayMath',
         type: 'toggle',
-        title: t('settings.extensions.tabJump.preferInlineExitForSingleLineDisplayMathName'),
-        description: tFragment('settings.extensions.tabJump.preferInlineExitForSingleLineDisplayMathDesc'),
+        title: t('settings.extensions.tabJump.preferInlineExitName'),
+        description: tFragment('settings.extensions.tabJump.preferInlineExitDesc'),
         defaultValue: true,
       },
       {
         key: 'moveToEndBeforeExiting',
         type: 'toggle',
-        title: t('settings.extensions.tabJump.moveToEndBeforeExitingName'),
-        description: tFragment('settings.extensions.tabJump.moveToEndBeforeExitingDesc'),
+        title: t('settings.extensions.tabJump.moveToEndOfMathBlockName'),
+        description: tFragment('settings.extensions.tabJump.moveToEndOfMathBlockDesc'),
         defaultValue: false,
       },
     ],

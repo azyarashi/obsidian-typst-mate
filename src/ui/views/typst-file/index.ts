@@ -9,6 +9,7 @@ import {
   type ViewStateResult,
   type WorkspaceLeaf,
 } from 'obsidian';
+import { TypstMate } from '@/api';
 import {
   buildTypstTextExtensions,
   codeJumpTargetFacet,
@@ -17,7 +18,7 @@ import {
   vimQuitFacet,
   vimSaveFacet,
 } from '@/editor';
-import { fileManager, rendererManager, settingsManager } from '@/libs';
+import { $, fileManager, metadataManager, rendererManager, settingsManager } from '@/libs';
 import { viewTracker } from '@/libs/extensionManager';
 import { t } from '@/libs/i18n';
 import { ExportToolModal } from '@/ui/modals/exportTool';
@@ -146,19 +147,19 @@ export class TypstFileView extends TextFileView {
     if (!this.vpath.startsWith(`${resourcesPath}/tags/`)) return;
 
     const typstPath = this.vpath.slice(resourcesPath.length);
-    rendererManager.wasm.store({ files: new Map([[typstPath, content]]) });
+    if ($.wasm) $.wasm.store({ files: new Map([[typstPath, content]]) });
 
     const tag = typstPath
       .slice(resourcesPath.length + 1) // resourcesPath + "/" の分
       .slice(5) // "tags/" の分
       .slice(0, -4) // ".typ" の分
       .replaceAll('.', '/');
-    rendererManager.tagFiles.add(tag);
+    metadataManager.tagFiles.add(tag);
   }
 
   private async compileAndUpdate(content: string): Promise<void> {
     if (!this.vpath) return;
-    if (!rendererManager.ready) return;
+    if (!$.wasm) return;
     this.removeWaiting();
 
     if (!this.extensionsInitialized) {
@@ -169,7 +170,7 @@ export class TypstFileView extends TextFileView {
     }
 
     try {
-      const result = await rendererManager.wasm.svgpAsync(this.vpath, content);
+      const result = await $.wasm.svgpAsync(this.vpath, content);
 
       updateDiagnosticEffect(this.view, {
         diagnostics: result.diags,
@@ -273,7 +274,7 @@ export class TypstFileView extends TextFileView {
 
     this.findAndLinkPreview();
 
-    if (!rendererManager.ready) this.renderWaiting();
+    if (!$.wasm) this.renderWaiting();
     else this.compileAndUpdate(fileContent);
   }
 

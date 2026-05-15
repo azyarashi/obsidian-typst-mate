@@ -171,6 +171,7 @@
         name: 'シンタックスハイライト',
       },
       tabJump: {
+        name: 'Tab ジャンプ',
         desc: 'Tab キーでさまざまな場所にジャンプします。',
         jumpOutsideBracketName: '括弧の外にジャンプ',
         jumpOutsideBracketDesc: 'カーソルが現在の括弧ペアの外にジャンプすることを許可します。',

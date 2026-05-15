@@ -115,7 +115,7 @@ class AppUtils {
     return this.app?.workspace.getActiveViewOfType(TypstFileView);
   }
 
-  detach() {
+  async detach() {
     this.restoreThemeProperty?.();
   }
 }

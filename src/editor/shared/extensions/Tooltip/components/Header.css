@@ -54,6 +54,7 @@ a.pill {
 }
 .pill-collect {
   background: #f9dfff;
+  /* biome-ignore lint/suspicious/noDuplicateProperties: fallback */
   background: color(display-p3 0.97 0.88 1);
 }
 .pill-fn {
@@ -98,16 +99,16 @@ a.pill {
   z-index: 0;
 }
 .pill-tiling {
-  background: repeating-linear-gradient(45deg, transparent, transparent 0.4em, #c6feff 0, #c6feff 0.8em);
   background-color: #ffd2ec;
-  background: repeating-linear-gradient(
+  /* biome-ignore lint/suspicious/noDuplicateProperties: fallback */
+  background-color: color(display-p3 1 0.83 0.92);
+  background-image: repeating-linear-gradient(
     45deg,
     transparent,
     transparent 0.4em,
     color(display-p3 0.82 0.99 1) 0,
     color(display-p3 0.82 0.99 1) 0.8em
   );
-  background-color: color(display-p3 1 0.83 0.92);
 }
 @keyframes day-bg {
   0% {
@@ -119,5 +120,6 @@ a.pill {
 }
 .pill-col {
   background: #7cd5ff;
+  /* biome-ignore lint/suspicious/noDuplicateProperties: fallback */
   background: linear-gradient(83deg, #7cd5ff, #a6fbca, #fff37c 66%, #ffa49d);
 }

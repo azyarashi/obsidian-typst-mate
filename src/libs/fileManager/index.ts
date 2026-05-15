@@ -17,7 +17,7 @@ import type { GitHubAsset } from '@/types/github';
 import type { NPath } from '@/types/obsidian';
 import type { Singleton } from '@/types/singleton';
 import type { PackageAsset } from '@/types/typst';
-import type { VPath } from '../rendererManager/worker';
+import type { VPath } from '../wasmManager/worker';
 import { arrayBufferLikeToArrayBuffer, filterWithExtensions } from './utils';
 
 /**
@@ -322,7 +322,7 @@ export class FileManager implements Singleton {
     );
   }
 
-  async collectFonts() {
+  async collectFonts(): Promise<NPath[]> {
     const { files } = await this.adapter.list(this.fontsDirNPath);
     const fontFiles = filterWithExtensions(files, ['font', 'ttf', 'ttc', 'otf', 'otc']);
 

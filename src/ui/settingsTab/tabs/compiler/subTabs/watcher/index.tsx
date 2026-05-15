@@ -25,15 +25,15 @@ export function WatcherListContainer() {
           setting
             .setHeading()
             .setName(t('settings.compiler.watcher.heading'))
-            .setDesc(t('settings.compiler.watcherDesc'))
+            .setDesc(t('settings.compiler.watcher.desc'))
         }
       />
 
       <Setting
         build={(setting) =>
           setting
-            .setName(t('settings.compiler.watcherEnableWatcherName'))
-            .setDesc(t('settings.compiler.watcherEnableWatcherDesc'))
+            .setName(t('settings.compiler.watcher.enableWatcherName'))
+            .setDesc(t('settings.compiler.watcher.enableWatcherDesc'))
             .addToggle((toggle) =>
               toggle.setValue(settingsManager.settings.enableWatcher).onChange(async (val) => {
                 settingsManager.settings.enableWatcher = val;
@@ -46,8 +46,8 @@ export function WatcherListContainer() {
       <Setting
         build={(setting) =>
           setting
-            .setName(t('settings.compiler.watcherEnablePackageWatchName'))
-            .setDesc(t('settings.compiler.watcherEnablePackageWatchDesc'))
+            .setName(t('settings.compiler.watcher.enablePackageWatchName'))
+            .setDesc(t('settings.compiler.watcher.enablePackageWatchDesc'))
             .addToggle((toggle) =>
               toggle.setValue(settingsManager.settings.enablePackageWatch).onChange(async (val) => {
                 settingsManager.settings.enablePackageWatch = val;
@@ -60,8 +60,8 @@ export function WatcherListContainer() {
       <Setting
         build={(setting) =>
           setting
-            .setName(t('settings.compiler.watcherWatchExtensionsName'))
-            .setDesc(t('settings.compiler.watcherWatchExtensionsDesc'))
+            .setName(t('settings.compiler.watcher.watchExtensionsName'))
+            .setDesc(t('settings.compiler.watcher.watchExtensionsDesc'))
             .addTextArea((text) =>
               text
                 .setValue(settingsManager.settings.watchExtensions.join(', '))

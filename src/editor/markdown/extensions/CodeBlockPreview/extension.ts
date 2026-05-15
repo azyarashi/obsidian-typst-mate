@@ -9,7 +9,7 @@ import {
   WidgetType,
 } from '@codemirror/view';
 import { getActiveRegion } from '@/editor';
-import { appUtils, rendererManager } from '@/libs';
+import { appUtils, renderManager } from '@/libs';
 import { getNDirAndNPath } from '@/libs/rendererManager';
 
 interface WidgetData {
@@ -41,7 +41,7 @@ class CodeBlockPreviewWidget extends WidgetType {
     const file = appUtils.app.workspace.getActiveFile();
     const { ndir, npath } = getNDirAndNPath(file);
 
-    rendererManager.render(this.code, container, this.id, ndir, npath);
+    renderManager.renderCodeblock(this.code, container, this.id, ndir, npath);
 
     return container;
   }
@@ -64,7 +64,7 @@ class CodeBlockPreviewWidget extends WidgetType {
     const file = appUtils.app.workspace.getActiveFile();
     const { ndir, npath } = getNDirAndNPath(file);
 
-    rendererManager.render(this.code, dom, this.id, ndir, npath);
+    renderManager.renderCodeblock(this.code, dom, this.id, ndir, npath);
 
     return true;
   }

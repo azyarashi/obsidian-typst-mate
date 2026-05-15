@@ -8,7 +8,7 @@ import {
   type Processor,
   type ProcessorKind,
   type ProcessorOfKind,
-  rendererManager,
+  processorManager,
   settingsManager,
 } from '@/libs';
 import { t, tFragment } from '@/libs/i18n';
@@ -31,7 +31,7 @@ export function ProcessorsContainer<K extends ProcessorKind>({ kind }: { kind: K
   const debouncedRename = useMemo(
     () =>
       debounce((oldId: string, newProcessor: CodeblockProcessor) => {
-        rendererManager.renameCodeblockProcessor(oldId, newProcessor);
+        processorManager.renameCodeblockProcessor(oldId, newProcessor);
       }, 500),
     [],
   );
@@ -40,7 +40,7 @@ export function ProcessorsContainer<K extends ProcessorKind>({ kind }: { kind: K
     items: processors,
     onSave: async (newProcessors) => {
       setProcessors(newProcessors);
-      (settingsManager.settings.processor[kind] as { processors: ProcessorOfKind<K>[] }).processors = newProcessors;
+      (settingsManager.settings.processors[kind] as ProcessorOfKind<K>[]) = newProcessors;
       await settingsManager.saveSettings();
     },
   });
@@ -58,7 +58,7 @@ export function ProcessorsContainer<K extends ProcessorKind>({ kind }: { kind: K
   const handleDelete = async (uuid: string) => {
     if (kind === 'codeblock') {
       const processor = processors.find((p) => getSortableUuid(p as Processor) === uuid) as CodeblockProcessor;
-      if (processor) rendererManager.unregisterCodeblockProcessor(processor.id);
+      if (processor) processorManager.unregisterCodeblockProcessor(processor.id);
     }
     await deleteItem(uuid);
   };

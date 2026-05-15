@@ -1,5 +1,3 @@
-import type { Status } from './types/api';
-
 export enum Phase {
   // Initial state
   Loading,
@@ -32,10 +30,13 @@ export enum State {
   Error,
 }
 
-export type { Status };
+export interface Status {
+  state: State;
+  message?: string;
+}
 
 export const TypstMate: NonNullable<typeof window.TypstMate> = {
-  phase: 0 as Phase,
+  phase: 0,
   setPhase: (phase: Phase) => (TypstMate.phase = phase),
   isReady: () => TypstMate.phase === Phase.Ready,
 
@@ -43,9 +44,9 @@ export const TypstMate: NonNullable<typeof window.TypstMate> = {
   setStatus: (status: Status) => (TypstMate.status = status),
 
   pluginVersion: undefined,
-  typstVersion: undefined,
+
   wasm: undefined,
-  tex2chtmlOrig: undefined,
+  typstVersion: undefined,
 
   ctx: null,
 

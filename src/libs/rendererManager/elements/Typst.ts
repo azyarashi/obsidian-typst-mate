@@ -5,10 +5,12 @@ import { getActiveRegion, updateDiagnosticEffect } from '@/editor';
 import {
   appUtils,
   type MarkdownProcessor,
+  metadataManager,
   type Processor,
   type ProcessorKind,
   RenderingEngine,
   rendererManager,
+  renderManager,
   settingsManager,
 } from '@/libs';
 import { t } from '@/libs/i18n';
@@ -46,7 +48,7 @@ export default abstract class TypstElement extends HTMLElement {
         });
       });
 
-    rendererManager.beforeKind = this.kind;
+    renderManager.beforeKind = this.kind;
   }
 
   format() {
@@ -57,7 +59,7 @@ export default abstract class TypstElement extends HTMLElement {
   }
 
   handleError(diags: WasmDiagnostic[]) {
-    rendererManager.beforeKind = this.kind;
+    renderManager.beforeKind = this.kind;
     if (diags.length === 0) return;
     const diag = diags[0]!;
     this.isErr = true;
@@ -120,21 +122,20 @@ export default abstract class TypstElement extends HTMLElement {
 export function format(source: string, kind: ProcessorKind, processor: Processor) {
   if (!processor) return { formatted: source, offset: 0 };
 
-  let formatted =
-    (processor?.useReplaceAll ?? false)
-      ? processor.format.replaceAll('{CODE}', source)
-      : processor.format.replace('{CODE}', source);
+  let formatted = ('useReplaceAll' in processor ? (processor.useReplaceAll ?? false) : false)
+    ? processor.format.replaceAll('{CODE}', source)
+    : processor.format.replace('{CODE}', source);
 
   const { settings } = settingsManager;
   const preamble =
     processor.renderingEngine === RenderingEngine.TypstHTML ? settings.preambleHtml : settings.preambleSvg;
 
-  formatted = `${rendererManager.preamble}\n${formatted}${kind === 'inline' && processor.renderingEngine === RenderingEngine.TypstSVG ? '#text(size:0pt)[mnomnomno]' : ''}`;
+  formatted = `${metadataManager.preamble}\n${formatted}${kind === 'inline' && processor.renderingEngine === RenderingEngine.TypstSVG ? '#text(size:0pt)[mnomnomno]' : ''}`;
   const noPreamble = 'noPreamble' in processor ? (processor.noPreamble ?? false) : false;
   formatted = noPreamble ? formatted : `${preamble}\n${formatted}`;
 
   const offset =
-    -processor.format.indexOf('{CODE}') - (noPreamble ? 0 : preamble.length + 1) - rendererManager.preamble.length - 1;
+    -processor.format.indexOf('{CODE}') - (noPreamble ? 0 : preamble.length + 1) - metadataManager.preamble.length - 1;
 
   return { formatted, offset };
 }

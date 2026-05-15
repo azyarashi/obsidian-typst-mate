@@ -1,6 +1,6 @@
 import { type Menu, setIcon, setTooltip, TextFileView, type TFile } from 'obsidian';
 import { previewJumpExtension } from '@/editor';
-import { rendererManager } from '@/libs';
+import { $, rendererManager } from '@/libs';
 import { t } from '@/libs/i18n';
 import { TypstFileView } from '@/ui/views';
 import { consoleError } from '@/utils/notice';
@@ -73,7 +73,7 @@ export class TypstPreviewView extends TextFileView {
 
     this.findAndLinkParent();
 
-    if (!rendererManager.ready) {
+    if (!$.wasm) {
       this.renderWaiting();
       return;
     }
@@ -81,7 +81,7 @@ export class TypstPreviewView extends TextFileView {
     try {
       this.vpath = file.path;
       this.fileContent = await this.app.vault.read(file);
-      const result = await rendererManager.wasm!.svgpAsync(this.vpath, this.fileContent);
+      const result = await $.wasm!.svgpAsync(this.vpath, this.fileContent);
       this.svgPages = result.svgp;
 
       await this.renderPreview();
@@ -97,7 +97,7 @@ export class TypstPreviewView extends TextFileView {
 
   override async onModify(file: TFile): Promise<void> {
     if (this.parentFileView) return;
-    if (!rendererManager.ready) return;
+    if (!$.wasm) return;
 
     if (!this.viewerAreaEl) {
       await this.onLoadFile(file);
@@ -110,7 +110,7 @@ export class TypstPreviewView extends TextFileView {
 
     try {
       this.fileContent = await this.app.vault.read(file);
-      const result = await rendererManager.wasm!.svgpAsync(this.vpath, this.fileContent);
+      const result = await $.wasm.svgpAsync(this.vpath, this.fileContent);
       this.svgPages = result.svgp;
 
       if (!this.pageContainerEl || !this.viewerAreaEl) return;
@@ -556,14 +556,16 @@ export class TypstPreviewView extends TextFileView {
     const x = (event.clientX - rect.left) / (rect.width / svg.viewBox.baseVal.width);
     const y = (event.clientY - rect.top) / (rect.height / svg.viewBox.baseVal.height);
 
-    await rendererManager.wasm!.svgpAsync(this.vpath, this.fileContent || '');
-    const result = await rendererManager.wasm!.jumpFromClickPAsync(pageIndex, x, y);
+    if ($.wasm) {
+      await $.wasm.svgpAsync(this.vpath, this.fileContent || '');
+      const result = await $.wasm.jumpFromClickPAsync(pageIndex, x, y);
 
-    if (!result || !this.parentFileView) return;
+      if (!result || !this.parentFileView) return;
 
-    this.app.workspace.revealLeaf(this.parentFileView.leaf);
-    const plugin = this.parentFileView.view.plugin(previewJumpExtension);
-    plugin?.jumpTo(result, event);
+      this.app.workspace.revealLeaf(this.parentFileView.leaf);
+      const plugin = this.parentFileView.view.plugin(previewJumpExtension);
+      plugin?.jumpTo(result, event);
+    }
   }
 
   private updatePagesScale(container: HTMLElement | undefined = this.pageContainerEl) {

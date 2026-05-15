@@ -1,4 +1,4 @@
-import type { Arg, Args } from '@wasm';
+import type { Args } from '@wasm';
 import type { FormattedValue } from '.';
 import { wrapWithTypcBlock } from './utils';
 

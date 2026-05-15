@@ -12,6 +12,12 @@ export type NPathNotStartingWithSlash = Exclude<string, `/${string}`> & { __bran
 
 export type NPath = NRootDirectory | NPathNotStartingWithSlash;
 
+/**
+ * * Mobile App: normalized path
+ * * Desktop App: absolute path (os-native path format)
+ */
+export type VPath = string;
+
 interface FontData {
   family: string;
   fullName: string;

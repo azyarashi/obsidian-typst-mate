@@ -1,6 +1,6 @@
 import type { HtmlEOptions, PdfEOptions, PngEOptions, SvgEOptions } from '@wasm';
-import { fileManager, rendererManager } from '@/libs';
-import type { VPath } from '@/libs/rendererManager/worker';
+import { $, fileManager } from '@/libs';
+import type { VPath } from '@/types/obsidian';
 
 export type SvgExportOptions = SvgEOptions & { filenameTemplate: string };
 export type PngExportOptions = PngEOptions & { filenameTemplate: string };
@@ -8,7 +8,8 @@ export type PngExportOptions = PngEOptions & { filenameTemplate: string };
 export type ExportFormat = 'pdf' | 'png' | 'svg' | 'html';
 
 export async function exportToPdf(vpath: VPath, content: string, options: PdfEOptions): Promise<string | undefined> {
-  const result = await rendererManager.wasm.pdfeAsync(vpath, content, options);
+  if (!$.wasm) return;
+  const result = await $.wasm!.pdfeAsync(vpath, content, options);
   if (!result?.pdf) return;
 
   const exportPath = fileManager.replaceExtension(vpath, 'pdf');
@@ -18,7 +19,8 @@ export async function exportToPdf(vpath: VPath, content: string, options: PdfEOp
 }
 
 export async function exportToPng(vpath: VPath, content: string, options: PngExportOptions) {
-  const result = await rendererManager.wasm.pngeAsync(vpath, content, options);
+  if (!$.wasm) return;
+  const result = await $.wasm!.pngeAsync(vpath, content, options);
   if (!result?.images) return;
 
   const total = result.images.length;
@@ -32,7 +34,8 @@ export async function exportToPng(vpath: VPath, content: string, options: PngExp
 }
 
 export async function exportToSvg(vpath: VPath, content: string, options: SvgExportOptions) {
-  const result = await rendererManager.wasm.svgeAsync(vpath, content, options);
+  if (!$.wasm) return;
+  const result = await $.wasm!.svgeAsync(vpath, content, options);
   if (!result?.svgs) return;
 
   const total = result.svgs.length;
@@ -46,7 +49,8 @@ export async function exportToSvg(vpath: VPath, content: string, options: SvgExp
 }
 
 export async function exportToHtml(vpath: VPath, content: string, options: HtmlEOptions) {
-  const result = await rendererManager.wasm.htmleAsync(vpath, content, options);
+  if (!$.wasm) return;
+  const result = await $.wasm!.htmleAsync(vpath, content, options);
   if (!result?.html) return;
 
   const html = result.html;

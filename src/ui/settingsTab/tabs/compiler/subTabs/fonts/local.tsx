@@ -1,6 +1,6 @@
 import { Notice } from 'obsidian';
 import { useState } from 'preact/hooks';
-import { appUtils, fileManager, rendererManager } from '@/libs';
+import { $, appUtils, fileManager } from '@/libs';
 import { features } from '@/libs/features';
 import { t } from '@/libs/i18n';
 import type { FontData } from '@/types/obsidian';
@@ -40,7 +40,7 @@ export function SystemFontList({ onImport, importedFonts }: SystemFontListProps)
     const fontArrayBuffer = await (await fontData.blob()).arrayBuffer();
 
     await appUtils.app.vault.adapter.writeBinary(targetPath, fontArrayBuffer);
-    await rendererManager.wasm.store({
+    await $.wasm?.store({
       fonts: [fontArrayBuffer],
     });
 
@@ -55,8 +55,8 @@ export function SystemFontList({ onImport, importedFonts }: SystemFontListProps)
       <Setting
         build={(setting) => {
           setting
-            .setName(t('settings.compiler.fontsImportFontName'))
-            .setDesc(t('settings.compiler.fontsImportFontDesc'))
+            .setName(t('settings.compiler.fonts.importFontName'))
+            .setDesc(t('settings.compiler.fonts.importFontDesc'))
             .addSearch((search) => {
               search.setPlaceholder(t('settings.compiler.fonts.filterPlaceholder'));
               search.onChange((value) => setFilter(value));
@@ -91,10 +91,8 @@ export function SystemFontList({ onImport, importedFonts }: SystemFontListProps)
                     button.setIcon('info');
                     button.setTooltip(t('settings.compiler.fonts.tooltips.getInfo'));
                     button.onClick(async () => {
-                      const info = await (rendererManager.wasm as any).parseFont(
-                        await (await font.blob()).arrayBuffer(),
-                      );
-                      new FontModal(appUtils.app, info).open();
+                      const info = await $.wasm?.parseFont(await (await font.blob()).arrayBuffer());
+                      if (info) new FontModal(appUtils.app, info).open();
                     });
                   })
                   .addButton((button) => {

@@ -1,5 +1,5 @@
 import { Notice } from 'obsidian';
-import { appUtils, fileManager, rendererManager } from '@/libs';
+import { $, appUtils, fileManager } from '@/libs';
 import { features, path, url } from '@/libs/features';
 import { t } from '@/libs/i18n';
 import { Setting } from '@/ui/components/obsidian/Setting';
@@ -23,8 +23,8 @@ export function LoadedFontList({ fonts, onRemove }: LoadedFontListProps) {
       <Setting
         build={(setting) => {
           setting
-            .setName(t('settings.compiler.fontsImportedFontsName'))
-            .setDesc(t('settings.compiler.fontsImportedFontsDesc'));
+            .setName(t('settings.compiler.fonts.importedFontsName'))
+            .setDesc(t('settings.compiler.fonts.importedFontsDesc'));
 
           if (features.node) {
             setting.addButton((button) => {
@@ -56,8 +56,8 @@ export function LoadedFontList({ fonts, onRemove }: LoadedFontListProps) {
                     button.setTooltip(t('settings.compiler.fonts.tooltips.getInfo'));
                     button.onClick(async () => {
                       const fontData = await appUtils.app.vault.adapter.readBinary(fontPath);
-                      const info = await (rendererManager.wasm as any).parseFont(fontData);
-                      new FontModal(appUtils.app, info).open();
+                      const info = await $.wasm?.parseFont(fontData);
+                      if (info) new FontModal(appUtils.app, info).open();
                     });
                   })
                   .addButton((button) => {

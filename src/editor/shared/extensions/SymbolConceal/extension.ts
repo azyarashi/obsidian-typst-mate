@@ -101,6 +101,7 @@ export class SymbolConcealPlugin {
       const isMatchable =
         kind === SyntaxKind.MathIdent ||
         kind === SyntaxKind.FieldAccess ||
+        kind === SyntaxKind.MathFieldAccess ||
         kind === SyntaxKind.MathText ||
         kind === SyntaxKind.Ident;
 
@@ -110,7 +111,7 @@ export class SymbolConcealPlugin {
         let symbolData: SymbolData | undefined;
 
         if (kind === SyntaxKind.MathIdent || kind === SyntaxKind.MathText) symbolData = SYMBOL_MAP.get(text);
-        else if (kind === SyntaxKind.FieldAccess) {
+        else if (kind === SyntaxKind.FieldAccess || kind === SyntaxKind.MathFieldAccess) {
           const leftmost = node.leftmostLeaf();
           if (leftmost) {
             const lKind = leftmost.kind();

@@ -1,13 +1,13 @@
 import { MarkdownPreviewRenderer } from 'obsidian';
 import type ObsidianTypstMate from '@/main';
 import type { Singleton } from '@/types/singleton';
-import { type CodeblockProcessor, type Processor, type ProcessorKind, settingsManager } from '..';
+import { type Processor, type ProcessorKind, settingsManager } from '..';
 import { t } from '../i18n';
+import { renderManager } from '../rendererManager/render/renderManager';
 import { getParentNPathByFileNPath } from '../rendererManager/utils';
+import type { CodeblockProcessor } from './processor';
 
 export * from './processor';
-
-const INTERNAL_CODEBLOCK_IDS: readonly string[] = ['typ', 'typc', 'typm', 'example'].map((id) => `typstmate-${id}`);
 
 export enum RESULT_TYPE {
   SUCCESS,
@@ -23,92 +23,80 @@ export class ProcessorManager implements Singleton {
     this.plugin = plugin;
   }
 
-  checkProcessors() {
-    // inline, display で空idが一番下に存在する。
-    // inline, display で空idが一番下に存在する。
-  }
-
-  addProcessor<K extends ProcessorKind>(kind: K, processor: Processor<K>) {
-    const result = [];
-    const isIdDuplicated = settingsManager.settings.processors[kind].some((p) => p.id === processor.id);
-    if (isIdDuplicated) result.push(isIdDuplicated);
+  addProcessor<K extends ProcessorKind>(kind: K, processor: Processor<K>): [RESULT_TYPE, null] | undefined {
+    if (settingsManager.settings.processors[kind].some((p) => p.id === processor.id)) return [RESULT_TYPE.ERROR, null]; // ID 重複
 
     switch (kind) {
+      case 'codeblock':
+        settingsManager.settings.processors.codeblock.push(processor as CodeblockProcessor);
+        this.registerCodeblockProcessor(processor as CodeblockProcessor);
+        break;
       case 'inline':
+        settingsManager.settings.processors.inline.push(processor as any);
+        break;
       case 'display':
-        settingsManager.settings.processors.inline;
+        settingsManager.settings.processors.display.push(processor as any);
         break;
-      case 'codeblock': {
-        if (INTERNAL_CODEBLOCK_IDS.includes(processor.id)) return [RESULT_TYPE.ERROR, null];
-        break;
-      }
     }
   }
 
-  removeProcessor<K extends ProcessorKind>(kind: K, processor: Processor<K>) {
-    const result = [];
-    const isIdDuplicated = settingsManager.settings.processors[kind].some((p) => p.id === processor.id);
-    if (isIdDuplicated) result.push(isIdDuplicated);
+  removeProcessor<K extends ProcessorKind>(kind: K, processor: Processor<K>): [RESULT_TYPE, null] | undefined {
+    const arr = settingsManager.settings.processors[kind] as Processor<K>[];
+    const idx = arr.findIndex((p) => p.id === processor.id);
+    if (idx === -1) return [RESULT_TYPE.ERROR, null];
 
-    switch (kind) {
-      case 'inline':
-      case 'display':
-        settingsManager.settings.processors.inline;
-        break;
-      case 'codeblock': {
-        if (INTERNAL_CODEBLOCK_IDS.includes(processor.id)) return [RESULT_TYPE.ERROR, null];
-        break;
-      }
-    }
+    arr.splice(idx, 1);
+    if (kind === 'codeblock') this.unregisterCodeblockProcessor(processor.id);
   }
 
-  renameProcessor<K extends ProcessorKind>(kind: K, oldProcessor: Processor<K>, newId: string) {}
+  renameProcessor<K extends ProcessorKind>(kind: K, oldId: string, newId: string): [RESULT_TYPE, null] | undefined {
+    const arr = settingsManager.settings.processors[kind] as Processor<K>[];
+    const processor = arr.find((p) => p.id === oldId);
+    if (!processor) return [RESULT_TYPE.ERROR, null];
 
-  swapProcessor<K extends ProcessorKind>(kind: K, index1: number, index2: number) {}
+    processor.id = newId;
+    if (kind === 'codeblock') this.renameCodeblockProcessor(oldId, processor as CodeblockProcessor);
+  }
 
-  // TODO
-  private registerCodeblockProcessors() {
+  swapProcessor<K extends ProcessorKind>(kind: K, index1: number, index2: number): void {
+    const arr = settingsManager.settings.processors[kind] as Processor<K>[];
+    if (index1 < 0 || index2 < 0 || index1 >= arr.length || index2 >= arr.length) return;
+    [arr[index1], arr[index2]] = [arr[index2]!, arr[index1]!];
+  }
+
+  // * コードブロック登録管理
+
+  registerCodeblockProcessors() {
     for (const id of this.registeredCodeblockProcessorIds) MarkdownPreviewRenderer.unregisterCodeBlockPostProcessor(id);
     this.registeredCodeblockProcessorIds.clear();
 
-    const processors = settingsManager.settings.processors.codeblock;
-    for (const processor of processors) this.registerCodeblockProcessor(processor);
+    for (const processor of settingsManager.settings.processors.codeblock) this.registerCodeblockProcessor(processor);
   }
 
   private registerCodeblockProcessor(processor: CodeblockProcessor) {
     try {
       this.plugin.registerMarkdownCodeBlockProcessor(processor.id, (source, el, ctx) => {
-        if (!this.ready) {
-          el.textContent = source;
-          el.addClass('typstmate-pending');
-          el.setAttribute('kind', processor.id);
-
-          return Promise.resolve(el as HTMLElement);
-        }
-
         const npath = ctx.sourcePath;
         const ndir = getParentNPathByFileNPath(npath);
-
-        return Promise.resolve(this.render(source, el, processor.id, ndir, npath));
+        return Promise.resolve(renderManager.renderCodeblock(source, el, processor.id, ndir, npath));
       });
-
       this.registeredCodeblockProcessorIds.add(processor.id);
     } catch {
       new Notice(t('notices.alreadyRegisteredCodeblock', { id: processor.id }));
     }
   }
 
-  private unregisterCodeblockProcessor(id: string) {
+  public unregisterCodeblockProcessor(id: string) {
     MarkdownPreviewRenderer.unregisterCodeBlockPostProcessor(id);
     this.registeredCodeblockProcessorIds.delete(id);
   }
 
-  private renameCodeblockProcessor(oldId: string, newProcessor: CodeblockProcessor) {
+  public renameCodeblockProcessor(oldId: string, newProcessor: CodeblockProcessor) {
     this.unregisterCodeblockProcessor(oldId);
     this.registerCodeblockProcessor(newProcessor);
   }
 
-  detach(): void | Promise<void> {
+  detach(): void {
     (this as any).plugin = undefined;
   }
 }

@@ -2,7 +2,7 @@ import { isIdent } from '@typstmate/typst-syntax';
 import { type EditorView, hoverTooltip } from '@codemirror/view';
 import { render } from 'preact';
 import { getActiveRegion } from '@/editor';
-import { RenderingEngine, rendererManager } from '@/libs';
+import { $, RenderingEngine } from '@/libs';
 import { Center, Header, Left, Right } from './components';
 import { createTooltipData } from './utils';
 
@@ -21,8 +21,9 @@ export const hoverExtension = hoverTooltip(async (view: EditorView, pos: number,
   if (wasmPos < 0 || code.length < wasmPos) return null;
 
   try {
-    const tooltip = await rendererManager.wasm.tooltip(wasmPos, code, side === 1);
-    const definition = await rendererManager.wasm.definition(wasmPos, code, side === 1);
+    if (!$.wasm) return null;
+    const tooltip = await $.wasm.tooltip(wasmPos, code, side === 1);
+    const definition = await $.wasm.definition(wasmPos, code, side === 1);
     if (!tooltip && !definition) return null;
 
     const definitionValue = definition?.value;
@@ -83,9 +84,8 @@ async function getSampledValues(view: EditorView, pos: number, code: string): Pr
   if (parenIndex === -1) return;
 
   const ident = lineAtPos.text.slice(innerIndex, innerIndex + parenIndex);
-  if (!isIdent(ident)) return;
-
-  const tooltip = await rendererManager.wasm.tooltip(pos + parenIndex, code, true);
+  if (!isIdent(ident) || !$.wasm) return;
+  const tooltip = await $.wasm.tooltip(pos + parenIndex, code, true);
   if (tooltip?.type !== 'code') return;
 
   return tooltip.value;

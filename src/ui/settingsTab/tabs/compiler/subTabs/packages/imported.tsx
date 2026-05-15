@@ -27,7 +27,7 @@ export function CachedPackageList({ packages, onRefresh }: CachedPackageListProp
     <>
       <Setting
         build={(setting) => {
-          setting.setName(t('settings.compiler.packages.importedPackages'));
+          setting.setName(t('settings.compiler.packages.cachedPackages'));
           if (features.node) {
             setting.addButton((button) => {
               button.setTooltip(t('settings.compiler.packages.tooltips.openFolder'));

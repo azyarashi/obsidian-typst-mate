@@ -25,3 +25,5 @@ export * from './patches';
 export * from './i18n';
 
 export * from './processorManager';
+
+export * from './wasmManager';

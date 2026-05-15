@@ -1,16 +1,11 @@
 import type { EditorView } from '@codemirror/view';
 import type { Remote } from 'comlink';
-import type WasmAdapter from '@/libs/rendererManager/worker';
-import type { Phase, State } from '../api';
+import type WasmAdapter from '@/libs/wasmManager';
+import type { Phase, Status } from '../api';
 import type { ParsedRegion } from '../editor/shared/utils/core';
 
 export type * as Wasm from '@wasm';
 export type { ParsedRegion, Status };
-
-export interface Status {
-  state: State;
-  message?: string;
-}
 
 declare global {
   interface Window {
@@ -38,12 +33,6 @@ declare global {
        * @since 3.0.0
        * */
       typstVersion?: string;
-
-      /**
-       * @public
-       * @since 3.0.0
-       * */
-      tex2chtmlOrig?: (math: string, options: { display?: boolean }) => HTMLElement;
 
       /**
        * @public

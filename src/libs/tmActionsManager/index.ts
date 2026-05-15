@@ -71,7 +71,7 @@ class TMActionsManager implements Singleton {
     }
   }
 
-  detach() {
+  async detach() {
     this.tmactions = [];
   }
 }

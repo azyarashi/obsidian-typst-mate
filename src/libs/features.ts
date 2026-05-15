@@ -54,6 +54,9 @@ export function initWatcherNode(watcherNodePath: string): boolean {
   }
 }
 
+/**
+ * appUtils
+ */
 export function checkPluginFeatures() {
   features.excalidraw = appUtils.app.plugins.enabledPlugins.has('obsidian-excalidraw-plugin');
   features.latexSuite = appUtils.app.plugins.enabledPlugins.has('obsidian-latex-suite');

@@ -188,7 +188,7 @@ export function parseRegion(view: EditorView, region: Region, skipParse = false)
     const lang = beginLine.text.slice(3).trim();
     const skip = lang.length + 1;
 
-    const processor = settingsManager.settings.processor.codeblock?.processors.find((p) => p.id === lang);
+    const processor = settingsManager.settings.processors.codeblock?.find((p) => p.id === lang);
     if (processor === undefined) return null;
 
     const mode = processor.syntaxMode ?? SyntaxMode.Markup;

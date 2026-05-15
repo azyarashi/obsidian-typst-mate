@@ -4,8 +4,8 @@ import { Prec } from '@codemirror/state';
 import { EditorView, keymap } from '@codemirror/view';
 import { debounce, Notice, TFile } from 'obsidian';
 import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
-// TODO import { obsidianTheme } from '@/editor';
-import { buildJSSimpleEditorExtensions } from '@/editorSimple/js';
+import { obsidianTheme } from '@/editor';
+import { buildJSSimpleEditorExtensions } from '@/editor/editorSimple/js';
 import { appUtils, extensionManager, settingsManager, tmActionsManager } from '@/libs';
 import { t } from '@/libs/i18n';
 import { importRaw, normalizeTMActionRaw, validateTMAction } from '@/libs/tmActionsManager/utils';
@@ -26,6 +26,8 @@ export function ActionCodeTab() {
   };
 
   const saveSettings = debounce(async (source: string) => {
+    const settings = settingsManager.settings;
+    const filePath = `${settings.resourcesPath}/tmactions`;
     if (useFile) {
       if (!filePath) return;
       try {
@@ -71,6 +73,8 @@ export function ActionCodeTab() {
   const debouncedValidate = useMemo(() => debounce((source: string) => validate(source), 3000), []);
 
   useEffect(() => {
+    const settings = settingsManager.settings;
+    const filePath = `${settings.resourcesPath}/tmactions`;
     if (useFile) {
       if (!filePath) {
         setFileContent(null);
@@ -83,7 +87,7 @@ export function ActionCodeTab() {
         setFileContent(null);
       }
     }
-  }, [useFile, filePath]);
+  }, [useFile]);
 
   useEffect(() => {
     if (!editorRef.current) return;
@@ -149,6 +153,9 @@ export function ActionCodeTab() {
       unfoldAll(viewRef.current);
     }
   };
+
+  const settings = settingsManager.settings;
+  const filePath = `${settings.resourcesPath}/tmactions`;
 
   if (useFile && fileContent === null) {
     return (

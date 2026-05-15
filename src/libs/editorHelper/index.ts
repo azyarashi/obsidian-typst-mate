@@ -2,9 +2,9 @@ import { Prec } from '@codemirror/state';
 import type { EditorView } from '@codemirror/view';
 import type { Editor } from 'obsidian';
 import { buildMarkdownExtension as buildSharedExtensions, collectRegions } from '@/editor';
+import { rendererManager } from '@/libs';
 import type ObsidianTypstMate from '@/main';
 import type { Singleton } from '@/types/singleton';
-import { rendererManager } from '../rendererManager';
 
 export class EditorHelper implements Singleton {
   init(plugin: ObsidianTypstMate) {
@@ -53,7 +53,7 @@ export class EditorHelper implements Singleton {
     }
   }
 
-  detach() {
+  async detach() {
     const temporaryEls = document.querySelectorAll('.typstmate-temporary');
     for (const el of temporaryEls) el.remove();
   }

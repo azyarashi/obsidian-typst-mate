@@ -3,8 +3,9 @@ import { debounce, loadMathJax, Platform, Plugin, renderMath } from 'obsidian';
 import { Phase, TypstMate } from './api';
 import { markdownExtensionEntries, sharedExtensionEntries, typstExtensionEntries } from './editor';
 // biome-ignore format: readability
-import { applyAllPatches, appUtils, crashTracker, detachAllPatches, editorHelper, extensionManager, fileManager, initI18n, registerCommands, registerEvents, registerProtocolHandlers, rendererManager, settingsManager, t, tmActionsManager } from './libs';
-import { registerEmbeds, registerViews, removeStatusBarItem, SettingsTab, setStatusBarItem } from './ui';
+import { $, applyAllPatches, appUtils, crashTracker, detachAllPatches, editorHelper, extensionManager, fileManager, initI18n, processorManager, registerCommands, registerEvents, registerProtocolHandlers, rendererManager, settingsManager, t, tmActionsManager } from './libs';
+// biome-ignore format: readability
+import { registerEmbeds, registerViews, removeStatusBarItem, SettingsTab, setStatusBarItem, unregisterEmbeds } from './ui';
 import { noticeError, noticeMessage } from './utils/notice';
 
 import './ui/styles';
@@ -15,7 +16,7 @@ export default class ObsidianTypstMate extends Plugin {
 
   private hasLoadedInVault: boolean = true;
   private hasLoadedInProcess: boolean = false;
-  private detaches: (() => any | Promise<any>)[] = [];
+  detaches: (() => Promise<any>)[] = [];
 
   /* onload */
 
@@ -24,12 +25,15 @@ export default class ObsidianTypstMate extends Plugin {
     await this.waitUntilNotDisabling();
 
     // * api
+    /** {@link ObsidianTypstMate.onFirstLoadInProcess} */
     if (window.TypstMate !== undefined) this.hasLoadedInProcess = true;
+    window.TypstMate = TypstMate;
+
     TypstMate.pluginVersion = this.manifest.version;
 
     // * settingsManager
     await settingsManager.init(this);
-    this.detaches.unshift(async () => await settingsManager.detach());
+    this.detaches.unshift(() => settingsManager.detach());
     this.detaches.unshift(() => appUtils.refreshView(this.app));
 
     // * crashTracker
@@ -40,45 +44,38 @@ export default class ObsidianTypstMate extends Plugin {
       // * appUtils
       appUtils.init(this);
       appUtils.applyBaseColor();
-      this.detaches.unshift(() => appUtils.detach());
+      this.detaches.unshift(appUtils.detach);
 
       // * statusBarItem
-      /** @see https://docs.obsidian.md/Plugins/User+interface/Status+bar */
       if (Platform.isDesktopApp) {
         const statusBarItemEl = this.addStatusBarItem();
         setStatusBarItem(statusBarItemEl);
-        this.detaches.unshift(() => removeStatusBarItem(statusBarItemEl));
+        this.detaches.unshift(async () => removeStatusBarItem(statusBarItemEl));
       }
 
       // * MathJax
       if (!this.hasLoadedInProcess) await this.onFirstLoadInProcess();
-      else TypstMate.tex2chtmlOrig = window.MathJax.tex2chtml;
-      window.TypstMate = TypstMate;
-      this.detaches.unshift(() => {
-        window.MathJax!.tex2chtml = TypstMate.tex2chtmlOrig!;
-      });
 
       // * fileManager
       await fileManager.init(this);
       this.detaches.unshift(async () => await fileManager.detach());
 
-      // * views & embeds
+      // * settingsTab, views and embeds
       this.addSettingTab(new SettingsTab(this.app, this));
-      // detach は不要
-
-      registerProtocolHandlers(this);
-      // detach は不要
 
       registerViews(this);
-      // detach は不要
 
       registerEmbeds(this);
-      this.detaches.unshift(() => this.app.embedRegistry.unregisterExtension('typ'));
+      this.detaches.unshift(async () => unregisterEmbeds(this));
+
+      // * processorManager
+      await processorManager.init(this);
+      this.detaches.unshift(async () => processorManager.detach());
 
       // * rendererManager
       await rendererManager.init(this);
-      this.detaches.unshift(async () => await rendererManager.detach());
-      rendererManager.registerOnce();
+      this.detaches.unshift(() => rendererManager.detach());
+      rendererManager.registerOnce(this);
 
       this.app.workspace.onLayoutReady(() => {
         this.onLayoutReady()
@@ -129,7 +126,6 @@ export default class ObsidianTypstMate extends Plugin {
     if (window.MathJax?.tex2chtml === undefined) this.blockStart();
 
     renderMath('', false); // ? 副作用 (スタイル) のため
-    TypstMate.tex2chtmlOrig = window.MathJax.tex2chtml;
   }
 
   /* onLayoutReady */
@@ -138,6 +134,9 @@ export default class ObsidianTypstMate extends Plugin {
     const list = await fileManager.adapter.list(fileManager.pluginDirNPath);
     if (list.folders.length === 0) this.hasLoadedInVault = false;
 
+    // * protocol handlers
+    registerProtocolHandlers(this);
+
     // * fileManager
     await fileManager.ensureWasm(list.files);
     await fileManager.tryCreateDirs();
@@ -145,7 +144,7 @@ export default class ObsidianTypstMate extends Plugin {
     // * wasm
     TypstMate.setPhase(Phase.InitializingWasm);
     await rendererManager.prepareWasm();
-    this.detaches.unshift(() => delete window.TypstMate!.wasm);
+    this.detaches.unshift(async () => delete window.TypstMate!.wasm);
 
     TypstMate.setPhase(Phase.PreparingAssets);
     await rendererManager.prepareAssets();
@@ -173,11 +172,11 @@ export default class ObsidianTypstMate extends Plugin {
 
     // * patches
     TypstMate.setPhase(Phase.ApplyingPatches);
-    applyAllPatches(this);
+    await applyAllPatches(this);
     this.detaches.unshift(() => detachAllPatches());
 
     // * TypstMate API
-    TypstMate.wasm = rendererManager.wasm;
+    TypstMate.wasm = $.wasm;
   }
 
   /* finish */
@@ -186,7 +185,7 @@ export default class ObsidianTypstMate extends Plugin {
     crashTracker.updateCrashStatus(false);
 
     if (!this.hasLoadedInVault) appUtils.openTypstTools(true);
-    await rendererManager.renderPendingElements();
+    // TODO pending してた Element や View を更新
   }
 
   /* onunload */
