@@ -1,11 +1,11 @@
 import { MarkdownPreviewRenderer } from 'obsidian';
+import { t } from '@/libs/i18n';
 import type ObsidianTypstMate from '@/main';
 import type { Singleton } from '@/types/singleton';
-import { type Processor, type ProcessorKind, settingsManager } from '..';
-import { t } from '../i18n';
-import { renderManager } from '../rendererManager/render/renderManager';
+import { rendererManager } from '../rendererManager';
 import { getParentNPathByFileNPath } from '../rendererManager/utils';
-import type { CodeblockProcessor } from './processor';
+import { settingsManager } from '../settingsManager';
+import type { CodeblockProcessor, Processor, ProcessorKind } from './processor';
 
 export * from './processor';
 
@@ -78,7 +78,7 @@ export class ProcessorManager implements Singleton {
       this.plugin.registerMarkdownCodeBlockProcessor(processor.id, (source, el, ctx) => {
         const npath = ctx.sourcePath;
         const ndir = getParentNPathByFileNPath(npath);
-        return Promise.resolve(renderManager.renderCodeblock(source, el, processor.id, ndir, npath));
+        return Promise.resolve(rendererManager.renderCodeblock(source, el, processor.id, ndir, npath));
       });
       this.registeredCodeblockProcessorIds.add(processor.id);
     } catch {
@@ -96,7 +96,7 @@ export class ProcessorManager implements Singleton {
     this.registerCodeblockProcessor(newProcessor);
   }
 
-  detach(): void {
+  async detach() {
     (this as any).plugin = undefined;
   }
 }

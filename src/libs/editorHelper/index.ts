@@ -2,8 +2,8 @@ import { Prec } from '@codemirror/state';
 import type { EditorView } from '@codemirror/view';
 import type { Editor } from 'obsidian';
 import { buildMarkdownExtension as buildSharedExtensions, collectRegions } from '@/editor';
-import { rendererManager } from '@/libs';
 import type ObsidianTypstMate from '@/main';
+import { $ as wasmManager } from '@/managers/wasmManager';
 import type { Singleton } from '@/types/singleton';
 
 export class EditorHelper implements Singleton {
@@ -40,13 +40,13 @@ export class EditorHelper implements Singleton {
     ).filter((region) => region.kind !== 'codeblock');
 
     if (selection.empty && regions.length === 0) {
-      editor.replaceSelection(await rendererManager.wasm.latexeq_to_typm(editor.getSelection()));
+      editor.replaceSelection(await wasmManager.wasm!.latexeq_to_typm(editor.getSelection()));
       return;
     }
 
     for (const region of regions) {
       const content = view.state.sliceDoc(region.from, region.to);
-      const math = await rendererManager.wasm.latexeq_to_typm(content);
+      const math = await wasmManager.wasm!.latexeq_to_typm(content);
       const fromPosition = editor.offsetToPos(region.from);
       const toPosition = editor.offsetToPos(region.to);
       editor.replaceRange(math, fromPosition, toPosition);

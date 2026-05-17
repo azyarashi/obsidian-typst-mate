@@ -1,7 +1,6 @@
 import { debounce, Notice } from 'obsidian';
 import { useState } from 'preact/hooks';
-import { TypstMate } from '@/api';
-import { $, appUtils, metadataManager, renderManager, settingsManager } from '@/libs';
+import { $, appUtils, metadataManager, rendererManager, settingsManager } from '@/libs';
 import { t, tFragment } from '@/libs/i18n';
 import { DEFAULT_SETTINGS } from '@/settings';
 import { Setting } from '@/ui/components/obsidian/Setting';
@@ -21,7 +20,7 @@ export function AdvancedTab() {
     if ($.wasm) {
       await $.wasm.store({ files });
       new Notice(t('notices.filesUpdated'));
-      renderManager.rerenderAll();
+      rendererManager.rerenderAll();
     }
   }, 500);
 

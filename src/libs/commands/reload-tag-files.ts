@@ -1,4 +1,4 @@
-import { $, metadataManager, renderManager } from '@/libs';
+import { $, metadataManager, rendererManager } from '@/libs';
 import { t } from '@/libs/i18n';
 import type { CommandGen } from '.';
 
@@ -10,7 +10,7 @@ export const reloadTagFilesCommand: CommandGen = () => {
       const files = await metadataManager.collectTagFiles();
       if ($.wasm) await $.wasm.store({ files });
 
-      renderManager.rerenderAll();
+      rendererManager.rerenderAll();
     },
   };
 };

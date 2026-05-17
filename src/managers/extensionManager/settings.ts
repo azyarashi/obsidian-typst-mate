@@ -1,6 +1,5 @@
 import type { Extension } from '@codemirror/state';
-import type { EditorContext } from '..';
-import type { ExtensionPackage } from '.';
+import type { EditorContext, ExtensionPackage } from '.';
 
 export type ExtensionSettingItem =
   | ToggleSetting

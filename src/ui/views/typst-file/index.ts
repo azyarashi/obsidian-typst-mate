@@ -9,7 +9,6 @@ import {
   type ViewStateResult,
   type WorkspaceLeaf,
 } from 'obsidian';
-import { TypstMate } from '@/api';
 import {
   buildTypstTextExtensions,
   codeJumpTargetFacet,
@@ -18,9 +17,9 @@ import {
   vimQuitFacet,
   vimSaveFacet,
 } from '@/editor';
-import { $, fileManager, metadataManager, rendererManager, settingsManager } from '@/libs';
-import { viewTracker } from '@/libs/extensionManager';
+import { $, fileManager, metadataManager, settingsManager } from '@/libs';
 import { t } from '@/libs/i18n';
+import { viewTracker } from '@/managers/extensionManager';
 import { ExportToolModal } from '@/ui/modals/exportTool';
 import { TypstPreviewView } from '@/ui/views/typst-preview';
 import { exportToPdf } from '@/utils/export';

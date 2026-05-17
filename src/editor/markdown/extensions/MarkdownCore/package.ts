@@ -1,6 +1,6 @@
 import { ICONS } from '@/constants/icons';
-import type { ExtensionPackageFn } from '@/libs/extensionManager';
 import { t } from '@/libs/i18n';
+import type { ExtensionPackageFn } from '@/managers/extensionManager';
 
 export const markdownCorePackage: ExtensionPackageFn = () => ({
   id: 'markdown-core',

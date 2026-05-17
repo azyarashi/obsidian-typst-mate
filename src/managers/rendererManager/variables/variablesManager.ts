@@ -1,5 +1,6 @@
-import { $, settingsManager } from '@/libs';
 import type ObsidianTypstMate from '@/main';
+import { settingsManager } from '@/managers/settingsManager';
+import { $ } from '@/managers/wasmManager';
 import type { Singleton } from '@/types/singleton';
 
 export class VariablesManager implements Singleton {
@@ -37,7 +38,7 @@ export class VariablesManager implements Singleton {
     }
   }
 
-  detach() {
+  async detach() {
     this.onRerender = undefined;
   }
 }

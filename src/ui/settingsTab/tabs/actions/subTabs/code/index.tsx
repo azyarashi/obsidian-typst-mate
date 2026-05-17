@@ -8,7 +8,7 @@ import { obsidianTheme } from '@/editor';
 import { buildJSSimpleEditorExtensions } from '@/editor/editorSimple/js';
 import { appUtils, extensionManager, settingsManager, tmActionsManager } from '@/libs';
 import { t } from '@/libs/i18n';
-import { importRaw, normalizeTMActionRaw, validateTMAction } from '@/libs/tmActionsManager/utils';
+import { importRaw, normalizeTMActionRaw, validateTMAction } from '@/managers/tmActionsManager/utils';
 import { Setting } from '@/ui/components/obsidian/Setting';
 
 export function ActionCodeTab() {

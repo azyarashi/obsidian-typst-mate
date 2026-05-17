@@ -1,5 +1,5 @@
 import type { TFile } from 'obsidian';
-import { appUtils, metadataManager, renderManager } from '@/libs';
+import { appUtils, metadataManager, rendererManager } from '@/libs';
 
 export function onCacheChanged(file: TFile) {
   // TODO
@@ -8,5 +8,5 @@ export function onCacheChanged(file: TFile) {
   const cache = app.metadataCache.getCache(file.path);
   if (!cache) return;
 
-  if (metadataManager.syncFileCache(file.path, cache)) renderManager.rerenderAll();
+  if (metadataManager.syncFileCache(file.path, cache)) rendererManager.rerenderAll();
 }

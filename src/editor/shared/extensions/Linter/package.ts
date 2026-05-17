@@ -1,6 +1,6 @@
 import { ICONS } from '@/constants/icons';
-import type { ExtensionPackage } from '@/libs/extensionManager';
 import { t, tFragment } from '@/libs/i18n';
+import type { ExtensionPackage } from '@/managers/extensionManager';
 
 export const linterPackage = () =>
   ({

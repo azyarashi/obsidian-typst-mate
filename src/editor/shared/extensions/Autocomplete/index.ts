@@ -1,4 +1,4 @@
-import { defineExtension } from '@/libs/extensionManager';
+import { defineExtension } from '@/managers/extensionManager';
 import { autocompleteExtension } from './extension';
 import { autocompletePackage, autocompleteSettingsFacet } from './package';
 

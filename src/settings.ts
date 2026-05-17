@@ -7,8 +7,8 @@ import {
   type ProcessorKind,
   RenderingEngine,
 } from '@/libs';
-import type { EditorContext, ExtensionSetting, Tag } from '@/libs/extensionManager';
-import type { WidthProfile } from '@/libs/rendererManager/utils/profile';
+import type { EditorContext, ExtensionSetting, Tag } from '@/managers/extensionManager';
+import type { WidthProfile } from '@/managers/rendererManager/utils/profile';
 import type { Tab } from '@/ui/settingsTab';
 import type { ActionsSubTab } from '@/ui/settingsTab/tabs/actions';
 import type { CompilerSubTab } from '@/ui/settingsTab/tabs/compiler';

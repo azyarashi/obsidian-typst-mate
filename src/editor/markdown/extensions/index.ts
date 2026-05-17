@@ -1,4 +1,4 @@
-import type { ExtensionEntry } from '@/libs/extensionManager';
+import type { ExtensionEntry } from '@/managers/extensionManager';
 import { codeblockPreviewEntry } from './CodeBlockPreview';
 import { debuggerEntry } from './Debugger';
 import { inlineMathPreviewEntry } from './InlineMathPreview';

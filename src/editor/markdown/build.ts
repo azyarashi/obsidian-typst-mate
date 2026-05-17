@@ -1,6 +1,6 @@
 import type { Extension } from '@codemirror/state';
 import { clickableLinkExtension, diagnosticsState, markdownCore } from '@/editor';
-import { extensionManager, viewTracker } from '@/libs/extensionManager';
+import { extensionManager, viewTracker } from '@/managers/extensionManager';
 
 export function buildMarkdownExtension(): Extension[] {
   const extensions: Extension[] = [

@@ -21,12 +21,12 @@ export function formatFunc(func: Func): FormattedValue {
   const named = func.params?.filter((p) => p.named) || [];
 
   if (0 < named.length) {
-    bottom += '# Named Parameters\n';
+    bottom += '= Named Parameters\n';
     for (const p of named) bottom += formatParam(p);
   }
 
   if (0 < positional.length) {
-    bottom += '# Positional Parameters\n';
+    bottom += '= Positional Parameters\n';
     for (const p of positional) bottom += formatParam(p);
   }
 
@@ -37,7 +37,7 @@ export function formatFunc(func: Func): FormattedValue {
 function formatParam(p: Param) {
   const requiredStr = p.required ? ' #required' : '';
   const settableStr = p.settable ? ' #settable' : '';
-  return `## ${p.name}${requiredStr}${settableStr}\n${wrapWithTypcBlock(formatParamTypes(p, false))}\n${p.docs}\n`;
+  return `== ${p.name}${requiredStr}${settableStr}\n${wrapWithTypcBlock(formatParamTypes(p, false))}\n${p.docs}\n`;
 }
 
 function formatParamTypes(p: Param, isSignature: boolean) {

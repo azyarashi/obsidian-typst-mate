@@ -1,5 +1,5 @@
-import type { DisplayProcessor, InlineProcessor, MathProcessor } from '@/libs/processorManager';
-import { settingsManager } from '@/libs/settingsManager';
+import type { DisplayProcessor, InlineProcessor, MathProcessor } from '@/managers/processorManager';
+import { settingsManager } from '@/managers/settingsManager';
 import { DEFAULT_SETTINGS } from '@/settings';
 
 const NO_MORE_FLICKERING_MATH_DELIMITER = '{}';
@@ -17,7 +17,7 @@ interface CMMathInfo {
 /**
  * CMMath は, `({} )(id)(Inline Processor における区切り文字 :)(数式)( {})` の形式をとる
  */
-export function extarctCMMath(codeRaw: string, display: boolean): CMMathInfo {
+export function extractCMMath(codeRaw: string, display: boolean): CMMathInfo {
   /** {}, id, : を含まない */
   let eqStart = 0;
   /** {} を含まない */
@@ -61,11 +61,32 @@ function getInlineProcessorByCode(code: string): InlineProcessor {
   );
 }
 
-function getDisplayProcessorByCode(code: string): DisplayProcessor {
+export function getDisplayProcessorByCode(code: string): DisplayProcessor {
   const displayProcessors = settingsManager.settings.processors.display;
   return (
     displayProcessors?.find((p) => code.startsWith(p.id)) ??
     displayProcessors?.at(-1) ??
     DEFAULT_SETTINGS.processors.display.at(-1)!
   );
+}
+
+/** math コード文字列から使用するプロセッサーを取得する */
+export function getMathProcessor(code: string, isDisplay: boolean) {
+  return extractCMMath(code, isDisplay);
+}
+
+/** コードブロック種別 id からプロセッサーを取得する */
+export function getCodeblockProcessor(id: string) {
+  const { settings } = settingsManager;
+  return (
+    settings.processors.codeblock?.find((p) => p.id === id) ??
+    settings.processors.codeblock?.at(-1) ??
+    DEFAULT_SETTINGS.processors.codeblock!.at(-1)!
+  );
+}
+
+/** CM 数式デリミタとプロセッサー prefix を除いた生コードを返す */
+export function extractMathCode(raw: string, eqStart: number, eqEnd: number, isDisplay: boolean): string {
+  const code = eqEnd !== 0 ? raw.slice(eqStart, -eqEnd) : raw.slice(eqStart);
+  return isDisplay ? normalizeDisplayMathCode(code) : code;
 }

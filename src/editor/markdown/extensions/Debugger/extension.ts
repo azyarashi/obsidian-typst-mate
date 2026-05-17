@@ -2,9 +2,9 @@ import { SyntaxKind, SyntaxMode } from '@typstmate/typst-syntax';
 import type { Extension } from '@codemirror/state';
 import { type EditorView, type PluginValue, ViewPlugin, type ViewUpdate } from '@codemirror/view';
 import { getActiveRegion } from '@/editor';
-import { format } from '@/ui/elements/Typst';
 
 import './Debugger.css';
+import { format } from '@/managers/rendererManager/elements/Typst';
 
 class DebugPlugin implements PluginValue {
   dom: HTMLElement;

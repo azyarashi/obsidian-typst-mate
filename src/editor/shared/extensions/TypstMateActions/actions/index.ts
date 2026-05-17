@@ -4,7 +4,7 @@ import type { EditorView } from '@codemirror/view';
 import { getActiveRegion, markdownCore, vimModeField } from '@/editor';
 import { RenderingEngine } from '@/libs';
 import { getObsidianVimMode } from '@/libs/events/vim-mode-change';
-import { type TMAction, type TMActionContext, tmActionsManager } from '@/libs/tmActionsManager';
+import { type TMAction, type TMActionContext, tmActionsManager } from '@/managers/tmActionsManager';
 import { consoleWarn } from '@/utils/notice';
 import { executeExtraActions } from '../extras';
 import { executeCommand } from './commands';

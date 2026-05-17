@@ -10,7 +10,7 @@ import { syntaxTree } from '@codemirror/language';
 import { type EditorView, type PluginValue, ViewPlugin, type ViewUpdate } from '@codemirror/view';
 import { TypstMate } from '@/api';
 import { getModeAndKindFromRegion, type ParsedRegion, RegionContext } from '@/editor';
-import { editorHelper, extarctCMMath, type ProcessorKind, RenderingEngine, settingsManager } from '@/libs';
+import { editorHelper, extractCMMath, type ProcessorKind, RenderingEngine, settingsManager } from '@/libs';
 
 interface Region {
   /** right after the delimiter */
@@ -216,7 +216,7 @@ export function parseRegion(view: EditorView, region: Region, skipParse = false)
 
   const isDisplay = region.kind === 'display';
   const content = view.state.sliceDoc(region.from, region.to);
-  const { processor, eqStart, eqEnd } = extarctCMMath(content, isDisplay);
+  const { processor, eqStart, eqEnd } = extractCMMath(content, isDisplay);
 
   if (region.to < region.from + eqStart) return null;
 

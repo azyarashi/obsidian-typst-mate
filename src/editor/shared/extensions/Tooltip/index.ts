@@ -1,4 +1,4 @@
-import { defineExtension } from '@/libs/extensionManager';
+import { defineExtension } from '@/managers/extensionManager';
 import { hoverExtension } from './extension';
 import { tooltipPackage } from './package';
 

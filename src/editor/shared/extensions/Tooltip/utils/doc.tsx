@@ -2,17 +2,17 @@ import type { Definition, Param, Tooltip } from '@wasm';
 import { formatDefinitionValue } from '@wasm-values';
 
 export interface TooltipData {
-  markdown: string;
+  source: string;
   links: { title: string; url: string }[];
   hasDoc: boolean;
   isFunc: boolean;
   params?: Param[];
 }
 
-const separator = '\n\n---\n';
+const separator = '\n#line(length: 100%)\n';
 
 export function createTooltipData(definition?: Definition, tooltip?: Tooltip, sampledValues?: string): TooltipData {
-  let markdown = '';
+  let source = '';
   let hasDoc = false;
 
   // 1. Definition value
@@ -20,7 +20,7 @@ export function createTooltipData(definition?: Definition, tooltip?: Tooltip, sa
   let bottomContent = '';
   if (value && value.type !== 'span') {
     const formatted = formatDefinitionValue(value);
-    markdown += formatted.top;
+    source += formatted.top;
     bottomContent = formatted.bottom || '';
   }
 
@@ -36,36 +36,44 @@ export function createTooltipData(definition?: Definition, tooltip?: Tooltip, sa
 
   if (rawDocs !== '') hasDoc = true;
 
-  // Extract links from rawDocs
+  // Extract links from rawDocs and convert to Typst syntax
   const links: { title: string; url: string }[] = [];
   if (rawDocs !== '') {
-    if (markdown !== '') markdown += separator;
+    if (source !== '') source += separator;
+
+    // Convert Markdown links [title](url) to Typst #link("url")[title]
     const linkRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
-    for (const [, title, url] of rawDocs.matchAll(linkRegex)) links.push({ title: title!, url: url! });
-    markdown += rawDocs;
+    for (const match of rawDocs.matchAll(linkRegex)) {
+      links.push({ title: match[1]!, url: match[2]! });
+    }
+    rawDocs = rawDocs.replace(linkRegex, '#link("$2")[$1]');
+
+    // Convert Markdown headings to Typst headings
+    rawDocs = rawDocs.replace(/^# (.*)$/gm, '= $1');
+    rawDocs = rawDocs.replace(/^## (.*)$/gm, '== $1');
+    rawDocs = rawDocs.replace(/^### (.*)$/gm, '=== $1');
+
+    source += rawDocs;
   }
 
   // Append bottom content (parameters etc.)
   if (bottomContent !== '') {
-    if (markdown !== '') markdown += separator;
-    markdown += bottomContent;
+    if (source !== '') source += separator;
+    source += bottomContent;
   }
 
   // 3. Sampled Values
   if (sampledValues) {
-    if (markdown !== '') markdown += separator;
-    markdown += `## Sampled Values\n`;
-    markdown += `\`\`\`typc\n${sampledValues}\n\`\`\``;
+    if (source !== '') source += separator;
+    source += `== Sampled Values\n`;
+    source += `\`\`\`typc\n${sampledValues}\n\`\`\``;
   }
-
-  // TODO: example のレンダリング結果を表示するか否か
-  markdown = markdown.replaceAll('```example', '```typ').replaceAll('```typ', '```typstmate-typ');
 
   const isFunc = value?.type === 'func';
   const params = isFunc && realValue && 'params' in realValue ? realValue.params : undefined;
 
   return {
-    markdown,
+    source,
     links,
     hasDoc,
     isFunc,

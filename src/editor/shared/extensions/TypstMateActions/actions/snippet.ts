@@ -1,8 +1,8 @@
 import type { EditorView } from '@codemirror/view';
 import { TypstMate } from '@/api';
 import { applyToCurrentTabStop, snippet } from '@/editor';
-import type { TMAction, TMActionContext } from '@/libs/tmActionsManager';
-import { Commands, type ScriptFn } from '@/libs/tmActionsManager/definition';
+import type { TMAction, TMActionContext } from '@/managers/tmActionsManager';
+import { Commands, type ScriptFn } from '@/managers/tmActionsManager/definition';
 import { applyExtraActions } from '../extras';
 
 export function executeSnippet(

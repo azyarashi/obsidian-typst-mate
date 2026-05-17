@@ -10,7 +10,6 @@ import {
   type ProcessorKind,
   RenderingEngine,
   rendererManager,
-  renderManager,
   settingsManager,
 } from '@/libs';
 import { t } from '@/libs/i18n';
@@ -48,7 +47,7 @@ export default abstract class TypstElement extends HTMLElement {
         });
       });
 
-    renderManager.beforeKind = this.kind;
+    rendererManager.beforeKind = this.kind;
   }
 
   format() {
@@ -59,7 +58,7 @@ export default abstract class TypstElement extends HTMLElement {
   }
 
   handleError(diags: WasmDiagnostic[]) {
-    renderManager.beforeKind = this.kind;
+    rendererManager.beforeKind = this.kind;
     if (diags.length === 0) return;
     const diag = diags[0]!;
     this.isErr = true;

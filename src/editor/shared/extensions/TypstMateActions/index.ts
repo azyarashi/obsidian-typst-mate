@@ -2,8 +2,8 @@ export * from './actions';
 export * from './extension';
 export * from './extras';
 
-import { defineExtension } from '@/libs/extensionManager';
-import { tmActionsManager } from '@/libs/tmActionsManager';
+import { defineExtension } from '@/managers/extensionManager';
+import { tmActionsManager } from '@/managers/tmActionsManager';
 import { buildActionExtensions } from './extension';
 import { typstMateActionsPackage } from './package';
 

@@ -1,5 +1,4 @@
 import {
-  $,
   appUtils,
   type MarkdownProcessor,
   type Processor,
@@ -7,38 +6,36 @@ import {
   RenderingEngine,
   settingsManager,
 } from '@/libs';
-import { DEFAULT_SETTINGS } from '@/settings';
+import type ObsidianTypstMate from '@/main';
 import type { NPath } from '@/types/obsidian';
-import type TypstElement from '@/ui/elements/Typst';
+import type { Singleton } from '@/types/singleton';
 import { TypstFileView, TypstPreviewView } from '@/ui/views';
-import { extarctCMMath, normalizeDisplayMathCode } from '../utils';
+import { overwriteCustomElements } from '@/utils/custromElementRegistry';
+import { $ as wasmManager } from '../wasmManager';
+import TypstHTMLElement from './elements/HTML';
+import TypstSVGElement from './elements/SVG';
+import type TypstElement from './elements/Typst';
+import { metadataManager } from './metadata/metadataManager';
+import { extractMathCode, getCodeblockProcessor, getMathProcessor } from './utils';
+import { variablesManager } from './variables/variablesManager';
+import { hookDecorationForPatchingMathWidget } from './views/edit';
+import {
+  flushPendings,
+  markdownProcessor,
+  markdownProcessorBeforeReady,
+  type Typ2chtmlOptions,
+  typ2chtml,
+  typ2chtmlBeforeReady,
+} from './views/render';
 
-// * ヘルパー関数（個別エクスポート）
+export * from './utils';
+export { metadataManager, variablesManager };
 
-/** math コード文字列から使用するプロセッサーを取得する */
-export function getMathProcessor(code: string, isDisplay: boolean) {
-  return extarctCMMath(code, isDisplay);
-}
+import './index.css';
 
-/** コードブロック種別 id からプロセッサーを取得する */
-export function getCodeblockProcessor(id: string): MarkdownProcessor {
-  const { settings } = settingsManager;
-  return (
-    settings.processors.codeblock?.find((p) => p.id === id) ??
-    settings.processors.codeblock?.at(-1) ??
-    DEFAULT_SETTINGS.processors.codeblock!.at(-1)!
-  );
-}
+export class RendererManager implements Singleton {
+  plugin: ObsidianTypstMate | undefined;
 
-/** CM 数式デリミタとプロセッサー prefix を除いた生コードを返す */
-export function extractMathCode(raw: string, eqStart: number, eqEnd: number, isDisplay: boolean): string {
-  const code = eqEnd !== 0 ? raw.slice(eqStart, -eqEnd) : raw.slice(eqStart);
-  return isDisplay ? normalizeDisplayMathCode(code) : code;
-}
-
-// * RenderManager
-
-export class RenderManager {
   /** ちらつき防止用の直前レンダリング情報 */
   beforeKind?: ProcessorKind;
   beforeProcessor?: Processor;
@@ -47,7 +44,61 @@ export class RenderManager {
   /** アクティブな ResizeObserver を追跡してデタッチ時に全解除 */
   private observers = new Set<ResizeObserver>();
 
-  init() {}
+  typ2chtml: (math: string, options?: Typ2chtmlOptions) => HTMLElement = typ2chtmlBeforeReady;
+  markdownMathPostProcessor: (el: HTMLElement, ctx: any) => void = markdownProcessorBeforeReady;
+
+  init(plugin: ObsidianTypstMate) {
+    this.plugin = plugin;
+  }
+
+  async onLayoutReady() {
+    const plugin = this.plugin!;
+    metadataManager.init(plugin);
+    variablesManager.init(plugin);
+    variablesManager.setOnRerender(() => this.rerenderAll());
+
+    const files = await metadataManager.collectTagFiles();
+    await wasmManager.prepareAssets(files);
+    this.swapToReady();
+    this.renderPendingElements();
+  }
+
+  async refresh() {
+    this.swapToBeforeReady();
+    this.disposeObservers();
+    const files = await metadataManager.collectTagFiles();
+    await wasmManager.refreshWasm(files);
+    this.swapToReady();
+    this.renderPendingElements();
+  }
+
+  private swapToReady() {
+    this.typ2chtml = typ2chtml;
+    this.markdownMathPostProcessor = markdownProcessor;
+    flushPendings(typ2chtml);
+  }
+
+  private swapToBeforeReady() {
+    this.typ2chtml = typ2chtmlBeforeReady;
+    this.markdownMathPostProcessor = markdownProcessorBeforeReady;
+  }
+
+  registerOnce(plugin: ObsidianTypstMate) {
+    overwriteCustomElements('typstmate-svg', TypstSVGElement);
+    overwriteCustomElements('typstmate-html', TypstHTMLElement);
+
+    // MarkdownEditView
+    hookDecorationForPatchingMathWidget(plugin, this);
+
+    // MarkdownPreviewView
+    plugin.registerMarkdownPostProcessor((el, ctx) => this.markdownMathPostProcessor(el, ctx), -1);
+  }
+
+  async detach() {
+    this.plugin = undefined;
+    this.disposeObservers();
+    await wasmManager.clearWasm();
+  }
 
   // * 数式レンダリング
 
@@ -130,16 +181,12 @@ export class RenderManager {
   private syncMetadata(npath?: NPath) {
     if (npath) {
       const metadata = appUtils.app.metadataCache.getCache(npath);
-      if (metadata) this.metadataManager.syncFileCache(npath, metadata);
+      if (metadata) metadataManager.syncFileCache(npath, metadata);
     } else {
-      this.metadataManager.reset();
+      metadataManager.reset();
     }
   }
 
-  /**
-   * Live プロファイル時のみ ResizeObserver を付ける。
-   * 要素が DOM から切り離されたら自動解除。
-   */
   private attachResizeObserver(containerEl: HTMLElement, typstEl: TypstElement) {
     if (settingsManager.settings.fitToNoteWidthProfile !== 'Live') return;
 
@@ -159,16 +206,14 @@ export class RenderManager {
       const width = el.clientWidth;
       if (width === 0) return;
 
-      $.wasm.setViewportWidth(`${Math.round(width * 0.75)}pt`);
-      $.wasm.updateVariables();
+      wasmManager.wasm?.setViewportWidth(`${Math.round(width * 0.75)}pt`);
+      wasmManager.wasm?.updateVariables();
       tEl.render();
     });
 
     observer.observe(containerEl);
     this.observers.add(observer);
   }
-
-  // * ページ全体の再レンダリング
 
   async renderPendingElements() {
     const waitingElements = document.querySelectorAll('.typstmate-pending');
@@ -196,6 +241,12 @@ export class RenderManager {
     }
   }
 
+  async renderTypstHtml(source: string, containerEl: HTMLElement, ndir: NPath) {
+    const processor = getCodeblockProcessor('typ');
+    const result = await wasmManager.wasm?.htmlmAsync(ndir, 'codeblock', processor.id, source);
+    if (result) containerEl.innerHTML = result.html;
+  }
+
   disposeObservers() {
     for (const obs of this.observers) obs.disconnect();
     this.observers.clear();
@@ -203,4 +254,4 @@ export class RenderManager {
   }
 }
 
-export const renderManager = new RenderManager();
+export const rendererManager = new RendererManager();

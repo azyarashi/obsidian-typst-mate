@@ -1,4 +1,4 @@
-import { defineExtension } from '@/libs/extensionManager';
+import { defineExtension } from '@/managers/extensionManager';
 
 export * from './extension';
 

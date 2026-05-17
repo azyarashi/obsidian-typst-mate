@@ -2,7 +2,7 @@ import { render } from 'preact';
 import { useLayoutEffect, useRef, useState } from 'preact/hooks';
 import { ICONS } from '@/constants/icons';
 import { extensionManager, settingsManager } from '@/libs';
-import type { EditorContext, ExtensionPackage } from '@/libs/extensionManager';
+import type { EditorContext, ExtensionPackage } from '@/managers/extensionManager';
 import { Icon } from '@/ui/components/decorations';
 import { Setting } from '@/ui/components/obsidian/Setting';
 import { ListItem } from './index';

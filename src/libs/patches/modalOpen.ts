@@ -31,7 +31,7 @@ class ModalOpenPatch implements Singleton {
             const before = settingsManager.settings.enableBackgroundRendering;
             if (before) {
               settingsManager.settings.enableBackgroundRendering = false;
-              await rendererManager.refreshWasm();
+              await rendererManager.refresh();
             }
 
             return await printToPdfOrig(args).then(async () => {
@@ -40,7 +40,7 @@ class ModalOpenPatch implements Singleton {
 
               if (before) {
                 settingsManager.settings.enableBackgroundRendering = true;
-                await rendererManager.refreshWasm();
+                await rendererManager.refresh();
               }
             });
           };

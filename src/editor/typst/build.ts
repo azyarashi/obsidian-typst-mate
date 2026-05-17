@@ -11,7 +11,7 @@ import {
 } from '@codemirror/view';
 import { clickableLinkExtension, diagnosticsState } from '@/editor';
 import { textViewTheme } from '@/editor/editorSimple/extensions/Theme';
-import { extensionManager, viewTracker } from '@/libs/extensionManager';
+import { extensionManager, viewTracker } from '@/managers/extensionManager';
 import { typstTextCore } from './extensions/TypstCore';
 import { typstFoldingExtension } from './internal/Folding';
 import { statusBarExtension } from './internal/StatusBar';

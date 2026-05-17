@@ -1,7 +1,7 @@
 import type { EditorView } from '@codemirror/view';
 import { render } from 'preact';
-import { getExtraHints } from '@/constants/extraHints';
 import type { TypstDiagnostic } from '@/editor';
+import { getExtraHints } from '@/editor/shared/extensions/Tooltip/utils/extraHints';
 
 import './Diagnostic.css';
 

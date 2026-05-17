@@ -3,8 +3,8 @@ import { Decoration, type EditorView, type WidgetType } from '@codemirror/view';
 import { around } from 'monkey-around';
 import { debounce, editorInfoField } from 'obsidian';
 import { appUtils } from '@/libs';
-import { rendererManager } from '@/libs/rendererManager';
 import type ObsidianTypstMate from '@/main';
+import type { RendererManager } from '@/managers/rendererManager';
 import type { MathWidgetInstance, MathWidgetInternal } from './types';
 
 let patched = false;
@@ -15,7 +15,7 @@ function isRangeDecorationArray(
   return Array.isArray(value);
 }
 
-export function hookDecorationForPatchingMathWidget(plugin: ObsidianTypstMate) {
+export function hookDecorationForPatchingMathWidget(plugin: ObsidianTypstMate, rendererManager: RendererManager) {
   const uninstaller = around(Decoration, {
     set(old) {
       return (...args: Parameters<typeof Decoration.set>) => {
@@ -24,7 +24,7 @@ export function hookDecorationForPatchingMathWidget(plugin: ObsidianTypstMate) {
         const [of, sort] = args;
         if (isRangeDecorationArray(of)) {
           const widget = of[0]?.value.widget;
-          if (widget) patched = tryPatchMathWidget(plugin, widget);
+          if (widget) patched = tryPatchMathWidget(plugin, widget, rendererManager);
           return old.call(plugin, of, sort);
         } else return old.call(plugin, of, sort);
       };
@@ -39,7 +39,11 @@ function isValidMathWidgetType(widget: WidgetType): widget is MathWidgetInternal
 }
 
 // ! ソースモードが有効の場合は呼ばれない
-export function tryPatchMathWidget(plugin: ObsidianTypstMate, widget: WidgetType): boolean {
+export function tryPatchMathWidget(
+  plugin: ObsidianTypstMate,
+  widget: WidgetType,
+  rendererManager: RendererManager,
+): boolean {
   if (!isValidMathWidgetType(widget)) return false;
   const proto = Object.getPrototypeOf(widget) as MathWidgetInstance;
 

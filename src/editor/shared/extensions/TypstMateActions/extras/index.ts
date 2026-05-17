@@ -1,6 +1,6 @@
 import type { EditorView } from '@codemirror/view';
 import { startAutocomplete } from '@/editor';
-import type { TMAction, TMActionContext } from '@/libs/tmActionsManager';
+import type { TMAction, TMActionContext } from '@/managers/tmActionsManager';
 
 export function applyExtraActions(
   tmAction: TMAction,

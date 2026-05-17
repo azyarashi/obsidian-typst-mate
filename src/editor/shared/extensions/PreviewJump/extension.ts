@@ -2,7 +2,7 @@ import { type EditorView, ViewPlugin } from '@codemirror/view';
 import type { Jump } from '@wasm';
 import { getRegionAt, type ParsedRegion } from '@/editor';
 import { editorHelper } from '@/libs';
-import type TypstElement from '@/ui/elements/Typst';
+import type TypstElement from '@/managers/rendererManager/elements/Typst';
 import { handleTypstMateURI } from './uri';
 
 class PreviewJumpPluginValue {

@@ -1,5 +1,5 @@
 import { Keymap } from 'obsidian';
-import type TypstElement from '@/ui/elements/Typst';
+import type TypstElement from '@/managers/rendererManager/elements/Typst';
 
 export function handleTypstMateURI(uri: URL, event: MouseEvent, context?: TypstElement): boolean | URL {
   switch (uri.hostname) {

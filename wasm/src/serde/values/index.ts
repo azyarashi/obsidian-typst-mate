@@ -71,11 +71,11 @@ export function formatBool(v: { value: boolean }): FormattedValue {
 export function formatSpan(v: Jump): FormattedValue {
   if (v.type === 'file') {
     const pkg = v.package ? ` (package: \`${v.package}\`)` : '';
-    return { top: `**definition:** points to \`${v.path}\`${pkg}` };
+    return { top: `*definition:* points to \`${v.path}\`${pkg}` };
   } else if (v.type === 'url') {
-    return { top: `**url:** [${v.url}](${v.url})` };
+    return { top: `*url:* #link("${v.url}")[${v.url}]` };
   } else if (v.type === 'position') {
-    return { top: `**position:** page ${v.page}, x: ${v.y.toFixed(1)} line ${v.x.toFixed(1)} col` };
+    return { top: `*position:* page ${v.page}, x: ${v.y.toFixed(1)} line ${v.x.toFixed(1)} col` };
   }
 
   return { top: '' };

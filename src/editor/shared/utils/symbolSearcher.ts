@@ -1,4 +1,4 @@
-import SYMBOLS_BY_NAME from '@/data/symbols.json';
+import SYMBOLS_BY_NAME from '@resources/data/symbols.json';
 
 const SYMBOLS_BY_LATEX = Object.fromEntries(
   Object.entries(SYMBOLS_BY_NAME)

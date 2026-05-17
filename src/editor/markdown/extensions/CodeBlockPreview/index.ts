@@ -1,4 +1,4 @@
-import { defineExtension } from '@/libs/extensionManager';
+import { defineExtension } from '@/managers/extensionManager';
 import { codeblockPreviewExtension } from './extension';
 import { codeblockPreviewPackage } from './package';
 

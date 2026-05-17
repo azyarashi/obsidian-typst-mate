@@ -1,4 +1,4 @@
-import type { ExtensionEntry } from '@/libs/extensionManager';
+import type { ExtensionEntry } from '@/managers/extensionManager';
 import { codeJumpEntry } from './CodeJump';
 import { errorLensEntry } from './ErrorLens';
 import { indentRainbowEntry } from './IndentRainbow';

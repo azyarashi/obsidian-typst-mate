@@ -1,7 +1,7 @@
 import type { MarkdownPostProcessorContext, TFile } from 'obsidian';
 import { appUtils } from '@/libs';
-import { renderManager } from '@/libs/rendererManager/render/renderManager';
-import { getNDirAndNPath, getParentNPathByFileNPath, normalizeDisplayMathCode } from '@/libs/rendererManager/utils';
+import { getNDirAndNPath, getParentNPathByFileNPath, normalizeDisplayMathCode } from '@/managers/rendererManager/utils';
+import { rendererManager } from '..';
 
 export type Typ2chtmlOptions = {
   display?: boolean;
@@ -40,7 +40,7 @@ export function typ2chtml(math: string, options: Typ2chtmlOptions = {}): HTMLEle
 
   const containerEl = createMathContainer();
   const { ndir, npath } = getNDirAndNPath(file);
-  return renderManager.renderMath(math, containerEl, display ?? false, ndir, npath);
+  return rendererManager.renderMath(math, containerEl, display ?? false, ndir, npath);
 }
 
 /**
@@ -88,7 +88,7 @@ export function markdownProcessor(el: HTMLElement, ctx: MarkdownPostProcessorCon
 
     mathEl.empty();
     const containerEl = createMathContainer();
-    renderManager.renderMath(text, containerEl, display, ndir, npath);
+    rendererManager.renderMath(text, containerEl, display, ndir, npath);
     mathEl.appendChild(containerEl);
     mathEl.setAttribute('contenteditable', 'false');
     mathEl.addClass('is-loaded');

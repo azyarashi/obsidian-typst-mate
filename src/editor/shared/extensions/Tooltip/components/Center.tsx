@@ -1,6 +1,5 @@
-import { Component, MarkdownRenderer } from 'obsidian';
 import { useEffect, useRef } from 'preact/hooks';
-import { appUtils } from '@/libs';
+import { appUtils, rendererManager } from '@/libs';
 
 import './Center.css';
 
@@ -15,12 +14,11 @@ export function Center({ tooltipData }: { tooltipData: TooltipData }) {
     const container = document.createElement('div');
     ref.current.appendChild(container);
 
-    const component = new Component();
-    component.load();
+    const file = appUtils.app.workspace.getActiveFile();
+    const ndir = file?.parent?.path ?? '/';
 
-    MarkdownRenderer.render(appUtils.app, tooltipData.markdown, container, '', component).then(() => {
+    rendererManager.renderTypstHtml(tooltipData.source, container, ndir).then(() => {
       // * go to
-      console.log(tooltipData.links);
       if (0 < tooltipData.links.length) {
         const gotoContainer = document.createElement('div');
         gotoContainer.className = 'typstmate-goto-links';
@@ -37,7 +35,6 @@ export function Center({ tooltipData }: { tooltipData: TooltipData }) {
     });
 
     return () => {
-      component.unload();
       container.remove();
     };
   }, [tooltipData]);

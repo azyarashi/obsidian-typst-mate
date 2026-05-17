@@ -13,7 +13,16 @@ export class WasmManager implements Singleton {
   wasm?: WasmAdapter | Remote<WasmAdapter>;
   private worker?: Worker;
 
-  init(_: ObsidianTypstMate) {}
+  async init(_: ObsidianTypstMate) {}
+
+  async onLayoutReady() {
+    const { adapter, pluginDirNPath } = fileManager;
+    const list = await adapter.list(pluginDirNPath);
+
+    await fileManager.ensureWasm(list.files);
+    await this.prepareWasmAdapter();
+    await this.initWasm();
+  }
 
   async prepareWasmAdapter() {
     const { settings } = settingsManager;

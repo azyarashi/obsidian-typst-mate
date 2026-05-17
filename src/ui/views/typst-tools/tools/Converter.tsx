@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { TypstMate } from '@/api';
-import { renderManager } from '@/libs';
+import { rendererManager } from '@/libs';
 import { t } from '@/libs/i18n';
 
 type ConverterMode = 'math-eq' | 'markup-doc' | 'cetz-tikz';
@@ -19,11 +19,11 @@ export const Converter = () => {
 
     switch (mode) {
       case 'math-eq':
-        renderManager.renderMath(value, previewRef.current, true, '/');
+        rendererManager.renderMath(value, previewRef.current, true, '/');
         break;
       case 'markup-doc':
       case 'cetz-tikz':
-        renderManager.renderCodeblock(value, previewRef.current, 'typst', '/');
+        rendererManager.renderCodeblock(value, previewRef.current, 'typst', '/');
         break;
     }
   };

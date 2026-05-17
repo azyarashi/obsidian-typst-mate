@@ -1,4 +1,4 @@
-import type { ExtensionEntry } from '@/libs/extensionManager';
+import type { ExtensionEntry } from '@/managers/extensionManager';
 import { autocompleteEntry } from './Autocomplete/index';
 import { formatterEntry } from './Formatter/index';
 import { linterEntry } from './Linter/index';

@@ -1,10 +1,9 @@
+import SYMBOLS_BY_NAME from '@resources/data/symbols.json';
 import { SyntaxKind, SyntaxMode } from '@typstmate/typst-syntax';
 import { Prec } from '@codemirror/state';
 import { type EditorView, keymap, type PluginValue, ViewPlugin, type ViewUpdate } from '@codemirror/view';
 import type { Completion, CompletionKind } from '@wasm';
 import { setIcon } from 'obsidian';
-import { TypstMate } from '@/api';
-import SYMBOLS_BY_NAME from '@/data/symbols.json';
 import {
   calculatePopOverPositionByCursor,
   getActiveRegion,
@@ -13,13 +12,13 @@ import {
   type SymbolData,
   searchSymbols,
 } from '@/editor';
-import { $, renderManager } from '@/libs';
-import { tmActionsManager } from '@/libs/tmActionsManager';
-import { format } from '@/ui/elements/Typst';
+import { $ } from '@/libs';
+import { tmActionsManager } from '@/managers/tmActionsManager';
 import { checkActionContext, executeAction, resolveActionContext } from '../TypstMateActions/actions';
 import { autocompleteSettingsFacet } from './package';
 
 import './Autocomplete.css';
+import { format } from '@/managers/rendererManager/elements/Typst';
 
 const symbolRegexForLatex = /(\\[a-zA-Z]{2,})$/;
 

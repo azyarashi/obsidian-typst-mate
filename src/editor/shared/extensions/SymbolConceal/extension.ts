@@ -1,14 +1,14 @@
+import SYMBOLS_BY_NAME from '@resources/data/symbols.json';
 import { LinkedNode, SyntaxKind } from '@typstmate/typst-syntax';
 import { type Facet, RangeSet, StateEffect } from '@codemirror/state';
 import { Decoration, type DecorationSet, EditorView, ViewPlugin, type ViewUpdate, WidgetType } from '@codemirror/view';
 import { setTooltip } from 'obsidian';
-import symbolData from '@/data/symbols.json';
 import { getActiveRegion, type SymbolData } from '@/editor';
 import { RenderingEngine } from '@/libs';
 import type { SymbolConcealSettings } from './package';
 
 export const SYMBOL_MAP = new Map<string, SymbolData>();
-for (const [key, val] of Object.entries(symbolData)) SYMBOL_MAP.set(key, val);
+for (const [key, val] of Object.entries(SYMBOLS_BY_NAME)) SYMBOL_MAP.set(key, val);
 
 // * widget
 

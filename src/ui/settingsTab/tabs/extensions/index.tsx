@@ -1,7 +1,7 @@
 import { debounce } from 'obsidian';
 import { useMemo, useState } from 'preact/hooks';
 import { extensionManager, settingsManager } from '@/libs';
-import { ALL_TAGS, type EditorContext, type ExtensionEntry, type Tag } from '@/libs/extensionManager';
+import { ALL_TAGS, type EditorContext, type ExtensionEntry, type Tag } from '@/managers/extensionManager';
 import { ExtensionListItem } from '@/ui/components/List/ListItem/ExtensionListItem';
 import { type TabDefinition, Tabs } from '@/ui/components/Tabs';
 

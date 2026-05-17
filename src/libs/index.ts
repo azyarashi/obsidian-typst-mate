@@ -3,27 +3,26 @@
 export * from '../utils/crashTracker';
 
 // singletons
-export * from './settingsManager';
+export * from '../managers/settingsManager';
 export * from './appUtils';
-export * from './fileManager';
+export * from '../managers/fileManager';
 export * from './features';
 
 export * from './editorHelper';
-export * from './extensionManager';
+export * from '../managers/extensionManager';
 
-export * from './rendererManager';
-export * from './tmActionsManager';
+export * from '../managers/rendererManager';
+export * from '../managers/watcherManager';
+export * from '../managers/tmActionsManager';
 
 export * from './events';
 export * from './commands';
 export * from './protocolHandlers';
 
-export * from './extensionManager';
-
 export * from './patches';
 
 export * from './i18n';
 
-export * from './processorManager';
+export * from '../managers/processorManager';
 
-export * from './wasmManager';
+export * from '../managers/wasmManager';

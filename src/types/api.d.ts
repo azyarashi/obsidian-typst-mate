@@ -1,6 +1,6 @@
 import type { EditorView } from '@codemirror/view';
 import type { Remote } from 'comlink';
-import type WasmAdapter from '@/libs/wasmManager';
+import type WasmAdapter from '@/managers/wasmManager';
 import type { Phase, Status } from '../api';
 import type { ParsedRegion } from '../editor/shared/utils/core';
 

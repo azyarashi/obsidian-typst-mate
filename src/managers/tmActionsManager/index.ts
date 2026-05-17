@@ -1,6 +1,6 @@
 import { appUtils } from '@/libs/appUtils';
-import { settingsManager } from '@/libs/settingsManager';
 import type ObsidianTypstMate from '@/main';
+import { settingsManager } from '@/managers/settingsManager';
 import type { Singleton } from '@/types/singleton';
 import { consoleError } from '@/utils/notice';
 import type { TMAction } from './definition';

@@ -4,7 +4,7 @@ import { BASE_COLOR_VAR } from '@/constants';
 import { previewJumpPlugin } from '@/editor';
 import { $, appUtils, settingsManager } from '@/libs';
 import { t } from '@/libs/i18n';
-import { ErrorCode } from '@/libs/wasmManager/shared';
+import { ErrorCode } from '@/managers/wasmManager/shared';
 import TypstElement from './Typst';
 
 import './SVG.css';

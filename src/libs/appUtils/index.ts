@@ -2,9 +2,9 @@ import { type App, MarkdownView, type WorkspaceLeaf } from 'obsidian';
 import { BASE_COLOR_VAR } from '@/constants';
 import { t } from '@/libs/i18n';
 import ObsidianTypstMate from '@/main';
+import { settingsManager } from '@/managers/settingsManager';
 import { TextFileView, type Tool, TypstFileView, TypstPreviewView, TypstToolsView } from '@/ui/views';
 import { checkPluginFeatures } from '../features';
-import { settingsManager } from '../settingsManager';
 
 class AppUtils {
   app!: App;

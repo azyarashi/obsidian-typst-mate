@@ -1,4 +1,4 @@
-import { defineExtension } from '@/libs/extensionManager';
+import { defineExtension } from '@/managers/extensionManager';
 import { errorLensExtension } from './extension';
 import { errorLensPackage } from './package';
 

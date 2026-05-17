@@ -2,13 +2,12 @@ import { TypstMate } from '@/api';
 import type ObsidianTypstMate from '@/main';
 import { DEFAULT_SETTINGS, type Settings } from '@/settings';
 import type { Singleton } from '@/types/singleton';
-import { migrations } from './migration';
+import { migrations } from './migrations';
 
 class SettingsManager implements Singleton {
   private plugin?: ObsidianTypstMate;
 
   settings!: Settings;
-  version?: string;
 
   async init(plugin: ObsidianTypstMate) {
     this.plugin = plugin;
@@ -39,15 +38,17 @@ class SettingsManager implements Singleton {
   }
 
   private migrate() {
-    while (this.version !== TypstMate.pluginVersion) {
-      const migration = migrations.find((m) => m.version === this.version);
-      if (!migration) return; // TODO;
+    let currentVersion = this.settings.pluginVersion;
+
+    while (currentVersion !== TypstMate.pluginVersion) {
+      const migration = migrations.find((m) => m.version === currentVersion);
+      if (!migration) break;
 
       this.settings = migration.migrate(this.settings);
-      this.version = migration.next;
+      currentVersion = migration.next;
     }
 
-    this.settings.pluginVersion = this.version;
+    this.settings.pluginVersion = currentVersion;
   }
 
   private normalizeSettings() {

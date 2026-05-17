@@ -1,5 +1,4 @@
 import { useState } from 'preact/hooks';
-import { TypstMate } from '@/api';
 import { $, appUtils, settingsManager, variablesManager } from '@/libs';
 import { t, tFragment } from '@/libs/i18n';
 import { DEFAULT_SETTINGS } from '@/settings';

@@ -1,4 +1,4 @@
-import { defineExtension } from '@/libs/extensionManager';
+import { defineExtension } from '@/managers/extensionManager';
 import { inlinePreviewExtension } from './extension';
 import { inlineMathPreviewPackage } from './package';
 

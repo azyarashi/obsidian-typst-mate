@@ -1,6 +1,6 @@
 import type { MarkdownPostProcessorContext, MarkdownView } from 'obsidian';
 import { appUtils } from '@/libs';
-import { getParentNPathByFileNPath, normalizeDisplayMathCode, renderManager } from '@/libs/rendererManager';
+import { getParentNPathByFileNPath, normalizeDisplayMathCode, rendererManager } from '@/managers/rendererManager';
 
 const tc = {
   '&amp;': '&',
@@ -40,7 +40,7 @@ export async function Processor(el: HTMLElement, ctx: MarkdownPostProcessorConte
     containerEl.className = 'Mathjax';
     containerEl.setAttribute('jax', 'CHTML');
 
-    renderManager.renderMath(text, containerEl, display, ndir, npath);
+    rendererManager.renderMath(text, containerEl, display, ndir, npath);
     mathEl.appendChild(containerEl);
 
     mathEl.addClass('is-loaded');
