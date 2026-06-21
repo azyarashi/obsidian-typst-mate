@@ -3,16 +3,13 @@ import type pathModule from 'node:path';
 
 import { expose } from 'comlink';
 import type { EditorPosition } from 'obsidian';
-import pako from 'pako';
-import untar from 'untar-sync';
 
 import init, { type InitOutput, Typst } from '../../pkg/typst_wasm.js';
+import { fetchFile } from './fetchFile';
 
 let main: Main;
 
 const map = new Map<string, Uint8Array | undefined>();
-const xhr = new XMLHttpRequest();
-xhr.overrideMimeType('text/plain; charset=x-user-defined');
 
 export default class $ {
   module!: InitOutput;
@@ -21,6 +18,7 @@ export default class $ {
   fs?: typeof fsModule;
   path?: typeof pathModule;
   baseDirPath: string;
+  readonly pending = new Set<Promise<void>>();
 
   constructor(localPackagesDirPaths: string[], baseDirPath: string, isDesktopApp: boolean) {
     this.localPackagesDirPaths = localPackagesDirPaths;
@@ -118,101 +116,21 @@ export default class $ {
     return this.typst.jump_from_cursor_p(cursor);
   }
 
-  fetch(path: string) {
-    if (map.has(path)) {
-      const v = map.get(path);
-      if (v) return v;
-      throw 12; // FileError::NotFound
-    }
+  fetch(path: string): Uint8Array {
+    return fetchFile(path, {
+      map,
+      fs: this.fs,
+      main,
+      localPackagesDirPaths: this.localPackagesDirPaths,
+      baseDirPath: this.baseDirPath,
+      pending: this.pending,
+    });
+  }
 
-    let isPackage = false;
-    const readBinary = (vpath: string, rpath: string) => {
-      const f = this.fs?.readFileSync ?? main.readBinary;
-
-      const result = f(rpath);
-      if (result instanceof Promise) {
-        result
-          .then((r) => {
-            map.set(vpath, new Uint8Array(r));
-          })
-          .catch(() => {
-            if (!map.has(vpath)) map.set(vpath, undefined);
-          });
-      } else {
-        map.set(vpath, result);
-        return new Uint8Array(result);
-      }
-
-      throw 0; // FileError::Other(implementation constraints)
-    };
-
-    if (path.startsWith('@')) {
-      isPackage = true;
-      path = path.slice(1);
-      const [namespace, name, version] = path.split('/');
-      const vpath = path.split('/').slice(3).join('/');
-      const p = `${namespace}/${name}/${version}`;
-
-      if (namespace === 'preview') {
-        if (this.fs) {
-          try {
-            return readBinary(`@${path}`, `${this.localPackagesDirPaths[0]}/${p}/${vpath}`);
-          } catch {}
-        }
-
-        if (vpath === 'typst.toml') main.notice(`Downloading ${name}...`, 500);
-
-        xhr.open('GET', `https://packages.typst.org/preview/${name}-${version}.tar.gz`, false);
-        xhr.send(null);
-        if (xhr.status === 0) throw 21; // PackageError::NetworkFailed
-        if (xhr.status === 404) throw 22; // PackageError::NotFound
-        if (!xhr.responseText === null) throw 20; // PackageError::MalformedArchive
-
-        try {
-          const text = xhr.responseText;
-          const targzArr = new Uint8Array(text.length);
-          for (let i = 0; i < text.length; i++) {
-            targzArr[i] = text.charCodeAt(i) & 0xff;
-          }
-
-          const tarArr = pako.ungzip(targzArr).buffer;
-          const files = untar(tarArr) as {
-            name: string;
-            buffer: ArrayBuffer;
-            type: string;
-            linkname?: string;
-          }[];
-          main.writePackage(p, files);
-
-          for (const f of files.filter((f) => f.type === '0')) {
-            map.set(`@${p}/${f.name}`, new Uint8Array(f.buffer));
-          }
-
-          for (const f of files.filter((f) => f.type === '2')) {
-            map.set(`@${p}/${f.name}`, new Uint8Array(map.get(f.linkname!)?.buffer || new ArrayBuffer(0)));
-          }
-
-          if (vpath === 'typst.toml') main.notice(`Downloaded successfully!`, 500);
-        } catch (e) {
-          console.error(e);
-          throw 20; // PackageError::MalformedArchive;
-        }
-
-        return map.get(`@${p}/${vpath}`);
-      }
-    }
-
-    if (isPackage) {
-      for (const localPackagesDirPath of this.localPackagesDirPaths) {
-        try {
-          return readBinary(`@${path}`, `${localPackagesDirPath}/${path}`);
-        } catch {}
-      }
-    } else {
-      return readBinary(path, path);
-    }
-
-    throw 0; // FileError::Other(implementation constraints)
+  /** Resolves once all in-flight async file reads (from mobile / Comlink paths) have settled. */
+  async awaitPending(): Promise<void> {
+    if (this.pending.size === 0) return;
+    await Promise.all([...this.pending]);
   }
 
   setMain(m: Main): void {
