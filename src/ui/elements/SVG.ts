@@ -101,7 +101,7 @@ export default class TypstSVGElement extends TypstElement {
     });
   }
 
-  async render() {
+  async render(isRetry = false) {
     const formatted = this.format();
 
     try {
@@ -110,10 +110,23 @@ export default class TypstSVGElement extends TypstElement {
       if (result instanceof Promise)
         result
           .then((result: SVGResult) => this.postProcess(result))
-          .catch((err: Diagnostic[]) => this.handleError(err));
+          .catch(async (err: Diagnostic[]) => {
+            if (!isRetry && hasImplConstraints(err)) {
+              await this.plugin.typst.awaitPending?.();
+              this.render(true);
+            } else {
+              this.handleError(err);
+            }
+          });
       else this.postProcess(result);
     } catch (err) {
-      this.handleError(err as Diagnostic[]);
+      const diags = err as Diagnostic[];
+      if (!isRetry && hasImplConstraints(diags)) {
+        await this.plugin.typst.awaitPending?.();
+        this.render(true);
+      } else {
+        this.handleError(diags);
+      }
     }
 
     return this;
@@ -141,6 +154,10 @@ export default class TypstSVGElement extends TypstElement {
       view.editor.cm.plugin(jumpFromClickPlugin)?.jumpTo(result, event, this);
     }
   }
+}
+
+function hasImplConstraints(diags: Diagnostic[]): boolean {
+  return diags.some((d) => d.message.includes('implementation constraints'));
 }
 
 async function copySVGToClipboard(svgContent: string) {
