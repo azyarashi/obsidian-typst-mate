@@ -10,6 +10,7 @@ import { unzip, zip } from '@/utils/packageCompressor';
 import { expandHierarchicalTags } from '@/utils/tags';
 
 import type { Processor, ProcessorKind } from './processor';
+import { substituteCode } from './substitute';
 import type { PackageSpec } from './worker';
 
 import './typst.css';
@@ -236,7 +237,7 @@ export default class TypstManager {
     }
     this.beforeProcessor = processor;
     if (processor.renderingEngine === 'mathjax') {
-      if (this.plugin.settings.applyProcessorToMathJax) code = processor.format.replace('{CODE}', code);
+      if (this.plugin.settings.applyProcessorToMathJax) code = substituteCode(processor.format, code);
       return this.plugin.originalTex2chtml(code, {
         display: kind !== 'inline',
       });

@@ -3,6 +3,7 @@ import type { Plugin } from 'obsidian';
 import type { ExcalidrawAutomate } from 'obsidian-excalidraw-plugin/docs/API/ExcalidrawAutomate';
 
 import type { ExcalidrawProcessor } from '@/libs/processor';
+import { substituteCode } from '@/libs/substitute';
 import type ObsidianTypstMate from '@/main';
 
 export default class ExcalidrawPlugin {
@@ -25,8 +26,8 @@ export default class ExcalidrawPlugin {
 
     try {
       code = processor.noPreamble
-        ? processor.format.replace('{CODE}', code)
-        : `${this.plugin.settings.preamble}\n${processor.useReplaceAll ? processor.format.replaceAll('{CODE}', code) : processor.format.replace('{CODE}', code)}`;
+        ? substituteCode(processor.format, code)
+        : `${this.plugin.settings.preamble}\n${substituteCode(processor.format, code, processor.useReplaceAll)}`;
 
       const svg = (await this.plugin.typst.svg(code, '/', 'excalidraw', processor.id)).svg;
 

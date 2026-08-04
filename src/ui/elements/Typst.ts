@@ -6,6 +6,7 @@ import { getActiveRegion } from '@/editor/shared/utils/core';
 import { t } from '@/i18n';
 import type { Processor, ProcessorKind } from '@/libs/processor';
 import { getNoteWidth } from '@/libs/profile';
+import { substituteCode } from '@/libs/substitute';
 import type { Diagnostic, SVGResult } from '@/libs/worker';
 import type ObsidianTypstMate from '@/main';
 import { DiagnosticModal } from '../modals/diagnostic';
@@ -114,9 +115,7 @@ export default abstract class TypstElement extends HTMLElement {
 }
 
 export function format(plugin: ObsidianTypstMate, source: string, kind: ProcessorKind, processor: Processor) {
-  let formatted = processor.useReplaceAll
-    ? processor.format.replaceAll('{CODE}', source)
-    : processor.format.replace('{CODE}', source);
+  let formatted = substituteCode(processor.format, source, processor.useReplaceAll);
   formatted = `${plugin.typstManager.preamble}\n${formatted}${kind === 'inline' ? '#text(size:0pt)[TypstMate]' : ''}`;
   formatted = processor.noPreamble ? formatted : `${plugin.settings.preamble}\n${formatted}`;
 
