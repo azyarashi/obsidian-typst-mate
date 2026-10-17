@@ -389,6 +389,7 @@ export default class TypstManager {
     if (currentHash === this.lastStateHash) return false;
     this.lastStateHash = currentHash;
 
+    const previousPreamble = this.preamble;
     this.preamble = '';
     for (const tag of tags)
       this.preamble += `#import "${this.plugin.baseDirPath}/${this.plugin.settings.importPath}/tags/${tag.replaceAll('/', '.')}.typ": *;`;
@@ -396,7 +397,9 @@ export default class TypstManager {
     for (const i of imports) this.preamble += `#import ${i};`;
     for (const d of definitions) this.preamble += `#let ${d};`;
 
-    return true;
+    // The first sync has no hash yet, so an empty preamble is "changed" even though nothing rendered differs.
+    // Rebuilding the view then tears down an editor that is still opening (e.g. a freshly created note).
+    return this.preamble !== previousPreamble;
   }
 
   refreshView() {
